@@ -40,7 +40,7 @@ jobs:
       cache-key: ${{ steps.composer-cache.outputs.key }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup cache environment
         id: extcache
@@ -90,7 +90,7 @@ jobs:
           - "highest"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup cache environment
         id: extcache
@@ -137,7 +137,7 @@ jobs:
           - "highest"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup cache environment
         id: extcache
@@ -190,7 +190,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup cache environment
         id: extcache
@@ -277,7 +277,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Prepare Locale
         run: |
