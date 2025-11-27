@@ -288,8 +288,7 @@ trait Export
         $necessaryEnclosure = $params['necessaryEnclosure'] ?? false;
         $keepEndOfLines = $params['keepEndOfLines'] ?? false;
 
-//            $csv = Writer::createFromFileObject(new \SplTempFileObject());
-        $csv = Writer::createFromStream(fopen('php://memory', 'r+'));
+        $csv = Writer::from('php://memory', 'r+');
         
         // CSV - MS Excel on MacOS
         if ($mode === 'mac') {
