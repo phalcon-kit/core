@@ -626,7 +626,7 @@ trait Query
                 }
                 
                 // is or not - null
-                if (in_array($queryOperator, ['is null', 'is not null'])) {
+                elseif (in_array($queryOperator, ['is null', 'is not null'])) {
                     $subQuery = "$queryLogic $queryFieldBinder $queryOperator";
                 }
                 
