@@ -51,7 +51,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -65,7 +65,7 @@ jobs:
           tools: composer, cs2pr
 
       - name: Cache global Composer packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.composer
           key: composer-global-${{ runner.os }}-${{ hashFiles('**/composer.json') }}
@@ -101,7 +101,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -148,7 +148,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -201,7 +201,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -297,7 +297,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
