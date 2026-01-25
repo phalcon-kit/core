@@ -154,6 +154,7 @@ trait Model
     
     /**
      * Appends the model name to the specified field string, if not already present.
+     * Example: field -> [Alias].[field]
      *
      * @param string $field The field string to append the model name to.
      * @param string|null $modelName The name of the model to append. If null, the default model name will be used.
@@ -165,6 +166,11 @@ trait Model
         $modelName ??= $this->getModelName() ?? '';
         
         if (empty($field)) {
+            return $field;
+        }
+
+        // fields with brackets are ignored
+        if (str_starts_with($field, '[') && str_ends_with($field, ']')) {
             return $field;
         }
         
