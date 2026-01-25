@@ -16,9 +16,9 @@ namespace PhalconKit\Ws;
 use PhalconKit\Di\InjectableProperties;
 
 /**
- * @property \PhalconKit\Ws\WebSocket $webSocket
- * @property \PhalconKit\Ws\Router $router
- * @property \PhalconKit\Ws\Dispatcher $dispatcher
+ * @property WebSocket $webSocket
+ * @property Router $router
+ * @property Dispatcher $dispatcher
  */
 class Task extends \Phalcon\Cli\Task implements TaskInterface
 {
