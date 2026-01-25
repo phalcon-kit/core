@@ -54,13 +54,6 @@ trait DynamicJoins
         foreach ($dynamicJoins as $key => $dynamicJoin) {
             $dynamicJoinKey = array_search($key, $this->dynamicJoinsMapping);
             $this->getJoins()->set($dynamicJoinKey, $dynamicJoin);
-//            $conditions = $dynamicJoin['conditions'];
-//            foreach ($conditions['bind'] as $bindKey => $bindValue) {
-//                $this->getBind()->set($bindKey, $bindValue);
-//            }
-//            foreach ($conditions['bindTypes'] as $bindKey => $bindValue) {
-//                $this->getBindTypes()->set($bindKey, $bindValue);
-//            }
         }
     }
 
@@ -172,10 +165,13 @@ trait DynamicJoins
 //                        if (!is_array($dynamicJoins[$alias][1])) {
 //                            $dynamicJoins[$alias][1] = [$dynamicJoins[$alias][1]];
 //                        }
-                        
+
                         // generate the join filter conditions
                         $joinFilters = $this->getParam('joins');
                         $conditions = !empty($joinFilters[$fieldAlias]) ? $this->defaultFilterCondition($joinFilters[$fieldAlias]) : [];
+
+                        // @todo we could potentially extract some "filters" conditions that are used and scoped for this relationship with no external fields
+                        // @todo so we could append them to the dynamic join conditions and gain performance
 
                         $join = [
                             // model class to use
@@ -188,17 +184,14 @@ trait DynamicJoins
                             $joinAlias,
 
                             // join type left by default
-                            $joins[$alias][3] ?? 'left'
-                        ];
+                            $joins[$alias][3] ?? 'left',
 
-                        // prepare the dynamic join
-                        $dynamicJoin = [
-                            'join' => $join,
-                            'conditions' => $conditions,
+                            // join conditions with sql, bind, bindTypes
+                            $conditions
                         ];
 
                         // add the new dynamic join alias
-                        $this->dynamicJoinsBuild[$joinAlias] = $dynamicJoin;
+                        $this->dynamicJoinsBuild[$joinAlias] = $join;
                     }
                 }
             }

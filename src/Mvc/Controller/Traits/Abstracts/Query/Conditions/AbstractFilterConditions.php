@@ -27,7 +27,7 @@ trait AbstractFilterConditions
     
     abstract public function defaultFilterCondition(?array $filters, ?array $allowedFilters, bool $or = false): array|string|null;
     
-    abstract public function getFilterOperator(string $operator): string;
+    abstract public function normalizeFilterOperator(string $operator): string;
     
     abstract public function getBindTypeFromRawValue(mixed $rawValue = null): int;
 }
