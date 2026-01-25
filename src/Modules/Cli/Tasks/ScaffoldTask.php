@@ -163,19 +163,24 @@ DOC;
 //            }
             
             // Abstract
-            $savePath = $this->getAbstractsDirectory($definitions['abstract']['file']);
-            if (!file_exists($savePath) || $force) {
-                $this->saveFile($savePath, $this->createAbstractOutput($definitions, $columns, $relationships, $indexes), $force);
-                $ret [] = 'Abstract Model `' . $definitions['abstract']['file'] . '` created at `' . $savePath . '`';
+            if (!$this->isNoAbstracts()) {
+                $savePath = $this->getAbstractsDirectory($definitions['abstract']['file']);
+                if (!file_exists($savePath) || $force) {
+                    $this->saveFile($savePath, $this->createAbstractOutput($definitions, $columns, $relationships, $indexes), $force);
+                    $ret [] = 'Abstract Model `' . $definitions['abstract']['file'] . '` created at `' . $savePath . '`';
+                }
             }
+
             
             // Abstract Interfaces
-            $savePath = $this->getAbstractsInterfacesDirectory($definitions['abstractInterface']['file']);
-            if (!file_exists($savePath) || $force) {
-                $this->saveFile($savePath, $this->createAbstractInterfaceOutput($definitions, $columns, $relationships), $force);
-                $ret [] = 'Abstract Model Interface `' . $definitions['abstractInterface']['file'] . '` created at `' . $savePath . '`';
+            if (!$this->isNoInterfaces()) {
+                $savePath = $this->getAbstractsInterfacesDirectory($definitions['abstractInterface']['file']);
+                if (!file_exists($savePath) || $force) {
+                    $this->saveFile($savePath, $this->createAbstractInterfaceOutput($definitions, $columns, $relationships), $force);
+                    $ret [] = 'Abstract Model Interface `' . $definitions['abstractInterface']['file'] . '` created at `' . $savePath . '`';
+                }
             }
-            
+
             // Model Enums
             foreach ($columns as $column) {
                 assert($column instanceof Column);
@@ -193,18 +198,23 @@ DOC;
             }
             
             // Model
-            $savePath = $this->getModelsDirectory($definitions['model']['file']);
-            if (!file_exists($savePath) || $force) {
-                $this->saveFile($savePath, $this->createModelOutput($definitions), $force);
-                $ret [] = 'Model `' . $definitions['model']['file'] . '` created at `' . $savePath . '`';
+            if (!$this->isNoModels()) {
+                $savePath = $this->getModelsDirectory($definitions['model']['file']);
+                if (!file_exists($savePath) || $force) {
+                    $this->saveFile($savePath, $this->createModelOutput($definitions), $force);
+                    $ret [] = 'Model `' . $definitions['model']['file'] . '` created at `' . $savePath . '`';
+                }
             }
-            
+
             // Model Interfaces
-            $savePath = $this->getModelsInterfacesDirectory($definitions['modelInterface']['file']);
-            if (!file_exists($savePath) || $force) {
-                $this->saveFile($savePath, $this->createModelInterfaceOutput($definitions), $force);
-                $ret [] = 'Model Interface `' . $definitions['modelInterface']['file'] . '` created at `' . $savePath . '`';
+            if (!$this->isNoInterfaces()) {
+                $savePath = $this->getModelsInterfacesDirectory($definitions['modelInterface']['file']);
+                if (!file_exists($savePath) || $force) {
+                    $this->saveFile($savePath, $this->createModelInterfaceOutput($definitions), $force);
+                    $ret [] = 'Model Interface `' . $definitions['modelInterface']['file'] . '` created at `' . $savePath . '`';
+                }
             }
+
             
             // Model Test
             $savePath = $this->getModelsTestsDirectory($definitions['modelTest']['file']);
