@@ -83,7 +83,7 @@ trait AuthActions
     public function loginAsAction(): bool
     {
         $this->view->setVars($this->identity->getJwt());
-        $this->view->setVars($this->identity->loginAs($this->getLoginParams()));
+        $this->view->setVars($this->identity->loginAs($this->getLoginAsParams()));
         $this->view->setVars($this->identity->getIdentity($this->userExpose));
         return $this->view->getVar('loggedInAs') ?? false;
     }
@@ -127,6 +127,19 @@ trait AuthActions
         return $this->getParams([
             'email' => [Filter::FILTER_TRIM, Filter::FILTER_LOWER],
             'password'
+        ]);
+    }
+
+    /**
+     * Retrieves login parameters for the "login as" functionality.
+     *
+     * @return array The filtered parameters, including the user's ID.
+     * @throws Exception
+     */
+    public function getLoginAsParams(): array
+    {
+        return $this->getParams([
+            'userId' => [Filter::FILTER_INT]
         ]);
     }
     
