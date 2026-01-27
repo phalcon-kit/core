@@ -19,6 +19,7 @@ use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractCache;
+use PhalconKit\Support\CollectionPolicy;
 
 /**
  * This trait provides methods for caching data for the query.
@@ -171,5 +172,19 @@ trait Cache
     public function getCacheConfig(): ?Collection
     {
         return $this->cacheConfig;
+    }
+
+    /**
+     * Merges the provided cacheConfig collection with the current cacheConfig property.
+     *
+     * @param Collection $cacheConfig The collection of cacheConfig fields to merge with the current property.
+     * @return void
+     */
+    public function mergeCacheConfig(Collection $cacheConfig): void
+    {
+        $this->cacheConfig = CollectionPolicy::mergeNullable(
+            $this->cacheConfig,
+            $cacheConfig
+        );
     }
 }

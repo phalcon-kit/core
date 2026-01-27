@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Controller\Traits\Query;
 
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractWith;
+use PhalconKit\Support\CollectionPolicy;
 
 trait With
 {
@@ -59,5 +60,18 @@ trait With
     public function getWith(): ?Collection
     {
         return $this->with;
+    }
+
+    /**
+     * Merges the provided "with" collection with the existing "with" in the find criteria.
+     *
+     * @param Collection $with The collection of "with" to be merged.
+     */
+    public function mergeWith(Collection $with): void
+    {
+        $this->with = CollectionPolicy::mergeNullable(
+            $this->with,
+            $with
+        );
     }
 }

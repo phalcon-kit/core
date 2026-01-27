@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Fields;
 
 use Phalcon\Support\Collection;
+use PhalconKit\Support\CollectionPolicy;
 
 trait MapFields
 {
@@ -68,5 +69,19 @@ trait MapFields
     public function hasMapFields(): bool
     {
         return $this->mapFields !== null;
+    }
+
+    /**
+     * Merges the provided mapFields collection with the current mapFields property.
+     *
+     * @param Collection $mapFields The collection of mapFields to merge with the current property.
+     * @return void
+     */
+    public function mergeMapFields(Collection $mapFields): void
+    {
+        $this->mapFields = CollectionPolicy::mergeNullable(
+            $this->mapFields,
+            $mapFields
+        );
     }
 }

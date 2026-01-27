@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Controller\Traits\Query;
 
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractJoins;
+use PhalconKit\Support\CollectionPolicy;
 
 trait Joins
 {
@@ -59,6 +60,19 @@ trait Joins
     public function getJoins(): ?Collection
     {
         return $this->joins;
+    }
+
+    /**
+     * Merges the provided joins with the existing joins in the find criteria.
+     *
+     * @param Collection $joins The collection of joins to be merged.
+     */
+    public function mergeJoins(Collection $joins): void
+    {
+        $this->joins = CollectionPolicy::mergeNullable(
+            $this->joins,
+            $joins
+        );
     }
 
     /**

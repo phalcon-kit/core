@@ -17,11 +17,11 @@ use Phalcon\Filter\Filter;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractDistinct;
+use PhalconKit\Support\CollectionPolicy;
 
 trait Distinct
 {
     use AbstractDistinct;
-    
     use AbstractParams;
     
     protected ?Collection $distinct = null;
@@ -75,5 +75,19 @@ trait Distinct
     public function getDistinct(): ?Collection
     {
         return $this->distinct;
+    }
+
+    /**
+     * Merges the provided distinct collection with the current distinct property.
+     *
+     * @param Collection $distinct The collection of distinct to merge with the current property.
+     * @return void
+     */
+    public function mergeDistinct(Collection $distinct): void
+    {
+        $this->distinct = CollectionPolicy::mergeNullable(
+            $this->distinct,
+            $distinct
+        );
     }
 }

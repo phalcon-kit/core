@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Fields;
 
 use Phalcon\Support\Collection;
+use PhalconKit\Support\CollectionPolicy;
 
 trait FilterFields
 {
@@ -69,5 +70,19 @@ trait FilterFields
     public function hasFilterFields(): bool
     {
         return $this->filterFields !== null;
+    }
+
+    /**
+     * Merges the provided filterFields collection with the current filterFields property.
+     *
+     * @param Collection $filterFields The collection of filterFields to merge with the current property.
+     * @return void
+     */
+    public function mergeFilterFields(Collection $filterFields): void
+    {
+        $this->filterFields = CollectionPolicy::mergeNullable(
+            $this->filterFields,
+            $filterFields
+        );
     }
 }

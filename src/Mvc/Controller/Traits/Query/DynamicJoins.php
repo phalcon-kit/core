@@ -17,6 +17,7 @@ use Phalcon\Filter\Exception;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractJoins;
+use PhalconKit\Support\CollectionPolicy;
 
 trait DynamicJoins
 {
@@ -73,10 +74,19 @@ trait DynamicJoins
         return $this->dynamicJoins;
     }
 
-//    public function initializeDynamicJoins(): void
-//    {
-//        $this->getJoins()->set('dynamic', $this->getDynamicJoinsFromFilters());
-//    }
+    /**
+     * Merges the provided dynamicJoins collection with the current dynamicJoins property.
+     *
+     * @param Collection $dynamicJoins The collection of dynamicJoins to merge with the current property.
+     * @return void
+     */
+    public function mergeDynamicJoins(Collection $dynamicJoins): void
+    {
+        $this->dynamicJoins = CollectionPolicy::mergeNullable(
+            $this->dynamicJoins,
+            $dynamicJoins
+        );
+    }
 
     /**
      * @throws Exception
@@ -168,7 +178,7 @@ trait DynamicJoins
 
                         // generate the join filter conditions
                         $joinFilters = $this->getParam('joins');
-                        $conditions = !empty($joinFilters[$fieldAlias]) ? $this->defaultFilterCondition($joinFilters[$fieldAlias]) : [];
+                        $conditions = !empty($joinFilters[$fieldAlias]) ? $this->defaultFilterCondition($joinFilters[$fieldAlias], null, $fieldAlias) : [];
 
                         // @todo we could potentially extract some "filters" conditions that are used and scoped for this relationship with no external fields
                         // @todo so we could append them to the dynamic join conditions and gain performance
