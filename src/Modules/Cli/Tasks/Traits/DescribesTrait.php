@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Cli\Tasks\Traits;
 
-use Phalcon\Db\Adapter\AdapterInterface;
 use Phalcon\Db\Column;
 use Phalcon\Db\ColumnInterface;
 use PhalconKit\Support\Helper;
@@ -32,7 +31,7 @@ trait DescribesTrait
     protected array $cachedColumns = [];
     protected array $cachedIndexes = [];
     protected array $cachedReferences = [];
-    
+
     /**
      * Retrieves the columns of a given table.
      * @param string $table The name of the table to describe the columns.
@@ -42,7 +41,7 @@ trait DescribesTrait
     {
         return $this->cachedColumns[$table] ??= $this->db->describeColumns($table);
     }
-    
+
     /**
      * Retrieves the references of a given table.
      * @param string $table The name of the table to describe the references.
@@ -52,7 +51,7 @@ trait DescribesTrait
     {
         return $this->cachedReferences[$table] ??= $this->db->describeReferences($table);
     }
-    
+
     /**
      * Retrieves the indexes of a given table.
      * @param string $table The name of the table to describe the indexes.
@@ -62,7 +61,7 @@ trait DescribesTrait
     {
         return $this->cachedIndexes[$table] ??= $this->db->describeIndexes($table);
     }
-    
+
     /**
      * Determines if a value is a Phalcon DB RawValue.
      * @param string|null $defaultValue The value to check.
@@ -81,12 +80,12 @@ trait DescribesTrait
             'USER()',
             'CONNECTION_ID()'
             => true,
-            
+
             default
             => false,
         };
     }
-    
+
     /**
      * Determines the PHP data type of column.
      *
@@ -104,7 +103,7 @@ trait DescribesTrait
         return match ($column->getType()) {
             Column::TYPE_BOOLEAN
             => 'bool',
-            
+
             Column::TYPE_TIMESTAMP,
             Column::TYPE_BIGINTEGER,
             Column::TYPE_MEDIUMINTEGER,
@@ -113,19 +112,19 @@ trait DescribesTrait
             Column::TYPE_INTEGER,
             Column::TYPE_BIT
             => 'int',
-            
+
             Column::TYPE_DECIMAL,
             Column::TYPE_FLOAT
             => 'float',
-            
+
             Column::TYPE_DOUBLE
             => 'double',
-            
+
             default
             => 'string',
         };
     }
-    
+
     /**
      * Retrieves the default value for a column.
      * @param ColumnInterface $column The column object to retrieve the default value from.
@@ -136,12 +135,12 @@ trait DescribesTrait
         if (!$column->hasDefault()) {
             return null;
         }
-        
+
         $columnDefault = $column->getDefault();
         if (!isset($columnDefault)) {
             return null;
         }
-        
+
         $type = $this->getColumnType($column);
         return match ($type) {
             'bool' => (bool)$columnDefault,
@@ -152,7 +151,7 @@ trait DescribesTrait
                 : '\'' . addslashes((string)$columnDefault) . '\'',
         };
     }
-    
+
     /**
      * Retrieves the property name based on the given name.
      * @param string $name The name from which to retrieve the property name.
@@ -168,7 +167,7 @@ trait DescribesTrait
             )
         );
     }
-    
+
     /**
      * Retrieves the table name based on the given name.
      * @param string $name The original name of the table.
@@ -183,5 +182,50 @@ trait DescribesTrait
                 )
             )
         );
+    }
+
+    /**
+     * Wraps a property name in square brackets if certain conditions are met.
+     * Note: fields that are already wrapped will not be wrapped again.
+     *
+     * @param string $name The name of the property to be wrapped.
+     * @param bool $always Indicates whether the property name should always be wrapped, regardless of other conditions.
+     *
+     * @return string The property name, optionally wrapped in square brackets.
+     */
+    public function wrapIdentifier(string $name, bool $always = false): string
+    {
+        if ($this->requiresWrapping($name, $always)) {
+            return "[{$name}]";
+        }
+
+        return $name;
+    }
+
+    /**
+     * Determines whether a property name should be wrapped based on specific conditions.
+     * Reasoning: Phalcon PHQL parser has a bug with function names starting with 'not'.
+     *
+     * @param string $name The property name to check for wrapping.
+     * @param bool $always Whether to always wrap the property name regardless of other conditions.
+     * @return bool True if the property name should be wrapped, otherwise false.
+     */
+    public function requiresWrapping(string $name, bool $always = false): bool
+    {
+        // already wrapped
+        if (str_starts_with('[', $name)) {
+            return false;
+        }
+
+        if ($always) {
+            return true;
+        }
+
+        $lowerName = strtolower($name);
+        if (str_starts_with($lowerName, 'not')) {
+            return true;
+        }
+
+        return false;
     }
 }

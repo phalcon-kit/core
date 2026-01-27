@@ -536,7 +536,7 @@ PHP;
             if ($indexType === 'UNIQUE' || $indexType === 'PRIMARY') {
                 $propertiesName = [];
                 foreach ($indexColumns as $indexColumn) {
-                    $propertiesName [] = $this->getPropertyName($indexColumn);
+                    $propertiesName [] = $this->wrapIdentifier($this->getPropertyName($indexColumn));
                 }
                 $propertyName = "'" . implode("', '", $propertiesName) . "'";
                 $validationItems [] = <<<PHP
