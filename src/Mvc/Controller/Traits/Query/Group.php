@@ -46,23 +46,32 @@ trait Group
         $group = $this->getParam('group', [
             Filter::FILTER_STRING,
             Filter::FILTER_TRIM
-        ], $this->defaultGroup() ?? null);
+        ], $this->defaultGroup() ?? '') ?? null;
         
-        if (!isset($group)) {
+        if (empty($group)) {
             $this->setGroup(null);
         }
         
         if (!is_array($group)) {
             $group = explode(',', $group);
         }
-        
+
         $collection = new Collection([], false);
+
         foreach ($group as $key => $item) {
+            // normalize once
+            $field = trim(is_int($key) ? $item : $key);
+
+            if ($field === '') {
+                continue;
+            }
+
             $collection->set(
-                is_int($key)? $item : trim($key),
-                trim($this->appendModelName($item))
+                $field,
+                $this->appendModelName($field)
             );
         }
+
         $this->setGroup($collection);
     }
 
