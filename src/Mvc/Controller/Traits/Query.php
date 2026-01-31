@@ -24,6 +24,7 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
 use PhalconKit\Mvc\Controller\Traits\Query\Bind;
 use PhalconKit\Mvc\Controller\Traits\Query\Cache;
 use PhalconKit\Mvc\Controller\Traits\Query\Column;
+use PhalconKit\Mvc\Controller\Traits\Query\Compiler;
 use PhalconKit\Mvc\Controller\Traits\Query\Conditions;
 use PhalconKit\Mvc\Controller\Traits\Query\Distinct;
 use PhalconKit\Mvc\Controller\Traits\Query\DynamicJoins;
@@ -54,6 +55,7 @@ trait Query
     use Bind;
     use Cache;
     use Column;
+    use Compiler;
     use Conditions;
     use Distinct;
     use DynamicJoins;
@@ -190,7 +192,7 @@ trait Query
     {
         return $this->find;
     }
-    
+
     /**
      * Builds the `find` array for a query.
      *
@@ -200,26 +202,17 @@ trait Query
      */
     public function prepareFind(?Collection $find = null, bool $ignoreKey = false): array
     {
-        $build = [];
         $find ??= $this->getFind();
-        $iterator = $find?->getIterator() ?? [];
-        foreach ($iterator as $key => $value) {
-            if ($value instanceof Collection) {
-                $subIgnoreKey = $ignoreKey || in_array($key, ['conditions', 'joins', 'group', 'order']);
-                $sub = $this->prepareFind($value, $subIgnoreKey);
-                if ($ignoreKey) {
-                    $build = array_merge($build, $sub);
-                } else {
-                    $build[$key] = $sub;
-                }
-            } else {
-                $build[$key] = $value;
-            }
-        }
-        
+//        return $this->compileFind($this->prepareCollectionToCompile($find));
+
+        $build = $this->prepareCollectionToCompile($find);
+
         foreach (['distinct', 'group', 'order'] as $keyToJoin) {
             if (isset($build[$keyToJoin]) && is_array($build[$keyToJoin])) {
-                $build[$keyToJoin] = implode(', ', Helper::flatten($build[$keyToJoin]));
+                $build[$keyToJoin] = trim(implode(', ', Helper::flatten($build[$keyToJoin])));
+                if ($build[$keyToJoin] === '') {
+                    unset($build[$keyToJoin]);
+                }
             }
         }
 
@@ -246,75 +239,13 @@ trait Query
 //            $find['conditions'] = '(1)';
 //        }
 
-        return $this->mergeConditions(
-            array_filter($ignoreKey ? array_values($build) : $build)
-        );
+        return $this->compileFind($build);
     }
 
     public function conditionsShouldBeHaving(?string $conditions)
     {
         return false;
 //        return preg_match('/GROUP_CONCAT\(.+?\)|COUNT\(.+?\)|SUM\(.+?\)|AVG\(.+?\)|MIN\(.+?\)|MAX\(.+?\)/i', $conditions);
-    }
-
-    /**
-     * Merges and reformats the multiple conditions array to work with Phalcon\Mvc\Model\Query\Builder
-     *
-     * @param array $ret The input array that may contain conditions and other related data.
-     * @return array The modified array with merged and reformatted conditions.
-     */
-    public function mergeConditions(array $ret): array
-    {
-        $mergedConditions = [];
-
-        // already merged, stop
-        if (
-            isset($ret[0]) &&
-            is_string($ret[0]) &&
-            !isset($ret['conditions'])
-        ) {
-            return $ret;
-        }
-
-        // nothing to merge, stop
-        if (empty($ret['conditions'])) {
-            return $ret;
-        }
-
-        // promote once and stop
-        if (is_string($ret['conditions'])) {
-            $ret[0] = $ret['conditions'];
-            unset($ret['conditions']);
-            return $ret;
-        }
-
-        // not an array, stop
-        if (!is_array($ret['conditions'])) {
-            return $ret;
-        }
-
-        foreach ($ret['conditions'] as $key => &$condition) {
-            foreach ($condition as $k => $v) {
-                if (in_array($k, [1, 2, 'joins', 'group', 'order', 'bind', 'bindTypes'], true) && is_array($v)) {
-                    $k = $k === 1 ? 'bind' : ($k === 2 ? 'bindTypes' : $k);
-                    $ret[$k] = array_merge($ret[$k] ?? [], $v);
-                    unset($condition[$k]);
-                }
-            }
-            $mergedConditions [] = $condition[0] ?? $condition['conditions'] ?? $condition;
-        }
-
-        // empty result
-        if (empty($mergedConditions)) {
-            return $ret;
-        }
-
-        // merge conditions and promote
-        $mergedConditions = '(' . implode(') AND (', $mergedConditions) . ')';
-        $ret[0] = $mergedConditions;
-        unset($ret['conditions']);
-
-        return $ret;
     }
     
     /**
@@ -489,7 +420,7 @@ trait Query
         if (isset($find['group']) && is_array($find['group'])) {
             $find['group'] = implode(', ', $find['group']);
         }
-        
+
         return array_filter($find);
     }
     
