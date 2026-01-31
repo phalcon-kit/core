@@ -20,134 +20,146 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
 
 /**
- * This trait provides methods for managing permission conditions for the query.
+ * Permission-based query condition provider.
+ *
+ * This trait is responsible for producing **row-level access constraints**
+ * based on the current authenticated identity.
+ *
+ * Design contract:
+ *  - Returning `null` means: *no restriction applied*
+ *  - Returning an array means: *AND-applicable condition payload*
+ *
+ * Condition payload shape:
+ *  [
+ *      0 => string  $conditionSql,
+ *      1 => array   $bindValues,
+ *      2 => array   $bindTypes,
+ *  ]
  */
 trait PermissionConditions
 {
     use AbstractInjectable;
     use AbstractModel;
     use AbstractQuery;
-    
+
     /**
-     * Holds the permission conditions collection.
+     * Registered permission condition sets.
      *
-     * This variable stores the permission conditions in an associative array format. Each key represents a permission,
-     * and the corresponding value represents the conditions associated with that permission. The conditions can be
-     * nested within sub-arrays to handle complex permission structures.
-     *
-     * @var Collection|null
+     * Keys are symbolic names (e.g. "default", "custom"),
+     * values are condition payloads or callables producing them.
      */
     protected ?Collection $permissionConditions = null;
-    
+
     /**
-     * Initializes the permission conditions for the object.
+     * Initialize permission conditions.
      *
-     * Sets the permission conditions using a new instance of Collection class.
-     * The default permission condition is set using the defaultPermissionCondition method.
-     *
-     * @return void
+     * Called during controller / query bootstrap.
      */
     public function initializePermissionConditions(): void
     {
-        $this->setPermissionConditions(new Collection([
-            'default' => $this->defaultPermissionCondition(),
-        ], false));
+        $this->permissionConditions = new Collection([
+            'default' => $this->buildDefaultPermissionCondition(),
+        ],false);
     }
-    
+
     /**
-     * Sets the permission conditions for the current user's identity and role.
+     * Replace the permission condition collection.
      *
-     * @param Collection|null $permissionConditions The permission conditions to be set. Pass null if no conditions are required.
-     *                                               A Collection object that contains the permission conditions.
-     *                                               Each permission condition is expected to be an array with the following elements:
-     *                                               - The condition string formed by joining the columns with 'or' operators.
-     *                                               - An array of bind values for the condition.
-     *                                               - An array of bind types for the condition.
-     *                                               Example: [
-     *                                                   'column1 = :value1:',
-     *                                                   ['value1' => 'some value'],
-     *                                                   ['value1' => Column::BIND_PARAM_STR],
-     *                                               ]
-     * @return void
+     * @param Collection|null $permissionConditions
      */
     public function setPermissionConditions(?Collection $permissionConditions): void
     {
         $this->permissionConditions = $permissionConditions;
     }
-    
+
     /**
-     * Retrieves the collection of permission conditions.
-     *
-     * @return Collection|null Returns the collection of permission conditions, or null if it is not set.
+     * Retrieve the permission condition collection.
      */
     public function getPermissionConditions(): ?Collection
     {
         return $this->permissionConditions;
     }
-    
+
     /**
-     * Builds the permission condition based on the current user's identity and role.
+     * Build the default permission condition.
      *
-     * @return array|string|null Returns an array with the following elements:
-     *                         - If permission columns are empty, returns null.
-     *                         - If no permission is found, returns ['false'].
-     *                         - If the current user role is a super admin, returns ['true'].
-     *                         - If permission conditions are found, returns an array with the following elements:
-     *                           - The condition string formed by joining the columns with 'or' operators.
-     *                           - An array of bind values for the condition.
-     *                           - An array of bind types for the condition.
+     * Rules:
+     *  - No identity → no restriction
+     *  - Super roles → no restriction
+     *  - No owner columns → no restriction
+     *  - Otherwise → owner-based OR condition
      */
-    public function defaultPermissionCondition(): array|string|null
+    public function buildDefaultPermissionCondition(): ?array
     {
+        if (!$this->identity) {
+            return null;
+        }
+
+        if ($this->identity->hasRole($this->getSuperRoles())) {
+            return null;
+        }
+
         $columns = $this->getCreatedByColumns();
-        $superRoleList = $this->getSuperRoles();
-        
-        if (empty($columns)) {
+        if ($columns === []) {
             return null;
         }
-        
-        // check if current user role is a super admin
-        if ($this->identity->hasRole($superRoleList)) {
-            return null;
-        }
-        
-        $query = [];
+
+        return $this->buildOwnerCondition(
+            (int)$this->identity->getUserId(),
+            $columns
+        );
+    }
+
+    /**
+     * Build an owner-based permission condition.
+     *
+     * @param int $userId
+     * @param array $columns
+     *
+     * @return array|null
+     */
+    public function buildOwnerCondition(int $userId, array $columns): ?array
+    {
+        $expressions = [];
         $bind = [];
         $bindTypes = [];
-        $userId = (int)$this->identity->getUserId();
-        
+
         foreach ($columns as $column) {
+            if (!is_string($column) || $column === '') {
+                continue;
+            }
+
             $field = $this->appendModelName($column);
-            $value = $this->generateBindKey('permission');
-            
-            $bind[$value] = $userId;
-            $bindTypes[$value] = Column::BIND_PARAM_INT;
-            
-            $query [] = "{$field} = :{$value}:";
+            $bindKey = $this->generateBindKey('permission');
+
+            $expressions[] = "{$field} = :{$bindKey}:";
+            $bind[$bindKey] = $userId;
+            $bindTypes[$bindKey] = Column::BIND_PARAM_INT;
         }
-        
+
+        if ($expressions === []) {
+            return null;
+        }
+
         return [
-            implode(' or ', $query),
+            '(' . implode(' OR ', $expressions) . ')',
             $bind,
             $bindTypes,
         ];
     }
-    
+
     /**
-     * Retrieves the owner id columns of the current model.
+     * Columns used to assert record ownership.
      *
-     * @return array Returns an array of strings representing the column names containing the "created by" information.
+     * Override per-model when ownership differs.
      */
     public function getCreatedByColumns(): array
     {
         return ['createdBy'];
     }
-    
+
     /**
-     * Retrieves the list of super admins roles.
-     * These roles are authorized through the Permission Conditions
-     *
-     * @return array The list of super roles, which by default includes 'dev' and 'admin'.
+     * Roles exempt from permission constraints.
      */
     public function getSuperRoles(): array
     {

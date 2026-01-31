@@ -129,7 +129,7 @@ trait IdentityConditions
     public function buildIdentityConditionFromData(
         array $data,
         ?array $columns = null
-    ): array|string|null
+    ): ?array
     {
         $columns ??= $this->getIdentityColumns();
 

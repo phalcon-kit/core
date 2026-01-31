@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Conditions;
 
 use Phalcon\Db\Column;
-use Phalcon\Filter\Exception;
 use Phalcon\Filter\Filter;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
@@ -24,7 +23,38 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields\AbstractSearchFields
 use PhalconKit\Support\Helper\Arr\FlattenKeys;
 
 /**
- * This trait provides methods for managing search conditions.
+ * Search-based query condition provider.
+ *
+ * PURPOSE
+ * -------
+ * This trait is responsible for producing SQL search conditions
+ * based on a free-text `search` parameter and a declarative list
+ * of searchable fields.
+ *
+ * It does NOT:
+ *  - Rank results
+ *  - Perform relevance scoring
+ *  - Apply database-specific full-text features
+ *
+ * It ONLY:
+ *  - Expands search terms into LIKE expressions
+ *  - Applies strict AND / OR grouping semantics
+ *  - Produces a compiler-safe condition payload
+ *
+ * CONDITION CONTRACT
+ * ------------------
+ * All conditions produced by this trait MUST follow this shape:
+ *
+ *  [
+ *      0 => string  SQL condition fragment (parenthesized),
+ *      1 => array   bind values,
+ *      2 => array   bind types,
+ *  ]
+ *
+ * Returning `null` ALWAYS means:
+ *  → "No search restriction should be applied"
+ *
+ * This invariant is relied upon by the query compiler.
  */
 trait SearchConditions
 {
@@ -32,104 +62,211 @@ trait SearchConditions
     use AbstractModel;
     use AbstractQuery;
     use AbstractSearchFields;
-    
-    protected ?Collection $searchConditions = null;
-    
+
     /**
-     * Initializes the search conditions.
+     * Registered search condition sets.
      *
-     * @return void
-     * @throws Exception
+     * This collection allows multiple named search strategies
+     * to coexist (e.g. default, advanced, scoped, etc.).
+     *
+     * Keys:
+     *  - symbolic identifiers
+     * Values:
+     *  - condition payloads OR lazy builders
+     */
+    protected ?Collection $searchConditions = null;
+
+    /**
+     * Initialize search conditions.
+     *
+     * Called during controller / query bootstrap.
+     *
+     * The default search condition is eagerly built to ensure:
+     *  - deterministic behavior
+     *  - no hidden runtime branching
      */
     public function initializeSearchConditions(): void
     {
-        $this->setSearchConditions(new Collection([
-            'default' => $this->defaultSearchCondition(),
-        ], false));
+        $this->searchConditions = new Collection(
+            [
+                'default' => $this->buildDefaultSearchCondition(),
+            ],
+            false
+        );
     }
-    
+
     /**
-     * Set the search conditions for this object.
+     * Replace the entire search condition collection.
      *
-     * @param Collection|null $searchConditions The search conditions to be set.
-     *
-     * @return void
+     * Used by consumers that want full control over
+     * how search conditions are produced.
      */
     public function setSearchConditions(?Collection $searchConditions): void
     {
         $this->searchConditions = $searchConditions;
     }
-    
+
     /**
-     * Returns the search conditions.
-     *
-     * @return Collection|null The search conditions, represented as a collection.
+     * Retrieve the registered search conditions.
      */
     public function getSearchConditions(): ?Collection
     {
         return $this->searchConditions;
     }
-    
+
     /**
-     * Generates the default search condition for the method.
+     * Build the default search condition.
      *
-     * @return array|string|null The default search condition, represented as an array containing the query, bind parameters, and bind types.
-     * @throws \Phalcon\Filter\Exception If an error occurs while filtering the search parameter.
+     * SEMANTICS
+     * ---------
+     * Given:
+     *   search = "foo bar"
+     *   fields = [title, description]
+     *
+     * Resulting logic:
+     *
+     *   (
+     *     (title LIKE '%foo%' OR description LIKE '%foo%')
+     *     AND
+     *     (title LIKE '%bar%' OR description LIKE '%bar%')
+     *   )
+     *
+     * This ensures:
+     *  - Every term MUST match at least one field
+     *  - Multiple terms narrow results (AND)
+     *
+     * @return array|null
      */
-    public function defaultSearchCondition(): array|string|null
+    public function buildDefaultSearchCondition(): ?array
     {
+        // Normalize and extract search tokens from request
+        $searchTerms = $this->extractSearchTerms();
+        if ($searchTerms === []) {
+            // No search input → no restriction
+            return null;
+        }
+
+        // Retrieve declared searchable fields
         $searchFields = $this->getSearchFields()?->toArray() ?? [];
-        $searchList = array_values(array_filter(array_unique(
-            explode(' ', $this->getParam('search', [
-                Filter::FILTER_STRING,
-                Filter::FILTER_TRIM]) ?? '')
-        )));
-        
-        $query = [];
+        if ($searchFields === []) {
+            // Search requested but no searchable fields exist
+            return null;
+        }
+
         $bind = [];
         $bindTypes = [];
-        
-        foreach ($searchList as $searchTerm) {
-            $subQuery = $this->generateSearchSubQuery($searchTerm, $searchFields, $bind, $bindTypes);
-            if (!empty($subQuery)) {
-                $query [] = '(' . implode(') or (', $subQuery) . ')';
+        $groups = [];
+
+        // Each search term becomes an OR-group across fields
+        foreach ($searchTerms as $term) {
+            $group = $this->buildSearchTermGroup(
+                $term,
+                $searchFields,
+                $bind,
+                $bindTypes
+            );
+
+            // Only include non-empty groups
+            if ($group !== []) {
+                $groups[] = '(' . implode(' OR ', $group) . ')';
             }
         }
-        
-        return empty($query) ? null : [
-            '(' . implode(') and (', $query) . ')',
+
+        // If nothing survived normalization, abort cleanly
+        if ($groups === []) {
+            return null;
+        }
+
+        // AND-coalesce all term groups
+        return [
+            '(' . implode(' AND ', $groups) . ')',
             $bind,
             $bindTypes,
         ];
     }
-    
+
     /**
-     * Generates a sub-query for searching within the specified fields.
+     * Build an OR-group for a single search term.
      *
-     * @param string $searchTerm The term to search for.
-     * @param array $searchFields The fields to search within. Can be nested arrays representing relationships.
-     * @param array &$bind The reference array to hold values for the search bind parameters.
-     * @param array &$bindTypes The reference array to hold the bind types for the search parameters.
-     * @return array The generated sub-query as an array of conditional statements.
+     * Each enabled searchable field produces:
+     *   field LIKE '%term%'
+     *
+     * Flattening is required because search fields may be
+     * declared in nested / relational form.
+     *
+     * @param string $term
+     * @param array  $searchFields
+     * @param array  $bind       Accumulator for bind values
+     * @param array  $bindTypes  Accumulator for bind types
+     *
+     * @return string[] List of SQL expressions
      */
-    public function generateSearchSubQuery(string $searchTerm, array $searchFields, array &$bind, array &$bindTypes): array
-    {
-        $subQuery = [];
-        
-        $flattenSearchFields = FlattenKeys::process($searchFields) ?? [];
-        foreach ($flattenSearchFields as $searchField => $enabled) {
-            if (!$enabled) {
+    public function buildSearchTermGroup(
+        string $term,
+        array $searchFields,
+        array &$bind,
+        array &$bindTypes
+    ): array {
+        $expressions = [];
+
+        // Flatten nested field definitions into dot-notation keys
+        $flattened = FlattenKeys::process($searchFields) ?? [];
+        foreach ($flattened as $fieldName => $enabled) {
+            // Skip disabled or malformed entries
+            if (!$enabled || !is_string($fieldName) || $fieldName === '') {
                 continue;
             }
-            
-            $field = $this->appendModelName($searchField);
-            $value = $this->generateBindKey('search');
-            
-            $subQuery [] = "{$field} like :{$value}:";
-            $bind[$value] = '%' . $searchTerm . '%';
-            $bindTypes[$value] = Column::BIND_PARAM_STR;
+
+            // Fully-qualified model field
+            $field = $this->appendModelName($fieldName);
+
+            // Generate unique, collision-safe bind key
+            $bindKey = $this->generateBindKey('search');
+
+            $expressions[] = "{$field} LIKE :{$bindKey}:";
+            $bind[$bindKey] = '%' . $term . '%';
+            $bindTypes[$bindKey] = Column::BIND_PARAM_STR;
         }
-        
-        return $subQuery;
+
+        return $expressions;
+    }
+
+    /**
+     * Extract normalized search terms from request parameters.
+     *
+     * NORMALIZATION RULES
+     * -------------------
+     *  - Input is treated as free text
+     *  - Whitespace is collapsed
+     *  - Empty tokens are discarded
+     *  - Duplicate terms are removed
+     *  - Original order is preserved
+     *
+     * This method is intentionally isolated so that
+     * search tokenization can evolve independently
+     * of SQL generation.
+     */
+    public function extractSearchTerms(): array
+    {
+        $raw = $this->getParam(
+            'search',
+            [
+                Filter::FILTER_STRING,
+                Filter::FILTER_TRIM,
+            ]
+        );
+
+        if (!is_string($raw) || $raw === '') {
+            return [];
+        }
+
+        // Split on any whitespace sequence
+        $parts = preg_split('/\s+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
+        if ($parts === false) {
+            return [];
+        }
+
+        // Deduplicate while preserving order
+        return array_values(array_unique($parts));
     }
 }
