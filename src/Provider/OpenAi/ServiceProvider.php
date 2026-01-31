@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\OpenAi;
 
-use Orhanerday\OpenAi\OpenAi;
+use OpenAI;
 use Phalcon\Di\DiInterface;
 use PhalconKit\Bootstrap\Config;
 use PhalconKit\Provider\AbstractServiceProvider;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class ServiceProvider extends AbstractServiceProvider
 {
@@ -30,14 +32,18 @@ class ServiceProvider extends AbstractServiceProvider
             $config = $di->get('config');
             assert($config instanceof Config);
             $openAiConfig = $config->pathToArray('openai') ?? [];
-            
-            $openAi = new OpenAi($openAiConfig['secretKey'] ?? null);
-            
-            if (!empty($openAiConfig['organizationId'])) {
-                $openAi->setORG($openAiConfig['organizationId']);
-            }
-            
-            return $openAi;
+
+            $openAiFactory = OpenAI::factory()
+                ->withApiKey($openAiConfig['apiKey'] ?? null)
+                ->withOrganization($openAiConfig['organization'] ?? null) // default: null
+                ->withProject($openAiConfig['project'] ?? null) // default: null
+                ->withBaseUri($openAiConfig['baseUri'] ?? 'api.openai.com/v1') // default: api.openai.com/v1
+                ->withHttpClient($httpClient = new \GuzzleHttp\Client([])) // default: HTTP client found using PSR-18 HTTP Client Discovery
+                ->withStreamHandler(fn (RequestInterface $request): ResponseInterface => $httpClient->send($request, [
+                    'stream' => true // Allows to provide a custom stream handler for the http client.
+                ]));
+
+            return $openAiFactory->make();
         });
     }
 }
