@@ -14,87 +14,171 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Conditions;
 
 use Phalcon\Db\Column;
-use Phalcon\Filter\Filter;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
 
+/**
+ * IdentityConditions
+ *
+ * Responsibility:
+ *  - Generate *identity-scoped* WHERE conditions based on runtime parameters
+ *  - Constrain queries to a model’s identity columns (usually primary keys)
+ *
+ * Design constraints:
+ *  - Stateless builder: no side effects beyond stored Collection
+ *  - Null-safe: absence of identity data yields no condition
+ *  - PDO-safe: all values bound with generated placeholders
+ *
+ * Output contract:
+ *  - null → no identity constraint
+ *  - [string, bind[], types[]] → Phalcon-compatible condition payload
+ *
+ * This trait intentionally does NOT:
+ *  - Perform authorization decisions
+ *  - Infer identity values implicitly
+ *  - Throw when identity data is missing
+ *
+ * Consumers decide how absence of identity affects query semantics.
+ */
 trait IdentityConditions
 {
     use AbstractModel;
     use AbstractParams;
     use AbstractQuery;
-    
+
+    /**
+     * Collection of named identity conditions.
+     *
+     * Shape:
+     *  [
+     *      'default' => array|string|null
+     *  ]
+     */
     protected ?Collection $identityConditions = null;
-    
+
+    /**
+     * Initializes identity conditions.
+     *
+     * Called during controller/query bootstrap.
+     * Always registers a `default` condition, which may resolve to null.
+     */
     public function initializeIdentityConditions(): void
     {
         $this->setIdentityConditions(new Collection([
             'default' => $this->defaultIdentityCondition(),
         ], false));
     }
-    
+
+    /**
+     * Explicit setter.
+     *
+     * Allows higher-level components to override identity semantics.
+     */
     public function setIdentityConditions(?Collection $identityConditions): void
     {
         $this->identityConditions = $identityConditions;
     }
-    
+
+    /**
+     * Returns the registered identity conditions collection.
+     */
     public function getIdentityConditions(): ?Collection
     {
         return $this->identityConditions;
     }
-    
+
     /**
-     * Builds the identity condition based on the current user's identity and role.
+     * Resolves the default identity condition.
      *
-     * @return array|string|null Returns an array with the following elements:
-     *                         - If identity columns are empty, returns null.
-     *                         - If no identity is found, returns ['false'].
-     *                         - If the current user role is a super admin, returns ['true'].
-     *                         - If identity conditions are found, returns an array with the following elements:
-     *                           - The condition string formed by joining the columns with 'or' operators.
-     *                           - An array of bind values for the condition.
-     *                           - An array of bind types for the condition.
+     * Uses request/query parameters as the identity source.
      */
     public function defaultIdentityCondition(): array|string|null
     {
-        $columns = $this->getIdentityColumns();
-        
-        if (empty($columns)) {
+        return $this->buildIdentityConditionFromData(
+            $this->getParams()
+        );
+    }
+
+    /**
+     * Builds an identity condition from arbitrary data.
+     *
+     * Algorithm:
+     *  1. Resolve identity columns (defaults to primary key attributes)
+     *  2. For each column:
+     *     - Skip if missing or null in input data
+     *     - Generate a unique bind placeholder
+     *     - Append strict equality predicate
+     *  3. AND-coalesce predicates
+     *
+     * Failure modes:
+     *  - No identity columns → null
+     *  - No matching data provided → null
+     *
+     * @param array $data Input data (typically request params)
+     * @param array|null $columns Explicit identity columns override
+     *
+     * @return array|string|null
+     *  [
+     *      string $condition,
+     *      array $bind,
+     *      array $bindTypes
+     *  ]
+     */
+    public function buildIdentityConditionFromData(
+        array $data,
+        ?array $columns = null
+    ): array|string|null
+    {
+        $columns ??= $this->getIdentityColumns();
+
+        if ($columns === []) {
             return null;
         }
-        
-        $query = [];
+
+        $conditions = [];
         $bind = [];
         $bindTypes = [];
-        
+
         foreach ($columns as $column) {
-            $rawValue = $this->getParam($column, [Filter::FILTER_STRING, Filter::FILTER_TRIM]);
-            if (!isset($rawValue)) {
+            if (!array_key_exists($column, $data)) {
                 continue;
             }
-            
+
+            $value = $data[$column];
+
+            if ($value === null) {
+                continue;
+            }
+
             $field = $this->appendModelName($column);
-            $value = $this->generateBindKey('identity');
-            
-            $bind[$value] = $rawValue;
-            $bindTypes[$value] = Column::BIND_PARAM_STR;
-            
-            $query [] = "{$field} = :{$value}:";
+            $bindKey = $this->generateBindKey('identity');
+
+            $conditions[] = "{$field} = :{$bindKey}:";
+            $bind[$bindKey] = $value;
+            $bindTypes[$bindKey] = Column::BIND_PARAM_STR;
         }
-        
-        return empty($query) ? null : [
-            implode(' and ', $query),
+
+        if ($conditions === []) {
+            return null;
+        }
+
+        return [
+            '(' . implode(') and (', $conditions) . ')',
             $bind,
             $bindTypes,
         ];
     }
-    
+
     /**
-     * Retrieves the identity columns of the current model.
+     * Returns the identity columns for the current model.
      *
-     * @return array The identity columns.
+     * Default strategy:
+     *  - Use primary key attributes
+     *
+     * Override point:
+     *  - Models with composite or non-PK identity semantics
      */
     public function getIdentityColumns(): array
     {
