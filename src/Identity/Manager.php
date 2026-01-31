@@ -252,7 +252,14 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
         
         $ret = [];
         foreach ($model->$property as $entity) {
-            assert(method_exists($entity, $keyMethod));
+            if (!is_object($entity) || !method_exists($entity, $keyMethod)) {
+                throw new \LogicException(sprintf(
+                    'Entity %s must implement method %s()',
+                    is_object($entity) ? get_class($entity) : gettype($entity),
+                    $keyMethod
+                ));
+            }
+
             $ret [$entity->$keyMethod()] = $entity;
         }
         
