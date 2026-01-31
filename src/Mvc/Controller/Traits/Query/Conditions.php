@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use Phalcon\Filter\Exception;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractConditions;
 use PhalconKit\Mvc\Controller\Traits\Query\Conditions\FilterConditions;
@@ -44,7 +43,7 @@ trait Conditions
      * - Search Conditions
      *
      * @return void
-     * @throws Exception
+     * @throws \Exception
      */
     public function initializeConditions(): void
     {
