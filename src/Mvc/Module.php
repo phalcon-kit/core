@@ -118,7 +118,8 @@ abstract class Module implements ModuleDefinitionInterface
         $namespaces = [];
         $namespaces[$namespace . '\\Controllers'] = $dirname . '/Controllers/';
         $namespaces[$namespace . '\\Models'] = $dirname . '/Models/';
-        
+        $namespaces[$namespace . '\\Transformers'] = $dirname . '/Transformers/';
+
         // add phalcon kit core models
         $corePath = dirname(__DIR__);
         $namespaces['PhalconKit\\Models'] = $corePath . '/Models/';
