@@ -23,6 +23,7 @@ use PhalconKit\Identity\Traits\Oauth2;
 use PhalconKit\Identity\Traits\Role;
 use PhalconKit\Identity\Traits\Session;
 use PhalconKit\Identity\Traits\User;
+use PhalconKit\Mvc\Model\Behavior\Security;
 use PhalconKit\Mvc\ModelInterface;
 use PhalconKit\Support\Options\Options;
 use PhalconKit\Support\Options\OptionsInterface;
@@ -121,6 +122,9 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
             else {
                 // save userId into session
                 $this->setSessionIdentity(['userId' => $user->getId()]);
+
+                // Update roles globally in the model security behavior
+                Security::setRoles($this->identity->getAclRoles());
             }
         }
         
