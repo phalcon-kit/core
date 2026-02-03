@@ -26,6 +26,7 @@ use PhalconKit\Support\Helper\Arr\FlattenKeys;
 trait FilterConditions
 {
     use FilterSemantics;
+    use ExistentialConditions;
     use AbstractInjectable;
     use AbstractModel;
     use AbstractParams;
@@ -95,6 +96,7 @@ trait FilterConditions
      * @param array|null $allowedFilters An optional array of allowed filter fields
      *                                    for validation. If not provided, defaults to
      *                                    the fields obtained from the model's configuration.
+     * @param ?string $aliasContext Optional alias context for join-based filters
      * @param bool $or A flag indicating whether the filters should be combined using OR
      *                 (true) or AND (false) logic. Defaults to false.
      * @return array|string|null The constructed SQL filter condition. Returns:
@@ -107,8 +109,9 @@ trait FilterConditions
     public function defaultFilterCondition(
         ?array $filters = null,
         ?array $allowedFilters = null,
+        ?string $aliasContext = null,
         bool   $or = false,
-        int    $level = 0
+        int    $level = 0,
     ): array|string|null
     {
         // Retrieve filters from request if not provided explicitly
@@ -131,7 +134,7 @@ trait FilterConditions
          * Compile entire filter tree in one pass.
          * All boolean semantics are handled recursively inside compileGroup().
          */
-        $compiled = $this->compileGroup($filters, $or, $level, $allowedFilters);
+        $compiled = $this->compileGroup($filters, $or, $level, $allowedFilters, $aliasContext);
 
         if ($compiled === null || $compiled['sql'] === '') {
             return null;
@@ -159,66 +162,141 @@ trait FilterConditions
     /**
      * Compile a group of filters into legacy-compatible SQL.
      *
-     * Core invariants restored:
-     *  - Prefix boolean logic ("and <expr>")
-     *  - First-element logic is computed and preserved
-     *  - Group nesting toggles default logic
-     *  - Explicit "logic" may appear on fields OR groups
-     *  - Regex-based normalization at group exit
+     * This is the compiler’s boolean / structural spine.
+     *
+     * Responsibilities (and ONLY these):
+     *  - Walk the filter AST (arrays + field nodes)
+     *  - Resolve legacy prefix tokens ("and|or|xor")
+     *  - Enforce boolean boundaries (OR/XOR, group nesting)
+     *  - Route each node to either:
+     *      - SELF / INLINE compilation (self, row-local)
+     *      - EXISTENTIAL compilation (EXISTS / NOT EXISTS)
+     *  - Perform AND-sibling existential coalescing (bucket accumulation)
+     *  - Emit legacy-shaped SQL with exactly-one normalization at group exit
+     *
+     * Non-responsibilities:
+     *  - Operator normalization (handled by normalizeFilterOperator)
+     *  - Join creation policy (handled by caller / DynamicJoins gate)
+     *  - Existential join building (handled by buildExistsConditionFromField)
+     *
+     * Semantic invariants enforced here:
+     *  - OR/XOR always terminates existential accumulation (flush boundary)
+     *  - Group entry/exit always terminates existential accumulation
+     *  - Existential inner predicates are compiled with POSITIVE operators only
+     *  - NOT EXISTS is the ONLY allowed negation mechanism for existential text predicates
      *
      * @param array $filters Group payload
      * @param bool $or Current alternation mode (flipped per nesting)
      * @param int $level Recursion depth (0 = root)
      * @param array $allowedFilters Allowed filter fields
+     * @param ?string $aliasContext Optional alias context
      *
      * @return array|null ['sql'=>string,'bind'=>array,'bindTypes'=>array]
      *
-     * @throws \Exception
+     * @throws \Exception|\LogicException
      */
-    protected function compileGroup(array $filters, bool $or, int $level, array $allowedFilters): ?array
+    protected function compileGroup(array $filters, bool $or, int $level, array $allowedFilters, ?string $aliasContext = null): ?array
     {
-        $fragments = [];   // each fragment is a string, usually starting with "and|or|xor"
+        $fragments = [];  // each fragment is either "and <expr>" / "or <expr>" / "xor <expr>" OR a nested group's normalized SQL
         $bind = [];
         $bindTypes = [];
 
-        foreach ($filters as $index => $filter) {
+        /**
+         * Pending existential buckets for AND-sibling coalescing.
+         *
+         * Keyed by getExistentialBucketKey(), which MUST represent the existential “universe”:
+         *   - relationship path (no leaf field)
+         *   - polarity (EXISTS vs NOT EXISTS)
+         *   - scope marker (kept for debugging / future constraints)
+         */
+        $pendingExists = [];
+
+        foreach ($filters as $index => $node) {
 
             /* ==========================================================
              * GROUP NODE (nested array)
              * ======================================================== */
-            if (is_array($filter) && isset($filter[0]) && is_array($filter[0])) {
+            if (is_array($node) && isset($node[0]) && is_array($node[0])) {
 
-                // Compile nested group with flipped alternation
-                $nested = $this->compileGroup($filter, !$or, $level + 1, $allowedFilters);
+                // Group boundary is always a flush boundary.
+                $this->flushExistentialBuckets($pendingExists, $fragments, $bind, $bindTypes);
+
+                // Compile nested group with flipped alternation (legacy rule).
+                $nested = $this->compileGroup($node, !$or, $level + 1, $allowedFilters, $aliasContext);
 
                 if ($nested !== null && $nested['sql'] !== '') {
-                    $fragments[] = $nested['sql'];
+
+                    /*
+                     * LEGACY-COMPAT GROUP CONNECTOR (CARRIER LOGIC)
+                     *
+                     * Business rule to preserve:
+                     *  - If the first concrete field inside the group declares `logic`,
+                     *    that logic applies to the group itself relative to the parent.
+                     *  - Otherwise, fall back to the parent's default token resolution.
+                     *
+                     * CRITICAL:
+                     *  - The nested group SQL at level>0 is *already prefixed*.
+                     *  - That prefix MUST NOT leak into the parent.
+                     *  - The parent must own the connector at this position.
+                     */
+                    $groupCarrier = $this->resolveGroupCarrierLogic($node); // 'and'|'or'|'xor'|null
+                    $parentLogic = $groupCarrier ?? $this->resolveFilterLogicToken($node[0], $index, $or);
+
+                    // Strip nested prefix token. Parent will re-apply its connector.
+                    $strippedSql = preg_replace(
+                        '/^(and|or|xor)\s+/i',
+                        '',
+                        trim($nested['sql'])
+                    );
+
+                    $fragments[] = $parentLogic . ' ' . $strippedSql;
+
+                    // Safe bind merge (defensive; should never collide if bind keys are unique).
+                    if (array_intersect_key($bind, $nested['bind']) !== []) {
+                        throw new \LogicException('Bind collision detected while merging nested group.');
+                    }
+                    if (array_intersect_key($bindTypes, $nested['bindTypes']) !== []) {
+                        throw new \LogicException('BindType collision detected while merging nested group.');
+                    }
+
                     $bind += $nested['bind'];
                     $bindTypes += $nested['bindTypes'];
                 }
+
                 continue;
             }
 
             /* ==========================================================
              * FIELD NODE (validation)
              * ======================================================== */
-            if (empty($filter['field'])) {
+            if (!is_array($node)) {
+                // Defensive: ignore non-array garbage
+                continue;
+            }
+
+            if (empty($node['field'])) {
                 throw new \Exception('A valid filter field property is required.', 400);
             }
-            if (empty($filter['operator'])) {
+
+            if (empty($node['operator'])) {
                 throw new \Exception('A valid filter operator property is required.', 400);
             }
 
             /* ==========================================================
-             * Resolve boolean prefix (LEGACY)
+             * Resolve boolean prefix token (legacy model)
              * ======================================================== */
-            $logic = $this->resolveFilterLogicToken($filter, $index, $or);
+            $logic = $this->resolveFilterLogicToken($node, $index, $or);
+
+            // OR/XOR is a hard boundary: AND-coalescing cannot cross it.
+            if ($logic === 'or' || $logic === 'xor') {
+                $this->flushExistentialBuckets($pendingExists, $fragments, $bind, $bindTypes);
+            }
 
             /* ==========================================================
-             * Field / operator resolution (unchanged modern logic)
+             * Field sanitization + policy validation
              * ======================================================== */
             $rawField = $this->filter->sanitize(
-                $filter['field'],
+                (string)$node['field'],
                 [Filter::FILTER_STRING, Filter::FILTER_TRIM]
             );
 
@@ -226,47 +304,50 @@ trait FilterConditions
                 throw new \Exception(sprintf('Unauthorized filter field "%s".', $rawField), 403);
             }
 
-            $operator = $this->normalizeFilterOperator((string)$filter['operator']);
+            /* ==========================================================
+             * Operator normalization (single boundary)
+             * ======================================================== */
+            $operator = $this->normalizeFilterOperator((string)$node['operator']);
             if ($operator === '') {
-                throw new \Exception(sprintf('Unsupported filter operator "%s".', $filter['operator']), 403);
+                throw new \Exception(sprintf('Unsupported filter operator "%s".', (string)$node['operator']), 403);
             }
 
             /* ==========================================================
-             * "IS *" contract enforcement (legacy-compatible)
-             *
-             * Important nuance:
-             *  - Legacy frontends sometimes send "" or null; these are tolerated.
-             *  - Any non-empty value is rejected (strict).
+             * "IS *" contract enforcement (legacy tolerant boundary)
              * ======================================================== */
             if (str_starts_with($operator, 'is')) {
-                if (array_key_exists('value', $filter) && $filter['value'] !== '' && $filter['value'] !== null) {
+                if (array_key_exists('value', $node) && $node['value'] !== '' && $node['value'] !== null) {
                     throw new \Exception(sprintf('Operator "%s" does not accept a value.', $operator), 403);
                 }
-                unset($filter['value']);
+                unset($node['value']);
             }
 
             /* ==========================================================
-             * Operator/value optimization (safe)
+             * Canonical operator/value normalization (type-preserving)
              *
-             * Safe semantic rewrites (e.g. contains + int → =)
-             * Must happen BEFORE:
-             *  - isNegative detection
-             *  - isNoValueOperator checks
-             *  - subquery / join strategy decisions
+             * IMPORTANT:
+             *  - This happens BEFORE scope routing because it can change
+             *    the operator class (textual -> scalar).
+             *  - This is NOT "self / inline-only": it is safe whenever the value
+             *    type makes intent unambiguous (int/int[] only).
              * ======================================================== */
-            if (array_key_exists('value', $filter)) {
-                [$operator, $filter['value']] =
-                    $this->optimizeOperatorAndValue($operator, $filter['value']);
+            if (array_key_exists('value', $node)) {
+                [$operator, $node['value']] = $this->optimizeOperatorAndValue($operator, $node['value']);
             }
 
             /* ==========================================================
-             * Field binder resolution
+             * Determine semantic scope FIRST (universe routing switch)
+             * ======================================================== */
+            $scope = $this->getFilterScope($node, $aliasContext);
+
+            /* ==========================================================
+             * Field binder resolution (model + alias)
              * ======================================================== */
             [$originalField, , $fieldName, $joinAlias] = $this->splitField($rawField);
             $fieldBinder = $this->appendModelName($fieldName, $joinAlias);
 
             /* ==========================================================
-             * Bind factory
+             * Bind factory (unique, deterministic enough for compiler usage)
              * ======================================================== */
             $filterId = $this->security->getRandom()->hex(8);
             $makeBind = static function (string $suffix) use ($filterId): string {
@@ -276,97 +357,190 @@ trait FilterConditions
             /* ==========================================================
              * NO-VALUE operators
              *
-             * Do NOT route these through compileSingleFilterCondition unless that
-             * method explicitly supports missing "value".
+             * IMPORTANT CORRECTION:
+             *  - If scope is existential (e.g. alias [b]), the predicate MUST be inside EXISTS.
+             *  - If scope is self/through, emit self / inline (legacy behavior).
              * ======================================================== */
             if ($this->isNoValueOperator($operator)) {
-                $semanticMap = [
-                    // Empty semantics
+
+                // Build row-local predicate text (no binds).
+                $inlineMap = [
                     'is empty' => "(TRIM({$fieldBinder}) = '' or {$fieldBinder} is null)",
                     'is not empty' => "not (TRIM({$fieldBinder}) = '' or {$fieldBinder} is null)",
 
-                    // Null semantics
                     'is null' => "{$fieldBinder} is null",
                     'is not null' => "{$fieldBinder} is not null",
 
-                    // Boolean semantics (PHQL-safe)
                     'is true' => "{$fieldBinder} = 1",
                     'is false' => "{$fieldBinder} = 0",
                     'is not true' => "{$fieldBinder} != 1",
                     'is not false' => "{$fieldBinder} != 0",
                 ];
 
-                if (!isset($semanticMap[$operator])) {
+                if (!isset($inlineMap[$operator])) {
                     throw new \LogicException("Unhandled no-value operator: {$operator}");
                 }
 
-                $fragments[] = $logic . ' ' . $semanticMap[$operator];
+                // Scope must already be resolved before this block.
+                // $scope = $this->getFilterScope($node);
+
+                if ($scope === 'existential') {
+
+                    /*
+                     * EXISTENTIAL NO-VALUE SEMANTICS
+                     *
+                     * Key correction:
+                     *  - "is not empty" => EXISTS( not empty )
+                     *  - "is empty"     => NOT EXISTS( not empty )
+                     *
+                     * This preserves set logic:
+                     *  - is not empty selects rows with at least one qualifying child
+                     *  - is empty selects rows with no qualifying child (includes “no children”)
+                     */
+
+                    $negated = false;
+                    $condSql = $inlineMap[$operator];
+
+                    if ($operator === 'is empty') {
+                        // Dualize to NOT EXISTS( is not empty )
+                        $negated = true;
+                        $condSql = $inlineMap['is not empty'];
+                    }
+
+                    // NOTE: do NOT dualize other no-value operators unless you define that contract explicitly.
+                    // For now, keep them as EXISTS(<operator predicate>).
+                    // If you later want complements for NULL/boolean, add explicit dual rules like above.
+
+                    $bucketKey = $this->getExistentialBucketKey($originalField, $negated, $scope);
+
+                    $this->pushExistentialCondition(
+                        $pendingExists,
+                        $bucketKey,
+                        $originalField,
+                        $negated,
+                        $condSql,
+                        [],
+                        []
+                    );
+
+                    continue;
+                }
+
+                // SELF / INLINE behavior (unchanged)
+                $this->flushExistentialBuckets($pendingExists, $fragments, $bind, $bindTypes);
+                $fragments[] = $logic . ' ' . $inlineMap[$operator];
                 continue;
             }
 
             /* ==========================================================
-             * Semantic classification (used ONLY for rewrite decisions)
+             * EXISTENTIAL compilation (EXISTS / NOT EXISTS)
              *
-             * Only used to decide rewrite strategy (inline vs NOT EXISTS).
-             * It must NOT influence boolean glue.
+             * Routing rule:
+             *  - ONLY $scope decides existentiality (not operator class, not dot presence)
+             *
+             * Current supported existential predicates (strict correctness):
+             *  - Text operators (positive -> EXISTS, negative -> NOT EXISTS)
+             *
+             * Anything else must be explicitly designed and added; do not guess.
              * ======================================================== */
-            $isForeign = str_contains($rawField, '.');
-            $scope = $this->getFilterScope($filter);
-            $isTextual = $this->isTextOperator($operator);
-            $isNegativeText = $this->isNegativeTextOperator($operator);
+            if ($scope === 'existential') {
 
-            /* ==========================================================
-             * FOREIGN text predicate + subquery
-             * => rewrite into correlated EXISTS / NOT EXISTS
-             *
-             * Rationale:
-             *  - Text predicates on 1-N relations are NOT row-local
-             *  - Inline evaluation on LEFT JOINs is semantically incorrect
-             *    for BOTH positive and negative cases
-             *  - EXISTS / NOT EXISTS restores correct set semantics
-             *
-             * Control model:
-             *  - Semantics decide WHEN (foreign + text + subquery)
-             *  - Polarity decides EXISTS vs NOT EXISTS
-             *  - This block ONLY emits SQL
-             * ======================================================== */
-            if ($isForeign && $isTextual && $scope === 'root') {
+                // Existential coalescing is AND-only. OR/XOR flushed already above.
+                if (!in_array($logic, ['and', 'or', 'xor'], true)) {
+                    throw new \LogicException("Invalid logic token emitted: {$logic}");
+                }
+
+                // This compiler currently supports existential semantics for TEXT predicates only.
+                $isTextual = $this->isTextOperator($operator);
+                $isNegativeText = $this->isNegativeTextOperator($operator);
+
+                if (!array_key_exists('value', $node)) {
+                    throw new \Exception(sprintf('Operator "%s" requires a value.', $operator), 400);
+                }
 
                 /*
-                 * Compile the predicate using the POSITIVE form.
-                 * Polarity is handled exclusively by EXISTS vs NOT EXISTS.
+                 * Existential predicates may be:
+                 *  - textual (contains, regexp, etc.)
+                 *  - scalar (=, >, IN, BETWEEN, etc.)
+                 *
+                 * Constraints:
+                 *  - no-value operators are forbidden (already enforced earlier)
+                 *  - negative semantics must be expressed via NOT EXISTS
                  */
-                $effectiveOp = $isNegativeText
-                    ? $this->toPositiveOperator($operator)
-                    : $operator;
+                $negated = $isNegativeText || ($this->isNegativeOperator($operator) && !$isTextual);
+                $effectiveOp = $negated ? $this->toPositiveOperator($operator) : $operator;
 
-                [$sql, $b, $bt] = $this->compileSingleFilterCondition(
+                // Compile the INNER predicate (must be row-local to the subquery universe).
+                [$condSql, $b, $bt] = $this->compileSingleFilterCondition(
                     $fieldBinder,
                     $effectiveOp,
-                    $filter,
+                    $node,
                     $makeBind,
                     'existential'
                 );
 
-                if ($sql !== '') {
+                if ($condSql === '') {
+                    continue;
+                }
 
-                    $exists = $this->buildExistsConditionFromField(
+                /*
+                 * EXISTENTIAL EMISSION RULE (critical)
+                 *
+                 * - AND siblings: may coalesce (bucket)
+                 * - OR/XOR siblings: must emit immediately (no bucket), because coalescing is illegal
+                 *   and each predicate must merge its own bind namespace deterministically.
+                 */
+                if ($logic === 'and') {
+                    $bucketKey = $this->getExistentialBucketKey($originalField, $negated, $scope);
+
+                    $this->pushExistentialCondition(
+                        $pendingExists,
+                        $bucketKey,
                         $originalField,
-                        $sql,
-                        $isNegativeText
+                        $negated,
+                        $condSql,
+                        $b,
+                        $bt
                     );
 
-                    if (!empty($exists['conditions'])) {
-                        // Apply legacy boolean prefix HERE (caller responsibility)
-                        $fragments[] = $logic . ' ' . $exists['conditions'];
+                    continue;
+                }
 
-                        // Merge bind data from:
-                        //  - compiled predicate
-                        //  - existential join normalization
+                // OR / XOR: emit immediately (no bucket)
+                $exists = $this->buildExistsConditionFromField(
+                    $originalField,
+                    '(' . $condSql . ')',
+                    $negated
+                );
+
+                if (!empty($exists['conditions'])) {
+                    $fragments[] = $logic . ' ' . $exists['conditions'];
+
+                    // Merge predicate binds
+                    if (!empty($b)) {
+                        if (array_intersect_key($bind, $b) !== []) {
+                            throw new \LogicException('Bind collision detected while merging OR/XOR existential predicate binds.');
+                        }
                         $bind += $b;
-                        $bind += $exists['bind'];
-
+                    }
+                    if (!empty($bt)) {
+                        if (array_intersect_key($bindTypes, $bt) !== []) {
+                            throw new \LogicException('BindType collision detected while merging OR/XOR existential predicate bindTypes.');
+                        }
                         $bindTypes += $bt;
+                    }
+
+                    // Merge EXISTS join binds
+                    if (!empty($exists['bind'])) {
+                        if (array_intersect_key($bind, $exists['bind']) !== []) {
+                            throw new \LogicException('Bind collision detected while merging OR/XOR EXISTS join binds.');
+                        }
+                        $bind += $exists['bind'];
+                    }
+                    if (!empty($exists['bindTypes'])) {
+                        if (array_intersect_key($bindTypes, $exists['bindTypes']) !== []) {
+                            throw new \LogicException('BindType collision detected while merging OR/XOR EXISTS join bindTypes.');
+                        }
                         $bindTypes += $exists['bindTypes'];
                     }
                 }
@@ -375,25 +549,41 @@ trait FilterConditions
             }
 
             /* ==========================================================
-             * Normal inline compilation
+             * SELF / INLINE compilation (row-local predicate)
              * ======================================================== */
-            if (!array_key_exists('value', $filter)) {
+
+            // SELF / INLINE is a hard boundary relative to existential accumulation.
+            $this->flushExistentialBuckets($pendingExists, $fragments, $bind, $bindTypes);
+
+            if (!array_key_exists('value', $node)) {
                 throw new \Exception(sprintf('Operator "%s" requires a value.', $operator), 400);
             }
 
             [$sql, $b, $bt] = $this->compileSingleFilterCondition(
                 $fieldBinder,
                 $operator,
-                $filter,
-                $makeBind
+                $node,
+                $makeBind,
+                'self'
             );
 
             if ($sql !== '') {
                 $fragments[] = $logic . ' ' . $sql;
+
+                if (array_intersect_key($bind, $b) !== []) {
+                    throw new \LogicException('Bind collision detected while merging self / inline condition.');
+                }
+                if (array_intersect_key($bindTypes, $bt) !== []) {
+                    throw new \LogicException('BindType collision detected while merging self / inline condition.');
+                }
+
                 $bind += $b;
                 $bindTypes += $bt;
             }
         }
+
+        // Group exit is a hard boundary: flush anything pending.
+        $this->flushExistentialBuckets($pendingExists, $fragments, $bind, $bindTypes);
 
         if ($fragments === []) {
             return null;
@@ -431,6 +621,7 @@ trait FilterConditions
      * @param string $operator The operator to be used in the condition (e.g., '=', 'between', 'in', 'like').
      * @param array $filter Contains the filtering criteria, including the value(s) to be used for the condition.
      * @param \Closure $getValue A closure that generates unique parameter names for binding values in the query.
+     * @param string $mode The semantic scope of the filter condition. Can be 'self' or 'existential'.
      *
      * @return array An array containing three elements:
      *               - string The compiled SQL condition as a string.
@@ -442,21 +633,39 @@ trait FilterConditions
         string   $operator,
         array    $filter,
         \Closure $getValue,
-        string   $mode = 'inline',
+        string   $mode = 'self',
     ): array
     {
         $isExistential = ($mode === 'existential');
 
         /*
-         * EXISTENTIAL MODE INVARIANTS:
-         * - operator MUST be positive
-         * - NULL / empty compensation is FORBIDDEN
-         * - predicate MUST be row-local
+         * ==========================================================
+         * EXISTENTIAL MODE — NON-NEGOTIABLE INVARIANTS
+         * ==========================================================
+         *
+         * Existential predicates describe SET existence.
+         * Therefore:
+         *  - Inner predicate MUST be positive
+         *  - Negation is expressed ONLY via NOT EXISTS
+         *  - No scalar negation is allowed
+         *  - No unary operators are allowed
          */
         if ($isExistential) {
+            if ($this->isNegativeTextOperator($operator)) {
+                throw new \LogicException(
+                    "Negative text operator '{$operator}' must be normalized to positive before existential compilation."
+                );
+            }
+
             if ($this->isNegativeOperator($operator)) {
                 throw new \LogicException(
                     "Negative operator '{$operator}' is not allowed in existential compilation."
+                );
+            }
+
+            if ($this->isNoValueOperator($operator)) {
+                throw new \LogicException(
+                    "No-value operator '{$operator}' is not allowed in existential compilation."
                 );
             }
         }
@@ -464,13 +673,26 @@ trait FilterConditions
         $bind = [];
         $bindTypes = [];
 
-        /* --------------------------------------------------------------
+        /* ==========================================================
          * BETWEEN / NOT BETWEEN
-         * ----------------------------------------------------------- */
+         * ==========================================================
+         *
+         * Semantics:
+         *  - SELF / INLINE: both allowed
+         *  - EXISTENTIAL: only positive BETWEEN allowed
+         */
         if ($operator === 'between' || $operator === 'not between') {
+
+            if ($isExistential && str_starts_with($operator, 'not ')) {
+                throw new \LogicException(
+                    "Negative range operator '{$operator}' is not allowed in existential compilation."
+                );
+            }
+
             $v0 = $getValue('value');
             $v1 = $getValue('value');
 
+            // Order values deterministically
             $minFirst = $filter['value'][0] <= $filter['value'][1];
             $bind[$v0] = $filter['value'][$minFirst ? 0 : 1];
             $bind[$v1] = $filter['value'][$minFirst ? 1 : 0];
@@ -478,13 +700,19 @@ trait FilterConditions
             $bindTypes[$v0] = Column::BIND_PARAM_STR;
             $bindTypes[$v1] = Column::BIND_PARAM_STR;
 
-            $not = str_starts_with($operator, 'not ') ? 'not ' : '';
+            $not = (!$isExistential && str_starts_with($operator, 'not ')) ? 'not ' : '';
+
             return ["{$not}{$fieldBinder} between :{$v0}: and :{$v1}:", $bind, $bindTypes];
         }
 
-        /* --------------------------------------------------------------
-         * DISTANCE SPHERE
-         * ----------------------------------------------------------- */
+        /* ==========================================================
+         * DISTANCE SPHERE (GEO)
+         * ==========================================================
+         *
+         * Semantics:
+         *  - Treated as scalar comparison over computed distance
+         *  - EXISTENTIAL allowed ONLY in positive form
+         */
         if (in_array($operator, [
             'distance sphere equals',
             'distance sphere greater than',
@@ -492,93 +720,151 @@ trait FilterConditions
             'distance sphere less than',
             'distance sphere less than or equal',
         ], true)) {
-            $values = [$getValue('value'), $getValue('value'), $getValue('value'), $getValue('value')];
-            $bind[$values[0]] = $filter['value'][0];
-            $bind[$values[1]] = $filter['value'][1];
-            $bind[$values[2]] = $filter['value'][2];
-            $bind[$values[3]] = $filter['value'][3];
 
-            $bindTypes[$values[0]] = Column::BIND_PARAM_DECIMAL;
-            $bindTypes[$values[1]] = Column::BIND_PARAM_DECIMAL;
-            $bindTypes[$values[2]] = Column::BIND_PARAM_DECIMAL;
-            $bindTypes[$values[3]] = Column::BIND_PARAM_DECIMAL;
+            // Guard against negative existential geo
+            if ($isExistential && str_contains($operator, 'not')) {
+                throw new \LogicException(
+                    "Negative geo operator '{$operator}' is not allowed in existential compilation."
+                );
+            }
 
-            $bitwise =
+            // Bind geo coordinates
+            $coords = [
+                $getValue('value'),
+                $getValue('value'),
+                $getValue('value'),
+                $getValue('value'),
+            ];
+
+            foreach ($coords as $i => $v) {
+                $bind[$v] = $filter['value'][$i];
+                $bindTypes[$v] = Column::BIND_PARAM_DECIMAL;
+            }
+
+            // Distance threshold
+            $v = $getValue('value');
+            $bind[$v] = $filter['value'][4] ?? $filter['value'];
+            $bindTypes[$v] = Column::BIND_PARAM_STR;
+
+            // Build comparison operator
+            $cmp =
                 (str_contains($operator, 'greater') ? '>' : '') .
                 (str_contains($operator, 'less') ? '<' : '') .
                 (str_contains($operator, 'equal') ? '=' : '');
 
-            $v = $getValue('value');
-            $bind[$v] = $filter['value'];
-            $bindTypes[$v] = Column::BIND_PARAM_STR;
+            $sql =
+                "ST_Distance_Sphere(" .
+                "point(:{$coords[0]}:, :{$coords[1]}:), " .
+                "point(:{$coords[2]}:, :{$coords[3]}:)" .
+                ") {$cmp} :{$v}:";
 
-            $sql = "ST_Distance_Sphere(point(:{$values[0]}:, :{$values[1]}:), point(:{$values[2]}:, :{$values[3]}:)) {$bitwise} :{$v}:";
             return [$sql, $bind, $bindTypes];
         }
 
-        /* --------------------------------------------------------------
+        /* ==========================================================
          * IN / NOT IN
-         * ----------------------------------------------------------- */
+         * ==========================================================
+         *
+         * Semantics:
+         *  - SELF / INLINE: both allowed
+         *  - EXISTENTIAL: NOT IN forbidden
+         */
         if ($operator === 'in' || $operator === 'not in') {
+
+            if ($isExistential && $operator === 'not in') {
+                throw new \LogicException(
+                    "Negative set operator '{$operator}' is not allowed in existential compilation."
+                );
+            }
+
             $v = $getValue('value');
             $bind[$v] = $filter['value'];
             $bindTypes[$v] = Column::BIND_PARAM_STR;
+
             return ["{$fieldBinder} {$operator} ({{$v}:array})", $bind, $bindTypes];
         }
 
-        /* --------------------------------------------------------------
-         * MULTI-VALUE SEMANTIC OPERATORS
-         * ----------------------------------------------------------- */
+        /* ==========================================================
+         * MULTI-VALUE / TEXTUAL / SCALAR OPERATORS
+         * ==========================================================
+         */
         $sqlParts = [];
         $values = is_array($filter['value']) ? $filter['value'] : [$filter['value']];
 
         foreach ($values as $rawValue) {
             $v = $getValue('value');
-            $isNegative = str_starts_with($operator, 'does not ') || str_starts_with($operator, 'not ');
-            $orIsNullOrEmpty = (!$isExistential && $isNegative) ? " or {$fieldBinder} is null or TRIM({$fieldBinder}) = ''" : "";
+
+            /*
+             * SELF / INLINE-ONLY NEGATIVE COMPENSATION
+             *
+             * Existential predicates MUST NOT compensate NULL / EMPTY.
+             */
+            $inlineNegative =
+                !$isExistential &&
+                (str_starts_with($operator, 'does not ') || str_starts_with($operator, 'not '));
+
+            $orNullEmpty = $inlineNegative
+                ? " or {$fieldBinder} is null or TRIM({$fieldBinder}) = ''"
+                : '';
 
             /* ---------- CONTAINS / DOES NOT CONTAIN ---------- */
             if (in_array($operator, ['contains', 'does not contain'], true)) {
+
+                if ($isExistential && $operator === 'does not contain') {
+                    throw new \LogicException("Negative text operator leaked into existential.");
+                }
+
                 $bind[$v] = '%' . $rawValue . '%';
                 $bindTypes[$v] = Column::BIND_PARAM_STR;
 
-                $sqlOp = $isNegative ? 'not like' : 'like';
-                $sqlParts[] = "{$fieldBinder} {$sqlOp} :{$v}:" . $orIsNullOrEmpty;
+                $sqlOp = ($operator === 'does not contain') ? 'not like' : 'like';
+                $sqlParts[] = "{$fieldBinder} {$sqlOp} :{$v}:" . $orNullEmpty;
                 continue;
             }
 
-            /* ---------- STARTS WITH / DOES NOT START WITH ---------- */
-            if (in_array($operator, ['starts with', 'does not start with'], true)) {
-                $bind[$v] = $rawValue . '%';
+            /* ---------- STARTS / ENDS WITH ---------- */
+            if (in_array($operator, [
+                'starts with', 'does not start with',
+                'ends with', 'does not end with',
+            ], true)) {
+
+                if ($isExistential && str_starts_with($operator, 'does not')) {
+                    throw new \LogicException("Negative text operator leaked into existential.");
+                }
+
+                $bind[$v] = str_starts_with($operator, 'starts')
+                    ? $rawValue . '%'
+                    : '%' . $rawValue;
+
                 $bindTypes[$v] = Column::BIND_PARAM_STR;
 
-                $sqlOp = $isNegative ? 'not like' : 'like';
-                $sqlParts[] = "{$fieldBinder} {$sqlOp} :{$v}:" . $orIsNullOrEmpty;
+                $sqlOp = str_starts_with($operator, 'does not') ? 'not like' : 'like';
+                $sqlParts[] = "{$fieldBinder} {$sqlOp} :{$v}:" . $orNullEmpty;
                 continue;
             }
 
-            /* ---------- ENDS WITH / DOES NOT END WITH ---------- */
-            if (in_array($operator, ['ends with', 'does not end with'], true)) {
-                $bind[$v] = '%' . $rawValue;
-                $bindTypes[$v] = Column::BIND_PARAM_STR;
-
-                $sqlOp = $isNegative ? 'not like' : 'like';
-                $sqlParts[] = "{$fieldBinder} {$sqlOp} :{$v}:" . $orIsNullOrEmpty;
-                continue;
-            }
-
-            /* ---------- CONTAINS WORD / DOES NOT CONTAIN WORD ---------- */
+            /* ---------- CONTAINS WORD ---------- */
             if (in_array($operator, ['contains word', 'does not contain word'], true)) {
+
+                if ($isExistential && $operator === 'does not contain word') {
+                    throw new \LogicException("Negative word operator leaked into existential.");
+                }
+
                 $bind[$v] = '\\b' . $rawValue . '\\b';
                 $bindTypes[$v] = Column::BIND_PARAM_STR;
 
-                $sqlOp = $isNegative ? 'not regexp' : 'regexp';
+                $sqlOp = ($operator === 'does not contain word') ? 'not regexp' : 'regexp';
                 $sqlParts[] = "{$sqlOp}({$fieldBinder}, :{$v}:)";
                 continue;
             }
 
-            /* ---------- REGEXP / NOT REGEXP ---------- */
+            /* ---------- REGEXP ---------- */
             if ($operator === 'regexp' || $operator === 'not regexp') {
+
+                if ($isExistential && $operator === 'not regexp') {
+                    throw new \LogicException("Negative regexp leaked into existential.");
+                }
+
                 $bind[$v] = $rawValue;
                 $bindTypes[$v] = Column::BIND_PARAM_STR;
 
@@ -586,18 +872,7 @@ trait FilterConditions
                 continue;
             }
 
-            /* ---------- IS EMPTY / IS NOT EMPTY ---------- */
-            if ($operator === 'is empty') {
-                $sqlParts[] = "(TRIM({$fieldBinder}) = '' or {$fieldBinder} is null)";
-                continue;
-            }
-
-            if ($operator === 'is not empty') {
-                $sqlParts[] = "not (TRIM({$fieldBinder}) = '' or {$fieldBinder} is null)";
-                continue;
-            }
-
-            /* ---------- FALLBACK: SIMPLE COMPARISON ---------- */
+            /* ---------- FALLBACK SCALAR ---------- */
             $bind[$v] = $rawValue;
             $bindTypes[$v] = $this->getBindTypeFromRawValue($rawValue);
 
@@ -609,19 +884,49 @@ trait FilterConditions
             return ['', [], []];
         }
 
-        /* --------------------------------------------------------------
+        /* ==========================================================
          * GROUPING LOGIC
          *
-         * Positive semantics: OR
-         * Negative semantics: AND
-         * ----------------------------------------------------------- */
-//        $glue = $this->isNegativeOperator($operator) ? ' and ' : ' or ';
-//        $sql = '((' . implode(')' . $glue . '(', $sqlParts) . '))';
-        $innerGlue = $this->isNegativeOperator($operator) ? ' and ' : ' or ';
-        $innerGlue = $isExistential ? ' or ' : $innerGlue;
-        $sql = '(' . implode($innerGlue, array_map(fn($p) => "($p)", $sqlParts)) . ')';
+         * SELF / INLINE:
+         *  - positive semantics → OR
+         *  - negative semantics → AND
+         *
+         * EXISTENTIAL:
+         *  - ALWAYS OR (set semantics)
+         * ==========================================================
+         */
+        $glue = $isExistential
+            ? ' or '
+            : ($this->isNegativeOperator($operator) ? ' and ' : ' or ');
+
+        $sql = '(' . implode($glue, array_map(static fn($p) => "($p)", $sqlParts)) . ')';
 
         return [$sql, $bind, $bindTypes];
+    }
+
+    /**
+     * Reduce a relationship field to its existential "universe":
+     *  - keep relationship chain
+     *  - drop the leaf column
+     *  - keep explicit alias tokens (e.g. [a]) because they denote distinct instances
+     *
+     * Examples:
+     *  - Comment[a].content            => Comment[a]
+     *  - RecordUserStatus[c].userId    => RecordUserStatus[c]
+     *  - RecordTag[18_a].Tag.label     => RecordTag[18_a].Tag
+     */
+    protected function getExistentialUniverseField(string $originalField): string
+    {
+        $field = trim($originalField);
+
+        // Drop leaf column (everything after the last dot).
+        // If there is no dot, universe is the whole field (rare but safe).
+        $pos = strrpos($field, '.');
+        if ($pos === false) {
+            return $field;
+        }
+
+        return substr($field, 0, $pos);
     }
 
     /**
@@ -798,95 +1103,204 @@ trait FilterConditions
     }
 
     /**
-     * Resolves and returns the semantic scope of a given filter.
+     * Determines the semantic scope of a filter.
      *
-     * This method determines the evaluation context for the filter's predicate
-     * based on the specified scope. It uses predefined conventions to limit
-     * the valid values and to ensure consistent behavior.
+     * Scope is a FIRST-CLASS semantic decision.
+     * It MUST be resolved BEFORE any SQL is generated.
      *
-     * CONTRACT:
-     *  - Input MUST explicitly define 'scope' or resolve to the default value
-     *  - Input MUST define a valid scope from the allowed set
-     *  - Output MUST represent an allowed scope ('root', 'self', 'through')
+     * There are only two valid scopes:
      *
-     * This method MUST NOT:
-     *  - infer scope from other filter elements (operators, fields, etc.)
-     *  - guess the intent of the filter
+     *  - "self"
+     *      Predicate is row-local to the root model.
+     *      Safe for inline SQL.
      *
-     * IMPORTANT (scope - semantics - SQL):
-     *  - root - set-level - EXISTS / NOT EXISTS
-     *  - through - edge-level - EXISTS anchored on pivot
-     *  - self - row-level - inline join predicate
+     *  - "existential"
+     *      Predicate quantifies over related rows.
+     *      MUST be expressed via EXISTS / NOT EXISTS.
      *
-     * @param array $filter The filter definition, which may include a 'scope' key.
-     * @return string The resolved scope ('root' by default, or one of the allowed scopes).
-     * @throws \LogicException If the provided scope is invalid or unrecognized.
+     * This method is the SINGLE SOURCE OF TRUTH for that decision.
+     *
+     * Hard rules (ANY => existential):
+     *  ------------------------------------------------------------
+     *  1. Field contains an explicit relationship alias
+     *       Example: RecordUserStatus[a].userId
+     *
+     *  2. Field is foreign (contains ".") AND operator is textual
+     *       Text predicates on 1-N relations are never row-local.
+     *
+     *  3. Filter explicitly requests subquery semantics
+     *       (legacy / backward compatibility)
+     *
+     * What this method MUST NOT do:
+     *  - Guess intent
+     *  - Inspect joins
+     *  - Inspect SQL mode
+     *  - Inspect grouping context
+     *
+     * @param array $filter Raw filter payload
+     * @param string|null $aliasContext Current alias universe (null = root model)
+     *
+     * @return string Either "self" or "existential"
+     *
+     * @throws \LogicException If scope cannot be determined deterministically
      */
-    protected function getFilterScope(array $filter): string
+    protected function getFilterScope(array $filter, ?string $aliasContext): string
     {
-        /*
-         * Scope defines the semantic universe over which the predicate is evaluated.
-         *
-         * Allowed values (by convention):
-         *  - 'root'    : set-level semantics (EXISTS / NOT EXISTS) — DEFAULT
-         *  - 'self'    : row-level semantics (inline join predicate)
-         *  - 'through' : relationship-edge semantics (reserved, not implemented yet)
-         *
-         * IMPORTANT:
-         *  - This method is the ONLY place where scope is resolved
-         *  - Do NOT infer scope from operator, field, or join depth
-         *  - Do NOT guess intent
-         */
-
-        if (isset($filter['scope'])) {
-            $scope = strtolower(trim((string) $filter['scope']));
-            $allowedScopes = ['root', 'self', 'through'];
-
-            if (!in_array($scope, $allowedScopes, true)) {
-                throw new \LogicException("Invalid filter scope: {$scope}");
-            }
-
-            return $scope;
+        if (empty($filter['field'])) {
+            throw new \LogicException('Cannot determine filter scope without field.');
         }
 
-        // Default semantic: record-level truth
-        return 'root';
+        $rawField = (string) $filter['field'];
+
+        // Canonical operator (may be empty at this point)
+        $operator = isset($filter['operator'])
+            ? $this->normalizeFilterOperator((string) $filter['operator'])
+            : '';
+
+        /*
+         * ==========================================================
+         * Resolve field alias (universe)
+         * ==========================================================
+         *
+         * Examples:
+         *  - "status"                         → null
+         *  - "Comment[a].content"             → "Comment[a]"
+         *  - "RecordTag[18_a].Tag.label"      → "RecordTag[18_a].Tag"
+         */
+        [, $joinName, , $fieldAlias] = $this->splitField($rawField);
+        // $fieldAlias is the alias universe of the predicate (may be null)
+
+        /*
+         * ==========================================================
+         * RULE 0 — Explicit subquery always forces existential
+         * ==========================================================
+         *
+         * Legacy escape hatch. This intentionally overrides all
+         * alias-local reasoning.
+         */
+        if (!empty($filter['subquery'])) {
+            return 'existential';
+        }
+
+        /*
+         * ==========================================================
+         * RULE 1 — Root-local field is always row-local
+         * ==========================================================
+         */
+        if ($fieldAlias === null) {
+            return 'self';
+        }
+
+        /*
+         * ==========================================================
+         * RULE 2 — Same-alias predicates are row-local
+         * ==========================================================
+         *
+         * Examples:
+         *  - aliasContext = "RecordTag[18_a]"
+         *  - fieldAlias  = "RecordTag[18_a]"
+         */
+        if ($aliasContext !== null && $fieldAlias === $aliasContext) {
+            return 'self';
+        }
+
+        /*
+         * ==========================================================
+         * RULE 3 — Descendant aliases are row-local inside JOIN context
+         * ==========================================================
+         *
+         * Examples:
+         *  - aliasContext = "RecordTag[18_a]"
+         *  - fieldAlias  = "RecordTag[18_a].Tag"
+         *
+         * This preserves legacy JOIN semantics and allows
+         * deep join scoping without EXISTS.
+         */
+        if (
+            $aliasContext !== null &&
+            str_starts_with($fieldAlias, $aliasContext . '.')
+        ) {
+            return 'self';
+        }
+
+        /*
+         * ==========================================================
+         * RULE 4 — Foreign TEXT predicates require existential semantics
+         * ==========================================================
+         *
+         * Text predicates over 1-N relations are not row-local
+         * when evaluated from outside their alias universe.
+         */
+        if (
+            $operator !== '' &&
+            $this->isTextOperator($operator)
+        ) {
+            return 'existential';
+        }
+
+        /*
+         * ==========================================================
+         * RULE 5 — Everything else is row-local
+         * ==========================================================
+         *
+         * Includes:
+         *  - scalar operators (=, in, between, etc.)
+         *  - no-value operators (is null, is empty, etc.)
+         *  - numeric comparisons on foreign keys
+         */
+        return 'self';
+    }
+
+    /**
+     * Determine the effective logic token of a group node.
+     *
+     * Legacy rule:
+     *  - If the first concrete field inside the group has an explicit "logic",
+     *    that logic applies to the group as a whole.
+     *  - Otherwise, the group has no intrinsic logic.
+     */
+    protected function resolveGroupCarrierLogic(array $group): ?string
+    {
+        foreach ($group as $node) {
+            // Skip nested groups
+            if (is_array($node) && isset($node[0]) && is_array($node[0])) {
+                continue;
+            }
+
+            if (!empty($node['logic'])) {
+                $logic = strtolower(trim((string)$node['logic']));
+                if (in_array($logic, ['and', 'or', 'xor'], true)) {
+                    return $logic;
+                }
+            }
+
+            break; // only first concrete node matters
+        }
+
+        return null;
     }
 
     /**
      * Resolve the logical token ("and" | "or" | "xor") that prefixes the current fragment.
      *
-     * Legacy-compatible semantics:
-     *  - "logic" in payload always wins if present (validated).
-     *  - Otherwise, fall back to the historical alternation rule that depends on:
-     *      - $or   : current group default mode (toggled at each nesting level)
-     *      - $index: first element is treated specially (legacy quirk)
+     * IMPORTANT CORRECTION:
+     *  - At ROOT level (level=0), the fallback logic for index 0 MUST be "and".
+     *    This prevents the compiler from generating:
+     *        (primary constraints) OR (rest...)
+     *    which collapses the filter set to “all rows matching the first constraint”.
      *
-     * Why the first-element rule exists:
-     *  - The legacy generator always prefixed tokens (even for the first fragment).
-     *  - A normalization regex later strips the leading token at root level but
-     *    preserves it for nested groups.
-     *  - Many legacy payloads rely on this behavior, especially when forcing
-     *    logic *before* a group.
-     *
-     * IMPORTANT:
-     *  - This method returns a lowercase token suitable for prefix emission
-     *    ("and ", "or ", "xor ").
-     *  - It does NOT decide parentheses or string formatting; the caller/assembler does.
-     *
-     * @param array $node Current filter node (field filter or group metadata carrier).
-     * @param int $index Index within the current group (0-based).
-     * @param bool $or Current group alternation flag (flipped per nesting level).
-     *
-     * @return string One of: "and", "or", "xor"
-     *
-     * @throws \Exception If an unsupported logical operator is provided.
+     * Legacy behavior preserved:
+     *  - Explicit payload "logic" always wins.
+     *  - Nested alternation ($or toggling) remains unchanged for index >= 1
+     *    and for non-root groups.
      */
     protected function resolveFilterLogicToken(array $node, int $index, bool $or): string
     {
-        // 1) Explicit override (payload "logic") always wins.
-        //    Keep this tolerant only at this boundary.
-        $logic = $this->filter->sanitize($node['logic'] ?? null, [Filter::FILTER_STRING, Filter::FILTER_TRIM, 'lower']);
+        // 1) Explicit override always wins (strictly validated).
+        $logic = $this->filter->sanitize(
+            $node['logic'] ?? null,
+            [Filter::FILTER_STRING, Filter::FILTER_TRIM, 'lower']
+        );
 
         $logic = is_string($logic) ? trim($logic) : '';
 
@@ -894,21 +1308,29 @@ trait FilterConditions
             if (!in_array($logic, ['and', 'or', 'xor'], true)) {
                 throw new \Exception(sprintf('Unsupported logical operator: `%s`', $logic), 400);
             }
-
             return $logic;
         }
 
-        // 2) Legacy fallback (level-driven alternation + first-element quirk)
-        //
-        // Legacy rule:
-        //   - When $or is false (root mode), index 0 => "or", others => "and"
-        //   - When $or is true  (toggled mode), index 0 => "and", others => "or"
-        //
-        // This is the exact behavior from:
-        //   $logic ?: ($or ? ($i===0?'and':'or') : ($i===0?'or':'and'))
-        return $or
-            ? ($index === 0 ? 'and' : 'or')
-            : ($index === 0 ? 'or' : 'and');
+        /*
+         * 2) Root safety rule:
+         *    If this is the first fragment of the ROOT group and logic is not explicit,
+         *    force "and".
+         *
+         * Rationale:
+         *  - The root assembler strips the first token anyway.
+         *  - But if the first token is "or", the next fragment may become OR-connected
+         *    to a broad base constraint (e.g., projectId), yielding “all rows”.
+         */
+        if ($index === 0) {
+            return 'and';
+        }
+
+        /*
+         * 3) Legacy fallback for non-root groups (unchanged semantics):
+         *    - When $or is false: "and"
+         *    - When $or is true: "or"
+         */
+        return $or? 'or' : 'and';
     }
 
     /**
