@@ -34,7 +34,7 @@ class ServiceProvider extends AbstractServiceProvider
             $openAiConfig = $config->pathToArray('openai') ?? [];
 
             $openAiFactory = OpenAI::factory()
-                ->withApiKey($openAiConfig['apiKey'] ?? null)
+                ->withApiKey($openAiConfig['apiKey'] ?? '')
                 ->withOrganization($openAiConfig['organization'] ?? null) // default: null
                 ->withProject($openAiConfig['project'] ?? null) // default: null
                 ->withBaseUri($openAiConfig['baseUri'] ?? 'api.openai.com/v1') // default: api.openai.com/v1
