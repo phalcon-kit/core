@@ -28,22 +28,44 @@ trait ExistentialConditions
      *  - Same polarity (EXISTS vs NOT EXISTS)
      *  - AND-connected siblings only
      *
-     * We do NOT attempt to coalesce across OR boundaries or across nested groups.
+     * Explicitly NOT coalesced:
+     *  - Across OR boundaries
+     *  - Across nested groups
+     *
+     * Psalm fixes applied:
+     *  - preg_replace() may return null → guarded fallback
+     *  - strrpos() may return false → guarded before substr()
      */
     protected function getExistentialBucketKey(
         string $originalField,
         bool $negated,
         string $scope
     ): string {
-        // Strip alias tokens: RecordUserStatus[a] → RecordUserStatus
+        /**
+         * Strip alias tokens:
+         *   RecordUserStatus[a] → RecordUserStatus
+         *
+         * preg_replace() returns string|null.
+         * Null is theoretically possible on regex error; we hard-fallback
+         * to the original field to keep behavior deterministic.
+         */
         $field = preg_replace('/\[[^\]]+\]/', '', $originalField);
-
-        // Strip leaf column: RecordUserStatus.userId → RecordUserStatus
-        if (str_contains($field, '.')) {
-            $field = substr($field, 0, strrpos($field, '.'));
+        if ($field === null) {
+            $field = $originalField;
         }
-
-        // The bucket key represents the existential universe
+        
+        /**
+         * Strip leaf column:
+         *   RecordUserStatus.userId → RecordUserStatus
+         *
+         * Guard strrpos(): it may return false if '.' is not found.
+         */
+        $lastDotPos = strrpos($field, '.');
+        if ($lastDotPos !== false) {
+            $field = substr($field, 0, $lastDotPos);
+        }
+        
+        // Immutable existential universe key
         return $scope . '|' . $field . '|' . ($negated ? 'not' : 'pos');
     }
 
