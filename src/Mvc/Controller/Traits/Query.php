@@ -203,6 +203,11 @@ trait Query
     public function prepareFind(?Collection $find = null, bool $ignoreKey = false): array
     {
         $find ??= $this->getFind();
+        
+        if ($find === null) {
+            return [];
+        }
+        
 //        return $this->compileFind($this->prepareCollectionToCompile($find));
 
         $build = $this->prepareCollectionToCompile($find);
