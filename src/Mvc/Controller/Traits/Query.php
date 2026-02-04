@@ -246,8 +246,13 @@ trait Query
 
         return $this->compileFind($build);
     }
-
-    public function conditionsShouldBeHaving(?string $conditions)
+    
+    /**
+     * Determines whether WHERE conditions must be promoted to HAVING.
+     *
+     * Currently disabled by design.
+     */
+    public function conditionsShouldBeHaving(?string $conditions): bool
     {
         return false;
 //        return preg_match('/GROUP_CONCAT\(.+?\)|COUNT\(.+?\)|SUM\(.+?\)|AVG\(.+?\)|MIN\(.+?\)|MAX\(.+?\)/i', $conditions);
