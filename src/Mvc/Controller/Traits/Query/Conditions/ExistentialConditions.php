@@ -34,8 +34,7 @@ trait ExistentialConditions
         string $originalField,
         bool $negated,
         string $scope
-    ): string
-    {
+    ): string {
         // Strip alias tokens: RecordUserStatus[a] → RecordUserStatus
         $field = preg_replace('/\[[^\]]+\]/', '', $originalField);
 
@@ -72,15 +71,14 @@ trait ExistentialConditions
      * @param array  $bindTypes
      */
     protected function pushExistentialCondition(
-        array  &$pending,
+        array &$pending,
         string $bucketKey,
         string $originalField,
-        bool   $negated,
+        bool $negated,
         string $compiledConditionSql,
-        array  $bind,
-        array  $bindTypes
-    ): void
-    {
+        array $bind,
+        array $bindTypes
+    ): void {
         if (!isset($pending[$bucketKey])) {
             $pending[$bucketKey] = [
                 // Relationship universe anchor
@@ -146,14 +144,12 @@ trait ExistentialConditions
         array &$fragments,
         array &$bind,
         array &$bindTypes
-    ): void
-    {
+    ): void {
         if ($pending === []) {
             return;
         }
 
         foreach ($pending as $bucket) {
-
             if (
                 empty($bucket['field']) ||
                 empty($bucket['conditions']) ||

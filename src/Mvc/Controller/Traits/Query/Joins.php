@@ -313,5 +313,4 @@ trait Joins
 
         return '(' . $a . ') AND (' . $b . ')';
     }
-
 }

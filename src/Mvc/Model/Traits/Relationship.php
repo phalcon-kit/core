@@ -197,7 +197,6 @@ trait Relationship
         $modelsManager = $this->getModelsManager();
         
         foreach ($data as $alias => $relationData) {
-
             if (!is_string($alias)) {
                 throw new \LogicException('Invalid relation alias `' . $alias . '` on model `' . $modelClass . '`', 400);
             }

@@ -307,7 +307,6 @@ class Blameable extends Behavior
         }
 
         return match ($columnType) {
-
             /* =========================
              * Boolean / Integer domain
              * ========================= */

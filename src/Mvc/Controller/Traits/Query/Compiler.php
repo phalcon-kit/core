@@ -20,7 +20,7 @@ trait Compiler
                 $result[$key] = $value;
             }
         }
-        return $level === 1? array_values($result) : $result;
+        return $level === 1 ? array_values($result) : $result;
     }
 
 //    private function normalizeArrayShape(array $a): array
@@ -196,7 +196,6 @@ trait Compiler
         // path for [conditions => []] (merge into root find definition)
         if (isset($find['conditions']) && is_array($find['conditions'])) {
             foreach ($find['conditions'] as $key => &$condition) {
-
                 // skip empty array or null conditions
                 if ($condition === [] || $condition === null) {
                     unset($find['conditions'][$key]);
@@ -210,14 +209,14 @@ trait Compiler
 
                 // path for [conditions => '']
                 else if (is_string($condition)) {
-                    $conditions []= $condition;
+                    $conditions [] = $condition;
                     unset($find['conditions'][$key]);
                     continue;
                 }
 
                 // move conditions to root find layer (merge)
                 else if (isset($condition[0]) && is_string($condition[0])) {
-                    $conditions []= $condition[0];
+                    $conditions [] = $condition[0];
                     unset($condition[0]);
                 }
 
@@ -225,18 +224,17 @@ trait Compiler
                 else if (isset($condition['conditions'])) {
                     // path for [conditions => '']
                     if (is_string($condition['conditions'])) {
-                        $conditions []= $condition['conditions'];
+                        $conditions [] = $condition['conditions'];
                         unset($condition['conditions']);
                     }
                     // path for [conditions => [0, 1, 2]] and for [conditions => ['conditions' => [...]]] (nested)
                     if (is_array($condition['conditions'])) {
-                        $subFinds []= $this->compileFind($condition);
+                        $subFinds [] = $this->compileFind($condition);
                     }
                 }
 
                 // sub-compilation & merge with current
                 else if (is_array($condition) && count($condition)) {
-
                     // move properties to root find layer (merge)
                     foreach (array_keys($condition) as $subKey) {
                         $subValue = $condition[$subKey];
@@ -260,12 +258,12 @@ trait Compiler
 
                         // custom keys, one compilation per custom key
                         else if (is_string($subKey) && is_array($subValue) && count($subValue)) {
-                            $subFinds []= $this->compileFind($subValue);
+                            $subFinds [] = $this->compileFind($subValue);
                         }
 
                         // compile native phalcon keys
                         if (count($toCompile)) {
-                            $subFinds []= $this->compileFind($toCompile);
+                            $subFinds [] = $this->compileFind($toCompile);
                         }
 
                         // always unset after compilation

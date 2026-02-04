@@ -110,10 +110,9 @@ trait FilterConditions
         ?array $filters = null,
         ?array $allowedFilters = null,
         ?string $aliasContext = null,
-        bool   $or = false,
-        int    $level = 0,
-    ): array|string|null
-    {
+        bool $or = false,
+        int $level = 0,
+    ): array|string|null {
         // Retrieve filters from request if not provided explicitly
         $filters ??= $this->getParam('filters');
 
@@ -212,12 +211,10 @@ trait FilterConditions
         $pendingExists = [];
 
         foreach ($filters as $index => $node) {
-
             /* ==========================================================
              * GROUP NODE (nested array)
              * ======================================================== */
             if (is_array($node) && isset($node[0]) && is_array($node[0])) {
-
                 // Group boundary is always a flush boundary.
                 $this->flushExistentialBuckets($pendingExists, $fragments, $bind, $bindTypes);
 
@@ -225,7 +222,6 @@ trait FilterConditions
                 $nested = $this->compileGroup($node, !$or, $level + 1, $allowedFilters, $aliasContext);
 
                 if ($nested !== null && $nested['sql'] !== '') {
-
                     /*
                      * LEGACY-COMPAT GROUP CONNECTOR (CARRIER LOGIC)
                      *
@@ -362,7 +358,6 @@ trait FilterConditions
              *  - If scope is self/through, emit self / inline (legacy behavior).
              * ======================================================== */
             if ($this->isNoValueOperator($operator)) {
-
                 // Build row-local predicate text (no binds).
                 $inlineMap = [
                     'is empty' => "(TRIM({$fieldBinder}) = '' or {$fieldBinder} is null)",
@@ -385,7 +380,6 @@ trait FilterConditions
                 // $scope = $this->getFilterScope($node);
 
                 if ($scope === 'existential') {
-
                     /*
                      * EXISTENTIAL NO-VALUE SEMANTICS
                      *
@@ -444,7 +438,6 @@ trait FilterConditions
              * Anything else must be explicitly designed and added; do not guess.
              * ======================================================== */
             if ($scope === 'existential') {
-
                 // Existential coalescing is AND-only. OR/XOR flushed already above.
                 if (!in_array($logic, ['and', 'or', 'xor'], true)) {
                     throw new \LogicException("Invalid logic token emitted: {$logic}");
@@ -629,13 +622,12 @@ trait FilterConditions
      *               - array Associative array of bind types for each parameter.
      */
     protected function compileSingleFilterCondition(
-        string   $fieldBinder,
-        string   $operator,
-        array    $filter,
+        string $fieldBinder,
+        string $operator,
+        array $filter,
         \Closure $getValue,
-        string   $mode = 'self',
-    ): array
-    {
+        string $mode = 'self',
+    ): array {
         $isExistential = ($mode === 'existential');
 
         /*
@@ -682,7 +674,6 @@ trait FilterConditions
          *  - EXISTENTIAL: only positive BETWEEN allowed
          */
         if ($operator === 'between' || $operator === 'not between') {
-
             if ($isExistential && str_starts_with($operator, 'not ')) {
                 throw new \LogicException(
                     "Negative range operator '{$operator}' is not allowed in existential compilation."
@@ -720,7 +711,6 @@ trait FilterConditions
             'distance sphere less than',
             'distance sphere less than or equal',
         ], true)) {
-
             // Guard against negative existential geo
             if ($isExistential && str_contains($operator, 'not')) {
                 throw new \LogicException(
@@ -770,7 +760,6 @@ trait FilterConditions
          *  - EXISTENTIAL: NOT IN forbidden
          */
         if ($operator === 'in' || $operator === 'not in') {
-
             if ($isExistential && $operator === 'not in') {
                 throw new \LogicException(
                     "Negative set operator '{$operator}' is not allowed in existential compilation."
@@ -809,7 +798,6 @@ trait FilterConditions
 
             /* ---------- CONTAINS / DOES NOT CONTAIN ---------- */
             if (in_array($operator, ['contains', 'does not contain'], true)) {
-
                 if ($isExistential && $operator === 'does not contain') {
                     throw new \LogicException("Negative text operator leaked into existential.");
                 }
@@ -827,7 +815,6 @@ trait FilterConditions
                 'starts with', 'does not start with',
                 'ends with', 'does not end with',
             ], true)) {
-
                 if ($isExistential && str_starts_with($operator, 'does not')) {
                     throw new \LogicException("Negative text operator leaked into existential.");
                 }
@@ -845,7 +832,6 @@ trait FilterConditions
 
             /* ---------- CONTAINS WORD ---------- */
             if (in_array($operator, ['contains word', 'does not contain word'], true)) {
-
                 if ($isExistential && $operator === 'does not contain word') {
                     throw new \LogicException("Negative word operator leaked into existential.");
                 }
@@ -860,7 +846,6 @@ trait FilterConditions
 
             /* ---------- REGEXP ---------- */
             if ($operator === 'regexp' || $operator === 'not regexp') {
-
                 if ($isExistential && $operator === 'not regexp') {
                     throw new \LogicException("Negative regexp leaked into existential.");
                 }
@@ -1035,9 +1020,8 @@ trait FilterConditions
     protected function buildExistsConditionFromField(
         string $field,
         string $condition,
-        bool   $negated = false
-    ): array
-    {
+        bool $negated = false
+    ): array {
         $joins = $this->getJoinsDefinitionFromField($field);
 
         if (empty($joins)) {
@@ -1330,7 +1314,7 @@ trait FilterConditions
          *    - When $or is false: "and"
          *    - When $or is true: "or"
          */
-        return $or? 'or' : 'and';
+        return $or ? 'or' : 'and';
     }
 
     /**
