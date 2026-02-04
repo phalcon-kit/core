@@ -213,7 +213,7 @@ trait DescribesTrait
     public function requiresWrapping(string $name, bool $always = false): bool
     {
         // already wrapped
-        if (str_starts_with('[', $name)) {
+        if (str_starts_with($name, '[')) {
             return false;
         }
 
