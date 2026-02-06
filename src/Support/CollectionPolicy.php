@@ -1,4 +1,5 @@
 <?php
+
 namespace PhalconKit\Support;
 
 use Phalcon\Support\Collection;

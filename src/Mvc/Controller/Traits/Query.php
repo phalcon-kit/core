@@ -203,6 +203,11 @@ trait Query
     public function prepareFind(?Collection $find = null, bool $ignoreKey = false): array
     {
         $find ??= $this->getFind();
+        
+        if ($find === null) {
+            return [];
+        }
+        
 //        return $this->compileFind($this->prepareCollectionToCompile($find));
 
         $build = $this->prepareCollectionToCompile($find);
@@ -241,8 +246,13 @@ trait Query
 
         return $this->compileFind($build);
     }
-
-    public function conditionsShouldBeHaving(?string $conditions)
+    
+    /**
+     * Determines whether WHERE conditions must be promoted to HAVING.
+     *
+     * Currently disabled by design.
+     */
+    public function conditionsShouldBeHaving(?string $conditions): bool
     {
         return false;
 //        return preg_match('/GROUP_CONCAT\(.+?\)|COUNT\(.+?\)|SUM\(.+?\)|AVG\(.+?\)|MIN\(.+?\)|MAX\(.+?\)/i', $conditions);

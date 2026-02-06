@@ -59,7 +59,7 @@ trait PermissionConditions
     {
         $this->permissionConditions = new Collection([
             'default' => $this->buildDefaultPermissionCondition(),
-        ],false);
+        ], false);
     }
 
     /**
