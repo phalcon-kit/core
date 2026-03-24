@@ -145,8 +145,7 @@ trait DescribesTrait
         return match ($type) {
             'bool' => (bool)$columnDefault,
             'int' => (int)$columnDefault,
-            'double' => (double)$columnDefault,
-            'float' => (float)$columnDefault,
+            'double', 'float' => (float)$columnDefault,
             default => $this->isRawValue($columnDefault) ? null
                 : '\'' . addslashes((string)$columnDefault) . '\'',
         };
