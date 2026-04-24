@@ -93,7 +93,13 @@ trait Order
                     continue;
                 }
 
-                $collection->set($item[0], $this->appendModelName($item[0]) . ' ' . $this->getSide($item[1] ?? 'asc'));
+                $field = $item[0];
+                if (trim($field) !== 'RAND()') {
+                    $field = $this->appendModelName($field);
+                }
+
+                $collection->set($item[0], $field . ' ' . $this->getSide($item[1] ?? 'asc'));
+
             }
             // string
             else {
@@ -105,7 +111,12 @@ trait Order
                     continue;
                 }
 
-                $collection->set($key, $this->appendModelName($key) . ' ' . $this->getSide($item ?? 'asc'));
+                $field = $key;
+                if (trim($field) !== 'RAND()') {
+                    $field = $this->appendModelName($field);
+                }
+
+                $collection->set($key, $field . ' ' . $this->getSide($item ?? 'asc'));
             }
         }
 
