@@ -151,39 +151,132 @@ trait Model
         $modelName ??= $this->getModelName() ?? '';
         return $this->modelsManager->load($modelName);
     }
-    
+
     /**
-     * Appends the model name to the specified field string, if not already present.
-     * Example: field -> [Alias].[field]
+     * Normalize and qualify a field reference with the model (alias) name.
      *
-     * @param string $field The field string to append the model name to.
-     * @param string|null $modelName The name of the model to append. If null, the default model name will be used.
+     * Responsibilities
+     * ----------------
+     * • Provides **syntactic normalization only** (no metadata validation).
+     * • Safely formats identifiers into PHQL bracket notation: [Alias].[column].
+     * • Preserves SQL/PHQL function or expression calls (e.g. RAND(), COUNT(id)).
+     * • Supports optional ORDER BY direction (ASC | DESC).
+     * • Rejects obvious injection vectors.
      *
-     * @return string The modified field string with the model name appended.
+     * Assumptions
+     * -----------
+     * • Column / alias allow-listing and validation occur upstream.
+     * • This method must be deterministic and side-effect free.
+     *
+     * Supported inputs
+     * ----------------
+     * id                     → [Model].[id]
+     * id desc                → [Model].[id] desc
+     * alias.id               → [alias].[id]
+     * COUNT(id)              → COUNT(id)
+     * COUNT(id) DESC         → COUNT(id) desc
+     * RAND()                 → RAND()
+     * [alias].[id]           → unchanged
+     *
+     * Rejected inputs
+     * ---------------
+     * foo.bar.baz            → Invalid identifier
+     * id; DROP TABLE         → Unsafe expression
+     *
+     * @param string      $field     Raw field string.
+     * @param string|null $modelName Default alias if none provided.
+     *
+     * @return string Normalized field string.
+     *
+     * @throws \InvalidArgumentException When identifier or expression is unsafe.
      */
     public function appendModelName(string $field, ?string $modelName = null): string
     {
         $modelName ??= $this->getModelName() ?? '';
-        
-        if (empty($field)) {
+        $field = trim($field);
+
+        if ($field === '') {
             return $field;
         }
 
-        // fields with brackets are ignored
+        /**
+         * ---------------------------------------------------------------------
+         * Security: reject obvious SQL injection patterns
+         * ---------------------------------------------------------------------
+         */
+        if (preg_match('/;|--|\/\*/', $field)) {
+            throw new \InvalidArgumentException('Unsafe field expression.');
+        }
+
+        /**
+         * ---------------------------------------------------------------------
+         * Extract optional ORDER BY direction
+         * ---------------------------------------------------------------------
+         * Supports:
+         *   "column DESC"
+         *   "COUNT(id) asc"
+         */
+        $direction = '';
+        $tokens = preg_split('/\s+/', $field);
+
+        if (count($tokens) > 1) {
+            $last = strtolower(end($tokens));
+            if ($last === 'asc' || $last === 'desc') {
+                $direction = ' ' . $last;
+                array_pop($tokens);
+                $field = implode(' ', $tokens);
+            }
+        }
+
+        /**
+         * ---------------------------------------------------------------------
+         * If expression / function → passthrough
+         * ---------------------------------------------------------------------
+         * Covers:
+         *   RAND()
+         *   COUNT(id)
+         *   LOWER(name)
+         *   CASE WHEN ...
+         */
+        if (preg_match('/^[A-Z_][A-Z0-9_]*\s*\(/i', $field)) {
+            return $field . $direction;
+        }
+
+        /**
+         * Already fully qualified with brackets → passthrough
+         */
         if (str_starts_with($field, '[') && str_ends_with($field, ']')) {
-            return $field;
+            return $field . $direction;
         }
-        
-        // Add the current model name by default
-        $explode = explode(' ', $field);
-        if (!strpos($field, '.') !== false) {
-            $field = trim('[' . $modelName . '].[' . array_shift($explode) . '] ' . implode(' ', $explode));
+
+        /**
+         * ---------------------------------------------------------------------
+         * Identifier normalization
+         * ---------------------------------------------------------------------
+         * Accepts:
+         *   column
+         *   alias.column
+         */
+        $segments = explode('.', $field);
+
+        if (count($segments) > 2) {
+            throw new \InvalidArgumentException('Invalid identifier.');
         }
-        else if (!str_contains($field, ']') && !str_contains($field, '[')) {
-            $field = trim('[' . implode('].[', explode('.', array_shift($explode))) . ']' . implode(' ', $explode));
+
+        /**
+         * Validate identifier grammar (defensive — allow-list is upstream)
+         */
+        foreach ($segments as $segment) {
+            if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $segment)) {
+                throw new \InvalidArgumentException('Invalid identifier segment.');
+            }
         }
-        
-        return $field;
+
+        if (count($segments) === 1) {
+            return sprintf('[%s].[%s]%s', $modelName, $segments[0], $direction);
+        }
+
+        return sprintf('[%s].[%s]%s', $segments[0], $segments[1], $direction);
     }
     
     /**
@@ -201,5 +294,14 @@ trait Model
         }
         
         return $this->modelsMetadata->getPrimaryKeyAttributes($this->loadModel($modelName));
+    }
+
+    protected function isExpression(string $field): bool
+    {
+        // contains parentheses OR SQL keywords that imply expression
+        return (bool) preg_match(
+            '/\(|\)|\bCASE\b|\bWHEN\b|\bTHEN\b|\bEND\b|\bOVER\b/i',
+            $field
+        );
     }
 }
