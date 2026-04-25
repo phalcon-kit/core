@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace PhalconKit\Ws;
 
+use Phalcon\Cli\Console;
 use Phalcon\Di\DiInterface;
 
-class WebSocket extends \Phalcon\Cli\Console
+class WebSocket extends Console
 {
     public function __construct(?DiInterface $container = null)
     {

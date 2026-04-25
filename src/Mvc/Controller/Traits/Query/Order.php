@@ -53,7 +53,7 @@ trait Order
     {
         $this->initializeDefaultOrder();
         $order = $this->getParam('order', [Filter::FILTER_STRING, Filter::FILTER_TRIM], $this->getDefaultOrder());
-        
+
         if (!isset($order)) {
             $this->setOrder(null);
             return;
@@ -67,12 +67,17 @@ trait Order
         if (!is_array($order)) {
             throw new Exception(sprintf('Invalid type for "order" parameter: expected null, string, or array, got %s.', gettype($order)), 400);
         }
-        
+
         $collection = new Collection([], false);
         foreach ($order as $key => $item) {
             if (is_int($key)) {
                 if (is_string($item)) {
-                    $item = explode(' ', trim($item));
+                    $item = preg_split('/\s+/', trim($item), -1, PREG_SPLIT_NO_EMPTY);
+                }
+
+                // skip empty results
+                if (empty($item)) {
+                    continue;
                 }
                 
                 if (!is_array($item)) {
@@ -82,15 +87,28 @@ trait Order
                 if (count($item) > 2) {
                     throw new Exception(sprintf('Invalid order element at index %d: expected [field, direction] with at most 2 elements, got %d.', $key, count($item)), 400);
                 }
-                
+
+                // skip empty field name
+                if (empty($item[0])) {
+                    continue;
+                }
+
                 $collection->set($item[0], $this->appendModelName($item[0]) . ' ' . $this->getSide($item[1] ?? 'asc'));
             }
             // string
             else {
+                $key  = trim($key);
+                $item = trim((string) $item);
+
+                // skip empty key
+                if (empty($key)) {
+                    continue;
+                }
+
                 $collection->set($key, $this->appendModelName($key) . ' ' . $this->getSide($item ?? 'asc'));
             }
         }
-        
+
         $this->setOrder($collection);
     }
     

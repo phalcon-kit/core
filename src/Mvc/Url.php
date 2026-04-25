@@ -53,8 +53,8 @@ class Url extends \Phalcon\Mvc\Url
             return $path;
         }
         
-        $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-        $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), function (mixed $string) {
+        $path = str_replace(['/', '\\'], '/', $path);
+        $parts = array_filter(explode('/', $path), function (mixed $string) {
             return !empty($string);
         });
         $absolutes = [];
@@ -69,6 +69,6 @@ class Url extends \Phalcon\Mvc\Url
                 $absolutes[] = $part;
             }
         }
-        return '/' . implode(DIRECTORY_SEPARATOR, $absolutes);
+        return '/' . implode('/', $absolutes);
     }
 }

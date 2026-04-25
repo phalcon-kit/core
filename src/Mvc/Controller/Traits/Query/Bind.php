@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Controller\Traits\Query;
 
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractBind;
+use PhalconKit\Support\CollectionPolicy;
 
 trait Bind
 {
@@ -73,6 +74,20 @@ trait Bind
     {
         return $this->bind;
     }
+
+    /**
+     * Merges the provided bind collection with the current bind property.
+     *
+     * @param Collection $bind The collection of expose fields to merge with the current property.
+     * @return void
+     */
+    public function mergeBind(Collection $bind): void
+    {
+        $this->bind = CollectionPolicy::mergeNullable(
+            $this->bind,
+            $bind
+        );
+    }
     
     /**
      * Sets the fields for binding data.
@@ -99,5 +114,19 @@ trait Bind
     public function getBindTypes(): ?Collection
     {
         return $this->bindTypes;
+    }
+
+    /**
+     * Merges the provided bindTypes collection with the current bindTypes property.
+     *
+     * @param Collection $bindTypes The collection of bindTypes to merge with the current property.
+     * @return void
+     */
+    public function mergeBindTypes(Collection $bindTypes): void
+    {
+        $this->bindTypes = CollectionPolicy::mergeNullable(
+            $this->bindTypes,
+            $bindTypes
+        );
     }
 }

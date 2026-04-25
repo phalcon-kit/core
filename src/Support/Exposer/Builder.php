@@ -13,23 +13,82 @@ declare(strict_types=1);
 
 namespace PhalconKit\Support\Exposer;
 
+/**
+ * Builder
+ *
+ * Mutable state container used by {@see Exposer} during exposure traversal.
+ *
+ * This class is deliberately simple and strict. It enforces a **single invariant**
+ * that the entire exposure system relies on:
+ *
+ * **All keys are strings. The root path is represented by the empty string (`''`).**
+ *
+ * `null` is never used to represent keys or paths once inside the Builder.
+ *
+ * Responsibilities:
+ * - Hold the current traversal state (value, parent, key, context).
+ * - Hold global exposure configuration (columns, protected flag).
+ * - Be reused across recursion to avoid object churn.
+ *
+ * Non-responsibilities:
+ * - No exposure logic.
+ * - No rule resolution.
+ * - No traversal decisions.
+ *
+ * All business logic lives in {@see Exposer}.
+ */
 class Builder implements BuilderInterface
 {
+    /**
+     * Current value being evaluated.
+     */
     private mixed $value = null;
     
+    /**
+     * Parent value in the traversal graph.
+     */
     private mixed $parent = null;
     
+    /**
+     * Flattened column rules (dot-path => rule).
+     */
     private ?array $columns = null;
     
+    /**
+     * Optional logical field name (legacy / informational).
+     * Not used by the Exposer core logic.
+     */
     private ?string $field = null;
     
-    private ?string $key = null;
+    /**
+     * Current local key (single segment).
+     *
+     * Normalized and guaranteed to be a string.
+     * Root is represented as ''.
+     */
+    private string $key = '';
     
-    private ?string $contextKey = null;
+    /**
+     * Current context key (dot-path prefix).
+     *
+     * Normalized and guaranteed to be a string.
+     * Root context is represented as ''.
+     */
+    private string $contextKey = '';
     
+    /**
+     * Whether the current node is exposed.
+     */
     private bool $expose = true;
     
+    /**
+     * Whether underscore-prefixed keys are allowed.
+     */
     private bool $protected = false;
+    
+    /* -------------------------------------------------------------------------
+     * Value & parent
+     * ---------------------------------------------------------------------- */
     
     #[\Override]
     public function getValue(): mixed
@@ -55,29 +114,59 @@ class Builder implements BuilderInterface
         $this->parent = $parent;
     }
     
+    /* -------------------------------------------------------------------------
+     * Key & context
+     * ---------------------------------------------------------------------- */
+    
+    /**
+     * Return the current local key.
+     *
+     * Guaranteed to be a string.
+     * Root is represented as ''.
+     */
     #[\Override]
-    public function getKey(): ?string
+    public function getKey(): string
     {
         return $this->key;
     }
     
+    /**
+     * Set the current local key.
+     *
+     * Any input is normalized via {@see processKey()}.
+     */
     #[\Override]
     public function setKey(?string $key = null): void
     {
         $this->key = self::processKey($key);
     }
     
+    /**
+     * Return the current context key (dot-path prefix).
+     *
+     * Guaranteed to be a string.
+     * Root context is represented as ''.
+     */
     #[\Override]
-    public function getContextKey(): ?string
+    public function getContextKey(): string
     {
         return $this->contextKey;
     }
     
+    /**
+     * Set the current context key.
+     *
+     * Any input is normalized via {@see processKey()}.
+     */
     #[\Override]
     public function setContextKey(?string $contextKey = null): void
     {
         $this->contextKey = self::processKey($contextKey);
     }
+    
+    /* -------------------------------------------------------------------------
+     * Field (legacy / informational)
+     * ---------------------------------------------------------------------- */
     
     #[\Override]
     public function getField(): ?string
@@ -91,6 +180,10 @@ class Builder implements BuilderInterface
         $this->field = $field;
     }
     
+    /* -------------------------------------------------------------------------
+     * Columns (rules)
+     * ---------------------------------------------------------------------- */
+    
     #[\Override]
     public function getColumns(): ?array
     {
@@ -102,6 +195,10 @@ class Builder implements BuilderInterface
     {
         $this->columns = $columns;
     }
+    
+    /* -------------------------------------------------------------------------
+     * Exposure flags
+     * ---------------------------------------------------------------------- */
     
     #[\Override]
     public function getExpose(): bool
@@ -127,50 +224,72 @@ class Builder implements BuilderInterface
         $this->protected = $protected;
     }
     
-    /**
-     * Retrieves the full key constructed from the context and the key.
-     *
-     * The full key is determined based on the following conditions:
-     * - If the key is empty, the context is returned.
-     * - If the context is empty, the key is returned.
-     * - If both are present, the result is a concatenation of context and key separated by a dot.
-     *
-     * @return string|null The constructed full key or null if both key and context are null.
-     */
-    #[\Override]
-    public function getFullKey(): ?string
-    {
-        $key = $this->getKey();
-        $context = $this->getContextKey();
-        
-        // If $key is empty, just return the context
-        if (empty($key)) {
-            return $context;
-        }
-        
-        // If $key is not empty but $context is empty, return just the key
-        if (empty($context)) {
-            return $key;
-        }
-        
-        // Both present: "context.key"
-        return $context . '.' . $key;
-    }
+    /* -------------------------------------------------------------------------
+     * Derived keys
+     * ---------------------------------------------------------------------- */
     
     /**
-     * Processes the given key by normalizing its format.
+     * Return the fully-qualified dot-path key for the current node.
      *
-     * @param string|null $key The input key to be processed. It can be null, an empty string, or a string.
-     * @return string|null Returns the processed key in a normalized format or an empty string if the input is null, empty, or a valid integer string.
+     * Invariants:
+     * - Always returns a string.
+     * - Root path is ''.
+     *
+     * Semantics:
+     * - key='' and context=''      → ''
+     * - key='' and context!=''     → context
+     * - key!='' and context=''     → key
+     * - key!='' and context!=''    → context.key
      */
-    public static function processKey(?string $key = null): ?string
+    #[\Override]
+    public function getFullKey(): string
     {
-        if ($key === null || $key === '' || filter_var($key, FILTER_VALIDATE_INT)) {
+        if ($this->key === '' && $this->contextKey === '') {
+            return '';
+        }
+        
+        if ($this->key === '') {
+            return $this->contextKey;
+        }
+        
+        if ($this->contextKey === '') {
+            return $this->key;
+        }
+        
+        return $this->contextKey . '.' . $this->key;
+    }
+    
+    /* -------------------------------------------------------------------------
+     * Utilities
+     * ---------------------------------------------------------------------- */
+    
+    /**
+     * Normalize a key or context segment.
+     *
+     * Rules:
+     * - null, empty string, or integer-like strings collapse to '' (root).
+     * - Whitespace becomes dots.
+     * - Multiple dots collapse into one.
+     * - Lowercased and trimmed of leading/trailing dots.
+     *
+     * This guarantees:
+     * - Stable dot-path generation.
+     * - No accidental numeric keys.
+     * - A single, canonical representation for root.
+     */
+    public static function processKey(?string $key = null): string
+    {
+        if (
+            $key === null
+            || $key === ''
+            || filter_var($key, FILTER_VALIDATE_INT) !== false
+        ) {
             return '';
         }
         
         $key = preg_replace('/\s+/', '.', $key) ?? '';
         $key = preg_replace('/\.+/', '.', $key) ?? '';
+        
         return trim(mb_strtolower($key), '.');
     }
 }

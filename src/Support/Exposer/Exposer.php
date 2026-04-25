@@ -13,32 +13,52 @@ declare(strict_types=1);
 
 namespace PhalconKit\Support\Exposer;
 
-use PhalconKit\Mvc\Model;
-
 /**
- * Class Expose
- * @todo rewrite this code
- * @todo write unit test for this
+ * Exposer
  *
- * Example
+ * Production-ready, deterministic exposure engine built on top of a mutable Builder.
  *
- * Simple
- * ```php
- * $this->expose() // expose everything except protected properties
- * $this->expose(null, true, true); // expose everything including protected properties
- * $this->expose(array('Source.id' => false)) // expose everything except 'id' and protected properties
- * $this->expose(array('Source' => array('id', 'title')) // expose only 'id' and 'title'
- * $this->expose(array('Source' => true, false) // expose everything from Source except protected properties
- * $this->expose(array('Source.Sources' => true, false) // expose everything from Source->Sources except protected properties
- * $this->expose(array('Source.Sources' => array('id'), false) // expose only the 'id' field of the sub array "Sources"
- * $this->expose(array('Source.Sources' => array(true, 'id' => false), false) // expose everything from the sub array "Sources" except the 'id' field
- * $this->expose(array('Source' => array(false, 'Sources' => array(true, 'id' => false))) // expose everything from the sub array "Sources" except the 'id' field
- * ```
+ * Design goals (all preserved):
+ * - Deny-by-default or allow-by-default behavior controlled explicitly by rules.
+ * - Support deep dot-path rules (flattened internally).
+ * - Support anonymous functions (closures) as dynamic callbacks.
+ * - Support value transformation via string formatters.
+ * - Support parent inheritance and child-activation semantics.
+ * - Support protected fields (underscore-prefixed) opt-out.
+ *
+ * Core rule types:
+ * - bool
+ *   - true  → expose
+ *   - false → hide
+ *
+ * - string
+ *   - Expose and transform value using mb_vsprintf()
+ *
+ * - callable(Builder $builder)
+ *   - Return BuilderInterface → caller mutates builder directly
+ *   - Return string           → formatter
+ *   - Return bool             → expose toggle
+ *   - Return iterable         → additional column rules (merged)
+ *
+ * - iterable
+ *   - Nested column definitions (flattened recursively)
+ *
+ * Root behavior:
+ * - A boolean at index 0 (e.g. `[false, 'id', 'email']`)
+ *   is treated as a rule on the ROOT path (`''`).
+ * - This enables strict deny-by-default semantics with explicit allow-lists.
  */
 class Exposer
 {
-    public static function createBuilder(mixed $object, ?array $columns = null, ?bool $expose = null, ?bool $protected = null): Builder
-    {
+    /**
+     * Create and initialize a Builder for an exposure run.
+     */
+    public static function createBuilder(
+        mixed $object,
+        ?array $columns = null,
+        ?bool $expose = null,
+        ?bool $protected = null
+    ): Builder {
         $expose ??= true;
         $protected ??= false;
         
@@ -47,196 +67,262 @@ class Exposer
         $builder->setExpose($expose);
         $builder->setProtected($protected);
         $builder->setValue($object);
+        
         return $builder;
     }
     
-    private static function getValue(string $string, mixed $value): string
+    /**
+     * Apply string formatting to a value.
+     */
+    private static function formatValue(string $format, mixed $value): string
     {
-        // @todo maybe we should remove the sprintf manipulation
-        return mb_vsprintf($string, [$value]);
+        return mb_vsprintf($format, [$value]);
     }
     
+    /**
+     * Determine whether the current builder node should be exposed.
+     *
+     * Resolution order:
+     * 1. Exact rule match (including root: '')
+     * 2. Nearest parent rule
+     * 3. Child-activation (a deeper rule === true)
+     * 4. Protected-field enforcement
+     */
     private static function checkExpose(Builder $builder): void
     {
-        $columns = $builder->getColumns();
-        $fullKey = $builder->getFullKey();
-        $value = $builder->getValue();
+        $columns = $builder->getColumns() ?? [];
         
-        // Check if the key itself exists at first
-        if (isset($fullKey, $columns[$fullKey])) {
-            $column = $columns[$fullKey];
-            
-            // If boolean, set expose to the boolean value
-            if (is_bool($column)) {
-                $builder->setExpose($column);
-            }
-            
-            // If callable, set the expose to true, and run the method and passes the builder as parameter
-            elseif (is_callable($column)) {
-                $builder->setExpose(true);
-                $callbackReturn = $column($builder);
-                
-                // If builder is returned, no nothing
-                if ($callbackReturn instanceof BuilderInterface) {
-                    $builder = $callbackReturn;
-                }
-                
-                // If string is returned, set expose to true and parse with mb_sprintfn or mb_sprintf
-                elseif (is_string($callbackReturn)) {
-                    $builder->setExpose(true);
-                    $builder->setValue(self::getValue($callbackReturn, $value));
-                }
-                
-                // If bool is returned, set expose to boolean value
-                elseif (is_bool($callbackReturn)) {
-                    $builder->setExpose($callbackReturn);
-                }
-                
-                // If array is returned, parse the columns from the current context key and merge it with the builder
-                elseif (is_iterable($callbackReturn)) {
-                    $columns = self::parseColumnsRecursive($callbackReturn, $fullKey) ?? [];
-                    
-                    // If not set, set expose to false by default
-                    if (!isset($columns[$fullKey])) {
-                        $columns[$fullKey] = false;
-                    }
-                    
-                    //@TODO handle with array_merge_recursive and handle array inside the columns parameters ^^
-                    $builder->setColumns(array_merge($builder->getColumns() ?? [], $columns));
-                }
-            }
-            
-            // If is string, set expose to true and parse with mb_sprintfn or mb_sprintf
-            elseif (is_string($column)) {
-                $builder->setExpose(true);
-                $builder->setValue(self::getValue($column, $value));
-            }
+        /**
+         * Canonical full key:
+         * - Root is represented as empty string ''
+         */
+        $fullKey = $builder->getFullKey() ?? '';
+        $value   = $builder->getValue();
+        
+        /* ------------------------------------------------------------
+         * 1) Exact path rule (including root)
+         * ------------------------------------------------------------ */
+        if (array_key_exists($fullKey, $columns)) {
+            self::applyRule($builder, $columns[$fullKey], $fullKey, $value);
         }
         
-        // Otherwise, check if a parent key exists
+        /* ------------------------------------------------------------
+         * 2) Parent path fallback (walk upward, first match wins)
+         * ------------------------------------------------------------ */
         else {
             $parentKey = $fullKey;
-            $parentIndex = isset($parentKey) ? strrpos($parentKey, '.') : false;
-            do {
-                $parentKey = $parentIndex && isset($parentKey) ? substr($parentKey, 0, $parentIndex) : '';
-                if (isset($columns[$parentKey])) {
-                    $column = $columns[$parentKey];
-                    if (is_bool($column)) {
-                        $builder->setExpose($column);
-                    }
-                    elseif (is_callable($column)) {
-                        $builder->setExpose(true);
-                        $callbackReturn = $column($builder);
-                        if ($callbackReturn instanceof BuilderInterface) {
-                            $builder = $callbackReturn;
-                        }
-                        elseif (is_string($callbackReturn)) {
-                            $builder->setExpose(true);
-                            $builder->setValue(self::getValue($callbackReturn, $value));
-                        }
-                        elseif (is_bool($callbackReturn)) {
-                            $builder->setExpose($callbackReturn);
-                        }
-                        elseif (is_iterable($callbackReturn)) {
-                            // Since it is a parent, we're not supposed to re-re-merge the existing columns
-                        }
-                    }
-                    elseif (is_string($column)) {
-                        $builder->setExpose(false);
-                        $builder->setValue(self::getValue($column, $value));
-                    }
-                    break;
-                    // break at the first parent found
+            
+            while ($parentKey !== '') {
+                $pos = strrpos($parentKey, '.');
+                $parentKey = ($pos === false) ? '' : substr($parentKey, 0, $pos);
+                
+                if (!array_key_exists($parentKey, $columns)) {
+                    continue;
                 }
+                
+                self::applyRule($builder, $columns[$parentKey], $parentKey, $value, true);
+                break;
             }
-            while ($parentIndex = strrpos($parentKey, '.'));
         }
         
-        if (isset($fullKey) && !empty($columns)) {
-            // Try to find a subentity, or field that has the true value
-            $value = $builder->getValue();
-            if (is_iterable($value) || is_callable($value)) {
+        /* ------------------------------------------------------------
+         * 3) Child-activation:
+         * If a deeper path is explicitly true, expose this container.
+         * ------------------------------------------------------------ */
+        if ($columns !== []) {
+            $currentValue = $builder->getValue();
+            
+            if (is_iterable($currentValue) || is_callable($currentValue)) {
                 foreach ($columns as $columnKey => $columnValue) {
-                    if ($columnValue === true && str_starts_with($columnKey, $fullKey)) {
-                        // expose the current instance (which is the parent of the sub column)
+                    if (
+                        $columnValue === true
+                        && is_string($columnKey)
+                        && $columnKey !== ''
+                        && ($fullKey === '' || str_starts_with($columnKey, $fullKey . '.'))
+                    ) {
                         $builder->setExpose(true);
+                        break;
                     }
                 }
             }
         }
         
-        // check for protected setting
+        /* ------------------------------------------------------------
+         * 4) Protected-field enforcement
+         * ------------------------------------------------------------ */
         $key = $builder->getKey();
-        if (!$builder->getProtected() && is_string($key) && str_starts_with($key, '_')) {
+        if (
+            !$builder->getProtected()
+            && is_string($key)
+            && str_starts_with($key, '_')
+        ) {
             $builder->setExpose(false);
         }
     }
     
+    /**
+     * Apply a single rule to the builder.
+     *
+     * @param mixed  $rule
+     * @param string $ruleKey
+     * @param mixed  $currentValue
+     * @param bool   $isParentRule
+     */
+    private static function applyRule(
+        Builder $builder,
+        mixed $rule,
+        string $ruleKey,
+        mixed $currentValue,
+        bool $isParentRule = false
+    ): void {
+        /* ------------------------------------------------------------
+         * Boolean rule
+         * ------------------------------------------------------------ */
+        if (is_bool($rule)) {
+            $builder->setExpose($rule);
+            return;
+        }
+        
+        /* ------------------------------------------------------------
+         * Callable rule (anonymous functions fully supported)
+         * ------------------------------------------------------------ */
+        if (is_callable($rule)) {
+            $builder->setExpose(true);
+            
+            $callbackReturn = $rule($builder);
+            
+            if ($callbackReturn instanceof BuilderInterface) {
+                // Callback owns builder mutation
+                return;
+            }
+            
+            if (is_string($callbackReturn)) {
+                $builder->setExpose(true);
+                $builder->setValue(self::formatValue($callbackReturn, $currentValue));
+                return;
+            }
+            
+            if (is_bool($callbackReturn)) {
+                $builder->setExpose($callbackReturn);
+                return;
+            }
+            
+            if (is_iterable($callbackReturn)) {
+                // Parent rules do not re-merge columns to avoid cascade duplication
+                if ($isParentRule) {
+                    return;
+                }
+                
+                $parsed = self::parseColumnsRecursive($callbackReturn, $ruleKey) ?? [];
+                
+                // If callable introduced sub-rules without defining itself,
+                // default current ruleKey to false (deny container)
+                if (!array_key_exists($ruleKey, $parsed)) {
+                    $parsed[$ruleKey] = false;
+                }
+                
+                $builder->setColumns(
+                    array_merge($builder->getColumns() ?? [], $parsed)
+                );
+                return;
+            }
+            
+            return;
+        }
+        
+        /* ------------------------------------------------------------
+         * String rule (formatter)
+         * ------------------------------------------------------------ */
+        if (is_string($rule)) {
+            // Historical behavior:
+            // Parent string rule hides container but still formats value.
+            $builder->setExpose(!$isParentRule);
+            $builder->setValue(self::formatValue($rule, $currentValue));
+            return;
+        }
+        
+        // Unsupported types are ignored intentionally
+    }
+    
+    /**
+     * Expose a value graph according to builder state.
+     */
     public static function expose(Builder $builder): mixed
     {
         $columns = $builder->getColumns();
-        $value = $builder->getValue();
+        $value   = $builder->getValue();
         
         if (is_iterable($value) || is_object($value)) {
             $toParse = is_object($value) && method_exists($value, 'toArray')
                 ? $value->toArray()
-                : (array)$value;
+                : (array) $value;
             
-            // si accused column demandé et que l'expose est à false
-            if (is_null($columns) && !$builder->getExpose()) {
+            // Explicit deny-by-default at root
+            if ($columns === null && !$builder->getExpose()) {
                 return [];
             }
             
-            // Prépare l'array de retour des fields de l'instance
             $ret = [];
+            
+            // Preserve context across recursion
             $currentContextKey = $builder->getContextKey();
             $builder->setContextKey($builder->getFullKey());
+            
             foreach ($toParse as $fieldKey => $fieldValue) {
                 $builder->setParent($value);
-                $builder->setKey((string)$fieldKey);
+                $builder->setKey((string) $fieldKey);
                 $builder->setValue($fieldValue);
+                
                 self::checkExpose($builder);
+                
                 if ($builder->getExpose()) {
-                    $ret [$fieldKey] = self::expose($builder);
+                    $ret[$fieldKey] = self::expose($builder);
                 }
             }
+            
             $builder->setContextKey($currentContextKey);
-        }
-        else {
-            $ret = $builder->getExpose() ? $value : null;
+            
+            return $ret;
         }
         
-        return $ret;
+        return $builder->getExpose() ? $value : null;
     }
     
     /**
-     * Here to parse the columns parameter into some kind of flatten array with
-     * the key path separated by dot "my.path" and the value true, false or a callback function
-     * including the ExposeBuilder object
+     * Parse column definitions into a flattened dot-path rule map.
      *
-     * @param iterable|null $columns
-     * @param string|null $context
-     *
-     * @return array|null
+     * Root semantics:
+     * - A boolean without a key becomes a rule on the root path ('').
+     * - Root context never produces ".field" keys.
      */
-    public static function parseColumnsRecursive(?iterable $columns = null, ?string $context = null): ?array
-    {
-        if (!isset($columns)) {
+    public static function parseColumnsRecursive(
+        ?iterable $columns = null,
+        ?string $context = null
+    ): ?array {
+        if ($columns === null) {
             return null;
         }
+        
+        /** @var array<string, mixed> $ret */
         $ret = [];
+        
         foreach ($columns as $key => $value) {
+            /* --------------------------------------------------------
+             * Boolean key → root rule
+             * -------------------------------------------------------- */
             if (is_bool($key)) {
                 $value = $key;
                 $key = null;
             }
             
+            /* --------------------------------------------------------
+             * Numeric key
+             * -------------------------------------------------------- */
             if (is_int($key)) {
                 if (is_string($value)) {
                     $key = $value;
                     $value = true;
-                }
-                else {
+                } else {
                     $key = null;
                 }
             }
@@ -245,24 +331,44 @@ class Exposer
                 $key = trim(mb_strtolower($key));
             }
             
-            if (is_string($value) && empty($value)) {
+            if (is_string($value) && $value === '') {
                 $value = true;
             }
             
-            $currentKey = (!empty($context) ? $context . (!empty($key) ? '.' : null) : null) . $key;
+            /* --------------------------------------------------------
+             * Build dot-path safely
+             * -------------------------------------------------------- */
+            if ($context === null || $context === '') {
+                $currentKey = $key ?? '';
+            } else {
+                $currentKey = ($key !== null) ? ($context . '.' . $key) : $context;
+            }
+            
+            if ($currentKey === null) {
+                continue;
+            }
+            
+            /* --------------------------------------------------------
+             * Assign rule
+             * -------------------------------------------------------- */
             if (is_callable($value)) {
                 $ret[$currentKey] = $value;
+                continue;
             }
-            else if (is_iterable($value)) {
-                $subRet = self::parseColumnsRecursive($value, $currentKey);
-                $ret = array_merge_recursive($ret, $subRet ?? []);
-                if (!isset($ret[$currentKey])) {
+            
+            if (is_iterable($value)) {
+                $sub = self::parseColumnsRecursive($value, $currentKey) ?? [];
+                $ret = array_merge_recursive($ret, $sub);
+                
+                // If only subkeys exist, default container to false
+                if (!array_key_exists($currentKey, $ret)) {
                     $ret[$currentKey] = false;
                 }
+                
+                continue;
             }
-            else {
-                $ret[$currentKey] = $value;
-            }
+            
+            $ret[$currentKey] = $value;
         }
         
         return $ret;

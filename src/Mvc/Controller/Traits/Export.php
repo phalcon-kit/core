@@ -248,13 +248,16 @@ trait Export
             }
             $export [] = array_values($row);
         }
-        
+
         $xlsx = SimpleXLSXGen::fromArray($export);
-        
-        $this->response->setContent($xlsx);
-        $this->response->setContentType('application/json');
-        $this->response->setHeader('Content-disposition', 'attachment; filename="' . addslashes($filename) . '.json"');
-        
+
+        $binary = (string)$xlsx;
+        $this->response->setContent($binary);
+        $this->response->setContentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'UTF-8');
+        $this->response->setHeader('Content-Disposition', 'attachment; filename="' . addslashes($filename) . '.xlsx"');
+        $this->response->setHeader('Content-Length', (string) strlen($binary));
+        $this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT');
+
         return $this->response;
 //        return $xlsx->downloadAs($filename . '.xlsx');
     }

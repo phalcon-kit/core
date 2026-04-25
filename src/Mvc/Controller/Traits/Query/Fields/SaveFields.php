@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Fields;
 
 use Phalcon\Support\Collection;
+use PhalconKit\Support\CollectionPolicy;
 
 trait SaveFields
 {
@@ -68,5 +69,19 @@ trait SaveFields
     public function hasSaveFields(): bool
     {
         return $this->saveFields !== null;
+    }
+
+    /**
+     * Merges the provided saveFields collection with the current saveFields property.
+     *
+     * @param Collection $saveFields The collection of saveFields to merge with the current property.
+     * @return void
+     */
+    public function mergeSaveFields(Collection $saveFields): void
+    {
+        $this->saveFields = CollectionPolicy::mergeNullable(
+            $this->saveFields,
+            $saveFields
+        );
     }
 }

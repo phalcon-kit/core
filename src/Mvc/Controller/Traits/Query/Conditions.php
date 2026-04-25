@@ -20,6 +20,7 @@ use PhalconKit\Mvc\Controller\Traits\Query\Conditions\IdentityConditions;
 use PhalconKit\Mvc\Controller\Traits\Query\Conditions\PermissionConditions;
 use PhalconKit\Mvc\Controller\Traits\Query\Conditions\SearchConditions;
 use PhalconKit\Mvc\Controller\Traits\Query\Conditions\SoftDeleteConditions;
+use PhalconKit\Support\CollectionPolicy;
 
 trait Conditions
 {
@@ -32,7 +33,18 @@ trait Conditions
     use SoftDeleteConditions;
     
     protected ?Collection $conditions = null;
-    
+
+    /**
+     * Initializes and sets up various conditions required for the system.
+     * - Permission Conditions
+     * - Soft Delete Conditions
+     * - Identity Conditions
+     * - Filter Conditions
+     * - Search Conditions
+     *
+     * @return void
+     * @throws \Exception
+     */
     public function initializeConditions(): void
     {
         $this->initializePermissionConditions();
@@ -49,14 +61,39 @@ trait Conditions
             'search' => $this->getSearchConditions(),
         ], false));
     }
-    
+
+    /**
+     * Sets the conditions.
+     *
+     * @param Collection|null $conditions A collection of conditions or null to unset the conditions.
+     * @return void
+     */
     public function setConditions(?Collection $conditions): void
     {
         $this->conditions = $conditions;
     }
-    
+
+    /**
+     * Retrieves the conditions.
+     *
+     * @return Collection|null A collection of conditions or null if none are set.
+     */
     public function getConditions(): ?Collection
     {
         return $this->conditions;
+    }
+
+    /**
+     * Merges the provided conditions collection with the current conditions property.
+     *
+     * @param Collection $conditions The collection of conditions to merge with the current property.
+     * @return void
+     */
+    public function mergeConditions(Collection $conditions): void
+    {
+        $this->conditions = CollectionPolicy::mergeNullable(
+            $this->conditions,
+            $conditions
+        );
     }
 }

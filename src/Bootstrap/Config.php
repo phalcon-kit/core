@@ -1101,7 +1101,9 @@ class Config extends \PhalconKit\Config\Config
                         'password' => Env::get('DATABASE_PASSWORD', ''),
                         'charset' => Env::get('DATABASE_CHARSET', 'utf8'),
                         'options' => [
-                            \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . Env::get('DATABASE_CHARSET', 'utf8') .
+                            \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET' .
+                                ' NAMES ' . Env::get('DATABASE_CHARSET', 'utf8mb4') .
+                                ' COLLATE ' . Env::get('DATABASE_COLLATION', 'utf8mb4_0900_ai_ci'), // utf8mb4_unicode_520_ci for mariadb
                                 ', sql_mode = \'' . Env::get('DATABASE_SQL_MODE', 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION') . '\'' .
                                 ', block_encryption_mode = \'' . Env::get('DATABASE_BLOCK_ENCRYPTION_MODE', 'aes-256-cbc') . '\'',
                             \PDO::ATTR_EMULATE_PREPARES => Env::get('DATABASE_EMULATE_PREPARES', false), // https://stackoverflow.com/questions/10113562/pdo-mysql-use-pdoattr-emulate-prepares-or-not

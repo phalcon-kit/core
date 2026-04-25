@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Fields;
 
 use Phalcon\Support\Collection;
+use PhalconKit\Support\CollectionPolicy;
 
 trait ExposeFields
 {
@@ -66,5 +67,19 @@ trait ExposeFields
     public function hasExposeFields(): bool
     {
         return $this->exposeFields !== null;
+    }
+
+    /**
+     * Merges the provided exposeFields collection with the current exposeFields property.
+     *
+     * @param Collection $exposeFields The collection of exposeFields to merge with the current property.
+     * @return void
+     */
+    public function mergeExposeFields(Collection $exposeFields): void
+    {
+        $this->exposeFields = CollectionPolicy::mergeNullable(
+            $this->exposeFields,
+            $exposeFields
+        );
     }
 }

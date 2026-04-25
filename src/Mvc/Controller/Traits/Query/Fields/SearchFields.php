@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Fields;
 
 use Phalcon\Support\Collection;
+use PhalconKit\Support\CollectionPolicy;
 
 trait SearchFields
 {
@@ -68,5 +69,19 @@ trait SearchFields
     public function hasSearchFields(): bool
     {
         return $this->searchFields !== null;
+    }
+
+    /**
+     * Merges the provided searchFields collection with the current searchFields property.
+     *
+     * @param Collection $searchFields The collection of searchFields to merge with the current property.
+     * @return void
+     */
+    public function mergeSearchFields(Collection $searchFields): void
+    {
+        $this->searchFields = CollectionPolicy::mergeNullable(
+            $this->searchFields,
+            $searchFields
+        );
     }
 }
