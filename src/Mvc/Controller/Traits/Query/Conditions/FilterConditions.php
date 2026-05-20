@@ -923,7 +923,7 @@ trait FilterConditions
      */
     protected function assembleLegacyGroupSql(array $fragments, int $level): string
     {
-        $sql = trim(implode(' ', array_filter($fragments, static fn($s) => is_string($s) && trim($s) !== '')));
+        $sql = trim(implode(' ', array_filter($fragments, static fn(string $s): bool => trim($s) !== '')));
 
         if ($sql === '') {
             return '';
