@@ -32,7 +32,9 @@
     }
   ],
   "support": {
+    "docs": "https://github.com/phalcon-kit/core/tree/master/guides",
     "issues": "https://github.com/phalcon-kit/core/issues",
+    "security": "https://github.com/phalcon-kit/core/security/policy",
     "source": "https://github.com/phalcon-kit/core"
   },
   "config": {

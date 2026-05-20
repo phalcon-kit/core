@@ -59,6 +59,8 @@ tag has been cut yet.
 - Added application config flags to `.env.testing`.
 - Added this reconstructed changelog and maintainer workflow reminders to keep
   future release notes current.
+- Added a simplified public README, focused project guides, support
+  documentation, and updated Composer support links for docs/security metadata.
 
 ### Changed
 
@@ -66,6 +68,12 @@ tag has been cut yet.
   baseline, generated models, scaffolding, eager loading, REST controllers,
   identity, permissions, transformers, websocket/CLI usage, providers, filters,
   logging, helpers, and AI integration.
+- Moved long-form setup, configuration, scaffolding, REST, web server, and
+  release-process details out of the README and into `guides/`.
+- Clarified that `zemit-cms/core` is the historical Packagist package while
+  `phalcon-kit/core` is the package name for new installations.
+- Updated contributor guidance to point at the current local docs, support
+  policy, changelog workflow, and QA gate.
 - Updated package metadata, Composer constraints, CI runtime, and development
   dependencies for PHP 8.5 and Phalcon 5.13.
 - Upgraded GitHub Actions to current compatible versions, including

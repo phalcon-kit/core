@@ -1,90 +1,85 @@
 # Contributing to Phalcon Kit
 
-Phalcon Kit is an open source project and a volunteer effort. Phalcon Kit welcomes contribution from everyone.
-Please take a moment to review this document in order to make the contribution process easy and effective for everyone
-involved.
-
-Following these guidelines helps to communicate that you respect the time of the developers managing and developing this
-open source project. In return, they should reciprocate that respect in addressing your issue or assessing patches and
-features.
+Phalcon Kit is an open source project and a volunteer effort. Contributions are
+welcome when they are reproducible, focused, and aligned with the framework
+direction.
 
 ## Contributions
 
 Contributions to Phalcon Kit should be made in the form of GitHub pull requests.
-Each pull request will be reviewed by a core contributor (someone with permission to land patches) and either landed in
-the main tree or given feedback for changes that would be required before it can be merged. All contributions should
-follow this format, even those from core contributors.
+Each pull request will be reviewed by a core contributor and either merged or
+given feedback for the changes required before it can be merged. All
+contributions should follow this format, including contributions from core
+contributors.
 
 ## Questions & Support
 
-We use the GitHub issues for tracking bugs and feature requests and have limited bandwidth to address all of them. Thus
-we only accept bug reports, new feature requests and pull requests in GitHub. Our great community and contributors are
-happy to help you though! Please use these community resources for obtaining help.
+GitHub issues are for reproducible bugs, accepted feature requests, and pull
+requests. Use [SUPPORT.md](SUPPORT.md) to choose the right support channel.
 
-_Please use the [Documentation](https://github.com/phalcon-kit/docs) before anything else. You can also use the search feature
-in our documents to find what you are looking for. If your question is still not answered, there are more options below._
+Before opening an issue, check:
 
-* Questions should go to [Github Discussions](https://github.com/orgs/phalcon-kit/discussions)
-* Another way is to ask a question on [Stack Overflow](https://stackoverflow.com/) and tag it with
-  [`phalcon-kit`](https://stackoverflow.com/questions/tagged/phalcon-kit)
-* If you still believe that what you found is a bug, please
-  [open an issue](https://github.com/phalcon-kit/core/issues/new)
+- [README.md](README.md)
+- [guides/](guides/)
+- [CHANGELOG.md](CHANGELOG.md)
+- [GitHub Discussions](https://github.com/orgs/phalcon-kit/discussions)
 
-Please report bugs when you've exhausted all of the above options.
+If you still believe you found a bug, open an issue with a minimal
+reproduction.
 
 ## Bug Report Checklist
 
-* Do not report security vulnerabilities in public issues. Use GitHub private vulnerability reporting from the
-  repository Security tab instead.
-* Make sure you are using the latest released version of Phalcon Kit before submitting a bug report.
-  Bugs in versions older than the latest released one will not be addressed by the core team
-* If you have found a bug it is important to add relevant reproducibility information to your issue to allow us 
-  to reproduce the bug and fix it quicker. Add a script, small program or repository providing the necessary code to 
-  make everyone reproduce the issue reported easily. If a bug cannot be reproduced by the development it would be
-  difficult provide corrections and solutions.
-* Be sure that information such as OS, Phalcon Kit version, and PHP version are part of the bug report
+- Do not report security vulnerabilities in public issues. Use GitHub private
+  vulnerability reporting from the repository Security tab instead.
+- Use the latest released version of Phalcon Kit before submitting a bug report.
+- Include the smallest code, schema, configuration, or repository that
+  reproduces the issue.
+- Include Phalcon Kit version, Phalcon version, PHP version, operating system,
+  and database version when relevant.
 
 ## Pull Request Checklist
 
-* Don't submit your pull requests to the `master` branch. Branch from the required branch and,
-  if needed, rebase to the proper branch before submitting your pull request.
-  If it doesn't merge cleanly with master you may be asked to rebase your changes
-* Don't put submodule updates in your pull request unless they are to landed commits
-* Add tests relevant to the fixed bug or new feature.
-* Run `composer qa` before opening the pull request.
-* Update `CHANGELOG.md` under the current unreleased version section when a pull request changes public
-  behavior, compatibility, security posture, tooling, or maintainer workflow.
-* Update documentation or skills when changing public behavior, generated output, or maintainer workflow.
+- Branch from the target branch and keep pull requests focused.
+- Do not include unrelated formatting, generated artifacts, or submodule
+  updates.
+- Add focused tests for behavior changes when practical.
+- Run `composer qa` before opening the pull request.
+- Update `CHANGELOG.md` under the current unreleased version section when a pull
+  request changes public behavior, compatibility, security posture, tooling, or
+  maintainer workflow.
+- Update documentation or skills when changing public behavior, generated
+  output, or maintainer workflow.
 
 ## Requesting Features
 
-If you have a change or new feature in mind, please fill an NFR on the GitHub.
+If you have a change or new feature in mind, open a feature request on GitHub.
 
 ### New Feature Request (NFR)
 
-A NFR is a short document explaining how a new feature request must be submitted, how it can be implemented, and how it can help core developers and others to understand implement it.
+A new feature request should explain the problem, the proposed behavior, and how
+it can be implemented without weakening framework performance or compatibility.
 
-A NFR contains:
-* Suggested syntax
-* Suggested class names and methods
-* A short documentation
-* If the feature is already implemented in other frameworks, a short explanation of how that was implemented and its advantages
+An NFR contains:
+- Suggested syntax
+- Suggested class names and methods
+- Short documentation
+- Comparison with similar features in other frameworks when useful
 
 In the following cases a new feature request will be rejected:
-* The feature makes the framework slow
-* The feature doesn't provide any additional value to the framework
-* The NFR is not clear, bad documentation, unclear explanation, etc.
-* The NFR doesn't follow the current guidelines/philosophy of the framework
-* The NFR affects/breaks applications developed in current/older versions of the framework
-* The original poster doesn't provide feedback/input when requested
-* It's technically impossible to implement
-* It can only be used in the development/testing stages
-* Submitted/proposed classes/components don't follow the [Single Responsibility Principle][SRP]
-* Static methods aren't allowed
+- The feature slows down common paths without a clear benefit.
+- The feature does not provide additional framework value.
+- The request is unclear or lacks enough documentation to evaluate.
+- The request does not match the current framework direction.
+- The request breaks current applications without a migration path.
+- The request cannot be implemented safely.
+- The request only helps development/testing scenarios.
+- Proposed classes/components do not follow the [Single Responsibility
+  Principle][SRP].
 
-To send a NFR you don't need to provide PHP, Zephir, or C code or develop the feature. New Feture requests explain the goal of the intended implementation and open discussion on how best to implement it.
+Feature requests do not need a complete implementation. They should give enough
+context to discuss whether the change belongs in the core package.
 
-All NFRs should be posted as a new issue on [Github][github-issues].
+Feature requests should be posted as new issues on [GitHub][github-issues].
 
-[SRP]: http://en.wikipedia.org/wiki/Single_responsibility_principle
+[SRP]: https://en.wikipedia.org/wiki/Single-responsibility_principle
 [github-issues]: https://github.com/phalcon-kit/core/issues
