@@ -23,7 +23,7 @@ class Module extends Injectable
     {
         if (!empty($forward['module'])) {
             $dispatcher->setModuleName($forward['module']);
-            // @todo automatically add namepsace https://docs.phalcon.io/3.4/en/dispatcher#using-the-events-manager
+            // @todo automatically add namespace https://docs.phalcon.io/5.13/dispatcher/#using-the-events-manager
         }
     }
 }
