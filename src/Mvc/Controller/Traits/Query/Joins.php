@@ -249,7 +249,7 @@ trait Joins
                 ));
             }
 
-            $condition = trim((string)$condition);
+            $condition = trim($condition);
             if ($condition !== '') {
                 $sqlParts[] = $condition;
             }
