@@ -39,6 +39,7 @@
     "optimize-autoloader": true,
     "apcu-autoloader": true,
     "apcu-autoloader-prefix": "phalcon-kit-",
+    "process-timeout": 0,
     "preferred-install": "dist",
     "sort-packages": true,
     "allow-plugins": {
@@ -154,6 +155,7 @@
   "archive": {
     "exclude": [
       "/.github",
+      "/.cache",
       "/.phalcon",
       "/.phpunit.cache",
       "/tests",
@@ -173,7 +175,25 @@
     "phalcon-kit"
   ],
   "scripts": {
+    "check": "@qa",
     "docker": "docker-compose up",
+    "outdated:direct": "composer show --direct --outdated",
+    "qa": [
+      "@qa:composer",
+      "@qa:style",
+      "@qa:static",
+      "@qa:test"
+    ],
+    "qa:composer": [
+      "composer validate --strict --no-check-publish",
+      "composer audit"
+    ],
+    "qa:static": [
+      "./bin/phpstan.sh --no-progress",
+      "./bin/psalm.sh --no-progress"
+    ],
+    "qa:style": "./bin/phpcs.sh --report=summary",
+    "qa:test": "./bin/phpunit.sh --display-skipped --display-errors",
     "skeleton": "./bin/skeleton.sh validate ./",
     "phpunit": "./bin/phpunit.sh",
     "phpstan": "./bin/phpstan.sh",
@@ -181,6 +201,30 @@
     "php-cs-fixer": "./bin/php-cs-fixer.sh",
     "phpcs": "./bin/phpcs.sh",
     "phpcbf": "./bin/phpcbf.sh",
+    "static": [
+      "@phpstan",
+      "@psalm"
+    ],
+    "style": "@phpcs",
+    "style:fix": "@phpcbf",
+    "test": "@phpunit",
+    "test:coverage": "./bin/phpunit-coverage.sh",
+    "test:unit": "@phpunit",
     "docs": "phpDocumentor -c phpdoc.xml"
+  },
+  "scripts-descriptions": {
+    "check": "Alias for the full QA gate.",
+    "outdated:direct": "Show outdated direct dependencies only.",
+    "qa": "Run Composer validation/audit, coding style, static analysis, and PHPUnit.",
+    "qa:composer": "Validate composer.json and run Composer security audit.",
+    "qa:static": "Run PHPStan and Psalm.",
+    "qa:style": "Run PHPCS with the compact summary report.",
+    "qa:test": "Run PHPUnit with skipped/error details.",
+    "static": "Run PHPStan and Psalm with their default local options.",
+    "style": "Run PHPCS.",
+    "style:fix": "Run PHPCBF.",
+    "test": "Run PHPUnit.",
+    "test:coverage": "Run PHPUnit with coverage.",
+    "test:unit": "Run PHPUnit."
   }
 }
