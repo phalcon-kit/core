@@ -7,28 +7,66 @@
 ![Downloads](https://img.shields.io/packagist/dt/phalcon-kit/core)
 ![License](https://img.shields.io/packagist/l/phalcon-kit/core)
 
-> Previously known as Zemit CMS — now Phalcon Kit, rebuilt and rebranded for the future. 
+> Previously known as Zemit CMS - now Phalcon Kit, rebuilt and rebranded for the future.
 
-Welcome to [Phalcon Kit Core](https://github.com/phalcon-kit/core), an innovative enhancement for the [Phalcon PHP Framework](https://phalcon.io) designed to supercharge your web development process. Phalcon Kit Core is not just an add-on; it's a comprehensive toolset that transforms the way you build and manage web applications.
+Welcome to [Phalcon Kit Core](https://github.com/phalcon-kit/core), a
+convention-driven toolkit for building real applications on top of the
+[Phalcon PHP Framework](https://phalcon.io). It gives you the boring parts
+up front - bootstrap, configuration, modules, providers, REST controllers,
+models, permissions, CLI tasks, WebSocket support, and reusable AI guidance -
+so your application code can stay focused on business logic.
 
-At its heart, Phalcon Kit Core is about simplicity, efficiency, and scalability. Whether you're developing a complex enterprise application or a simple website, Phalcon Kit provides a robust, flexible foundation that adapts to your needs. Built on top of Phalcon, one of the fastest PHP frameworks available, Phalcon Kit Core leverages its performance while tweaking and existing components and introducing an array of new features and functionalities.
+Phalcon Kit is designed to feel predictable from day one. Start with the
+defaults, override only what your app owns, and keep the same structure as the
+project grows. The package includes a tested core baseline, documented extension
+points, generated API docs, and AI-ready skills that help agents follow the same
+framework patterns your team uses.
 
 #### Key Highlights:
 
-- **Extensive Service Providers**: From authentication to asset management, Phalcon Kit Core enriches your development experience with a vast array of customizable service providers and core features.
-- **Modular Architecture**: With base modules like **Frontend**, **CLI**, **CMS**, **Admin**, **Rest** and **Restful API**, Phalcon Kit is versatile enough to let you be the maestro of your own architecture and efficiently handle various aspects of web development.
-- **Enhanced Productivity**: By automating common tasks and reducing repetitive coding, Phalcon Kit lets you focus on what's unique about your project: the **business logic**.
-- **Community Driven**: As an open-source project, Phalcon Kit is constantly evolving with contributions from a vibrant community of developers.
+- **Pre-configured service providers**: Register ready-to-use DI services for
+  config, response, identity, cache, database, logging, mail, storage, OAuth,
+  OpenAI, and more.
+- **Integrated identity and security**: Use JWT/session-backed identity,
+  password login, impersonation, role inheritance, ACL permissions, and
+  config-driven security behaviors across controllers, actions, models, CLI,
+  and WebSocket tasks.
+- **Modular application structure**: Use predictable Frontend, API, CLI,
+  WebSocket, Admin, and OAuth2 module boundaries, then override them in your app
+  without editing vendor code.
+- **RESTful resource conventions**: Build model-backed APIs with save fields,
+  filter fields, search fields, exposers, eager loading, joins, and row-level
+  permission conditions.
+- **Batch eager loading**: Load nested relation graphs with `findWith()`,
+  `findFirstWith()`, controller `initializeWith()`, and relation-level
+  `QueryBuilder` constraints instead of lazy-loading model loops.
+- **Database-first model scaffolding**: Generate abstract models, interfaces,
+  PHP enum classes, comments, column maps, relationships, validations, and model
+  tests from the real schema, then keep business logic in concrete models.
+- **Relationship-aware model persistence**: Save one-to-many and many-to-many
+  relation payloads through model assignment, with generated aliases, nested
+  validation messages, eager loading, and soft-delete-aware relation updates.
+- **Config-first customization**: Compose modules, providers, model aliases,
+  permissions, roles, locale, router defaults, and integration settings through
+  app config.
+- **Tested core baseline**: The repository ships unit tests and Composer scripts
+  for PHPUnit, Psalm, coding standards, package skeleton validation, and
+  generated docs.
+- **AI-ready documentation**: Reusable Codex/agent skills are included so AI
+  assistants can follow PhalconKit conventions in application and core package
+  work.
 
-Whether you're a seasoned Phalcon developer or new to the framework, Phalcon Kit Core offers a seamless, intuitive experience, empowering you to create exceptional web applications with speed and ease.
+Whether you're a seasoned Phalcon developer or new to the framework, Phalcon
+Kit Core gives you a clear path from a small module to a full application.
 
 Let's dive in and explore what Phalcon Kit Core has in store for your development journey!
-  
+
 ## Getting Started
 
 ### Creating a new project using Phalcon Kit
-If you want to create a new project from scratch, we invite you to visit the [Phalcon Kit App](https://github.com/phalcon-kit/app) repository for more informations.
-The `composer create-project` will be helpful for a brand new project, it will create all the necessary and recommended files and default configurations to save you time and effort.
+For a new application, start from the [Phalcon Kit App](https://github.com/phalcon-kit/app)
+skeleton. It gives you the recommended app structure, default config, modules,
+and entrypoints.
 
 ```shell
 # Replace <new-project-name> by your project name
@@ -36,34 +74,58 @@ composer create-project phalcon-kit/app <new-project-name>
 ```
 
 ### Adding Phalcon Kit to your existing project
-The `composer require` will be helpful for an existing project. 
+For an existing project, install the core package with Composer.
+
 ```shell
 composer require phalcon-kit/core
 ```
 
-There you go, you can already start using Phalcon Kit classes simply by loading the composer autoloader within your application.
+You can then use Phalcon Kit classes through Composer autoloading. To use the
+full runtime flow, bootstrap the application with `PhalconKit\Bootstrap` or an
+app-specific subclass.
 
-If you want to benefit the full potential of Phalcon Kit, you can bootstrap your application using `\PhalconKit\Bootstrap`. Here is a minimalstic example of how to achieve this using [`\Phalcon\Autoload\Loader`](https://docs.phalcon.io/5.8/autoload/).
+Minimal entrypoint:
 
 ```php
 // index.php
 <?php
 
 use Phalcon\Autoload\Loader;
-use PhalconKit\Bootstrap;
+
+defined('APP_PATH') || define('APP_PATH', dirname(__DIR__) . '/app');
 
 $loader = new Loader();
 $loader->setFiles(['vendor/autoload.php']);
-$loader->setNamespaces(['MyApp' => 'src/']);
+$loader->setNamespaces(['App' => APP_PATH]);
 $loader->register();
 
-echo (new Bootstrap())->run();
+echo (new \App\Bootstrap())->run();
+```
+
+Application bootstrap:
+
+```php
+namespace App;
+
+use App\Config\Config;
+
+class Bootstrap extends \PhalconKit\Bootstrap
+{
+    public function initialize(): void
+    {
+        $this->setConfig(new Config());
+    }
+}
 ```
 
 ### Configuration
-Phalcon Kit will automatically look for the `.env` from the root of your project. There you can add your own custom variables for your custom application or set the ones that are natively supported by Phalcon Kit.
+Phalcon Kit loads environment-backed defaults through config. Keep secrets in
+`.env`, and keep application structure in `App\Config\Config`: modules,
+providers, model aliases, router defaults, locale, permissions, and integration
+settings.
 
-Add the database config, note that we use dotenv to load the .env config. Simply add .env file to the root of your project.
+Example `.env` values:
+
 ```ini
 # My App Config
 MY_APP_VARIABLE="my-app-value"
@@ -73,6 +135,43 @@ DATABASE_HOST=<my-db-host>
 DATABASE_DBNAME=<my-db-name>
 DATABASE_USERNAME=<my-db-user>
 DATABASE_PASSWORD=<my-db-pass>
+```
+
+Example app config override:
+
+```php
+namespace App\Config;
+
+class Config extends \PhalconKit\Bootstrap\Config
+{
+    public function __construct(array $data = [], bool $insensitive = false)
+    {
+        parent::__construct([
+            'app' => [
+                'name' => \PhalconKit\Support\Env::get('APP_NAME', 'My App'),
+            ],
+            'modules' => [
+                \PhalconKit\Mvc\Module::NAME_API => [
+                    'className' => \App\Modules\Api\Module::class,
+                    'path' => APP_PATH . '/Modules/Api/Module.php',
+                ],
+            ],
+        ], $insensitive);
+    }
+}
+```
+
+Provider overrides are config-first. Replace a core provider by keeping the
+core provider class as the key, and register new app services with the app
+provider as both key and value:
+
+```php
+'providers' => [
+    \PhalconKit\Provider\Identity\ServiceProvider::class =>
+        \App\Provider\Identity\ServiceProvider::class,
+    \App\Provider\Firebase\ServiceProvider::class =>
+        \App\Provider\Firebase\ServiceProvider::class,
+],
 ```
 
 ### Initialize Database
@@ -107,13 +206,13 @@ Here is virtual host example using apache 2.4 + php-fpm 8.4 from remi repository
     ServerName domain.tld
     ServerAlias www.domain.tld
     DocumentRoot /mnt/hgfs/dev/phalcon-kit/core/public/
-    
+
     <Directory /mnt/hgfs/dev/phalcon-kit/core/public/>
         Options -Indexes +FollowSymLinks +MultiViews
         AllowOverride All
         Require all granted
     </Directory>
-    
+
     <FilesMatch \.(php|phar)$>
         SetHandler "proxy:unix:/var/opt/remi/php84/run/php-fpm/www.sock|fcgi://localhost"
     </FilesMatch>
@@ -123,17 +222,17 @@ Here is virtual host example using apache 2.4 + php-fpm 8.4 from remi repository
     ServerName domain.tld
     ServerAlias www.domain.tld
     DocumentRoot /mnt/hgfs/dev/phalcon-kit/core/public/
-    
+
     <Directory /mnt/hgfs/dev/phalcon-kit/core/public/>
         Options -Indexes +FollowSymLinks +MultiViews
         AllowOverride All
         Require all granted
     </Directory>
-    
+
     <FilesMatch \.(php|phar)$>
         SetHandler "proxy:unix:/var/opt/remi/php84/run/php-fpm/www.sock|fcgi://localhost"
     </FilesMatch>
-    
+
     SetEnv HTTPS on
     SetEnv HTTP_X_FORWARDED_PROTO https
 </VirtualHost>
@@ -142,7 +241,7 @@ Here is virtual host example using apache 2.4 + php-fpm 8.4 from remi repository
 ## Requirements
 Phalcon Kit Core is designed to work seamlessly with a specific set of technologies and PHP extensions to ensure optimal performance and functionality.
 
-To check and install the necessary PHP extensions and manage Phalcon Kit’s dependencies, use Composer:
+To check and install the necessary PHP extensions and manage Phalcon Kit's dependencies, use Composer:
 
 ```bash
 composer require phalcon-kit/core
@@ -156,9 +255,9 @@ By meeting these requirements, you can ensure a smooth and efficient experience 
 
 Phalcon Kit is built to be flexible and powerful, supporting a wide range of technologies and components. While we have certain core requirements, you have the freedom to integrate additional tools as per your project's needs.
 
-- **[Composer](https://getcomposer.org/)**: Required for managing dependencies in Phalcon Kit. Composer simplifies the installation and update process of PHP packages, making it a vital tool for managing Phalcon Kit’s components.
+- **[Composer](https://getcomposer.org/)**: Required for managing dependencies in Phalcon Kit. Composer simplifies the installation and update process of PHP packages, making it a vital tool for managing Phalcon Kit's components.
 - **[PHP](https://secure.php.net/) >= 8.4**: Essential for Phalcon Kit, PHP 8.4+ brings modern features and improved performance.
-- **[PhalconPHP](https://phalconphp.com/) >= 5.9.3**: Our core framework. Phalcon's efficiency and rich feature set are crucial for Phalcon Kit's performance.
+- **[PhalconPHP](https://phalconphp.com/) 5.13.x**: Our core framework. Phalcon's efficiency and rich feature set are crucial for Phalcon Kit's performance.
 - **Database Flexibility**: While we recommend [MySQL](https://www.mysql.com/) >= 8.0 for its robustness, Phalcon Kit is compatible with other databases supported by Phalcon. This flexibility allows you to choose the database that best fits your project's requirements.
 - **PSR Standards**: Compliance with PSR standards is mandatory, ensuring interoperability and standard coding practices.
 
@@ -170,13 +269,35 @@ Additionally, while not mandatory, the following are highly recommended for enha
 
 By utilizing these technologies, Phalcon Kit offers a scalable, robust platform for developing web applications, giving you the flexibility to tailor the environment to your needs.
 
+## AI-Assisted Development
+
+Phalcon Kit Core includes reusable AI guidance for Codex and agent-based
+development. These skills teach agents how PhalconKit apps are actually
+structured: app bootstrap, config composition, providers, modules, REST
+controllers, exposers, permissions, controller behaviors, model aliases, CLI
+tasks, WebSocket tasks, Fractal transformers, Docker/local environment setup,
+deployment config, official Phalcon baseline references, and maintainer rules.
+See [AI.md](AI.md) for the full guide.
+
+- Framework users can mount `resources/skills/phalconkit-app-developer` from this package, or from `vendor/phalcon-kit/core/resources/skills/phalconkit-app-developer` inside an installed application.
+- Core contributors can use `resources/skills/phalconkit-core-maintainer` together with the repo-local [AGENTS.md](AGENTS.md).
+- The app-developer skill includes focused references for framework usage,
+  native Phalcon docs, configuration, providers, identity/security, controller
+  behaviors, REST API controllers, CLI tasks, WebSocket tasks, eager loading,
+  transformers, models, relationships, migrations, scaffolding, Docker/local
+  environment setup, and deployment configuration.
+- The core-maintainer skill includes package conventions and a coverage/gap
+  checklist for improving AI-facing documentation.
+- These assets are documentation and agent instructions only; they do not add a
+  runtime AI layer or change PHP APIs.
+
 ## Contact Information
 Got questions, feedback, or need assistance with Phalcon Kit? We're here to help!
 
 - **Community Support**: Join our community on [GitHub Discussions](https://github.com/orgs/phalcon-kit/discussions). It's a great place to seek help, share your Phalcon Kit experiences, and connect with fellow users and the development team.
 - **Issue Reporting**: Encounter a bug or have a feature request? Please file a detailed report on our [GitHub Issues](https://github.com/phalcon-kit/core/issues) page.
 
-Your input and interactions are invaluable to Phalcon Kit’s ongoing development and success. Don't hesitate to reach out - we're always eager to hear from you!
+Your input and interactions are invaluable to Phalcon Kit's ongoing development and success. Don't hesitate to reach out - we're always eager to hear from you!
 
 ## Contributing
 We warmly welcome contributions to the Phalcon Kit project! Whether you're skilled in coding, documentation, design, or testing, your input can make a significant difference.
@@ -199,4 +320,4 @@ We respect intellectual property and the efforts of contributors. As such, all u
 
 For the complete terms and conditions of the BSD 3-Clause License, please refer to our [LICENSE.txt](https://github.com/phalcon-kit/core/blob/master/LICENSE.txt) file.
 
-© 2017-present, Phalcon Kit Team. All rights reserved.
+(c) 2017-present, Phalcon Kit Team. All rights reserved.
