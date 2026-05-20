@@ -127,13 +127,13 @@ trait FilterConditions
          *   - join-based filters
          */
         $allowedFilters ??= $this->getFilterFields()?->toArray();
-        $allowedFilters = FlattenKeys::process($allowedFilters ?? []);
+        $allowedFilters = FlattenKeys::process($allowedFilters ?? []) ?? [];
 
         /*
          * Compile entire filter tree in one pass.
          * All boolean semantics are handled recursively inside compileGroup().
          */
-        $compiled = $this->compileGroup($filters, $or, $level, $allowedFilters, $aliasContext);
+        $compiled = $this->compileGroup($filters, $or, $level, $allowedFilters, $aliasContext ?? '');
 
         if ($compiled === null || $compiled['sql'] === '') {
             return null;
@@ -934,7 +934,7 @@ trait FilterConditions
             '/^(xor |and |or )(.*)$/i',
             $level > 0 ? '$1($2)' : '($2)',
             $sql
-        );
+        ) ?? $sql;
     }
 
     /**
@@ -1049,6 +1049,9 @@ trait FilterConditions
          * back to the root model.
          */
         $firstJoin = array_shift($joins);
+        if ($firstJoin === null) {
+            throw new \LogicException('Unable to prepare existential subquery without a root join.');
+        }
         [$rootModel, $rootOn, $rootAlias] = $firstJoin;
 
         /**
@@ -1446,8 +1449,13 @@ trait FilterConditions
             return [$originalField, null, $field, null];
         }
 
-        $joinName = substr($field, 0, strrpos($field, '.'));
-        $fieldName = substr($field, strrpos($field, '.') + 1);
+        $lastDotPosition = strrpos($field, '.');
+        if ($lastDotPosition === false) {
+            return [$originalField, null, $field, null];
+        }
+
+        $joinName = substr($field, 0, $lastDotPosition);
+        $fieldName = substr($field, $lastDotPosition + 1);
 
         $joinAlias = $this->dynamicJoinsMapping[$joinName] ?? $joinName;
 
