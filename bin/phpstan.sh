@@ -8,5 +8,11 @@
 # file that was distributed with this source code.
 #
 : "${PHPSTAN_MEMORY_LIMIT:=1G}"
+: "${PHPSTAN_DEBUG:=1}"
 
-phpstan analyse --memory-limit="$PHPSTAN_MEMORY_LIMIT" "$@"
+args=(--memory-limit="$PHPSTAN_MEMORY_LIMIT")
+if [ "$PHPSTAN_DEBUG" != "0" ]; then
+  args+=(--debug)
+fi
+
+phpstan analyse "${args[@]}" "$@"
