@@ -65,6 +65,11 @@ tag has been cut yet.
   identity/permissions, and quality/maintenance.
 - Added a guide index with a recommended reading order and official Phalcon
   documentation entry points.
+- Added an end-to-end resource walkthrough showing schema, scaffolding,
+  concrete model logic, REST controller policies, transformer output, and
+  permission config.
+- Added concrete provider, eager-loading, transformer-backed action, and
+  advanced filter examples to the public guides.
 
 ### Changed
 

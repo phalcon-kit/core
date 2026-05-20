@@ -113,6 +113,52 @@ Use app providers when a service needs app configuration, app credentials, or a
 different implementation. Avoid replacing a core provider just to change one
 runtime option when config already supports it.
 
+### App Service Provider Example
+
+Use a provider when the service belongs in the DI container and is shared by
+controllers, tasks, models, or other services.
+
+```php
+<?php
+
+namespace App\Provider\Report;
+
+use App\Service\ReportExporter;
+use Phalcon\Di\DiInterface;
+use PhalconKit\Provider\AbstractServiceProvider;
+
+final class ServiceProvider extends AbstractServiceProvider
+{
+    protected string $serviceName = 'reportExporter';
+
+    #[\Override]
+    public function register(DiInterface $di): void
+    {
+        $di->setShared($this->getName(), function () use ($di) {
+            return new ReportExporter(
+                $di->get('db'),
+                $di->get('logger')
+            );
+        });
+    }
+}
+```
+
+Register it in app config:
+
+```php
+'providers' => [
+    \App\Provider\Report\ServiceProvider::class =>
+        \App\Provider\Report\ServiceProvider::class,
+],
+```
+
+Then use it from an injectable class:
+
+```php
+$this->reportExporter->exportProject($projectId);
+```
+
 ## Model Aliases
 
 Applications can map framework model roles to app model classes. This keeps

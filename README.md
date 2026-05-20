@@ -154,6 +154,7 @@ For a full setup, use the app skeleton or read
 - [Models And Eager Loading](guides/models-and-eager-loading.md)
 - [REST APIs](guides/rest-api.md)
 - [Identity And Permissions](guides/identity-and-permissions.md)
+- [Resource Walkthrough](guides/resource-walkthrough.md)
 - [Web Server And WebSocket](guides/web-server-and-websocket.md)
 - [Quality And Maintenance](guides/quality-and-maintenance.md)
 - [Release Process](guides/release.md)

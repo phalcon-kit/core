@@ -72,6 +72,20 @@ relationship exists.
 Use eager loading when a response or workflow needs related data. This avoids
 lazy-loading loops and keeps relation graphs visible at the query boundary.
 
+Avoid this pattern in list endpoints:
+
+```php
+$projects = Project::find(['limit' => 25]);
+
+foreach ($projects as $project) {
+    foreach ($project->getUserNode() as $userNode) {
+        $user = $userNode->getUserEntity();
+    }
+}
+```
+
+Each relation access can trigger more database work. Load the graph once:
+
 Model-level examples:
 
 ```php
@@ -105,6 +119,71 @@ public function initializeWith(): void
 Use relation-level query builders when a relation needs extra constraints,
 ordering, or limits. Keep expensive relation graphs out of list requests unless
 the UI really needs them.
+
+## List vs Detail Graphs
+
+Use smaller graphs for list screens and richer graphs for detail screens:
+
+```php
+final class ProjectReadService
+{
+    public function listOpenProjects(): array
+    {
+        return Project::findWith([
+            'UserNode.UserEntity',
+        ], [
+            'conditions' => 'status = :status: AND deleted <> 1',
+            'bind' => ['status' => 'active'],
+            'limit' => 50,
+            'order' => 'id DESC',
+        ]);
+    }
+
+    public function getProjectDetail(int $id): ?Project
+    {
+        return Project::findFirstWith([
+            'UserNode.UserEntity',
+            'CategoryList',
+            'ExclusionReasonList',
+        ], [
+            'conditions' => 'id = :id: AND deleted <> 1',
+            'bind' => ['id' => $id],
+        ]);
+    }
+}
+```
+
+The important part is not the service class; it is the explicit relation graph
+at the query boundary.
+
+## Custom Relationship Override
+
+If the scaffolder cannot infer the business alias you want, add it in the
+concrete model after the generated default relationships:
+
+```php
+<?php
+
+namespace App\Models;
+
+final class Project extends Abstracts\ProjectAbstract
+{
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->hasMany(
+            'id',
+            ProjectUser::class,
+            'projectId',
+            ['alias' => 'ActiveUserNode']
+        );
+    }
+}
+```
+
+Keep the generated relationship intact when existing controllers or
+transformers depend on it. Add the new alias for the new use case.
 
 ## Model Behaviors
 

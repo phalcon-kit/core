@@ -145,6 +145,36 @@ public function initializeJoins(): void
 Use dynamic joins for filter/search paths that should join only when a client
 uses the related field. This keeps normal list requests lighter.
 
+## Transformer-Backed Action Example
+
+For heavy resources, use the controller Fractal helpers directly and keep the
+response contract in transformers:
+
+```php
+use App\Modules\Api\Transformers\ProjectTransformer;
+use Phalcon\Http\ResponseInterface;
+
+public function dashboardAction(): ResponseInterface
+{
+    $projects = $this->findWith([
+        'UserNode.UserEntity',
+    ], [
+        'limit' => 20,
+        'order' => '[' . $this->getModelName() . '].[id] DESC',
+    ]);
+
+    $this->view->setVar(
+        'data',
+        $this->transformCollection($projects, new ProjectTransformer())
+    );
+
+    return $this->setRestResponse(true);
+}
+```
+
+This is useful when the default exposer output is too broad, too nested, or not
+stable enough for an external client.
+
 ## Permission Conditions
 
 Controllers can add row-level restrictions based on the current identity:
@@ -171,3 +201,27 @@ types. Prefer `EXISTS` subqueries for set logic when joins would multiply rows.
 
 Use `setWith()` for data that must be returned, and joins/dynamic joins for data
 that must be queried.
+
+Example condition block:
+
+```php
+$key = $this->generateBindKey('assigned_user_id');
+
+$this->getConditions()->set('assigned_user', [
+    'conditions' => '
+        EXISTS (
+            SELECT 1
+            FROM ' . \App\Models\ProjectUser::class . ' pu
+            WHERE pu.projectId = [' . $this->getModelName() . '].[id]
+              AND pu.userId = :' . $key . ':
+              AND pu.deleted <> 1
+        )
+    ',
+    'bind' => [
+        $key => (int)$this->identity->getUserId(),
+    ],
+    'bindTypes' => [
+        $key => \Phalcon\Db\Column::BIND_PARAM_INT,
+    ],
+]);
+```

@@ -13,9 +13,10 @@ and maintainers need first.
 5. [Models And Eager Loading](models-and-eager-loading.md)
 6. [REST APIs](rest-api.md)
 7. [Identity And Permissions](identity-and-permissions.md)
-8. [Web Server And WebSocket](web-server-and-websocket.md)
-9. [Quality And Maintenance](quality-and-maintenance.md)
-10. [Release Process](release.md)
+8. [Resource Walkthrough](resource-walkthrough.md)
+9. [Web Server And WebSocket](web-server-and-websocket.md)
+10. [Quality And Maintenance](quality-and-maintenance.md)
+11. [Release Process](release.md)
 
 ## Official Phalcon Docs
 
