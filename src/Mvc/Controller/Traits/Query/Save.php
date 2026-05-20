@@ -104,17 +104,8 @@ trait Save
         $payload = $this->getParams();
 
         // Batch mode (list payload)
-        if (is_array($payload) && array_is_list($payload)) {
+        if (array_is_list($payload)) {
             return $this->saveMany($payload, $forceMode);
-        }
-
-        // Single entity
-        if (!is_array($payload)) {
-            return $this->buildRestSaveFailure(
-                'Invalid payload.',
-                'InvalidPayload',
-                400
-            );
         }
 
         return $this->saveOne($payload, $forceMode);
