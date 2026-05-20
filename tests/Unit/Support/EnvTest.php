@@ -145,16 +145,16 @@ class EnvTest extends AbstractUnit
     public function testTypeGetSet(): void
     {
         $tests = [
-            null => 'Mutable',
-            'mutable' => 'Mutable',
-            'immutable' => 'Immutable',
-            'unsafe-mutable' => 'UnsafeMutable',
-            'unsafe-immutable' => 'UnsafeImmutable',
-//            'Mutable' => 'Mutable', // @todo make it work
-//            'Immutable' => 'Immutable', // @todo make it work
-//            'UnsafeMutable' => 'UnsafeMutable', // @todo make it work
-//            'UnsafeImmutable' => 'UnsafeImmutable', // @todo make it work
-            'non-existing' => 'Mutable', // @todo should throw an exception instead
+            [null, 'Mutable'],
+            ['mutable', 'Mutable'],
+            ['immutable', 'Immutable'],
+            ['unsafe-mutable', 'UnsafeMutable'],
+            ['unsafe-immutable', 'UnsafeImmutable'],
+//            ['Mutable', 'Mutable'], // @todo make it work
+//            ['Immutable', 'Immutable'], // @todo make it work
+//            ['UnsafeMutable', 'UnsafeMutable'], // @todo make it work
+//            ['UnsafeImmutable', 'UnsafeImmutable'], // @todo make it work
+            ['non-existing', 'Mutable'], // @todo should throw an exception instead
         ];
         
         // test default
@@ -162,7 +162,7 @@ class EnvTest extends AbstractUnit
         $this->assertEquals('Mutable', Env::getType());
         
         // test cases
-        foreach ($tests as $type => $expected) {
+        foreach ($tests as [$type, $expected]) {
             Env::setType($type);
             $this->assertEquals($expected, Env::getType());
         }

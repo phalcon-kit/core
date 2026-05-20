@@ -65,7 +65,7 @@ class ConfigTest extends AbstractUnit
         }
         
         // Every first level key should be grouped
-        $keys = $config->getKeys();
+        $keys = $config->keys();
         
         foreach ($keys as $key) {
             // Should be a Config object
