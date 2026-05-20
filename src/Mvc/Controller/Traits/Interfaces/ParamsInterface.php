@@ -19,6 +19,9 @@ interface ParamsInterface
     
     public function hasParam(string $key, ?array $params = null, bool $cached = true): bool;
     
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getParams(?array $fields = null, bool $cached = true, bool $deep = true): array;
     
     public function getAllParams(?array $filters = null, bool $cached = true, bool $deep = true): array;
