@@ -39,7 +39,19 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         $newStatement = $this->pdo->prepare($newSql);
         
         // Call parent's executePrepared with the new statement.
-        return parent::executePrepared($newStatement, $newPlaceholders, $newDataTypes);
+        try {
+            return parent::executePrepared($newStatement, $newPlaceholders, $newDataTypes);
+        } catch (\Throwable $e) {
+//            dd($statement, $placeholders, $dataTypes);
+//            dd($newStatement, $newPlaceholders, $newDataTypes, $e);
+            throw new \RuntimeException(
+                $e->getMessage() . ' - ' .
+                $newStatement->queryString . ' - ' .
+                json_encode($newPlaceholders) . ' - ' .
+                json_encode($newDataTypes)
+                , (int)$e->getCode(), $e);
+//            throw $e;
+        }
     }
     
     /**
