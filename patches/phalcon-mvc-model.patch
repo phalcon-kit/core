@@ -1,8 +1,6 @@
-diff --git a/src/Mvc/Model.php b/src/Mvc/Model.php
-index 4874508..480f7f4 100644
 --- a/src/Mvc/Model.php
 +++ b/src/Mvc/Model.php
-@@ -412,9 +412,9 @@ abstract class Model extends AbstractInjectionAware implements \Phalcon\Mvc\Enti
+@@ -442,9 +442,9 @@
       * ```
       *
       * @param array $parameters
@@ -14,7 +12,7 @@ index 4874508..480f7f4 100644
      {
      }
  
-@@ -508,9 +508,9 @@ abstract class Model extends AbstractInjectionAware implements \Phalcon\Mvc\Enti
+@@ -538,9 +538,9 @@
       * ```
       *
       * @param array|string|null $parameters
@@ -26,25 +24,25 @@ index 4874508..480f7f4 100644
      {
      }
  
-@@ -764,7 +764,7 @@ abstract class Model extends AbstractInjectionAware implements \Phalcon\Mvc\Enti
+@@ -794,7 +794,7 @@
       * ]
-      * @return T[]|\Phalcon\Mvc\Model\Resultset<int, T>
+      * @return \Phalcon\Mvc\Model\Resultset<int, T>
       */
--    public static function find($parameters = null)
-+    public static function find(mixed $parameters = null)
+-    public static function find($parameters = null): ResultsetInterface
++    public static function find(mixed $parameters = null): ResultsetInterface
      {
      }
  
-@@ -854,7 +854,7 @@ abstract class Model extends AbstractInjectionAware implements \Phalcon\Mvc\Enti
+@@ -884,7 +884,7 @@
       *
-      * @return T|\Phalcon\Mvc\ModelInterface|\Phalcon\Mvc\Model\Row|null
+      * @return T|\Phalcon\Mvc\Model\Row|null
       */
 -    public static function findFirst($parameters = null): mixed
 +    public static function findFirst(mixed $parameters = null): mixed
      {
      }
  
-@@ -1199,9 +1199,9 @@ abstract class Model extends AbstractInjectionAware implements \Phalcon\Mvc\Enti
+@@ -1229,9 +1229,9 @@
       * ```
       *
       * @param array $parameters
@@ -56,7 +54,7 @@ index 4874508..480f7f4 100644
      {
      }
  
-@@ -1231,9 +1231,9 @@ abstract class Model extends AbstractInjectionAware implements \Phalcon\Mvc\Enti
+@@ -1261,9 +1261,9 @@
       * ```
       *
       * @param array $parameters
@@ -68,7 +66,7 @@ index 4874508..480f7f4 100644
      {
      }
  
-@@ -1502,9 +1502,9 @@ abstract class Model extends AbstractInjectionAware implements \Phalcon\Mvc\Enti
+@@ -1532,8 +1532,8 @@
       * ```
       *
       * @param array $parameters
@@ -79,4 +77,3 @@ index 4874508..480f7f4 100644
 +    public static function sum(mixed $parameters = null): ResultsetInterface|float|false
      {
      }
- 

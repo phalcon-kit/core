@@ -1,8 +1,6 @@
-diff --git a/src/Mvc/ModelInterface.php b/src/Mvc/ModelInterface.php
-index d434196..89e9ade 100644
 --- a/src/Mvc/ModelInterface.php
 +++ b/src/Mvc/ModelInterface.php
-@@ -51,9 +51,9 @@ interface ModelInterface
+@@ -51,9 +51,9 @@
       * conditions
       *
       * @param array $parameters
@@ -14,7 +12,7 @@ index d434196..89e9ade 100644
  
      /**
       * Assigns values to a model from an array returning a new model
-@@ -94,9 +94,9 @@ interface ModelInterface
+@@ -94,9 +94,9 @@
       * contain the count of each group.
       *
       * @param array|string|null $parameters
@@ -26,16 +24,18 @@ index d434196..89e9ade 100644
  
      /**
       * Inserts a model instance. If the instance already exists in the
-@@ -120,7 +120,7 @@ interface ModelInterface
-      * @param array|string|int|null $parameters *
-      * @return T[]|\Phalcon\Mvc\Model\Resultset<int, T>
+@@ -120,7 +120,7 @@
+-     * @param array|string|int|null $parameters *
+-     * @return T[]|\Phalcon\Mvc\Model\Resultset<int, T>
++     * @param array|string|int|null $parameters *
++     * @return \Phalcon\Mvc\Model\Resultset<int, T>
       */
 -    public static function find($parameters = null);
 +    public static function find(mixed $parameters = null);
  
      /**
       * Allows to query the first record that match the specified conditions
-@@ -132,7 +132,7 @@ interface ModelInterface
+@@ -132,7 +132,7 @@
       * @see https://github.com/phalcon/cphalcon/issues/15212
       * @see https://github.com/phalcon/cphalcon/issues/15883
       */
@@ -44,7 +44,7 @@ index d434196..89e9ade 100644
  
      /**
       * Fires an event, implicitly calls behaviors and listeners in the events
-@@ -239,18 +239,18 @@ interface ModelInterface
+@@ -239,18 +239,18 @@
       * conditions
       *
       * @param array $parameters
@@ -67,7 +67,7 @@ index d434196..89e9ade 100644
  
      /**
       * Create a criteria for a specific model
-@@ -338,9 +338,9 @@ interface ModelInterface
+@@ -338,9 +338,9 @@
       * Allows to calculate a sum on a column that match the specified conditions
       *
       * @param array $parameters
