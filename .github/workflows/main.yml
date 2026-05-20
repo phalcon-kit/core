@@ -220,19 +220,20 @@ jobs:
         run: composer dump-autoload -a
 
       - name: Clear Psalm Cache
-        run: rm -rf ~/.cache/psalm psalm-results.sarif .psalm.cache
+        run: rm -rf ~/.cache/psalm results.sarif .psalm.cache
 
       - name: Run Psalm
         id: psalm
         continue-on-error: true
         run: |
-          PSALM_THREADS=4 PSALM_SCAN_THREADS=4 composer psalm -- --output-format=github --report=psalm-results.sarif --no-progress --no-cache
+          PSALM_THREADS=4 PSALM_SCAN_THREADS=4 composer psalm -- --output-format=github --report=results.sarif --report-show-info=false --no-progress --no-cache
 
       - name: Upload Psalm report to GitHub Code Scanning
-        if: ${{ always() && hashFiles('psalm-results.sarif') != '' }}
+        if: ${{ always() && hashFiles('results.sarif') != '' }}
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: psalm-results.sarif
+          sarif_file: results.sarif
+          category: psalm
 
       - name: Fail on Psalm errors
         if: ${{ steps.psalm.outcome == 'failure' }}
