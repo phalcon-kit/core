@@ -383,12 +383,14 @@ class Blameable extends Behavior
         }
 
         if (!is_array($decoded)) {
-            return json_encode($decoded);
+            $encoded = json_encode($decoded);
+            return is_string($encoded) ? $encoded : 'null';
         }
 
         $this->ksortRecursive($decoded);
 
-        return json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $encoded = json_encode($decoded, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return is_string($encoded) ? $encoded : 'null';
     }
 
     protected function ksortRecursive(array &$array): void
