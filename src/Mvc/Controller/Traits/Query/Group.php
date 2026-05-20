@@ -50,6 +50,7 @@ trait Group
         
         if (empty($group)) {
             $this->setGroup(null);
+            return;
         }
         
         if (!is_array($group)) {
