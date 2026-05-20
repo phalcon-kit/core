@@ -48,8 +48,10 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
                 $e->getMessage() . ' - ' .
                 $newStatement->queryString . ' - ' .
                 json_encode($newPlaceholders) . ' - ' .
-                json_encode($newDataTypes)
-                , (int)$e->getCode(), $e);
+                json_encode($newDataTypes),
+                (int)$e->getCode(),
+                $e
+            );
 //            throw $e;
         }
     }
