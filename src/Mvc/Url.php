@@ -25,13 +25,14 @@ class Url extends \Phalcon\Mvc\Url
      * @param mixed $args
      * @param bool|null $local
      * @param mixed $baseUri
+     * @param bool $replaceArgs
      *
      * @return string
      */
     #[\Override]
-    public function get($uri = null, $args = null, ?bool $local = null, $baseUri = null): string
+    public function get($uri = null, $args = null, ?bool $local = null, $baseUri = null, bool $replaceArgs = false): string
     {
-        return self::getAbsolutePath(parent::get($uri, $args, $local, $baseUri));
+        return self::getAbsolutePath(parent::get($uri, $args, $local, $baseUri, $replaceArgs));
     }
     
     /**
