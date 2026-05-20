@@ -259,7 +259,7 @@ trait Compiler
                 throw new LogicException('Cannot merge find definitions: integer keys are not allowed.');
             }
             
-            if (is_string($k) && ctype_digit($k)) {
+            if (ctype_digit($k)) {
                 throw new LogicException('Cannot merge find definitions: integer-like keys are not allowed.');
             }
         }
