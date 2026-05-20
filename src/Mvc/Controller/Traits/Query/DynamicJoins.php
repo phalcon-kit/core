@@ -52,9 +52,19 @@ trait DynamicJoins
     {
         $this->dynamicJoins = $dynamicJoins;
         $dynamicJoins = $this->getDynamicJoinsFromFilters();
+        $joins = $this->getJoins();
+        if ($joins === null) {
+            $joins = new Collection([], false);
+            $this->setJoins($joins);
+        }
+
         foreach ($dynamicJoins as $key => $dynamicJoin) {
-            $dynamicJoinKey = array_search($key, $this->dynamicJoinsMapping);
-            $this->getJoins()->set($dynamicJoinKey, $dynamicJoin);
+            $dynamicJoinKey = array_search($key, $this->dynamicJoinsMapping, true);
+            if (!is_string($dynamicJoinKey)) {
+                continue;
+            }
+
+            $joins->set($dynamicJoinKey, $dynamicJoin);
         }
     }
 
@@ -129,8 +139,8 @@ trait DynamicJoins
             }
             
             // prepare field without array brackets
-            $filteredField = preg_replace('/\[[^\]]*\](?=\.)/', '', $filter['field']);
-            $prospectAlias = preg_replace('/\.[^.]*$/', '', $filteredField);
+            $filteredField = preg_replace('/\[[^\]]*\](?=\.)/', '', (string)$filter['field']) ?? '';
+            $prospectAlias = preg_replace('/\.[^.]*$/', '', $filteredField) ?? '';
 
             foreach ($dynamicJoins as $dynamicJoinAlias => $dynamicJoin) {
                 // if prospect alias doesn't match any dynamic join alias, skip
@@ -156,7 +166,7 @@ trait DynamicJoins
                     $fieldAlias .= (empty($fieldAlias) ? '' : '.') . $fieldPartAlias;
                     
                     // filter field alias to get raw alias by removing brackets
-                    $alias = preg_replace('/\[[^\]]*\]/', '', $fieldAlias);
+                    $alias = preg_replace('/\[[^\]]*\]/', '', $fieldAlias) ?? '';
                     
                     // the join alias must be defined
                     if (!$dynamicJoins->has($alias)) {
@@ -178,23 +188,46 @@ trait DynamicJoins
 
                         // generate the join filter conditions
                         $joinFilters = $this->getParam('joins');
+                        $joinFilters = is_array($joinFilters) ? $joinFilters : [];
                         $conditions = !empty($joinFilters[$fieldAlias]) ? $this->defaultFilterCondition($joinFilters[$fieldAlias], null, $fieldAlias) : [];
+
+                        $dynamicJoinDefinition = $dynamicJoins->get($alias);
+                        if (
+                            !is_array($dynamicJoinDefinition) ||
+                            !isset($dynamicJoinDefinition[0], $dynamicJoinDefinition[1], $dynamicJoinDefinition[2])
+                        ) {
+                            throw new \LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
+                        }
+
+                        $joinCondition = $dynamicJoinDefinition[1];
+                        if (is_array($joinCondition)) {
+                            $joinCondition = implode(' and ', $joinCondition);
+                        }
+
+                        if (!is_string($joinCondition)) {
+                            throw new \LogicException(sprintf('Invalid dynamic join condition for `%s`.', $alias));
+                        }
+
+                        $joinType = $dynamicJoinDefinition[3] ?? 'left';
+                        if (!is_string($joinType)) {
+                            $joinType = 'left';
+                        }
 
                         // @todo we could potentially extract some "filters" conditions that are used and scoped for this relationship with no external fields
                         // @todo so we could append them to the dynamic join conditions and gain performance
 
                         $join = [
                             // model class to use
-                            $dynamicJoins[$alias][0],
+                            $dynamicJoinDefinition[0],
 
                             // update the join condition to use the dynamic join alias
-                            '(' . str_replace(array_keys($replaces), array_values($replaces), $dynamicJoins[$alias][1]) . ')',
+                            '(' . str_replace(array_keys($replaces), array_values($replaces), $joinCondition) . ')',
 
                             // use generated alias
                             $joinAlias,
 
                             // join type left by default
-                            $dynamicJoins[$alias][3] ?? 'left',
+                            $joinType,
 
                             // join conditions with sql, bind, bindTypes
                             $conditions
@@ -239,6 +272,9 @@ trait DynamicJoins
 
         // pre-fetch the joins first
         $joins = $this->getJoins();
+        if ($joins === null) {
+            return [];
+        }
 
         // prepare alias with context
         $alias = '';
@@ -251,19 +287,29 @@ trait DynamicJoins
             $dynamicAlias = $this->dynamicJoinsMapping[$alias] ??= $alias;
 
             // dynamic alias specifically defined, use this
-            if (isset($joins[$dynamicAlias])) {
-                $ret [] = $joins[$dynamicAlias];
+            if ($joins->has($dynamicAlias)) {
+                $join = $joins->get($dynamicAlias);
+                if (is_array($join)) {
+                    $ret [] = $join;
+                }
             }
 
             // alias specifically defined, use this
-            elseif (isset($joins[$alias])) {
-                $ret [] = $joins[$alias];
+            elseif ($joins->has($alias)) {
+                $join = $joins->get($alias);
+                if (is_array($join)) {
+                    $ret [] = $join;
+                }
             }
 
             // joins not specifically defined, fallback using native phalcon way
             else {
                 // loop through each defined joins
                 foreach ($joins as $join) {
+                    if (!is_array($join) || !isset($join[2]) || !is_string($join[2])) {
+                        continue;
+                    }
+
                     // join found using dynamic alias
                     if ($join[2] === $dynamicAlias) {
                         $ret [] = $join;
