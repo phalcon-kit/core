@@ -105,7 +105,7 @@ trait Order
                     continue;
                 }
 
-                $collection->set($key, $this->appendModelName($key) . ' ' . $this->getSide($item ?? 'asc'));
+                $collection->set($key, $this->appendModelName($key) . ' ' . $this->getSide($item));
             }
         }
 
