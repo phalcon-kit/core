@@ -1,0 +1,49 @@
+name: Bug report
+description: Report a reproducible problem in Phalcon Kit Core.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not use this form for security vulnerabilities. Use the private vulnerability reporting link instead.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What failed, and what did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Provide the smallest code/config/schema example that reproduces the issue.
+      placeholder: |
+        1. Configure ...
+        2. Run ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include exact errors, stack traces, SQL/PHQL, or response payloads when relevant.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include versions and services involved.
+      value: |
+        - Phalcon Kit Core:
+        - Phalcon:
+        - PHP:
+        - Database:
+        - OS/container:
+    validations:
+      required: true

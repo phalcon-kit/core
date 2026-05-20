@@ -34,6 +34,8 @@ Please report bugs when you've exhausted all of the above options.
 
 ## Bug Report Checklist
 
+* Do not report security vulnerabilities in public issues. Use GitHub private vulnerability reporting from the
+  repository Security tab instead.
 * Make sure you are using the latest released version of Phalcon Kit before submitting a bug report.
   Bugs in versions older than the latest released one will not be addressed by the core team
 * If you have found a bug it is important to add relevant reproducibility information to your issue to allow us 
@@ -49,6 +51,8 @@ Please report bugs when you've exhausted all of the above options.
   If it doesn't merge cleanly with master you may be asked to rebase your changes
 * Don't put submodule updates in your pull request unless they are to landed commits
 * Add tests relevant to the fixed bug or new feature.
+* Run `composer qa` before opening the pull request.
+* Update documentation or skills when changing public behavior, generated output, or maintainer workflow.
 
 ## Requesting Features
 

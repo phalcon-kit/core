@@ -18,6 +18,7 @@ on:
   workflow_dispatch:
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # PHP extensions required by Composer
   EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, phalcon-5.13.0, swoole, :memcache, :psr
   EXTENSIONS_CACHE_KEY: php-ext-v3-php8.5-phalcon-5.13.0
@@ -34,21 +35,46 @@ jobs:
       matrix:
         php:
           - "8.5"
+        dependencies:
+          - "highest"
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ${{ env.EXTENSIONS }}
+          key: ${{ env.EXTENSIONS_CACHE_KEY }}
+
+      - name: Cache PHP extensions
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+          restore-keys: ${{ steps.extcache.outputs.key }}
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: ${{ env.EXTENSIONS }}
           tools: composer
+
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
+          custom-cache-suffix: phalcon-kit-composer
 
       - name: Composer Validate
         run: composer validate --strict --no-check-publish
 
       - name: Composer Audit
-        run: composer audit --locked
+        run: composer audit
 
   # PHP CODE SNIFFER
   code-sniffer:
@@ -63,6 +89,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup cache environment
         id: extcache
@@ -107,6 +135,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup cache environment
         id: extcache
@@ -152,6 +182,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup cache environment
         id: extcache
@@ -225,6 +257,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Prepare Locale
         run: |

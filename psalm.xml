@@ -30,6 +30,10 @@
         </ignoreFiles>
     </projectFiles>
 
+    <stubs>
+        <file name="stubs/swoole.php"/>
+    </stubs>
+
     <issueHandlers>
         <!-- Framework base classes are intentionally extensible -->
         <ClassMustBeFinal errorLevel="suppress" />
@@ -48,15 +52,5 @@
             </errorLevel>
         </ArgumentTypeCoercion>
 
-        <!-- False positive -->
-        <UndefinedClass>
-            <errorLevel type="suppress">
-                <referencedClass name="Swoole\Http\Request" />
-                <referencedClass name="Swoole\Http\Response" />
-                <referencedClass name="Swoole\WebSocket\Server" />
-                <referencedClass name="Swoole\WebSocket\Frame" />
-                <referencedClass name="Swoole\Coroutine" />
-            </errorLevel>
-        </UndefinedClass>
     </issueHandlers>
 </psalm>

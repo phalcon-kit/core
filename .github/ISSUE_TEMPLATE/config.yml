@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/phalcon-kit/core/security/advisories/new
+    about: Please do not report vulnerabilities in public issues. Use GitHub private vulnerability reporting or a private advisory.
+  - name: Ask a question
+    url: https://github.com/orgs/phalcon-kit/discussions
+    about: Use discussions for support questions and design conversations that are not actionable bug reports.

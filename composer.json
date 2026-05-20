@@ -165,6 +165,7 @@
       "/.aiignore",
       "/.env*",
       "/docs",
+      "/stubs",
       "/tests",
       "/vendor",
       "AGENTS.md",
@@ -202,7 +203,7 @@
     ],
     "qa:composer": [
       "composer validate --strict --no-check-publish",
-      "composer audit --locked"
+      "composer audit"
     ],
     "qa:static": [
       "./bin/phpstan.sh --no-progress",

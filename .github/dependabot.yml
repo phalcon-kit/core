@@ -14,6 +14,25 @@ updates:
     schedule:
       interval: "daily"
       time: "06:00"
+    groups:
+      composer-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"
+      composer-production:
+        dependency-type: "production"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      composer-development:
+        dependency-type: "development"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
@@ -44,6 +63,10 @@ updates:
       interval: "weekly"
       day: "sunday"
       time: "05:00"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
