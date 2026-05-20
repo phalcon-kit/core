@@ -22,6 +22,9 @@ trait AbstractParams
         ?array $params = null
     ): mixed;
     
+    /**
+     * @return array<array-key, mixed>
+     */
     abstract public function getParams(
         ?array $fields = null,
         bool $cached = true,
