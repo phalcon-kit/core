@@ -1,9 +1,21 @@
 # Project
 .env
+.env.local
 .env*.local
-.cache
+.cache/
 .idea/*
 .phalcon/*
+.codex
+
+# Local AI/editor tool state
+.aider*
+.claude/
+.continue/
+.cursor/
+.gemini/
+.qodo/
+.roo/
+.windsurf/
 
 # PHP
 composer.phar
@@ -24,8 +36,15 @@ public/admin
 
 # PHPUnit
 phpunit-clover.xml
+phpunit-junit.xml
+clover.xml
+junit.xml
+testdox.html
+testdox.txt
 .phpunit.result.cache
 .phpunit.cache/
+coverage/
+build/logs/
 
 # PHPCS
 .php-cs-fixer.cache

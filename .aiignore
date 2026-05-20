@@ -1,0 +1,62 @@
+# Dependencies and vendored code
+/vendor/
+/node_modules/
+/bower_components/
+
+# VCS and local tool state
+/.git/
+/.cache/
+/.idea/
+/.phalcon/
+/.phpdoc/
+/.phpunit.cache/
+/.codex
+/.aider*
+/.claude/
+/.continue/
+/.cursor/
+/.gemini/
+/.qodo/
+/.roo/
+/.windsurf/
+
+# Secrets and local environment overlays
+/.env
+/.env*
+!/.env.example
+
+# Generated docs and distribution output
+/docs/
+/dist/
+/public/dist/
+/public/admin/
+/build/api-cache/
+/build/logs/
+/coverage/
+
+# Runtime storage
+/storage/cache/
+/storage/files/
+/storage/log/
+/storage/tmp/
+/storage/trash/
+
+# Composer/local install artifacts
+/composer.phar
+/composer.lock
+/patches.lock.json
+
+# QA reports and caches
+/phpunit-clover.xml
+/phpunit-junit.xml
+/clover.xml
+/junit.xml
+/testdox.html
+/testdox.txt
+/results.sarif
+/taints.dot
+/.php-cs-fixer.cache
+
+# Misc generated files
+*.log
+*.tmp
