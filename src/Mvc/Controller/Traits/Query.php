@@ -264,7 +264,7 @@ trait Query
      *                         If not provided, the default criteria from `getFind()` method
      *                         will be used. Defaults to `null`.
      *
-     * @return ResultsetInterface The result of the find operation.
+     * @return ResultsetInterface&\Traversable The result of the find operation.
      */
     public function find(?array $find = null): ResultsetInterface
     {
