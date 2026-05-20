@@ -91,10 +91,6 @@ trait PermissionConditions
      */
     public function buildDefaultPermissionCondition(): ?array
     {
-        if (!$this->identity) {
-            return null;
-        }
-
         if ($this->identity->hasRole($this->getSuperRoles())) {
             return null;
         }
