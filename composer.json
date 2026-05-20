@@ -50,7 +50,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": ">=8.4",
+    "php": ">=8.5",
     "ext-intl": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
