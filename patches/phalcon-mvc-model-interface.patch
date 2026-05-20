@@ -28,7 +28,7 @@
 -     * @param array|string|int|null $parameters *
 -     * @return T[]|\Phalcon\Mvc\Model\Resultset<int, T>
 +     * @param array|string|int|null $parameters *
-+     * @return \Phalcon\Mvc\Model\Resultset<int, T>
++     * @return \Phalcon\Mvc\Model\ResultsetInterface&\Traversable<int, T>
       */
 -    public static function find($parameters = null);
 +    public static function find(mixed $parameters = null);

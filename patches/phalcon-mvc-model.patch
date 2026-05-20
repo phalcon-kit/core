@@ -26,7 +26,8 @@
  
 @@ -794,7 +794,7 @@
       * ]
-      * @return \Phalcon\Mvc\Model\Resultset<int, T>
+-     * @return \Phalcon\Mvc\Model\Resultset<int, T>
++     * @return \Phalcon\Mvc\Model\Resultset<int, T>&\Traversable<int, T>
       */
 -    public static function find($parameters = null): ResultsetInterface
 +    public static function find(mixed $parameters = null): ResultsetInterface
