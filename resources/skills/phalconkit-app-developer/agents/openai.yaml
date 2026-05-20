@@ -1,0 +1,7 @@
+interface:
+  display_name: "PhalconKit App Developer"
+  short_description: "Build apps using PhalconKit conventions"
+  default_prompt: "Use $phalconkit-app-developer to implement this app change following native Phalcon baseline semantics and PhalconKit app structure, bootstrap, config, provider, integration, identity, auth, permission, security, routing, REST controller, eager loading, transformer, model, relationship, scaffold, CLI, WebSocket, environment, logging, and test conventions."
+
+policy:
+  allow_implicit_invocation: true

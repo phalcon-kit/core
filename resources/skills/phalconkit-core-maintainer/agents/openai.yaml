@@ -1,0 +1,7 @@
+interface:
+  display_name: "PhalconKit Core Maintainer"
+  short_description: "Maintain the PhalconKit core package"
+  default_prompt: "Use $phalconkit-core-maintainer to update or review this core package change while preserving PhalconKit provider, module, model, generated-doc, skill, and validation conventions."
+
+policy:
+  allow_implicit_invocation: true
