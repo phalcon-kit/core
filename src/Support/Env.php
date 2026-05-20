@@ -112,7 +112,9 @@ class Env
     public static function load(string|array|null $paths = null, string|array|null $names = null, ?bool $shortCircuit = true, ?string $fileEncoding = null, ?string $type = null): Dotenv
     {
         self::setPaths($paths);
-        self::setNames($names);
+        if ($names !== null || self::getNames() === null) {
+            self::setNames($names);
+        }
         self::setShortCircuit($shortCircuit);
         self::setFileEncoding($fileEncoding);
         self::setType($type);
