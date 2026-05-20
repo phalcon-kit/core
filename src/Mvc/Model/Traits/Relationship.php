@@ -383,12 +383,8 @@ trait Relationship
                         $record->setRelationshipContext($relationshipPrefix . $alias);
                     }
                     
-                    /**
-                     * If dynamic update is enabled, saving the record must not take any action
-                     * Only save if the model is dirty to prevent circular relations causing an infinite loop
-                     */
                     assert($record instanceof Model);
-                    if ($record->getDirtyState() !== Model::DIRTY_STATE_PERSISTENT && !$record->doSave($visited)) {
+                    if (!$record->doSave($visited)) {
                         $this->appendMessagesFromRecord($record, $alias);
                         $connection->rollback($nesting);
                         return false;
