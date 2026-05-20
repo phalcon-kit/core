@@ -82,6 +82,16 @@ class Config extends \PhalconKit\Config\Config
         defined('STORAGE_PATH') || define('STORAGE_PATH', Env::get('STORAGE_PATH', ROOT_PATH . 'storage/'));
         defined('RESOURCES_PATH') || define('RESOURCES_PATH', Env::get('RESOURCES_PATH', ROOT_PATH . 'resources/'));
     }
+
+    private static function pdoMysqlAttribute(string $attribute, string $legacyAttribute): int
+    {
+        $constant = 'Pdo\\Mysql::' . $attribute;
+        if (defined($constant)) {
+            return (int)constant($constant);
+        }
+
+        return (int)constant('PDO::' . $legacyAttribute);
+    }
     
     /**
      * Config Constructor
@@ -1101,15 +1111,15 @@ class Config extends \PhalconKit\Config\Config
                         'password' => Env::get('DATABASE_PASSWORD', ''),
                         'charset' => Env::get('DATABASE_CHARSET', 'utf8'),
                         'options' => [
-                            \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET' .
+                            self::pdoMysqlAttribute('ATTR_INIT_COMMAND', 'MYSQL_ATTR_INIT_COMMAND') => 'SET' .
                                 ' NAMES ' . Env::get('DATABASE_CHARSET', 'utf8mb4') .
                                 ' COLLATE ' . Env::get('DATABASE_COLLATION', 'utf8mb4_0900_ai_ci'), // utf8mb4_unicode_520_ci for mariadb
                                 ', sql_mode = \'' . Env::get('DATABASE_SQL_MODE', 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION') . '\'' .
                                 ', block_encryption_mode = \'' . Env::get('DATABASE_BLOCK_ENCRYPTION_MODE', 'aes-256-cbc') . '\'',
                             \PDO::ATTR_EMULATE_PREPARES => Env::get('DATABASE_EMULATE_PREPARES', false), // https://stackoverflow.com/questions/10113562/pdo-mysql-use-pdoattr-emulate-prepares-or-not
                             \PDO::ATTR_STRINGIFY_FETCHES => Env::get('DATABASE_STRINGIFY_FETCHES', false),
-                            \PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => Env::get('DATABASE_SSL_VERIFY_SERVER_CERT', true),
-                            \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => Env::get('DATABASE_USE_BUFFERED_QUERY', true),
+                            self::pdoMysqlAttribute('ATTR_SSL_VERIFY_SERVER_CERT', 'MYSQL_ATTR_SSL_VERIFY_SERVER_CERT') => Env::get('DATABASE_SSL_VERIFY_SERVER_CERT', true),
+                            self::pdoMysqlAttribute('ATTR_USE_BUFFERED_QUERY', 'MYSQL_ATTR_USE_BUFFERED_QUERY') => Env::get('DATABASE_USE_BUFFERED_QUERY', true),
                         ],
                     ],
                     
