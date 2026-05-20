@@ -96,7 +96,7 @@ class Exposer
          * Canonical full key:
          * - Root is represented as empty string ''
          */
-        $fullKey = $builder->getFullKey() ?? '';
+        $fullKey = $builder->getFullKey();
         $value   = $builder->getValue();
         
         /* ------------------------------------------------------------
@@ -153,7 +153,6 @@ class Exposer
         $key = $builder->getKey();
         if (
             !$builder->getProtected()
-            && is_string($key)
             && str_starts_with($key, '_')
         ) {
             $builder->setExpose(false);
