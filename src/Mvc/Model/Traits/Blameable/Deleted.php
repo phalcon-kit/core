@@ -59,14 +59,16 @@ trait Deleted
             ],
             'beforeValidationOnUpdate' => [
                 $fieldBy => $this->hasChangedCallback(function (ModelInterface $model, string $field) use ($deletedField, $deletedValue): ?int {
+                    $id = $model->readAttribute($field);
                     return $model->isDeleted($deletedField, $deletedValue)
                         ? $this->getCurrentUserIdCallback()()
-                        : $model->readAttribute($field);
+                        : ($id === null || $id === '' || $id === 'NULL' ? null : (int)$id);
                 }),
                 $fieldAs => $this->hasChangedCallback(function (ModelInterface $model, string $field) use ($deletedField, $deletedValue): ?int {
+                    $id = $model->readAttribute($field);
                     return $model->isDeleted($deletedField, $deletedValue)
                         ? $this->getCurrentUserIdCallback(true)()
-                        : $model->readAttribute($field);
+                        : ($id === null || $id === '' || $id === 'NULL' ? null : (int)$id);
                 }),
                 $fieldAt => $this->hasChangedCallback(function (ModelInterface $model, string $field) use ($deletedField, $deletedValue): ?string {
                     return $model->isDeleted($deletedField, $deletedValue)
