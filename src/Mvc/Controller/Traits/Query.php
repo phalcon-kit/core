@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits;
 
 use Phalcon\Filter\Exception;
-use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\Model\Row;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Support\Collection;
@@ -265,9 +264,9 @@ trait Query
      *                         If not provided, the default criteria from `getFind()` method
      *                         will be used. Defaults to `null`.
      *
-     * @return Resultset|array The result of the find operation.
+     * @return ResultsetInterface The result of the find operation.
      */
-    public function find(?array $find = null): Resultset|array
+    public function find(?array $find = null): ResultsetInterface
     {
         $find ??= $this->prepareFind();
         return $this->loadModel()::find($find);

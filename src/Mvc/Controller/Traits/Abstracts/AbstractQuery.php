@@ -25,7 +25,7 @@ trait AbstractQuery
     
     abstract public function getFind(): ?Collection;
     
-    abstract public function find(?array $find = null);
+    abstract public function find(?array $find = null): ResultsetInterface;
     
     abstract public function findWith(?array $with = null, ?array $find = null): array;
     

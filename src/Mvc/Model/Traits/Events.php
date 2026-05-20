@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
-use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\Model\Resultset\Simple;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\Model\Row;
@@ -32,12 +31,23 @@ trait Events
      *
      * @see \Phalcon\Mvc\Model::find()
      * @param array|int|null|string $parameters Optional conditions to filter the retrieved records. Can include arrays, strings, or other query parameters.
-     * @return Resultset|array Returns the result set as an array, a Resultset object, or a Simple object depending on the query execution.
+     * @return ResultsetInterface Returns the result set, or an empty result set if the operation is canceled.
      */
     #[\Override]
-    public static function find(mixed $parameters = null): Resultset|array
+    public static function find(mixed $parameters = null): ResultsetInterface
     {
-        return self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::find($parameters)) ?: [];
+        $instance = self::loadInstance();
+        $event = ucfirst(Helper::camelize(__FUNCTION__));
+
+        if ($instance->fireEventCancel('before' . $event) === false) {
+            return new Simple(null, $instance, false);
+        }
+
+        $ret = parent::find($parameters);
+
+        $instance->fireEvent('after' . $event);
+
+        return $ret;
     }
     
     /**
