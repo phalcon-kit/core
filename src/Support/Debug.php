@@ -33,7 +33,7 @@ class Debug extends \Phalcon\Support\Debug
         $phalcon = new PhalconVersion();
         
         return sprintf(
-            '<div class="version">Phalcon Kit <a href="https://github.com/phalcon-kit/core" target="_new">%s</a> | Phalcon Framework <a href="https://docs.phalcon.io/%d.%d/en/" target="_new">%s</a></div>',
+            '<div class="version">Phalcon Kit <a href="https://github.com/phalcon-kit/core" target="_new">%s</a> | Phalcon Framework <a href="https://docs.phalcon.io/%d.%d/" target="_new">%s</a></div>',
             $phalconKit->get(),
             $phalcon->getPart(PhalconVersion::VERSION_MAJOR),
             $phalcon->getPart(PhalconVersion::VERSION_MEDIUM),
@@ -54,7 +54,7 @@ class Debug extends \Phalcon\Support\Debug
         $major = $phalconVersion->getPart(PhalconVersion::VERSION_MAJOR);
         $minor = $phalconVersion->getPart(PhalconVersion::VERSION_MEDIUM);
         
-        $pattern = '#https://docs\.phalcon\.io/\d+\.\d+/en/api/([A-Za-z_]+)#i';
+        $pattern = '#https://docs\.phalcon\.io/\d+\.\d+/(?:en/)?api/([A-Za-z_]+)#i';
         $html = preg_replace_callback(
             $pattern,
             static function (array $m) use ($major, $minor): string {

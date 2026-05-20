@@ -37,7 +37,7 @@ use Phalcon\Events\Manager as EventsManager;
  * - onValidationFails
  * - prepareSave
  * - validation
- * @link https://docs.phalcon.io/5.9/db-models/#events
+ * @link https://docs.phalcon.io/5.13/db-models/#events
  *
  * {@inheritdoc} \Phalcon\Mvc\Model
  * @package PhalconKit\Mvc
@@ -130,7 +130,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
      *  updateSnapshotOnSave - true - Update snapshots on save()
      *  virtualForeignKeys - true - Virtual foreign keys
      * --------------------------------
-     * @link https://docs.phalcon.io/4.0/en/db-models#model-features
+     * @link https://docs.phalcon.io/5.13/db-models#model-features
      *
      * @param array|null $options
      */
