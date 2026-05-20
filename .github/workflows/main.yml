@@ -86,7 +86,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpcs
 
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependencies }}
           custom-cache-suffix: phalcon-kit-composer
@@ -130,7 +130,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpstan
 
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependencies }}
           custom-cache-suffix: phalcon-kit-composer
@@ -175,7 +175,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, psalm
 
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependencies }}
           custom-cache-suffix: phalcon-kit-composer
@@ -257,7 +257,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpunit
 
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependencies }}
           custom-cache-suffix: phalcon-kit-composer
