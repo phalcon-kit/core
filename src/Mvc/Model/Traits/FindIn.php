@@ -14,8 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Model\Traits;
 
 use Phalcon\Db\Column;
-use Phalcon\Mvc\Model\Resultset;
-use Phalcon\Mvc\Model\Resultset\Simple;
+use Phalcon\Mvc\Model\ResultsetInterface;
 
 /**
  * @todo
@@ -26,7 +25,7 @@ use Phalcon\Mvc\Model\Resultset\Simple;
  */
 trait FindIn
 {
-    public static function findInById(array $idList = []): array|Resultset|false
+    public static function findInById(array $idList = []): ResultsetInterface
     {
         $castInt = function (string|int $id): int {
             return (int)$id;
