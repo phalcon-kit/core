@@ -54,7 +54,7 @@ trait FilterSemantics
          * are deterministic and cheap.
          */
         $operator = strtolower(trim($operator));
-        $operator = preg_replace('/\s+/', ' ', $operator);
+        $operator = preg_replace('/\s+/', ' ', $operator) ?? '';
 
         /* ==============================================================
          * 2. ALIAS & TOLERANCE MAP
@@ -471,6 +471,6 @@ trait FilterSemantics
             return true;
         }
 
-        return $allowedFilters[$filteredField] ?? false;
+        return is_string($filteredField) && ($allowedFilters[$filteredField] ?? false);
     }
 }
