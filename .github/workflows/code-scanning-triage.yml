@@ -1,0 +1,241 @@
+name: Code Scanning Triage
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Summarize alerts or delete analyses for one exact stale category.
+        required: true
+        default: summarize
+        type: choice
+        options:
+          - summarize
+          - delete-analysis-category
+      tool_name:
+        description: Tool name for delete-analysis-category, for example Psalm or Scorecard.
+        required: false
+        default: ''
+      category:
+        description: Exact analysis category for delete-analysis-category.
+        required: false
+        default: ''
+      dry_run:
+        description: Print matching analyses without deleting them.
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  triage:
+    name: Triage Code Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summarize or clean Code Scanning
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          OPERATION: ${{ inputs.operation }}
+          TOOL_NAME: ${{ inputs.tool_name }}
+          CATEGORY: ${{ inputs.category }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+
+          api_get() {
+            curl -fsSL \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${REPOSITORY}/$1"
+          }
+
+          api_delete() {
+            curl -fsSL \
+              -X DELETE \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/${REPOSITORY}/$1"
+          }
+
+          fetch_pages() {
+            local endpoint="$1"
+            local output="$2"
+            local page=1
+            local page_file merged
+
+            printf '[]' > "$output"
+
+            while true; do
+              page_file="$(mktemp)"
+              api_get "${endpoint}&per_page=100&page=${page}" > "$page_file"
+
+              merged="$(mktemp)"
+              jq -s '.[0] + .[1]' "$output" "$page_file" > "$merged"
+              mv "$merged" "$output"
+
+              if [ "$(jq 'length' "$page_file")" -lt 100 ]; then
+                break
+              fi
+
+              page=$((page + 1))
+            done
+          }
+
+          alerts_file="$(mktemp)"
+          analyses_file="$(mktemp)"
+
+          fetch_pages "code-scanning/alerts?state=open" "$alerts_file"
+          fetch_pages "code-scanning/analyses?" "$analyses_file"
+
+          {
+            echo "## Code Scanning Triage"
+            echo
+            echo "- Operation: \`${OPERATION}\`"
+            echo "- Open alerts: \`$(jq 'length' "$alerts_file")\`"
+            echo "- Recent analyses: \`$(jq 'length' "$analyses_file")\`"
+            echo
+            echo "### Open Alerts By Tool, Category, And Rule"
+            echo
+            echo '```text'
+            printf 'count\ttool\tcategory\tseverity\trule\n'
+            jq -r '
+              [
+                .[] | {
+                  tool: (.tool.name // "unknown"),
+                  category: (
+                    .most_recent_instance.category
+                    // .most_recent_instance.analysis_key
+                    // "uncategorized"
+                  ),
+                  severity: (
+                    .rule.security_severity_level
+                    // .rule.severity
+                    // "unknown"
+                  ),
+                  rule: (.rule.id // .rule.name // "unknown")
+                }
+              ]
+              | sort_by(.tool, .category, .severity, .rule)
+              | group_by([.tool, .category, .severity, .rule])
+              | map({
+                  count: length,
+                  tool: .[0].tool,
+                  category: .[0].category,
+                  severity: .[0].severity,
+                  rule: .[0].rule
+                })
+              | sort_by(-.count, .tool, .category, .rule)
+              | .[:200][]
+              | [.count, .tool, .category, .severity, .rule]
+              | @tsv
+            ' "$alerts_file"
+            echo '```'
+            echo
+            echo "### Recent Analyses By Tool And Category"
+            echo
+            echo '```text'
+            printf 'analyses\tresults\tdeletable\ttool\tcategory\tlatest\n'
+            jq -r '
+              [
+                .[] | {
+                  tool: (.tool.name // "unknown"),
+                  category: (.category // .analysis_key // "uncategorized"),
+                  results: (.results_count // 0),
+                  deletable: (.deletable // false),
+                  created_at: (.created_at // "")
+                }
+              ]
+              | sort_by(.tool, .category)
+              | group_by([.tool, .category])
+              | map({
+                  analyses: length,
+                  results: (map(.results) | add // 0),
+                  deletable: (map(select(.deletable)) | length),
+                  tool: .[0].tool,
+                  category: .[0].category,
+                  latest: (map(.created_at) | max)
+                })
+              | sort_by(-.results, .tool, .category)
+              | .[]
+              | [.analyses, .results, .deletable, .tool, .category, .latest]
+              | @tsv
+            ' "$analyses_file"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$OPERATION" = "summarize" ]; then
+            exit 0
+          fi
+
+          if [ "$OPERATION" != "delete-analysis-category" ]; then
+            echo "Unsupported operation: ${OPERATION}" >&2
+            exit 1
+          fi
+
+          if [ -z "$TOOL_NAME" ] || [ -z "$CATEGORY" ]; then
+            echo "tool_name and category are required for delete-analysis-category." >&2
+            exit 1
+          fi
+
+          echo "## Delete Analysis Category" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tool: \`${TOOL_NAME}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Category: \`${CATEGORY}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Dry run: \`${DRY_RUN}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$DRY_RUN" = "true" ]; then
+            {
+              echo "### Matching Analyses"
+              echo
+              echo '```text'
+              printf 'id\tdeletable\tresults\tcreated_at\tcategory\n'
+              jq -r --arg tool "$TOOL_NAME" --arg category "$CATEGORY" '
+                .[]
+                | select((.tool.name // "") == $tool)
+                | select((.category // .analysis_key // "") == $category)
+                | [
+                    .id,
+                    (.deletable // false),
+                    (.results_count // 0),
+                    (.created_at // ""),
+                    (.category // .analysis_key // "")
+                  ]
+                | @tsv
+              ' "$analyses_file"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          deleted=0
+
+          while true; do
+            fetch_pages "code-scanning/analyses?" "$analyses_file"
+            analysis_id="$(
+              jq -r --arg tool "$TOOL_NAME" --arg category "$CATEGORY" '
+                [
+                  .[]
+                  | select((.tool.name // "") == $tool)
+                  | select((.category // .analysis_key // "") == $category)
+                  | select((.deletable // false) == true)
+                  | .id
+                ][0] // ""
+              ' "$analyses_file"
+            )"
+
+            if [ -z "$analysis_id" ]; then
+              break
+            fi
+
+            echo "Deleting analysis ${analysis_id} for ${TOOL_NAME} / ${CATEGORY}."
+            api_delete "code-scanning/analyses/${analysis_id}?confirm_delete=true" >/dev/null
+            deleted=$((deleted + 1))
+          done
+
+          echo "Deleted \`${deleted}\` analyses." >> "$GITHUB_STEP_SUMMARY"

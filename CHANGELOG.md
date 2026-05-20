@@ -41,6 +41,8 @@ tag has been cut yet.
 - Added GitHub issue templates, a pull request template, grouped Dependabot
   updates, private vulnerability reporting guidance, OpenSSF Scorecard, and
   zizmor workflow scanning.
+- Added a manual Code Scanning triage workflow that summarizes open alerts by
+  tool, category, and rule and can delete one exact stale analysis category.
 - Added project-level `AGENTS.md`, `AI.md`, `.aiignore`, and public repo hygiene
   guidance.
 - Added reusable PhalconKit AI skill bundles for app development and core
