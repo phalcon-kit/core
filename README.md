@@ -4,6 +4,7 @@
 ![Version](https://img.shields.io/packagist/v/phalcon-kit/core)
 ![PHP](https://img.shields.io/packagist/dependency-v/phalcon-kit/core/php)
 ![Downloads](https://img.shields.io/packagist/dt/phalcon-kit/core)
+[![Legacy Installs](https://img.shields.io/packagist/dt/zemit-cms/core?label=legacy%20installs)](https://packagist.org/packages/zemit-cms/core)
 ![License](https://img.shields.io/packagist/l/phalcon-kit/core)
 
 Phalcon Kit Core is a modular application toolkit built on top of the
