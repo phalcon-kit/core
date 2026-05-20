@@ -175,8 +175,13 @@ table, it describes:
 
 - Table names, filtered by `--table` and `--exclude`.
 - Columns, including names, types, sizes, scale, nullability, unsigned flags,
-  autoincrement flags, defaults, and enum domains.
-- Indexes, especially primary and unique indexes.
+  autoincrement flags, defaults, generated-column metadata, visibility flags,
+  array/spatial/UUID/native database types, and enum domains where the adapter
+  exposes them.
+- Indexes, especially primary and unique indexes. Phalcon 5.13 can also expose
+  newer index intent such as invisible indexes, directions, partial predicates,
+  expression entries, and concurrent PostgreSQL indexes when supported by the
+  active adapter/dialect.
 - Reference metadata where the adapter exposes it.
 
 It then writes the model layer under the selected `--src-dir` and namespace:
@@ -227,6 +232,11 @@ The scaffold tries to infer every safe convention from the database:
 - DB enum columns generate PHP enum classes and inclusion validations.
 - Raw SQL defaults such as `CURRENT_TIMESTAMP` are not treated as scalar PHP
   defaults.
+- PostgreSQL arrays, UUIDs, generated columns, invisible columns, spatial
+  columns, expression indexes, partial indexes, and CHECK constraints are
+  native Phalcon 5.13 schema concepts. If the current scaffolder does not yet
+  emit a dedicated model annotation or validation for one of them, preserve the
+  schema in migrations and add the domain rule in the concrete model.
 
 These guesses are intentionally conservative. If the database naming is too
 custom for the scaffolder to infer, add or override the relationship in the

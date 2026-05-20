@@ -9,14 +9,17 @@ login flows and ACL behavior, also read `identity-and-security.md`.
 Native Phalcon references:
 
 - Security and password hashing: https://docs.phalcon.io/5.13/encryption-security/
+- UUID factory: https://docs.phalcon.io/5.13/encryption-security/
 - JWT: https://docs.phalcon.io/5.13/encryption-security-jwt/
 - Cryptography: https://docs.phalcon.io/5.13/encryption-crypt/
 - Cookies and HTTP APIs: https://docs.phalcon.io/5.13/api/phalcon_http/
 - Response headers: https://docs.phalcon.io/5.13/response/
 
 PhalconKit extends native Phalcon security by installing a custom random
-generator, adding UUIDv7 support, and reading app config defaults. Use native
-docs for base hashing, CSRF, JWT, crypt, cookie, and response semantics.
+generator, keeping a `uuidv7()` convenience wrapper, and reading app config
+defaults. Phalcon 5.13 also exposes native UUID v1-v7 generation through
+`Phalcon\Encryption\Security\Uuid`; use native docs for base hashing, CSRF,
+JWT, crypt, cookie, UUID, and response semantics.
 
 ## Security Service
 
@@ -41,6 +44,12 @@ of creating a new random generator manually.
 - `uuidv4()`: alias around Phalcon's UUID generator.
 - `uuidv7()`: timestamp-ordered UUID string using Unix milliseconds plus random
   bytes.
+
+On Phalcon 5.13+, native UUID v7 is also available:
+
+```php
+$uuid = (string) (new \Phalcon\Encryption\Security\Uuid())->v7();
+```
 
 Prefer UUIDv7 for app-generated model UUIDs because the default model UUID
 behavior already uses it.
