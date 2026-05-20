@@ -386,7 +386,7 @@ EOT;
             case Column::TYPE_BIGINTEGER:
             case Column::TYPE_MEDIUMINTEGER:
             case Column::TYPE_SMALLINTEGER:
-//            case Column::TYPE_TINYINTEGER: // conflict with TYPE_BINARY
+            case Column::TYPE_TINYINTEGER:
             case Column::TYPE_INTEGER:
             case Column::TYPE_DECIMAL:
             case Column::TYPE_DOUBLE:
