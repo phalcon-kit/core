@@ -194,7 +194,7 @@ trait DynamicJoins
                             $joinAlias,
 
                             // join type left by default
-                            $joins[$alias][3] ?? 'left',
+                            $dynamicJoins[$alias][3] ?? 'left',
 
                             // join conditions with sql, bind, bindTypes
                             $conditions
