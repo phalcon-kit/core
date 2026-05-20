@@ -22,6 +22,8 @@ class ModelTransformerTest extends AbstractUnit
 {
     public function testTransform(): void
     {
+        $this->getDb();
+
         $model = new User();
         $modelTransformer = new ModelTransformer();
         

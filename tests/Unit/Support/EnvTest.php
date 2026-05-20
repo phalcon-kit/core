@@ -126,6 +126,15 @@ class EnvTest extends AbstractUnit
         Env::setNames($names);
         $this->assertEquals(Env::getNames(), $names);
     }
+
+    public function testLoadUsesConfiguredNames(): void
+    {
+        Env::setNames(['.env.testing']);
+        Env::load();
+
+        $this->assertEquals(['.env.testing'], Env::getNames());
+        $this->assertEquals('db', Env::get('DATABASE_HOST'));
+    }
     
     public function testShortCircuitGetSet(): void
     {
@@ -193,7 +202,7 @@ class EnvTest extends AbstractUnit
             Env::set($key, $value);
             $this->assertEquals($value, Env::get($key));
             
-            Env::load();
+            Env::load(null, '.env.testing');
             $this->assertNull(Env::get($key));
             $this->assertEquals($value, Env::get($key, $value));
         }

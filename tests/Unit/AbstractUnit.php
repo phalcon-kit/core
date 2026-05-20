@@ -42,7 +42,12 @@ abstract class AbstractUnit extends TestCase
     
     public function getDb(): Mysql
     {
-        return $this->di->get('db');
+        try {
+            return $this->di->get('db');
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('Database service is not available: ' . $e->getMessage());
+            throw $e;
+        }
     }
     
     public function getConfig(): Config
@@ -57,8 +62,8 @@ abstract class AbstractUnit extends TestCase
     protected function setUp(): void
     {
         $rootDir = dirname(dirname(__DIR__)) . '/';
-        Env::setNames(['.env.testing']);
-        Env::load();
+        Env::setNames(['.env.testing', '.env.testing.local']);
+        Env::load(null, null, false);
         
         $loader = new Loader();
         $loader->setFiles([$rootDir . '/vendor/autoload.php']);

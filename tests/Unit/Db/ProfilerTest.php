@@ -52,7 +52,7 @@ class ProfilerTest extends AbstractUnit
         $params = ['id' => 1];
         $types = ['id' => Column::BIND_PARAM_INT];
         
-        $connection = $this->di->get('db');
+        $connection = $this->getDb();
         assert($connection instanceof Mysql);
         
         $connection->query($query0);
