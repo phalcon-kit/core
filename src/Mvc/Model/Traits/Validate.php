@@ -36,6 +36,25 @@ trait Validate
     use AbstractLocale;
     use AbstractMetaData;
     use AbstractEntity;
+
+    protected function getAllowEmptyOption(bool $allowEmpty = true): bool|array
+    {
+        return $allowEmpty ? [null, '', 'NULL'] : false;
+    }
+
+    protected function shouldSkipOptionalValidation(array|string $field, bool $allowEmpty): bool
+    {
+        if (!$allowEmpty || is_array($field)) {
+            return false;
+        }
+
+        $value = $this->readAttribute($field);
+        if ($value instanceof RawValue) {
+            $value = (string)$value;
+        }
+
+        return $value === null || $value === '' || $value === 'NULL';
+    }
     
     /**
      * Apply generic validation to a validator object.
@@ -107,11 +126,14 @@ trait Validate
     public function addUnsignedIntValidation(Validation $validator, array|string $field = 'id', bool $allowEmpty = true): Validation
     {
         $this->addNotEmptyValidation($validator, $field, $allowEmpty);
+        if ($this->shouldSkipOptionalValidation($field, $allowEmpty)) {
+            return $validator;
+        }
         
         // Must be numeric
         $validator->add($field, new Numericality([
             'message' => $this->_('not-numeric'),
-            'allowEmpty' => true,
+            'allowEmpty' => $this->getAllowEmptyOption(),
         ]));
         
         // Must be an unsigned integer
@@ -119,7 +141,7 @@ trait Validate
             'minimum' => Column::MIN_UNSIGNED_INT,
             'maximum' => Column::MAX_UNSIGNED_INT,
             'message' => $this->_('not-an-unsigned-integer'),
-            'allowEmpty' => true,
+            'allowEmpty' => $this->getAllowEmptyOption(),
         ]));
         
         return $validator;
@@ -137,11 +159,14 @@ trait Validate
     public function addUnsignedBigIntValidation(Validation $validator, array|string $field = 'id', bool $allowEmpty = true): Validation
     {
         $this->addNotEmptyValidation($validator, $field, $allowEmpty);
+        if ($this->shouldSkipOptionalValidation($field, $allowEmpty)) {
+            return $validator;
+        }
         
         // Must be numeric
         $validator->add($field, new Numericality([
             'message' => $this->_('not-numeric'),
-            'allowEmpty' => true,
+            'allowEmpty' => $this->getAllowEmptyOption(),
         ]));
         
         // Must be an unsigned integer
@@ -149,7 +174,7 @@ trait Validate
             'minimum' => Column::MIN_UNSIGNED_BIGINT,
             'maximum' => Column::MAX_UNSIGNED_BIGINT,
             'message' => $this->_('not-an-unsigned-big-integer'),
-            'allowEmpty' => true,
+            'allowEmpty' => $this->getAllowEmptyOption(),
         ]));
         
         return $validator;
@@ -349,11 +374,14 @@ trait Validate
     public function addDateValidation(Validation $validator, array|string $field, bool $allowEmpty = true, string $format = Column::DATE_FORMAT): Validation
     {
         $this->addNotEmptyValidation($validator, $field, $allowEmpty);
+        if ($this->shouldSkipOptionalValidation($field, $allowEmpty)) {
+            return $validator;
+        }
         
         $validator->add($field, new Date([
             'format' => $format,
             'message' => $this->_('invalid-date-format'),
-            'allowEmpty' => true,
+            'allowEmpty' => $this->getAllowEmptyOption(),
         ]));
         
         return $validator;
@@ -374,11 +402,14 @@ trait Validate
     public function addDateTimeValidation(Validation $validator, array|string $field, bool $allowEmpty = true, string $format = Column::DATETIME_FORMAT): Validation
     {
         $this->addNotEmptyValidation($validator, $field, $allowEmpty);
+        if ($this->shouldSkipOptionalValidation($field, $allowEmpty)) {
+            return $validator;
+        }
         
         $validator->add($field, new Date([
             'format' => $format,
             'message' => $this->_('invalid-datetime-format'),
-            'allowEmpty' => true,
+            'allowEmpty' => $this->getAllowEmptyOption(),
         ]));
         
         return $validator;
@@ -561,11 +592,14 @@ trait Validate
     {
         if (property_exists($this, $userIdField)) {
             $this->addNotEmptyValidation($validator, $userIdField, $allowEmpty);
+            if ($this->shouldSkipOptionalValidation($userIdField, $allowEmpty)) {
+                return $validator;
+            }
             
             // Must be numeric
             $validator->add($userIdField, new Numericality([
                 'message' => $this->_('not-numeric'),
-                'allowEmpty' => true,
+                'allowEmpty' => $this->getAllowEmptyOption(),
             ]));
             
             // Must be an unsigned integer
@@ -573,7 +607,7 @@ trait Validate
                 'minimum' => Column::MIN_UNSIGNED_INT,
                 'maximum' => Column::MAX_UNSIGNED_INT,
                 'message' => $this->_('not-an-unsigned-integer'),
-                'allowEmpty' => true,
+                'allowEmpty' => $this->getAllowEmptyOption(),
             ]));
         }
         
