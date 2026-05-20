@@ -85,7 +85,7 @@ jobs:
     strategy:
       matrix:
         php:
-          - "8.4"
+          - "8.5"
         dependencies:
           - "highest"
 
@@ -132,7 +132,7 @@ jobs:
     strategy:
       matrix:
         php:
-          - "8.4"
+          - "8.5"
         dependencies:
           - "highest"
 
@@ -179,7 +179,7 @@ jobs:
     strategy:
       matrix:
         php:
-          - "8.4"
+          - "8.5"
         dependencies:
           - "highest"
     
@@ -252,7 +252,7 @@ jobs:
     strategy:
       matrix:
         php:
-          - "8.4"
+          - "8.5"
         dependencies:
           - "highest"
 
