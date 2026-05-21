@@ -78,6 +78,8 @@ tag has been cut yet.
 - Added a first REST resource tutorial with request/response examples, a legacy
   resource-walkthrough redirect, README FAQ, docs badge, and
   `zemit-cms/core` migration guide.
+- Added more targeted Composer package metadata for REST APIs, scaffolding,
+  eager loading, identity, permissions, CLI, and WebSocket use cases.
 
 ### Changed
 

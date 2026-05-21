@@ -1,0 +1,43 @@
+name: Documentation improvement
+description: Report missing, confusing, stale, or incomplete documentation.
+title: "[Docs]: "
+labels:
+  - documentation
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Documentation area
+      description: Which area needs work?
+      options:
+        - README or project overview
+        - Getting started
+        - REST API guides
+        - Database scaffolding and models
+        - Identity and permissions
+        - Deployment, CLI, or WebSocket guides
+        - API reference
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear or missing?
+      description: Explain what you were trying to do and where the current docs did not help.
+    validations:
+      required: true
+  - type: textarea
+    id: current-location
+    attributes:
+      label: Current documentation link
+      description: Link to the current README, guide, API reference page, or section if one exists.
+    validations:
+      required: false
+  - type: textarea
+    id: expected
+    attributes:
+      label: Suggested improvement
+      description: Describe the example, command, explanation, or reference that would make this clearer.
+    validations:
+      required: true
