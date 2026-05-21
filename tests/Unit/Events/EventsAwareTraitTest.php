@@ -151,4 +151,21 @@ class EventsAwareTraitTest extends AbstractUnit
         $this->expectExceptionMessageMatches('/Trying to cancel a non-cancelable event/');
         $result = $this->events->fire($task, [], false);
     }
+
+    public function testFireRejectsMissingEventsManagerService(): void
+    {
+        $events = new class {
+            use EventsAwareTrait;
+
+            public function getEventsManager(): ?ManagerInterface
+            {
+                return null;
+            }
+        };
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage(ManagerInterface::class);
+
+        $events->fire('missingManager');
+    }
 }

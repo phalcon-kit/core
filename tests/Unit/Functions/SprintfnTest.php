@@ -56,6 +56,11 @@ class SprintfnTest extends AbstractUnit
         $this->expectException(\Exception::class);
         $this->assertFalse(sprintfn($format, $args));
     }
+
+    public function testSprintfnReturnsFalseForMissingArgumentsWhenWarningIsSuppressed(): void
+    {
+        $this->assertFalse(@sprintfn('Name: %name$s, Age: %age$d', ['name' => 'Alice']));
+    }
     
     public function testSprintfnSpecialCharacterHandling(): void
     {

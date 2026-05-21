@@ -15,6 +15,7 @@ namespace PhalconKit\Tests\Unit\Logger;
 
 use Phalcon\Logger\Adapter\Noop;
 use Phalcon\Logger\Adapter\Stream;
+use Phalcon\Logger\Adapter\Syslog;
 use Phalcon\Logger\Formatter\Line;
 use Phalcon\Logger\Logger;
 use PhalconKit\Logger\Loggers;
@@ -31,6 +32,7 @@ class LoggersTest extends AbstractUnit
             'drivers' => [
                 'noop' => Noop::class,
                 'stream' => Stream::class,
+                'syslog' => Syslog::class,
             ],
             'default' => [
                 'driver' => 'noop',
@@ -48,6 +50,16 @@ class LoggersTest extends AbstractUnit
 
         $this->assertInstanceOf(Line::class, $formatter);
         $this->assertSame('[%type%] %message%', $formatter->getFormat());
+    }
+
+    public function testGetFormatterAppliesDateFormatOption(): void
+    {
+        $formatter = $this->createLoggers()->getFormatter('line', [
+            'dateFormat' => 'Y-m-d',
+        ]);
+
+        $this->assertInstanceOf(Line::class, $formatter);
+        $this->assertSame('Y-m-d', $formatter->getDateFormat());
     }
 
     public function testGetFormatterRejectsUnknownFormatter(): void
@@ -80,6 +92,14 @@ class LoggersTest extends AbstractUnit
         $this->assertCount(2, $adapters);
     }
 
+    public function testGetAdaptersSupportsSyslogDriver(): void
+    {
+        $adapters = $this->createLoggers()->getAdapters('syslog');
+
+        $this->assertArrayHasKey('syslog', $adapters);
+        $this->assertInstanceOf(Syslog::class, $adapters['syslog']);
+    }
+
     public function testGetAdaptersRejectsUnknownDriver(): void
     {
         $this->expectException(\Exception::class);
@@ -103,6 +123,51 @@ class LoggersTest extends AbstractUnit
         $this->assertInstanceOf(Logger::class, $logger);
         $this->assertSame($logger, $loggers->get('audit'));
         $this->assertSame($logger, $loggers->loggers['audit']);
+    }
+
+    public function testLoadPassesFormatterOptionsFromLoggerConfig(): void
+    {
+        $loggers = $this->createLoggers([
+            'default' => [
+                'driver' => 'noop',
+                'formatter' => 'line',
+                'format' => '[%date%] %message%',
+                'dateFormat' => 'Y-m-d',
+            ],
+        ]);
+
+        $logger = $loggers->load('audit');
+        $adapter = $logger->getAdapters()['noop'];
+        $formatter = $adapter->getFormatter();
+
+        $this->assertInstanceOf(Line::class, $formatter);
+        $this->assertSame('[%date%] %message%', $formatter->getFormat());
+        $this->assertSame('Y-m-d', $formatter->getDateFormat());
+    }
+
+    public function testLoggerSpecificDateFormatOverridesDefaultFormatterOption(): void
+    {
+        $loggers = $this->createLoggers([
+            'default' => [
+                'driver' => 'noop',
+                'formatter' => 'line',
+                'dateFormat' => 'Y-m-d',
+            ],
+            'loggers' => [
+                'audit' => [
+                    'driver' => 'noop',
+                    'formatter' => 'line',
+                    'dateFormat' => 'Y',
+                ],
+            ],
+        ]);
+
+        $logger = $loggers->load('audit');
+        $adapter = $logger->getAdapters()['noop'];
+        $formatter = $adapter->getFormatter();
+
+        $this->assertInstanceOf(Line::class, $formatter);
+        $this->assertSame('Y', $formatter->getDateFormat());
     }
 
     public function testGetFallsBackToDefaultConfigForUnknownLoggerName(): void

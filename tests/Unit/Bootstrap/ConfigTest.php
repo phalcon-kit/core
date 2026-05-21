@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Bootstrap;
 
+use PhalconKit\Support\Env;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Bootstrap\Config;
 
@@ -98,6 +99,47 @@ class ConfigTest extends AbstractUnit
         $this->assertEquals(1, $config->get('!@#$%^&*()', 1));
     }
     
+    public function testLoggerConfigUsesDateFormatKey(): void
+    {
+        $keys = [
+            'LOGGER_DATE_FORMAT',
+            'LOGGER_DATE',
+            'LOGGER_ERROR_DATE_FORMAT',
+            'LOGGER_ERROR_DATE',
+        ];
+        $previous = [];
+        foreach ($keys as $key) {
+            $previous[$key] = Env::get($key);
+            Env::set($key, null);
+        }
+
+        try {
+            Env::set('LOGGER_DATE_FORMAT', 'Y-m-d');
+            Env::set('LOGGER_DATE', 'Y');
+            Env::set('LOGGER_ERROR_DATE_FORMAT', 'c');
+            Env::set('LOGGER_ERROR_DATE', 'U');
+
+            $config = new Config();
+            $loggerConfig = $config->pathToArray('logger.default');
+            $errorLoggerConfig = $config->pathToArray('loggers.error');
+
+            $this->assertArrayHasKey('dateFormat', $loggerConfig);
+            $this->assertArrayNotHasKey('date', $loggerConfig);
+            $this->assertSame('Y-m-d', $loggerConfig['dateFormat']);
+            $this->assertSame('c', $errorLoggerConfig['dateFormat']);
+
+            Env::set('LOGGER_ERROR_DATE_FORMAT', null);
+
+            $fallbackConfig = new Config();
+
+            $this->assertSame('Y-m-d', $fallbackConfig->path('loggers.error.dateFormat'));
+        } finally {
+            foreach ($previous as $key => $value) {
+                Env::set($key, $value);
+            }
+        }
+    }
+
     public function testGetModelClass(): void
     {
         $config = new \PhalconKit\Bootstrap\Config();

@@ -63,4 +63,9 @@ class SlugTest extends AbstractUnit
         $this->assertSame('', Slug::cleanString('', '-'));
         $this->assertSame('', Slug::cleanString('!!!', '-'));
     }
+
+    public function testCleanStringReturnsEmptyStringForInvalidUtf8Input(): void
+    {
+        $this->assertSame('', Slug::cleanString("\xff", '-'));
+    }
 }

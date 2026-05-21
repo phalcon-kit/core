@@ -60,7 +60,7 @@ class Loggers
         // Date Format
         if ($formatter instanceof AbstractFormatter) {
             if (isset($options['dateFormat'])) {
-                $formatter->setDateFormat($options['date']);
+                $formatter->setDateFormat($options['dateFormat']);
             }
         }
         
@@ -139,18 +139,19 @@ class Loggers
         $defaultConfig = $this->getOption('default') ?? [];
         $loggersConfig = $this->getOption('loggers') ?? [];
         $loggerConfig = $loggersConfig[$name] ?? [];
+
         $options = [
             'driver' => $loggerConfig['driver'] ?? $defaultConfig['driver'] ?? 'noop',
             'formatter' => $loggerConfig['formatter'] ?? $defaultConfig['formatter'] ?? 'line',
             'path' => $loggerConfig['path'] ?? $defaultConfig['path'] ?? null,
             'filename' => $loggerConfig['filename'] ?? $defaultConfig['filename'] ?? 'default.log',
-            'date' => $loggerConfig['date'] ?? $defaultConfig['date'] ?? 'c',
+            'dateFormat' => $loggerConfig['dateFormat'] ?? $defaultConfig['dateFormat'] ?? 'c',
             'format' => $loggerConfig['format'] ?? $defaultConfig['format'] ?? null,
             'options' => $loggerConfig['options'] ?? $defaultConfig['options'] ?? [],
         ];
         
         // get formatter
-        $formatter = $this->getFormatter($options['formatter']);
+        $formatter = $this->getFormatter($options['formatter'], $options);
         
         // get adapters
         $adapters = $this->getAdapters($options['driver'], $options, $formatter);

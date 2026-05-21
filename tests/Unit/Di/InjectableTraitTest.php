@@ -97,6 +97,11 @@ class InjectableTraitTest extends AbstractUnit
         $this->assertNull($this->injectable->__get('nonExistingProperty'));
         $this->assertNull($this->injectable->nonExistingProperty);
     }
+
+    public function testUndefinedPropertyReturnsNullWhenWarningIsSuppressed(): void
+    {
+        $this->assertNull(@$this->injectable->nonExistingProperty);
+    }
     
     public function testThrowNonExistingPropertyStrict(): void
     {

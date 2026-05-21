@@ -165,7 +165,7 @@ if (!function_exists('mb_vsprintf')) {
                 if ($precision !== '') {
                     $precision = intval(substr($precision, 1));
                     if ($precision > 0 && mb_strlen($arg, $encoding) > $precision) {
-                        $arg = mb_substr(strval($precision), 0, $precision, $encoding);
+                        $arg = mb_substr($arg, 0, $precision, $encoding);
                     }
                 }
                 

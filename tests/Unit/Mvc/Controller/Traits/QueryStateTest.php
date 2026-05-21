@@ -56,6 +56,10 @@ class QueryStateTest extends AbstractUnit
         $controller->initializeSearchFields();
 
         $this->assertFalse($controller->hasExposeFields());
+        $this->assertFalse($controller->hasFilterFields());
+        $this->assertFalse($controller->hasMapFields());
+        $this->assertFalse($controller->hasSaveFields());
+        $this->assertFalse($controller->hasSearchFields());
         $this->assertNull($controller->getFilterFields());
         $this->assertNull($controller->getMapFields());
         $this->assertNull($controller->getSaveFields());
@@ -68,6 +72,10 @@ class QueryStateTest extends AbstractUnit
         $controller->mergeSearchFields(new Collection(['body']));
 
         $this->assertTrue($controller->hasExposeFields());
+        $this->assertTrue($controller->hasFilterFields());
+        $this->assertTrue($controller->hasMapFields());
+        $this->assertTrue($controller->hasSaveFields());
+        $this->assertTrue($controller->hasSearchFields());
         $this->assertSame(['id'], $controller->getExposeFields()?->toArray());
         $this->assertSame(['status'], $controller->getFilterFields()?->toArray());
         $this->assertSame(['publicName' => 'name'], $controller->getMapFields()?->toArray());

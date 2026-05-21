@@ -102,7 +102,7 @@ class Config extends \PhalconKit\Config\Config
         $this->defineConst();
         $now = new \DateTimeImmutable();
         $data = $this->internalMergeAppend([
-            
+
             /**
              * Phalcon settings
              */
@@ -573,7 +573,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_DRIVER', 'stream'),
                     'formatter' => Env::get('LOGGER_FORMATTER', 'line'),
                     'format' => Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%'),
-                    'date' => Env::get('LOGGER_DATE', 'Y-m-d H:i:s'),
+                    'dateFormat' => Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s'),
                     'path' => Env::get('LOGGER_PATH', STORAGE_PATH . '/log/'),
                     'filename' => Env::get('LOGGER_FILENAME', 'default'),
                 ],
@@ -588,7 +588,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_ERROR_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_ERROR_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_ERROR_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_ERROR_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_ERROR_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_ERROR_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_ERROR_FILENAME', 'error.log'),
                 ],
@@ -598,7 +598,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_DATABASE_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_DATABASE_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_DATABASE_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_DATABASE_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_DATABASE_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_DATABASE_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_DATABASE_FILENAME', 'database.log'),
                 ],
@@ -608,7 +608,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_REQUEST_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_REQUEST_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_REQUEST_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_REQUEST_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_REQUEST_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_REQUEST_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_REQUEST_FILENAME', 'request.log'),
                 ],
@@ -618,7 +618,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_DISPATCHER_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_DISPATCHER_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_DISPATCHER_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_DISPATCHER_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_DISPATCHER_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_DISPATCHER_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_DISPATCHER_FILENAME', 'dispatcher.log'),
                 ],
@@ -628,7 +628,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_PROFILER_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_PROFILER_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_PROFILER_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_PROFILER_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_PROFILER_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_PROFILER_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_PROFILER_FILENAME', 'profiler.log'),
                 ],
@@ -638,7 +638,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_MAILER_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_MAILER_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_MAILER_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_MAILER_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_MAILER_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_MAILER_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_MAILER_FILENAME', 'mailer.log'),
                 ],
@@ -648,7 +648,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_CRON_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_CRON_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_CRON_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_CRON_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_CRON_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_CRON_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_CRON_FILENAME', 'cron.log'),
                 ],
@@ -658,7 +658,7 @@ class Config extends \PhalconKit\Config\Config
                     'driver' => Env::get('LOGGER_AUTH_DRIVER', Env::get('LOGGER_DRIVER', 'stream')),
                     'formatter' => Env::get('LOGGER_AUTH_FORMATTER', Env::get('LOGGER_FORMATTER', 'line')),
                     'format' => Env::get('LOGGER_AUTH_FORMAT', Env::get('LOGGER_FORMAT', '[%date%][%type%] %message%')),
-                    'date' => Env::get('LOGGER_AUTH_DATE', Env::get('LOGGER_DATE', 'Y-m-d H:i:s')),
+                    'dateFormat' => Env::get('LOGGER_AUTH_DATE_FORMAT', Env::get('LOGGER_DATE_FORMAT', 'Y-m-d H:i:s')),
                     'path' => Env::get('LOGGER_AUTH_PATH', Env::get('LOGGER_PATH', STORAGE_PATH . '/log/')),
                     'filename' => Env::get('LOGGER_AUTH_FILENAME', 'auth.log'),
                 ],

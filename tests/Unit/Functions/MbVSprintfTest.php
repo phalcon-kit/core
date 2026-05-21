@@ -54,6 +54,7 @@ class MbVSprintfTest extends AbstractUnit
     {
         $this->assertEquals('        世界', mb_sprintf('%10s', '世界'));
         $this->assertEquals('12.35', mb_sprintf('%.2f', 12.3456));
+        $this->assertEquals('abc', mb_sprintf('%.3s', 'abcdef'));
     }
     
     public function testMbSprintfPaddingAndAlignment(): void
@@ -119,6 +120,12 @@ class MbVSprintfTest extends AbstractUnit
         $format = '%10s, %.2f';
         $args = ['世界', 12.3456];
         $this->assertEquals('        世界, 12.35', mb_vsprintf($format, $args));
+        $this->assertEquals('こん', mb_vsprintf('%.2s', ['こんにちは']));
+    }
+
+    public function testMbVsprintfEscapedPercent(): void
+    {
+        $this->assertSame('Progress: 100%', mb_vsprintf('Progress: 100%%', []));
     }
     
     public function testMbVsprintfPaddingAndAlignment(): void

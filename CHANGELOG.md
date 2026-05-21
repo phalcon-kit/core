@@ -150,6 +150,9 @@ tag has been cut yet.
   `phpunit-coverage` helper is not installed.
 - Added more unit coverage for provider registration paths, JWT helper
   round-trips, and REST query state initialization/merge edge cases.
+- Added focused branch coverage for sprintf helpers, logger adapters, slug
+  normalization, injectable property fallback, event-manager guards, and query
+  field presence helpers.
 
 ### Changed
 
@@ -204,6 +207,10 @@ tag has been cut yet.
 
 ### Fixed
 
+- Fixed multibyte string precision formatting in `mb_vsprintf()`.
+- Fixed logger formatter `date`/`dateFormat` handling during logger loading.
+- Standardized logger configuration on `dateFormat` and `LOGGER_*_DATE_FORMAT`
+  env names.
 - Fixed Psalm, PHPStan, PHPCS, and PHPUnit failures caused by PHP 8.5, Phalcon
   5.13, and stricter local/CI analyzer settings.
 - Fixed GitHub workflow drift where CI and local analyzer commands reported
