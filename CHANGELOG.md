@@ -275,6 +275,8 @@ tag has been cut yet.
 - Fixed `Env::load()` so names are only set when appropriate.
 - Fixed relationship save handling after upstream Phalcon changes around dirty
   related models.
+- Fixed Transformable behavior so literal values such as generated slugs named
+  `range` are not invoked as PHP callable strings.
 - Fixed local static-analysis behavior when Swoole classes are referenced but
   the extension is not installed in the analyzer runtime.
 - Fixed redundant null coalescing and key exposure logic in query/order paths.

@@ -195,6 +195,24 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertNull($behavior->notify('beforeValidation', $model));
     }
 
+    public function testTransformableBehaviorKeepsCallableStringValuesLiteral(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->name = 'old';
+        $model->slug = 'old';
+
+        $behavior = new Transformable([
+            'beforeValidation' => [
+                'name' => 'range',
+                'slug' => static fn(ModelBehaviorDouble $model, string $field): string => 'range',
+            ],
+        ]);
+
+        $this->assertTrue($behavior->notify('beforeValidation', $model));
+        $this->assertSame('range', $model->name);
+        $this->assertSame('range', $model->slug);
+    }
+
     public function testSnapshotBehaviorSetsCreateSnapshot(): void
     {
         $model = new ModelBehaviorDouble();

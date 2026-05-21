@@ -52,11 +52,13 @@ class Transformable extends Behavior
                 continue;
             }
             
-            $value = is_callable($value) ? $value($model, $field) : $value;
+            $value = ($value instanceof \Closure || (is_object($value) && is_callable($value)))
+                ? $value($model, $field)
+                : $value;
             
             // allow up to 10 callbacks
             $limit = 10;
-            while (is_callable($value) && --$limit) {
+            while (($value instanceof \Closure || (is_object($value) && is_callable($value))) && --$limit) {
                 $value = $value();
             }
             
