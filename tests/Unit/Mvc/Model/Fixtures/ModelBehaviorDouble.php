@@ -208,6 +208,12 @@ class ModelBehaviorDouble extends Model
     }
 
     #[\Override]
+    public function setOldSnapshotData(array $data, $columnMap = null): void
+    {
+        $this->oldSnapshotData = $data;
+    }
+
+    #[\Override]
     public function getSnapshotData(): array
     {
         return $this->snapshotData;
@@ -292,5 +298,10 @@ class ModelBehaviorDouble extends Model
     public function publicShouldSkipOptionalValidation(array|string $field, bool $allowEmpty): bool
     {
         return $this->shouldSkipOptionalValidation($field, $allowEmpty);
+    }
+
+    public function publicNormalizeNullableNullStrings(): void
+    {
+        $this->normalizeNullableNullStrings();
     }
 }

@@ -22,6 +22,7 @@ class FakeMetaData extends Memory
     public ?array $fakeColumnMap = null;
     public array $dataTypes = ['id' => \Phalcon\Db\Column::TYPE_INTEGER];
     public array $primaryKeyAttributes = ['id'];
+    public array $notNullAttributes = ['id'];
     public array $bindTypes = ['id' => \Phalcon\Db\Column::BIND_PARAM_INT];
     public ?array $fakeReverseColumnMap = null;
 
@@ -53,6 +54,12 @@ class FakeMetaData extends Memory
     public function getPrimaryKeyAttributes(ModelInterface $model): array
     {
         return $this->primaryKeyAttributes;
+    }
+
+    #[\Override]
+    public function getNotNullAttributes(ModelInterface $model): array
+    {
+        return $this->notNullAttributes;
     }
 
     #[\Override]

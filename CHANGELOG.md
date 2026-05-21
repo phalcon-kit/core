@@ -237,6 +237,8 @@ tag has been cut yet.
   responses cannot produce an unusable shared Redis service.
 - Fixed nullable model blame fields so generated models and optional
   validations treat SQL null values consistently across create/update saves.
+- Fixed base model persistence so nullable SQL null sentinels are normalized
+  before create/update/save operations and cannot be rebound as `"NULL"`.
 - Fixed DB-backed PHPUnit tests so query logger/profiler checks avoid table
   scans and locked model tables are reported as skips instead of hanging.
 - Fixed multibyte string precision formatting in `mb_vsprintf()`.

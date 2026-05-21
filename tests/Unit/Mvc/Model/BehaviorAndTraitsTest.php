@@ -1080,6 +1080,50 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertEmpty($position->getValidators());
     }
 
+    public function testNullableSqlNullStringsAreNormalizedBeforePersistence(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->fakeModelsMetaData = new FakeMetaData();
+        $model->fakeModelsMetaData->attributes = ['id', 'parent_id', 'title', 'required_name'];
+        $model->fakeModelsMetaData->fakeColumnMap = [
+            'id' => 'id',
+            'parent_id' => 'parentId',
+            'title' => 'title',
+            'required_name' => 'requiredName',
+        ];
+        $model->fakeModelsMetaData->notNullAttributes = ['id', 'required_name'];
+
+        $model->parentId = 'NULL';
+        $model->attributes['title'] = ' NULL ';
+        $model->attributes['requiredName'] = 'NULL';
+        $model->name = 'NULL';
+        $model->snapshotData = [
+            'id' => 1,
+            'parentId' => 'NULL',
+            'title' => 'NULL',
+            'requiredName' => 'NULL',
+        ];
+        $model->oldSnapshotData = [
+            'parentId' => ' NULL ',
+            'title' => 'NULL',
+            'requiredName' => 'NULL',
+        ];
+        $model->hasSnapshotData = true;
+
+        $model->publicNormalizeNullableNullStrings();
+
+        $this->assertNull($model->parentId);
+        $this->assertNull($model->attributes['title']);
+        $this->assertSame('NULL', $model->attributes['requiredName']);
+        $this->assertSame('NULL', $model->name);
+        $this->assertNull($model->snapshotData['parentId']);
+        $this->assertNull($model->snapshotData['title']);
+        $this->assertSame('NULL', $model->snapshotData['requiredName']);
+        $this->assertNull($model->oldSnapshotData['parentId']);
+        $this->assertNull($model->oldSnapshotData['title']);
+        $this->assertSame('NULL', $model->oldSnapshotData['requiredName']);
+    }
+
     public function testRelationshipMessageAndArrayHelpers(): void
     {
         $model = new ModelBehaviorDouble();

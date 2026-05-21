@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc;
 
 use AllowDynamicProperties;
 use Phalcon\Events\Manager as EventsManager;
+use Phalcon\Support\Collection\CollectionInterface;
 
 /**
  * Events
@@ -84,6 +85,54 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
      * @var array
      */
     protected $dirtyRelated = [];
+
+    #[\Override]
+    public function save(): bool
+    {
+        $this->normalizeNullableNullStrings();
+        $saved = parent::save();
+        if ($saved) {
+            $this->normalizeNullableNullStrings();
+        }
+
+        return $saved;
+    }
+
+    #[\Override]
+    public function create(): bool
+    {
+        $this->normalizeNullableNullStrings();
+        $created = parent::create();
+        if ($created) {
+            $this->normalizeNullableNullStrings();
+        }
+
+        return $created;
+    }
+
+    #[\Override]
+    public function update(): bool
+    {
+        $this->normalizeNullableNullStrings();
+        $updated = parent::update();
+        if ($updated) {
+            $this->normalizeNullableNullStrings();
+        }
+
+        return $updated;
+    }
+
+    #[\Override]
+    public function doSave(CollectionInterface $visited): bool
+    {
+        $this->normalizeNullableNullStrings();
+        $saved = parent::doSave($visited);
+        if ($saved) {
+            $this->normalizeNullableNullStrings();
+        }
+
+        return $saved;
+    }
 
     public function initialize(): void
     {
@@ -241,6 +290,88 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
 
         $found = true;
         return $reflection->isInitialized($this) ? $reflection->getValue($this) : null;
+    }
+
+    protected function normalizeNullableNullStrings(): void
+    {
+        $nullableAttributes = $this->getNullableMappedAttributes();
+        foreach ($nullableAttributes as $attribute) {
+            if ($this->isSqlNullString($this->readAttribute($attribute))) {
+                $this->writeAttribute($attribute, null);
+            }
+        }
+
+        $this->normalizeNullableNullStringSnapshots($nullableAttributes);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function getNullableMappedAttributes(): array
+    {
+        try {
+            $metadata = $this->getModelsMetaData();
+            $attributes = $metadata->getAttributes($this);
+            $notNull = array_flip($metadata->getNotNullAttributes($this));
+            $columnMap = $metadata->getColumnMap($this) ?? [];
+        }
+        catch (\Throwable) {
+            return [];
+        }
+
+        $nullable = [];
+        foreach ($attributes as $column) {
+            if (isset($notNull[$column])) {
+                continue;
+            }
+
+            $nullable[] = $columnMap[$column] ?? $column;
+        }
+
+        return $nullable;
+    }
+
+    private function isSqlNullString(mixed $value): bool
+    {
+        return is_string($value) && strcasecmp(trim($value), 'NULL') === 0;
+    }
+
+    /**
+     * @param list<string> $nullableAttributes
+     */
+    private function normalizeNullableNullStringSnapshots(array $nullableAttributes): void
+    {
+        if (!$this->hasSnapshotData()) {
+            return;
+        }
+
+        $snapshot = $this->normalizeNullableNullStringData(
+            $this->getSnapshotData(),
+            $nullableAttributes
+        );
+        $this->setSnapshotData($snapshot);
+
+        $oldSnapshot = $this->normalizeNullableNullStringData(
+            $this->getOldSnapshotData(),
+            $nullableAttributes
+        );
+        $this->setOldSnapshotData($oldSnapshot);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param list<string> $nullableAttributes
+     * @return array<string, mixed>
+     */
+    private function normalizeNullableNullStringData(array $data, array $nullableAttributes): array
+    {
+        foreach ($nullableAttributes as $attribute) {
+            if (array_key_exists($attribute, $data) && $this->isSqlNullString($data[$attribute])) {
+                $data[$attribute] = null;
+            }
+        }
+
+        return $data;
     }
 
     /**
