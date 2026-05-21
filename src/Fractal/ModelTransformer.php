@@ -13,18 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit\Fractal;
 
-use League\Fractal\TransformerAbstract;
-use Phalcon\Di\InjectionAwareInterface;
-use PhalconKit\Di\InjectableTrait;
 use Phalcon\Mvc\Model;
 
 /**
  * This class is responsible for transforming a Model object into an array representation.
  */
-class ModelTransformer extends TransformerAbstract implements InjectionAwareInterface
+class ModelTransformer extends Transformer
 {
-    use InjectableTrait;
-    
     public function transform(Model $model): array
     {
         return $model->toArray();

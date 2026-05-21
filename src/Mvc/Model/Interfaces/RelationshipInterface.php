@@ -48,7 +48,17 @@ interface RelationshipInterface
     public function hasDirtyRelated(): bool;
     
     public function hasDirtyRelatedAlias(string $alias): bool;
-    
+
+    public function getLoadedRelated(): array;
+
+    public function setLoadedRelated(array $loadedRelated): void;
+
+    public function getLoadedRelatedAlias(string $alias): mixed;
+
+    public function setLoadedRelatedAlias(string $alias, mixed $value): void;
+
+    public function hasLoadedRelatedAlias(string $alias): bool;
+
     public function assignRelated(array $data, ?array $whiteList = null, ?array $dataColumnMap = null): ModelInterface;
     
     public function postSaveRelatedRecordsAfter(RelationInterface $relation, array $relatedRecords, CollectionInterface $visited): ?bool;

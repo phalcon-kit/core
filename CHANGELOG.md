@@ -80,6 +80,8 @@ tag has been cut yet.
   `zemit-cms/core` migration guide.
 - Added more targeted Composer package metadata for REST APIs, scaffolding,
   eager loading, identity, permissions, CLI, and WebSocket use cases.
+- Added Fractal transformer helpers for including dirty or eager-loaded model
+  relations only when they have been loaded.
 - Linked the public README and guide index more explicitly to the bundled AI
   skill documentation and added AI/agent guidance to the documentation issue
   template.
@@ -207,6 +209,10 @@ tag has been cut yet.
 
 ### Fixed
 
+- Fixed eager-loaded relationship assignment for models that declare relation
+  aliases as non-public properties or access aliases directly.
+- Fixed eager loading for non-through relations so intermediate relationship
+  metadata is only read for through relations.
 - Fixed multibyte string precision formatting in `mb_vsprintf()`.
 - Fixed logger formatter `date`/`dateFormat` handling during logger loading.
 - Standardized logger configuration on `dateFormat` and `LOGGER_*_DATE_FORMAT`
@@ -238,6 +244,8 @@ tag has been cut yet.
 - Fixed false/null handling in filter condition compilation, filter semantics,
   dynamic joins, group handling, model parameter parsing, and eager-loading
   relation assignment.
+- Fixed REST controller behavior setup so missing controller-local event managers
+  are initialized from the DI service before priorities or listeners are used.
 - Fixed invalid `preg_split()`, `preg_replace()`, `strrpos()`, `substr()`, and
   JSON encoding result assumptions surfaced by stricter Psalm checks.
 - Fixed Blameable JSON normalization to avoid returning `false` from methods

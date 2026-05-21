@@ -250,12 +250,30 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
      */
     private function collectList(?ModelInterface $model, string $property, string $keyMethod = 'getKey'): array
     {
-        if (!isset($model) || !property_exists($model, $property)) {
+        if (!isset($model)) {
+            return [];
+        }
+
+        $list = null;
+        if ($model->hasLoadedRelatedAlias($property)) {
+            $list = $model->getLoadedRelatedAlias($property);
+        }
+        elseif ($model->hasDirtyRelatedAlias($property)) {
+            $list = $model->getDirtyRelatedAlias($property);
+        }
+        elseif (property_exists($model, $property)) {
+            $list = $model->$property;
+        }
+        else {
+            return [];
+        }
+
+        if (!is_iterable($list)) {
             return [];
         }
         
         $ret = [];
-        foreach ($model->$property as $entity) {
+        foreach ($list as $entity) {
             if (!is_object($entity) || !method_exists($entity, $keyMethod)) {
                 throw new \LogicException(sprintf(
                     'Entity %s must implement method %s()',

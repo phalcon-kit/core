@@ -52,6 +52,14 @@ trait Relationship
     protected $dirtyRelated = [];
     
     /**
+     * Eager-loaded relationship values that should be readable/exportable
+     * without being treated as pending related records to save.
+     *
+     * @var array<string, mixed>
+     */
+    protected array $loadedRelated = [];
+
+    /**
      * Set the missing related configuration list
      */
     public function setKeepMissingRelated(array $keepMissingRelated): void
@@ -120,7 +128,7 @@ trait Relationship
      */
     public function getDirtyRelatedAlias(string $alias): mixed
     {
-        return $this->dirtyRelated[$alias];
+        return $this->dirtyRelated[mb_strtolower($alias)];
     }
     
     /**
@@ -128,7 +136,9 @@ trait Relationship
      */
     public function setDirtyRelatedAlias(string $alias, mixed $value): void
     {
+        $alias = mb_strtolower($alias);
         $this->dirtyRelated[$alias] = $value;
+        $this->writeDeclaredRelatedAlias($alias, $value);
     }
     
     /**
@@ -144,7 +154,61 @@ trait Relationship
      */
     public function hasDirtyRelatedAlias(string $alias): bool
     {
-        return isset($this->dirtyRelated[$alias]);
+        return isset($this->dirtyRelated[mb_strtolower($alias)]);
+    }
+
+    /**
+     * Return the eager-loaded related entities
+     */
+    public function getLoadedRelated(): array
+    {
+        return $this->loadedRelated;
+    }
+
+    /**
+     * Set the eager-loaded related entities
+     */
+    public function setLoadedRelated(array $loadedRelated): void
+    {
+        $this->loadedRelated = $loadedRelated;
+    }
+
+    /**
+     * Return eager-loaded related entities for one alias
+     */
+    public function getLoadedRelatedAlias(string $alias): mixed
+    {
+        return $this->loadedRelated[mb_strtolower($alias)] ?? null;
+    }
+
+    /**
+     * Set eager-loaded related entities for one alias
+     */
+    public function setLoadedRelatedAlias(string $alias, mixed $value): void
+    {
+        $alias = mb_strtolower($alias);
+        $this->loadedRelated[$alias] = $value;
+        $this->writeDeclaredRelatedAlias($alias, $value);
+    }
+
+    /**
+     * Check whether an eager-loaded relation alias exists
+     */
+    public function hasLoadedRelatedAlias(string $alias): bool
+    {
+        return array_key_exists(mb_strtolower($alias), $this->loadedRelated);
+    }
+
+    private function writeDeclaredRelatedAlias(string $alias, mixed $value): void
+    {
+        if (!property_exists($this, $alias)) {
+            return;
+        }
+
+        $property = new \ReflectionProperty($this, $alias);
+        if (!$property->isStatic()) {
+            $property->setValue($this, $value);
+        }
     }
     
     /**
@@ -1039,7 +1103,7 @@ trait Relationship
         assert($this instanceof ModelInterface);
         $columnMap = $this->getModelsMetaData()->getColumnMap($this);
         
-        foreach ($this->getDirtyRelated() as $attribute => $related) {
+        foreach (array_merge($this->getLoadedRelated(), $this->getDirtyRelated()) as $attribute => $related) {
             // Map column if defined
             if ($columnMap && isset($columnMap[$attribute])) {
                 $attributeField = $columnMap[$attribute];

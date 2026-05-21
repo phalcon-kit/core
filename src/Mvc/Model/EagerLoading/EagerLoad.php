@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Model\EagerLoading;
 
 use Phalcon\Mvc\EntityInterface;
+use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\Relation;
 use Phalcon\Mvc\Model\RelationInterface;
+use PhalconKit\Mvc\Model\Interfaces\RelationshipInterface as PhalconKitRelationshipInterface;
 
 /**
  * Represents a level in the relations tree to be eagerly loaded
@@ -23,16 +25,16 @@ use Phalcon\Mvc\Model\RelationInterface;
 final class EagerLoad
 {
     private RelationInterface $relation;
-    
+
     /** @var null|callable */
     private $constraints;
-    
+
     /** @var Loader|EagerLoad */
     private $parent;
-    
+
     /** @var null|\Phalcon\Mvc\ModelInterface[] */
     private ?array $subject = null;
-    
+
     /**
      * @param Relation $relation
      * @param null|callable $constraints
@@ -44,7 +46,7 @@ final class EagerLoad
         $this->constraints = is_callable($constraints) ? $constraints : null;
         $this->parent = $parent;
     }
-    
+
     /**
      * @return null|\Phalcon\Mvc\ModelInterface[]
      */
@@ -52,7 +54,7 @@ final class EagerLoad
     {
         return $this->subject;
     }
-    
+
     /**
      * Executes each db query needed
      *
@@ -66,22 +68,19 @@ final class EagerLoad
     public function load()
     {
         $parentSubject = $this->parent->getSubject();
-        
+
         if (empty($parentSubject)) {
             return $this;
         }
-        
+
         $relation = $this->relation;
-        
+
         $options = $relation->getOptions();
         $alias = strtolower($options['alias']);
         $relField = $relation->getFields();
         $relReferencedModel = $relation->getReferencedModel();
         $relReferencedField = $relation->getReferencedFields();
-        $relIrModel = $relation->getIntermediateModel();
-        $relIrField = $relation->getIntermediateFields();
-        $relIrReferencedField = $relation->getIntermediateReferencedFields();
-        
+
         // @todo support multiples fields with eager loading
         if (is_array($relField)) {
             throw new \RuntimeException('Relation field must be a string, multiple fields are not supported yet.');
@@ -89,18 +88,12 @@ final class EagerLoad
         if (is_array($relReferencedField)) {
             throw new \RuntimeException('Relation Referenced field must be a string, multiple fields are not supported yet.');
         }
-        if (is_array($relIrField)) {
-            throw new \RuntimeException('Relation Intermediate field must be a string, multiple fields are not supported yet.');
-        }
-        if (is_array($relIrReferencedField)) {
-            throw new \RuntimeException('Relation Intermediate Referenced field must be a string, multiple fields are not supported yet.');
-        }
-        
+
         // PHQL has problems with this slash
         if ($relReferencedModel[0] === '\\') {
             $relReferencedModel = ltrim($relReferencedModel, '\\');
         }
-        
+
         $bindValues = [];
         foreach ($parentSubject as $record) {
             assert($record instanceof EntityInterface);
@@ -112,16 +105,27 @@ final class EagerLoad
 //            }
         }
         unset($record);
-        
+
         $bindValues = array_keys($bindValues);
-        
+
         $subjectCount = count($parentSubject);
         $isManyToManyForMany = false;
-        
+
         $builder = new QueryBuilder();
         $builder->from($relReferencedModel);
-        
+
         if ($isThrough = $relation->isThrough()) {
+            $relIrModel = $relation->getIntermediateModel();
+            $relIrField = $relation->getIntermediateFields();
+            $relIrReferencedField = $relation->getIntermediateReferencedFields();
+
+            if (is_array($relIrField)) {
+                throw new \RuntimeException('Relation Intermediate field must be a string, multiple fields are not supported yet.');
+            }
+            if (is_array($relIrReferencedField)) {
+                throw new \RuntimeException('Relation Intermediate Referenced field must be a string, multiple fields are not supported yet.');
+            }
+
             if ($subjectCount === 1) {
                 // The query is for a single model
                 $builder
@@ -138,7 +142,7 @@ final class EagerLoad
                     ->where('[' . $relIrModel . '].[deleted] <> 1') // @todo do this correctly
                     ->inWhere("[{$relIrModel}].[{$relIrField}]", $bindValues)
                 ;
-                
+
                 // @todo see if we should enable this grouping by default or even add a configuration for this
 //                $builder->groupBy("[{$relIrModel}].[{$relIrReferencedField}]");
             }
@@ -146,7 +150,7 @@ final class EagerLoad
                 // The query is for many models, so it's needed to execute an
                 // extra query
                 $isManyToManyForMany = true;
-                
+
                 $relIrValues = new QueryBuilder();
                 $relIrValues = $relIrValues
                     ->from($relIrModel)
@@ -155,7 +159,7 @@ final class EagerLoad
                     ->getQuery()
                     ->execute()
                 ;
-                
+
                 $bindValues = [];
                 $modelReferencedModelValues = [];
                 foreach ($relIrValues as $row) {
@@ -164,7 +168,7 @@ final class EagerLoad
                 }
                 unset($relIrValues);
                 unset($row);
-                
+
                 $builder->inWhere(
                     "[{$relReferencedModel}].[{$relReferencedField}]",
                     array_keys($bindValues)
@@ -177,44 +181,41 @@ final class EagerLoad
                 $bindValues
             );
         }
-        
+
         $constraint = $this->constraints;
         if (is_callable($constraint)) {
             $constraint($builder);
         }
-        
+
         $records = [];
-        
+
         if ($isManyToManyForMany) {
             foreach ($builder->getQuery()->execute() as $record) {
                 $records[$record->readAttribute($relReferencedField)] = $record;
             }
             unset($record);
-            
+
             foreach ($parentSubject as $record) {
                 assert($record instanceof EntityInterface);
                 $referencedFieldValue = $record->readAttribute($relField);
-                
+
                 if (isset($modelReferencedModelValues[$referencedFieldValue])) {
                     $referencedModels = [];
-                    
+
                     foreach ($modelReferencedModelValues[$referencedFieldValue] as $idx => $_) {
                         if (isset($records[$idx])) {
                             $referencedModels[] = $records[$idx];
                         }
                     }
-                    
-                    $record->{$alias} = $referencedModels;
-                    $record->{$alias} = null;
-                    $record->{$alias} = $referencedModels;
+
+                    $this->assignRelation($record, $alias, $referencedModels);
                 }
                 else {
-                    $record->{$alias} = null;
-                    $record->{$alias} = [];
+                    $this->assignRelation($record, $alias, []);
                 }
             }
             unset($record);
-            
+
             $records = array_values($records);
         }
         else {
@@ -223,35 +224,32 @@ final class EagerLoad
                 $relation->getType() === Relation::HAS_ONE ||
                 $relation->getType() === Relation::BELONGS_TO
             );
-            
+
             if ($subjectCount === 1) {
                 // Keep all records in memory
                 foreach ($builder->getQuery()->execute() as $record) {
                     $records[] = $record;
                 }
                 unset($record);
-                
+
                 $record = $parentSubject[0];
                 if ($isSingle) {
-                    $record->{$alias} = empty($records) ? null : $records[0];
+                    $this->assignRelation($record, $alias, empty($records) ? null : $records[0]);
                 }
                 elseif (empty($records)) {
-                    $record->{$alias} = null;
-                    $record->{$alias} = [];
+                    $this->assignRelation($record, $alias, []);
                 }
                 else {
-                    $record->{$alias} = $records;
-                    $record->{$alias} = null;
-                    $record->{$alias} = $records;
+                    $this->assignRelation($record, $alias, $records);
                 }
             }
             else {
                 $indexedRecords = [];
-                
+
                 // Keep all records in memory
                 foreach ($builder->getQuery()->execute() as $record) {
                     $records[] = $record;
-                    
+
                     if ($isSingle) {
                         $indexedRecords[$record->readAttribute($relReferencedField)] = $record;
                     }
@@ -259,32 +257,44 @@ final class EagerLoad
                         $indexedRecords[$record->readAttribute($relReferencedField)][] = $record;
                     }
                 }
-                
+
                 foreach ($parentSubject as $record) {
                     assert($record instanceof EntityInterface);
                     $referencedFieldValue = $record->readAttribute($relField);
-                    
+
                     if (isset($indexedRecords[$referencedFieldValue])) {
-                        $record->{$alias} = $indexedRecords[$referencedFieldValue];
-                        
-                        if (is_array($indexedRecords[$referencedFieldValue])) {
-                            $record->{$alias} = null;
-                            $record->{$alias} = $indexedRecords[$referencedFieldValue];
-                        }
+                        $this->assignRelation($record, $alias, $indexedRecords[$referencedFieldValue]);
                     }
                     else {
-                        $record->{$alias} = null;
-                        if (!$isSingle) {
-                            $record->{$alias} = [];
-                        }
+                        $this->assignRelation($record, $alias, $isSingle ? null : []);
                     }
                 }
                 unset($record);
             }
         }
-        
+
         $this->subject = $records;
-        
+
         return $this;
+    }
+
+    private function assignRelation(ModelInterface $record, string $alias, mixed $value): void
+    {
+        if ($record instanceof PhalconKitRelationshipInterface) {
+            $record->setLoadedRelatedAlias($alias, $value);
+            return;
+        }
+
+        if (is_array($value)) {
+            if ($value !== []) {
+                $record->{$alias} = $value;
+            }
+
+            $record->{$alias} = null;
+            $record->{$alias} = $value;
+            return;
+        }
+
+        $record->{$alias} = $value;
     }
 }

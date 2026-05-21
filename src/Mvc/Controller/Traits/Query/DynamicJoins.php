@@ -191,13 +191,10 @@ trait DynamicJoins
                         $joinFilters = is_array($joinFilters) ? $joinFilters : [];
                         $conditions = !empty($joinFilters[$fieldAlias]) ? $this->defaultFilterCondition($joinFilters[$fieldAlias], null, $fieldAlias) : [];
 
-                        $dynamicJoinDefinition = $dynamicJoins->get($alias);
-                        if (
-                            !is_array($dynamicJoinDefinition) ||
-                            !isset($dynamicJoinDefinition[0], $dynamicJoinDefinition[1], $dynamicJoinDefinition[2])
-                        ) {
-                            throw new \LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
-                        }
+                        $dynamicJoinDefinition = $this->normalizeDynamicJoinDefinition(
+                            $alias,
+                            $dynamicJoins->get($alias)
+                        );
 
                         $joinCondition = $dynamicJoinDefinition[1];
                         if (is_array($joinCondition)) {
@@ -246,6 +243,37 @@ trait DynamicJoins
         });
 
         return $this->dynamicJoinsBuild;
+    }
+
+    /**
+     * Normalizes dynamic join definitions to [model, condition, alias?, type?].
+     *
+     * Dynamic joins generate their concrete SQL alias at runtime, so only the model and
+     * join condition are required. The legacy [Model::class => condition] form is kept
+     * for older application controllers.
+     */
+    protected function normalizeDynamicJoinDefinition(string $alias, mixed $definition): array
+    {
+        if (!is_array($definition)) {
+            throw new \LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
+        }
+
+        if (!isset($definition[0], $definition[1]) && count($definition) === 1) {
+            $model = array_key_first($definition);
+
+            if (is_string($model)) {
+                $definition = [
+                    $model,
+                    $definition[$model],
+                ];
+            }
+        }
+
+        if (!isset($definition[0], $definition[1])) {
+            throw new \LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
+        }
+
+        return $definition;
     }
     
     /**

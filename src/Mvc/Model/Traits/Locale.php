@@ -25,7 +25,7 @@ trait Locale
 {
     use AbstractInjectable;
     use AbstractEntity;
-    
+
     /**
      * Translate a given key using the translation service
      *
@@ -37,10 +37,10 @@ trait Locale
     {
         $translate = $this->getDI()->get('translate');
         assert($translate instanceof AbstractAdapter);
-        
+
         return $translate->_($translateKey, $placeholders);
     }
-    
+
     /**
      * Magic method to dynamically call localed named methods using the current locale
      * - Allow to call $this->methodName{Fr|En|Sp|...}() from missing methodName method
@@ -54,20 +54,20 @@ trait Locale
     {
         $locale = $this->getDI()->get('locale');
         assert($locale instanceof \PhalconKit\Locale);
-        
+
         $lang = $locale->getLocale();
-        
+
         if (!empty($lang)) {
             $call = $method . ucfirst($lang);
             if (method_exists($this, $call)) {
                 return $this->$call(...$arguments);
             }
         }
-        
+
 //        return $this->$method(...$arguments);
         return parent::__call($method, $arguments);
     }
-    
+
     /**
      * Magic setter to set localed named field automatically using the current locale
      * - Allow to set $this->name{Fr|En|Sp|...} for missing name property
@@ -80,21 +80,21 @@ trait Locale
     {
         $locale = $this->getDI()->get('locale');
         assert($locale instanceof \PhalconKit\Locale);
-        
+
         $lang = $locale->getLocale();
-        
+
         if (!empty($lang)) {
             $set = $property . ucfirst($lang);
-            
+
             if (property_exists($this, $set)) {
                 $this->writeAttribute($set, $value);
                 return;
             }
         }
-        
+
         parent::__set($property, $value);
     }
-    
+
     /**
      * Magic getter to get localed named field automatically using the current locale
      * - Allow to get $this->name{Fr|En|Sp|...} from missing name property
@@ -106,17 +106,17 @@ trait Locale
     {
         $locale = $this->getDI()->get('locale');
         assert($locale instanceof \PhalconKit\Locale);
-        
+
         $lang = $locale->getLocale();
-        
+
         if (!empty($lang)) {
             $get = $property . ucfirst($lang);
-            
+
             if (property_exists($this, $get)) {
                 return $this->readAttribute($get);
             }
         }
-        
+
         return parent::__get($property);
     }
 }

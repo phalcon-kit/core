@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Controller\Traits;
 
 use Phalcon\Di\Injectable;
 use Phalcon\Events\Manager;
+use Phalcon\Events\ManagerInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractBehavior;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 
@@ -26,10 +27,11 @@ trait Behavior
     
     public function beforeExecuteRoute(): void
     {
-        $this->eventsManager->enablePriorities(true);
+        $eventsManager = $this->getOrCreateEventsManager();
+        $eventsManager->enablePriorities(true);
         
         // @todo see if we can implement receiving an array of responses globally: V2
-        // $this->eventsManager->collectResponses(true);
+        // $eventsManager->collectResponses(true);
         
         // retrieve events based on the config roles and features
         $permissions = $this->config->pathToArray('permissions') ?? [];
@@ -82,7 +84,7 @@ trait Behavior
         
         $eventType = $event->eventType ?? $eventType ?? 'rest';
         $priority = $event->priority ?? $priority ?? Manager::DEFAULT_PRIORITY;
-        $this->eventsManager->attach($eventType, $event, $priority);
+        $this->getOrCreateEventsManager()->attach($eventType, $event, $priority);
     }
     
     /**
@@ -99,5 +101,25 @@ trait Behavior
         foreach ($behaviors as $behavior) {
             $this->attachBehavior($behavior, $eventType, $priority);
         }
+    }
+
+    protected function getOrCreateEventsManager(): ManagerInterface
+    {
+        $eventsManager = $this->getEventsManager();
+        if ($eventsManager instanceof ManagerInterface) {
+            return $eventsManager;
+        }
+
+        $di = $this->getDI();
+        if ($di->has('eventsManager')) {
+            $eventsManager = $di->getShared('eventsManager');
+        }
+
+        if (!$eventsManager instanceof ManagerInterface) {
+            $eventsManager = new Manager();
+        }
+
+        $this->setEventsManager($eventsManager);
+        return $eventsManager;
     }
 }

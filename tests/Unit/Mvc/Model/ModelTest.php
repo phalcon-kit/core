@@ -21,6 +21,7 @@ use PhalconKit\Models\Role;
 use PhalconKit\Models\User;
 use PhalconKit\Models\UserRole;
 use PhalconKit\Tests\Unit\AbstractUnit;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\ProtectedRelationshipUser;
 
 class ModelTest extends AbstractUnit
 {
@@ -374,6 +375,83 @@ class ModelTest extends AbstractUnit
         $this->assertCount(8, $roleList);
     }
     
+    public function testLoadedRelationshipCacheCanReadProtectedRelationProperty(): void
+    {
+        $user = new ProtectedRelationshipUser();
+        $role = new Role();
+        $role->setKey('cached-role');
+
+        $user->setLoadedRelatedAlias('RoleList', [$role]);
+
+        $this->assertSame([$role], $user->rolelist);
+        $this->assertSame([$role], $user->RoleList);
+        $this->assertSame([$role], $user->getProtectedRoleList());
+    }
+
+    public function testDirectProtectedRelationPropertyWriteUsesDirtyCache(): void
+    {
+        $user = new ProtectedRelationshipUser();
+        $role = new Role();
+        $role->setKey('dirty-role');
+
+        $user->rolelist = [$role];
+
+        $this->assertSame([$role], $user->getDirtyRelatedAlias('RoleList'));
+        $this->assertSame([$role], $user->rolelist);
+        $this->assertSame([$role], $user->getProtectedRoleList());
+    }
+
+    public function testDeclaredProtectedRelationPropertyCanBeReadDirectly(): void
+    {
+        $user = new ProtectedRelationshipUser();
+        $role = new Role();
+        $role->setKey('declared-role');
+
+        $user->setProtectedRoleList([$role]);
+
+        $this->assertSame([$role], $user->rolelist);
+        $this->assertFalse($user->hasDirtyRelatedAlias('rolelist'));
+        $this->assertFalse($user->hasLoadedRelatedAlias('rolelist'));
+    }
+
+    public function testProtectedRelationshipPropertiesWorkWithAssignAndEagerLoading(): void
+    {
+        $this->prepareTests();
+
+        $user = new ProtectedRelationshipUser();
+        $user->assign([
+            'email' => 'protected@test.tld',
+            'rolelist' => [
+                false,
+                [
+                    'key' => 'protected-role',
+                    'label' => 'Protected Role',
+                ],
+            ],
+        ]);
+
+        $save = $user->save();
+        $messages = $user->getMessages();
+
+        $this->assertEmpty($messages, json_encode($messages));
+        $this->assertTrue($save);
+
+        $loaded = ProtectedRelationshipUser::findFirstWith(['RoleList'], [
+            'email = :email:',
+            'bind' => ['email' => 'protected@test.tld'],
+            'bindTypes' => ['email' => Column::BIND_PARAM_STR],
+        ]);
+
+        $this->assertInstanceOf(ProtectedRelationshipUser::class, $loaded);
+        $this->assertTrue($loaded->hasLoadedRelatedAlias('rolelist'));
+        $this->assertCount(1, $loaded->rolelist);
+        $this->assertSame('protected-role', $loaded->rolelist[0]->getKey());
+
+        $array = $loaded->toArray();
+        $this->assertArrayHasKey('rolelist', $array);
+        $this->assertSame('protected-role', $array['rolelist'][0]['key']);
+    }
+
     public function roleFindAssert(string $string)
     {
         $role = Role::findFirst(['key = :key:', 'bind' => ['key' => $string]]);

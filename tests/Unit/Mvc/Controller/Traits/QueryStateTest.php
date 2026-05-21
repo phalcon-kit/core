@@ -564,6 +564,110 @@ class QueryStateTest extends AbstractUnit
         $this->assertStringContainsString('[' . $joins['Author.Profile'][2] . '].[id]', $joins['Author.Profile'][1]);
     }
 
+    public function testDynamicJoinsAcceptTwoPartDefinitionsForBracketedRelationshipAliases(): void
+    {
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'projectId',
+                    'operator' => 'equals',
+                    'value' => 98,
+                ],
+                [
+                    [
+                        [
+                            'field' => 'RecordUserStatus[a].userId',
+                            'operator' => 'equals',
+                            'value' => [14],
+                        ],
+                        [
+                            'field' => 'RecordUserStatus[a].type',
+                            'operator' => 'equals',
+                            'value' => ['final'],
+                        ],
+                    ],
+                ],
+            ],
+            'joins' => [],
+        ]);
+
+        $controller->setDynamicJoins(new Collection([
+            'RecordUserStatus' => [
+                'RecordUserStatusModel',
+                '[FooModel].[id] = [RecordUserStatus].[recordId] and [RecordUserStatus].[deleted] <> 1',
+            ],
+        ], false));
+
+        $joins = $controller->getJoins()?->toArray();
+
+        $this->assertArrayHasKey('RecordUserStatus[a]', $joins);
+        $join = $joins['RecordUserStatus[a]'];
+        $this->assertSame('RecordUserStatusModel', $join[0]);
+        $this->assertStringStartsWith('_', $join[2]);
+        $this->assertSame('left', $join[3]);
+        $this->assertSame([], $join[4]);
+        $this->assertStringContainsString('[FooModel].[id]', $join[1]);
+        $this->assertStringContainsString('[' . $join[2] . '].[recordId]', $join[1]);
+        $this->assertStringContainsString('[' . $join[2] . '].[deleted] <> 1', $join[1]);
+    }
+
+    public function testDynamicJoinsAcceptLegacyAssociativeDefinitions(): void
+    {
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'Article[a].title',
+                    'operator' => 'contains',
+                    'value' => 'foo',
+                ],
+            ],
+        ]);
+
+        $controller->setDynamicJoins(new Collection([
+            'Article' => [
+                'ArticleModel' => '[FooModel].[id] = [Article].[recordId] and [Article].[deleted] <> 1',
+            ],
+        ], false));
+
+        $joins = $controller->getJoins()?->toArray();
+
+        $this->assertArrayHasKey('Article[a]', $joins);
+        $join = $joins['Article[a]'];
+        $this->assertSame('ArticleModel', $join[0]);
+        $this->assertStringStartsWith('_', $join[2]);
+        $this->assertSame('left', $join[3]);
+        $this->assertStringContainsString('[' . $join[2] . '].[recordId]', $join[1]);
+        $this->assertStringContainsString('[' . $join[2] . '].[deleted] <> 1', $join[1]);
+    }
+
+    public function testDynamicJoinsRejectInvalidDefinitions(): void
+    {
+        foreach ([
+            'not an array' => 'AuthorModel',
+            'missing condition' => ['AuthorModel'],
+        ] as $case => $definition) {
+            $controller = $this->newQueryController([
+                'filters' => [
+                    [
+                        'field' => 'Author.email',
+                        'operator' => 'contains',
+                        'value' => 'foo',
+                    ],
+                ],
+            ]);
+
+            try {
+                $controller->setDynamicJoins(new Collection([
+                    'Author' => $definition,
+                ], false));
+                $this->fail('Expected invalid dynamic join definition for ' . $case . '.');
+            }
+            catch (LogicException $exception) {
+                $this->assertSame('Invalid dynamic join definition for `Author`.', $exception->getMessage());
+            }
+        }
+    }
+
     public function testGetJoinsDefinitionFromFieldReturnsDeepestJoinFirst(): void
     {
         $controller = $this->newQueryController();

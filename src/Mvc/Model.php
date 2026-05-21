@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc;
 
+use AllowDynamicProperties;
 use Phalcon\Events\Manager as EventsManager;
 
 /**
@@ -42,6 +43,7 @@ use Phalcon\Events\Manager as EventsManager;
  * {@inheritdoc} \Phalcon\Mvc\Model
  * @package PhalconKit\Mvc
  */
+#[AllowDynamicProperties]
 class Model extends \Phalcon\Mvc\Model implements ModelInterface
 {
     // Model Feature Traits
@@ -70,7 +72,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
     use Model\Traits\SoftDelete;
     use Model\Traits\Uuid;
     use Model\Traits\Validate;
-    
+
     /**
      * Fix a phalcon bug, despite phalcon stub and core code state that dirtyRelated is defined
      * with an empty array, it seems that the dirtyRelated default value is not set at all.
@@ -82,17 +84,17 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
      * @var array
      */
     protected $dirtyRelated = [];
-    
+
     public function initialize(): void
     {
         // Initialize options manager
         $this->initializeOptions();
-        
+
         // Initialize setup & events manager
         self::setup($this->getOptionsManager()->get('setup'));
         $this->setEventsManager(new EventsManager());
         $this->useDynamicUpdate(true);
-        
+
         // Initialize features
         $this->initializeCache();
         $this->initializeSnapshot();
@@ -108,7 +110,137 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         $this->initializeSlug();
         $this->initializeUuid();
     }
-    
+
+    /**
+     * Handles dynamic model writes before Phalcon sees them.
+     */
+    #[\Override]
+    public function __set(string $property, mixed $value): void
+    {
+        if ($this->writeLocalizedProperty($property, $value)) {
+            return;
+        }
+
+        if ($this->isModelRelationAlias($property)) {
+            $this->setDirtyRelatedAlias($property, $value);
+            return;
+        }
+
+        parent::__set($property, $value);
+    }
+
+    /**
+     * Handles dynamic model reads before Phalcon sees them.
+     */
+    #[\Override]
+    public function __get(string $property): mixed
+    {
+        $localized = $this->readLocalizedProperty($property, $found);
+        if ($found) {
+            return $localized;
+        }
+
+        if ($this->hasDirtyRelatedAlias($property)) {
+            return $this->getDirtyRelatedAlias($property);
+        }
+
+        if ($this->hasLoadedRelatedAlias($property)) {
+            return $this->getLoadedRelatedAlias($property);
+        }
+
+        $declaredRelation = $this->readDeclaredRelationAlias($property, $found);
+        if ($found) {
+            return $declaredRelation;
+        }
+
+        return parent::__get($property);
+    }
+
+    private function writeLocalizedProperty(string $property, mixed $value): bool
+    {
+        $lang = $this->getCurrentLocale();
+        if (empty($lang)) {
+            return false;
+        }
+
+        $set = $property . ucfirst($lang);
+        if (!property_exists($this, $set)) {
+            return false;
+        }
+
+        $this->writeAttribute($set, $value);
+        return true;
+    }
+
+    private function readLocalizedProperty(string $property, ?bool &$found = null): mixed
+    {
+        $found = false;
+        $lang = $this->getCurrentLocale();
+        if (empty($lang)) {
+            return null;
+        }
+
+        $get = $property . ucfirst($lang);
+        if (!property_exists($this, $get)) {
+            return null;
+        }
+
+        $found = true;
+        return $this->readAttribute($get);
+    }
+
+    private function getCurrentLocale(): ?string
+    {
+        try {
+            $locale = $this->getDI()->get('locale');
+        }
+        catch (\Throwable) {
+            return null;
+        }
+
+        return $locale instanceof \PhalconKit\Locale ? $locale->getLocale() : null;
+    }
+
+    private function isModelRelationAlias(string $property): bool
+    {
+        try {
+            return (bool)$this
+                ->getModelsManager()
+                ->getRelationByAlias(get_class($this), mb_strtolower($property));
+        }
+        catch (\Throwable) {
+            return false;
+        }
+    }
+
+    private function readDeclaredRelationAlias(string $property, ?bool &$found = null): mixed
+    {
+        $found = false;
+        $alias = mb_strtolower($property);
+
+        if (!$this->isModelRelationAlias($alias)) {
+            return null;
+        }
+
+        if (property_exists($this, $alias)) {
+            $declaredProperty = $alias;
+        }
+        elseif (property_exists($this, $property)) {
+            $declaredProperty = $property;
+        }
+        else {
+            return null;
+        }
+
+        $reflection = new \ReflectionProperty($this, $declaredProperty);
+        if ($reflection->isStatic()) {
+            return null;
+        }
+
+        $found = true;
+        return $reflection->isInitialized($this) ? $reflection->getValue($this) : null;
+    }
+
     /**
      * Enables/disables options in the ORM
      * - We do this here in order to keep behaviour consistencies between different environments
