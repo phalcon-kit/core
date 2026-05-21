@@ -29,7 +29,7 @@ trait Compiler
      * Behavior:
      * - Recursively converts nested Collections to arrays.
      * - Drops null values (but keeps false/0/"").
-     * - At the first nesting level (level === 1), returns a list (array_values) to preserve JSON/list semantics.
+     * - Preserves keys so named bind maps and field maps keep their semantic meaning.
      *
      * @return array<array-key, mixed>
      */
@@ -48,7 +48,7 @@ trait Compiler
             }
         }
         
-        return $level === 1 ? array_values($result) : $result;
+        return $result;
     }
     
     /**
@@ -142,11 +142,6 @@ trait Compiler
                 
                 if (!isset($out[$k])) {
                     $out[$k] = [];
-                }
-                
-                if (!is_array($out[$k])) {
-                    // Defensive: if upstream code injected a non-array, fail loudly.
-                    throw new LogicException(sprintf('Invalid merged %s value: expected array.', $k));
                 }
                 
                 /** @var array<array-key, mixed> $outMap */

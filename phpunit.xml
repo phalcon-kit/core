@@ -16,6 +16,11 @@
       <directory suffix=".php">tests</directory>
       <exclude>tests/Unit/AbstractUnit.php</exclude>
       <exclude>tests/Unit/Provider/ClamavTest.php</exclude>
+      <exclude>tests/Unit/Bootstrap/Fixtures</exclude>
+      <exclude>tests/Unit/Db/Fixtures</exclude>
+      <exclude>tests/Unit/Identity/Fixtures</exclude>
+      <exclude>tests/Unit/Mvc/Controller/Traits/Fixtures</exclude>
+      <exclude>tests/Unit/Mvc/Model/Fixtures</exclude>
     </testsuite>
   </testsuites>
   <coverage>

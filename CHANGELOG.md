@@ -211,6 +211,12 @@ tag has been cut yet.
 
 - Fixed eager-loaded relationship assignment for models that declare relation
   aliases as non-public properties or access aliases directly.
+- Fixed REST query compiler collection normalization so associative bind maps
+  and field maps preserve their keys during compilation.
+- Fixed keyed REST join payload normalization so associative join collections
+  can still compile payload conditions after key preservation.
+- Fixed PHPUnit test discovery so fixture/double classes are not reported as
+  non-TestCase warnings by `composer phpunit`.
 - Fixed eager loading for non-through relations so intermediate relationship
   metadata is only read for through relations.
 - Fixed multibyte string precision formatting in `mb_vsprintf()`.

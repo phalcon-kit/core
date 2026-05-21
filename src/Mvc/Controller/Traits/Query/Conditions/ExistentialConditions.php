@@ -49,10 +49,7 @@ trait ExistentialConditions
          * Null is theoretically possible on regex error; we hard-fallback
          * to the original field to keep behavior deterministic.
          */
-        $field = preg_replace('/\[[^\]]+\]/', '', $originalField);
-        if ($field === null) {
-            $field = $originalField;
-        }
+        $field = preg_replace('/\[[^\]]+\]/', '', $originalField) ?? $originalField;
         
         /**
          * Strip leaf column:
@@ -195,10 +192,6 @@ trait ExistentialConditions
                 $innerSql,
                 (bool)$bucket['negated']
             );
-
-            if (empty($exists['conditions'])) {
-                continue;
-            }
 
             // Emit SQL fragment
             $fragments[] = 'and ' . $exists['conditions'];

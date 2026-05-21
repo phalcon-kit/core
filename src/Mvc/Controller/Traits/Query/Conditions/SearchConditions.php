@@ -263,10 +263,7 @@ trait SearchConditions
         }
 
         // Split on any whitespace sequence
-        $parts = preg_split('/\s+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
-        if ($parts === false) {
-            return [];
-        }
+        $parts = preg_split('/\s+/', $raw, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
         // Deduplicate while preserving order
         return array_values(array_unique($parts));

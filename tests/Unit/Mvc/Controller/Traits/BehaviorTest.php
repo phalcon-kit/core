@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits;
 
 use Phalcon\Di\FactoryDefault;
+use Phalcon\Di\Di;
 use Phalcon\Events\Manager;
 use PhalconKit\Config\Config;
 use PhalconKit\Mvc\Controller\Rest;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\BehaviorTestListener;
+use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\InjectableBehaviorTestListener;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class BehaviorTest extends AbstractUnit
@@ -34,7 +36,7 @@ class BehaviorTest extends AbstractUnit
         $this->assertSame($eventsManager, $controller->getEventsManager());
         $this->assertTrue($eventsManager->arePrioritiesEnabled());
     }
-    
+
     public function testAttachBehaviorUsesDiEventsManagerWhenControllerManagerIsMissing(): void
     {
         $eventsManager = new Manager();
@@ -45,22 +47,101 @@ class BehaviorTest extends AbstractUnit
         $this->assertSame($eventsManager, $controller->getEventsManager());
         $this->assertCount(1, $eventsManager->getListeners('rest'));
     }
-    
-    private function newController(Manager $eventsManager): Rest
+
+    public function testBeforeExecuteRouteAttachesConfiguredRoleFeatureAndModelBehaviors(): void
     {
-        $di = new FactoryDefault();
-        $di->setShared('eventsManager', $eventsManager);
+        $eventsManager = new Manager();
+        $controller = $this->newController($eventsManager, [
+            'features' => [
+                'feature-a' => [
+                    'behaviors' => [
+                        [BehaviorTestListener::class],
+                    ],
+                ],
+            ],
+            'roles' => [
+                'blocked' => [
+                    'behaviors' => [
+                        [BehaviorTestListener::class],
+                    ],
+                ],
+                'everyone' => [
+                    'features' => ['feature-a'],
+                    'behaviors' => [
+                        get_class($this->newModelAwareController()) => [InjectableBehaviorTestListener::class],
+                        'FooModel' => [BehaviorTestListener::class],
+                    ],
+                ],
+            ],
+        ], modelAware: true);
+
+        $controller->beforeExecuteRoute();
+
+        $this->assertNotEmpty($eventsManager->getListeners('rest'));
+        $this->assertNotEmpty($eventsManager->getListeners('model'));
+        $this->assertNotEmpty($eventsManager->getListeners('custom'));
+    }
+
+    public function testAttachBehaviorCreatesEventsManagerWhenDiDoesNotProvideOne(): void
+    {
+        $di = new Di();
         $di->setShared('config', new Config([
             'permissions' => [
                 'features' => [],
                 'roles' => [],
             ],
         ]));
-        
+
         $controller = new class extends Rest {
         };
         $controller->setDI($di);
+
+        $this->assertNull($controller->getEventsManager());
+
+        $controller->attachBehaviors([BehaviorTestListener::class], 'rest');
+
+        $this->assertInstanceOf(Manager::class, $controller->getEventsManager());
+        $this->assertCount(1, $controller->getEventsManager()->getListeners('rest'));
+    }
+
+    private function newController(
+        Manager $eventsManager,
+        ?array $permissions = null,
+        bool $modelAware = false
+    ): Rest {
+        $di = new FactoryDefault();
+        $di->setShared('eventsManager', $eventsManager);
+        $di->setShared('config', new Config([
+            'permissions' => $permissions ?? [
+                'features' => [],
+                'roles' => [],
+            ],
+        ]));
         
+        $controller = $modelAware ? $this->newModelAwareController() : new class extends Rest {
+        };
+        $controller->setDI($di);
+        
+        return $controller;
+    }
+
+    private function newModelAwareController(): Rest
+    {
+        $controller = new class extends Rest {
+            public object $identity;
+
+            public function getModelName(): ?string
+            {
+                return 'FooModel';
+            }
+        };
+        $controller->identity = new class {
+            public function hasRole(array|string $roles): bool
+            {
+                return in_array('admin', (array)$roles, true);
+            }
+        };
+
         return $controller;
     }
 }

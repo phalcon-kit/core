@@ -16,8 +16,10 @@ namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits;
 use LogicException;
 use Phalcon\Db\Column;
 use Phalcon\Mvc\ModelInterface;
+use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Restful;
+use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\QueryModelDouble;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class QueryStateTest extends AbstractUnit
@@ -251,6 +253,61 @@ class QueryStateTest extends AbstractUnit
         }
         catch (\Exception $exception) {
             $this->assertStringContainsString('expected [field, direction] with at most 2 elements', $exception->getMessage());
+        }
+    }
+
+    public function testGroupAndOrderSkipEmptyBranches(): void
+    {
+        $controller = $this->newQueryController([
+            'group' => ', id',
+        ]);
+        $controller->initializeGroup();
+        $this->assertSame([
+            'id' => '[FooModel].[id]',
+        ], $controller->getGroup()?->toArray());
+
+        $controller = $this->newQueryController();
+        $controller->initializeOrder();
+        $this->assertNull($controller->getOrder());
+
+        $controller = $this->newQueryController([
+            'order' => [''],
+        ]);
+        $controller->initializeOrder();
+        $this->assertSame([], $controller->getOrder()?->toArray());
+
+        $controller = $this->newQueryController([
+            'order' => [
+                ['', 'desc'],
+                'id desc',
+            ],
+        ]);
+        $controller->initializeOrder();
+        $this->assertSame([
+            'id' => '[FooModel].[id] desc',
+        ], $controller->getOrder()?->toArray());
+
+        $controller = $this->newQueryController([
+            'order' => [
+                '' => 'desc',
+                'id' => 'asc',
+            ],
+        ]);
+        $controller->initializeOrder();
+        $this->assertSame([
+            'id' => '[FooModel].[id] asc',
+        ], $controller->getOrder()?->toArray());
+
+        $controller = $this->newQueryController([
+            'order' => [123],
+        ]);
+
+        try {
+            $controller->initializeOrder();
+            $this->fail('Expected invalid order element type to throw.');
+        }
+        catch (\Exception $exception) {
+            $this->assertStringContainsString('Invalid order element at index 0', $exception->getMessage());
         }
     }
 
@@ -489,6 +546,30 @@ class QueryStateTest extends AbstractUnit
             'joinStatus' => Column::BIND_PARAM_STR,
             'joinDeleted' => Column::BIND_PARAM_INT,
         ], $normalized['bindTypes']);
+
+        $normalized = $controller->exposeNormalizeJoins([
+            'RecordUserStatus[a]' => [
+                'RecordUserStatusModel',
+                '[FooModel].[id] = [RecordUserStatus].[recordId]',
+                'RecordUserStatus[a]',
+                'left',
+                [
+                    'conditions' => '[RecordUserStatus].[deleted] = :deleted:',
+                    'bind' => ['deleted' => 0],
+                    'bindTypes' => ['deleted' => Column::BIND_PARAM_INT],
+                ],
+            ],
+        ]);
+
+        $this->assertSame([
+            [
+                'RecordUserStatusModel',
+                '([FooModel].[id] = [RecordUserStatus].[recordId]) AND (([RecordUserStatus].[deleted] = :deleted:))',
+                'RecordUserStatus[a]',
+                'left',
+            ],
+        ], $normalized['joins']);
+        $this->assertSame(['deleted' => 0], $normalized['bind']);
     }
 
     public function testJoinNormalizationRejectsInvalidDefinitions(): void
@@ -1012,11 +1093,50 @@ class QueryStateTest extends AbstractUnit
         $this->assertSame(Column::BIND_PARAM_DECIMAL, $controller->getBindTypeFromRawValue(1.5));
         $this->assertSame(Column::BIND_PARAM_NULL, $controller->getBindTypeFromRawValue(null));
 
+        $this->assertSame('Comment', $controller->exposeGetExistentialUniverseField('Comment'));
+        $this->assertSame('', $controller->exposeAssembleLegacyGroupSql(['   '], 0));
+        $this->assertNull($controller->exposeResolveGroupCarrierLogic([
+            [
+                [
+                    'field' => 'nested',
+                    'operator' => '=',
+                    'value' => 1,
+                ],
+            ],
+        ]));
+        $this->assertNull($controller->exposeResolveGroupCarrierLogic([
+            [
+                'field' => 'status',
+            ],
+        ]));
+        $this->assertSame('xor', $controller->exposeResolveGroupCarrierLogic([
+            [
+                'field' => 'status',
+                'logic' => 'xor',
+            ],
+        ]));
+
         $this->assertTrue($controller->hasFiltersFieldsParams());
         $this->assertTrue($controller->hasFiltersFieldsParams('status'));
         $this->assertTrue($controller->hasFiltersFieldsParams(['status', 'type'], true));
         $this->assertFalse($controller->hasFiltersFieldsParams(['status', 'missing']));
         $this->assertTrue($controller->hasFiltersFieldsParams([['type', 'missing']]));
+        $this->assertFalse($controller->hasFiltersFieldsParams([]));
+
+        $this->assertFalse($this->newQueryController()->hasFiltersFieldsParams('status'));
+        $this->assertFalse($this->newQueryController(['filters' => []])->hasFiltersFieldsParams('status'));
+
+        $this->assertSame('self', $controller->exposeGetFilterScope([
+            'field' => 'status',
+        ], null));
+        $this->assertSame('self', $controller->exposeGetFilterScope([
+            'field' => 'Author.Profile.email',
+            'operator' => '=',
+        ], 'Author'));
+        $this->assertSame('self', $controller->exposeGetFilterScope([
+            'field' => 'Author.id',
+            'operator' => '=',
+        ], null));
     }
 
     public function testCompileSingleFilterConditionCoversOperatorFamilies(): void
@@ -1067,11 +1187,20 @@ class QueryStateTest extends AbstractUnit
 
         [$sql, $bind] = $controller->exposeCompileSingleFilterCondition(
             '[FooModel].[title]',
+            'ends with',
+            ['value' => 'foo'],
+            $makeBind
+        );
+        $this->assertStringContainsString('like :b7_value:', $sql);
+        $this->assertSame(['%foo'], array_values($bind));
+
+        [$sql, $bind] = $controller->exposeCompileSingleFilterCondition(
+            '[FooModel].[title]',
             'contains word',
             ['value' => 'foo'],
             $makeBind
         );
-        $this->assertSame('((regexp([FooModel].[title], :b7_value:)))', $sql);
+        $this->assertSame('((regexp([FooModel].[title], :b8_value:)))', $sql);
         $this->assertSame(['\\bfoo\\b'], array_values($bind));
 
         [$sql, $bind] = $controller->exposeCompileSingleFilterCondition(
@@ -1080,7 +1209,7 @@ class QueryStateTest extends AbstractUnit
             ['value' => '^foo'],
             $makeBind
         );
-        $this->assertSame('((regexp([FooModel].[title], :b8_value:)))', $sql);
+        $this->assertSame('((regexp([FooModel].[title], :b9_value:)))', $sql);
         $this->assertSame(['^foo'], array_values($bind));
 
         [$sql, $bind, $bindTypes] = $controller->exposeCompileSingleFilterCondition(
@@ -1089,8 +1218,8 @@ class QueryStateTest extends AbstractUnit
             ['value' => [1.1, 2.2, 3.3, 4.4, 100]],
             $makeBind
         );
-        $this->assertStringContainsString('ST_Distance_Sphere(point(:b9_value:, :b10_value:)', $sql);
-        $this->assertStringContainsString(') <= :b13_value:', $sql);
+        $this->assertStringContainsString('ST_Distance_Sphere(point(:b10_value:, :b11_value:)', $sql);
+        $this->assertStringContainsString(') <= :b14_value:', $sql);
         $this->assertSame([1.1, 2.2, 3.3, 4.4, 100], array_values($bind));
         $this->assertSame([
             Column::BIND_PARAM_DECIMAL,
@@ -1099,6 +1228,13 @@ class QueryStateTest extends AbstractUnit
             Column::BIND_PARAM_DECIMAL,
             Column::BIND_PARAM_STR,
         ], array_values($bindTypes));
+
+        $this->assertSame(['', [], []], $controller->exposeCompileSingleFilterCondition(
+            '[FooModel].[status]',
+            '=',
+            ['value' => []],
+            $makeBind
+        ));
 
         foreach ([
             'negative existential text' => ['does not contain', "Negative text operator 'does not contain' must be normalized"],
@@ -1197,9 +1333,148 @@ class QueryStateTest extends AbstractUnit
 
         $pending = [];
         $controller->exposePushExistentialCondition($pending, 'bucket', 'Author.email', false, 'a = :a:', ['a' => 1], []);
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Bind collision detected inside existential bucket.');
-        $controller->exposePushExistentialCondition($pending, 'bucket', 'Author.email', false, 'b = :a:', ['a' => 2], []);
+        try {
+            $controller->exposePushExistentialCondition($pending, 'bucket', 'Author.email', false, 'b = :a:', ['a' => 2], []);
+            $this->fail('Expected existential bucket bind collision.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('Bind collision detected inside existential bucket.', $exception->getMessage());
+        }
+
+        $pending = [];
+        $controller->exposePushExistentialCondition($pending, 'bucket', 'Author.email', false, 'a = :a:', [], [
+            'a' => Column::BIND_PARAM_INT,
+        ]);
+        try {
+            $controller->exposePushExistentialCondition($pending, 'bucket', 'Author.email', false, 'b = :a:', [], [
+                'a' => Column::BIND_PARAM_STR,
+            ]);
+            $this->fail('Expected existential bucket bind type collision.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('BindType collision detected inside existential bucket.', $exception->getMessage());
+        }
+
+        $pending = [
+            'invalid' => [
+                'field' => '',
+                'conditions' => [],
+            ],
+        ];
+        $fragments = ['and keep = 1'];
+        $bind = [];
+        $bindTypes = [];
+        $controller->exposeFlushExistentialBuckets($pending, $fragments, $bind, $bindTypes);
+        $this->assertSame([], $pending);
+        $this->assertSame(['and keep = 1'], $fragments);
+
+        $pending = [
+            'invalid' => [
+                'field' => 'Author.email',
+                'conditions' => ['([Author].[email] = :email:)'],
+                'negated' => false,
+                'logic' => 'or',
+                'bind' => [],
+                'bindTypes' => [],
+            ],
+        ];
+        $fragments = [];
+        $bind = [];
+        $bindTypes = [];
+        try {
+            $controller->exposeFlushExistentialBuckets($pending, $fragments, $bind, $bindTypes);
+            $this->fail('Expected non-AND existential bucket guard.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame(
+                'Existential bucket invariant violated: non-AND bucket encountered.',
+                $exception->getMessage()
+            );
+        }
+
+        $pending = [
+            'bucket' => [
+                'field' => 'Author.email',
+                'conditions' => ['([Author].[email] = :email:)'],
+                'negated' => false,
+                'logic' => 'and',
+                'bind' => ['email' => 'new'],
+                'bindTypes' => [],
+            ],
+        ];
+        $fragments = [];
+        $bind = ['email' => 'existing'];
+        $bindTypes = [];
+        try {
+            $controller->exposeFlushExistentialBuckets($pending, $fragments, $bind, $bindTypes);
+            $this->fail('Expected existential flush bind collision.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('Bind collision detected while flushing existential bucket.', $exception->getMessage());
+        }
+
+        $pending = [
+            'bucket' => [
+                'field' => 'Author.email',
+                'conditions' => ['([Author].[email] = :email:)'],
+                'negated' => false,
+                'logic' => 'and',
+                'bind' => [],
+                'bindTypes' => ['email' => Column::BIND_PARAM_STR],
+            ],
+        ];
+        $fragments = [];
+        $bind = [];
+        $bindTypes = ['email' => Column::BIND_PARAM_INT];
+        try {
+            $controller->exposeFlushExistentialBuckets($pending, $fragments, $bind, $bindTypes);
+            $this->fail('Expected existential flush bind type collision.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('BindType collision detected while flushing existential bucket.', $exception->getMessage());
+        }
+
+        $pending = [
+            'bucket' => [
+                'field' => 'Author.email',
+                'conditions' => ['([Author].[email] = :email:)'],
+                'negated' => false,
+                'logic' => 'and',
+                'bind' => [],
+                'bindTypes' => [],
+            ],
+        ];
+        $fragments = [];
+        $bind = ['authorDeleted' => 1];
+        $bindTypes = [];
+        try {
+            $controller->exposeFlushExistentialBuckets($pending, $fragments, $bind, $bindTypes);
+            $this->fail('Expected existential join bind collision.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('Bind collision detected while merging EXISTS join binds.', $exception->getMessage());
+        }
+
+        $pending = [
+            'bucket' => [
+                'field' => 'Author.email',
+                'conditions' => ['([Author].[email] = :email:)'],
+                'negated' => false,
+                'logic' => 'and',
+                'bind' => [],
+                'bindTypes' => [],
+            ],
+        ];
+        $fragments = [];
+        $bind = [];
+        $bindTypes = ['authorDeleted' => Column::BIND_PARAM_STR];
+        try {
+            $controller->exposeFlushExistentialBuckets($pending, $fragments, $bind, $bindTypes);
+            $this->fail('Expected existential join bind type collision.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('BindType collision detected while merging EXISTS join bindTypes.', $exception->getMessage());
+        }
     }
 
     public function testSaveHelpersResolveAssignPersistAndFailPredictably(): void
@@ -1364,15 +1639,675 @@ class QueryStateTest extends AbstractUnit
         ], $calculation);
     }
 
-    private function newQueryController(array $params = []): Restful
+    public function testMergeHelpersAndConditionFallbackBranches(): void
+    {
+        $controller = $this->newQueryController();
+
+        $controller->mergeCacheConfig(new Collection(['lifetime' => 60]));
+        $controller->mergeCacheConfig(new Collection(['key' => 'cache-key']));
+        $this->assertSame(['lifetime' => 60, 'key' => 'cache-key'], $controller->getCacheConfig()?->toArray());
+
+        $controller->mergeConditions(new Collection(['one' => 'a = 1'], false));
+        $controller->mergeConditions(new Collection(['two' => 'b = 1'], false));
+        $this->assertSame(['one' => 'a = 1', 'two' => 'b = 1'], $controller->getConditions()?->toArray());
+
+        $controller->mergeDistinct(new Collection(['id' => true], false));
+        $controller->mergeDistinct(new Collection(['name' => true], false));
+        $this->assertSame(['id' => true, 'name' => true], $controller->getDistinct()?->toArray());
+
+        $controller->mergeGroup(new Collection(['id' => '[FooModel].[id]'], false));
+        $controller->mergeGroup(new Collection(['status' => '[FooModel].[status]'], false));
+        $this->assertSame([
+            'id' => '[FooModel].[id]',
+            'status' => '[FooModel].[status]',
+        ], $controller->getGroup()?->toArray());
+
+        $controller->setMaxLimit(null);
+        $this->assertSame(100, $controller->defaultMaxLimit());
+
+        $controller->unitCreatedByColumns = [];
+        $this->assertNull($controller->buildDefaultPermissionCondition());
+
+        $controller->unitSoftDeleteColumn = null;
+        $this->assertNull($controller->buildDefaultSoftDeleteCondition());
+
+        $controller->unitIdentityColumns = [];
+        $this->assertNull($controller->buildIdentityConditionFromData(['id' => 1]));
+        $controller->unitIdentityColumns = ['id'];
+        $this->assertNull($controller->buildIdentityConditionFromData(['id' => null]));
+
+        $this->assertNull($controller->buildDefaultSearchCondition());
+
+        $controller = $this->newQueryController(['search' => 'alpha']);
+        $this->assertNull($controller->buildDefaultSearchCondition());
+
+        $controller->setSearchFields(new Collection([
+            'disabled' => false,
+        ], false));
+        $this->assertNull($controller->buildDefaultSearchCondition());
+        $this->assertSame(['alpha'], $controller->extractSearchTerms());
+
+        $controller = $this->newQueryController(['search' => 123]);
+        $this->assertSame([], $controller->extractSearchTerms());
+
+        $controller = $this->newStaticQueryController();
+        $this->assertSame(['createdBy'], $controller->getCreatedByColumns());
+        $this->assertSame('deleted', $controller->getSoftDeleteColumn());
+        $this->assertSame(['id'], $controller->getIdentityColumns());
+    }
+
+    public function testCompilerCoversEmptyCleanupAndValidationBranches(): void
+    {
+        $controller = $this->newQueryController();
+
+        $this->assertSame([], $controller->compileFind([]));
+        $this->assertSame([
+            'conditions' => [],
+            'joins' => [],
+        ], $controller->mergeCompiledFind([
+            'conditions' => null,
+            'joins' => null,
+            'bind' => null,
+        ]));
+        $this->assertSame('((a = 1)) AND ((b = 1))', $controller->compileFinds(
+            ['conditions' => 'a = 1'],
+            ['conditions' => ['b = 1']]
+        )['conditions']);
+
+        $controller->setFind(new Collection([
+            'distinct' => new Collection(['empty' => ''], false),
+        ], false));
+        $this->assertSame([], $controller->prepareFind());
+
+        $find = [
+            'group' => 'status',
+            'order' => '',
+            'columns' => 'id',
+        ];
+        $controller->beforeCompileFind($find);
+        $this->assertSame(['status'], $find['group']);
+        $this->assertSame('', $find['order']);
+        $this->assertSame(['id'], $find['columns']);
+
+        $find = [
+            'conditions' => [],
+            'limit' => '5',
+            'offset' => '2',
+            'group' => ['status', 'status', 'type'],
+            'order' => ['id desc', ''],
+            'distinct' => ['id', 'id'],
+            'dropNull' => null,
+            'dropEmpty' => [],
+            'dropString' => '',
+        ];
+        $controller->afterCompileFind($find);
+        $this->assertSame([
+            'limit' => 5,
+            'offset' => 2,
+            'group' => 'status, type',
+            'order' => 'id desc',
+            'distinct' => 'id',
+        ], $find);
+
+        $merged = ['conditions' => [' a = 1 ', '', 'a = 1']];
+        $controller->afterMergeCompileFind($merged);
+        $this->assertSame(['conditions' => '(a = 1)'], $merged);
+
+        $merged = ['conditions' => ['', '   ']];
+        $controller->afterMergeCompileFind($merged);
+        $this->assertSame([], $merged);
+
+        $compiled = $controller->compileFind([
+            'conditions' => [
+                ['x = 1'],
+                ['conditions' => 'nested = 1'],
+                ['conditions' => ['deep = 1']],
+                ['group' => ['status', 'status']],
+            ],
+        ]);
+        $this->assertSame('(x = 1) AND (nested = 1) AND ((deep = 1))', $compiled['conditions']);
+        $this->assertSame('status', $compiled['group']);
+
+        foreach ([
+            'invalid bind' => [
+                'Invalid bind value.',
+                fn() => $controller->compileFind([0 => 'id = :id:', 1 => 'bad']),
+            ],
+            'invalid bind type' => [
+                'Invalid bind type.',
+                fn() => $controller->compileFind([0 => 'id = :id:', 2 => 'bad']),
+            ],
+            'invalid existing bind' => [
+                'Invalid existing bind value: expected array.',
+                fn() => $controller->compileFind([0 => 'id = :id:', 1 => [], 'bind' => 'bad']),
+            ],
+            'invalid existing bind types' => [
+                'Invalid existing bindTypes value: expected array.',
+                fn() => $controller->compileFind([0 => 'id = :id:', 2 => [], 'bindTypes' => 'bad']),
+            ],
+            'invalid merged conditions' => [
+                'Invalid merged conditions: expected array.',
+                function () use ($controller): void {
+                    $merged = ['conditions' => 'bad'];
+                    $controller->afterMergeCompileFind($merged);
+                },
+            ],
+            'integer root key' => [
+                'integer keys are not allowed',
+                fn() => $controller->mergeCompiledFind([0 => 'bad']),
+            ],
+            'invalid list value' => [
+                'Invalid joins value: expected array|string|null.',
+                fn() => $controller->mergeCompiledFind(['joins' => new \stdClass()]),
+            ],
+            'invalid bind map' => [
+                'Invalid bind value: expected array.',
+                fn() => $controller->mergeCompiledFind(['bind' => 'bad']),
+            ],
+        ] as $case) {
+            [$message, $callback] = $case;
+
+            try {
+                $callback();
+                $this->fail('Expected compiler branch to throw: ' . $message);
+            }
+            catch (LogicException $exception) {
+                $this->assertStringContainsString($message, $exception->getMessage());
+            }
+        }
+    }
+
+    public function testQueryEntryPointsDelegateToModelStatics(): void
+    {
+        QueryModelDouble::reset();
+        QueryModelDouble::$resultset = $this->createStub(ResultsetInterface::class);
+        QueryModelDouble::$aggregateResults = [
+            'average' => 12.5,
+            'count' => 7,
+            'sum' => 99.9,
+            'maximum' => 50,
+            'minimum' => 2,
+        ];
+
+        $model = new QueryModelDouble();
+        QueryModelDouble::$first = $model;
+
+        $controller = $this->newStaticQueryController();
+        $controller->unitModel = $model;
+        $controller->setWith(new Collection(['Author']));
+        $controller->setFind(new Collection([
+            'conditions' => 'active = 1',
+            'limit' => 10,
+            'offset' => 20,
+            'group' => new Collection(['status']),
+        ]));
+
+        $this->assertSame(QueryModelDouble::$resultset, $controller->find());
+        $this->assertSame('(active = 1)', QueryModelDouble::$calls['find']['conditions']);
+
+        $this->assertSame(['with' => [['Author'], ['conditions' => 'with = 1']]], $controller->findWith(null, [
+            'conditions' => 'with = 1',
+        ]));
+
+        $this->assertSame($model, $controller->findFirst(['conditions' => 'id = 1']));
+        $this->assertSame(['conditions' => 'id = 1'], QueryModelDouble::$calls['findFirst']);
+
+        $this->assertSame($model, $controller->findFirstWith(null, ['conditions' => 'first = 1']));
+        $this->assertSame([['Author'], ['conditions' => 'first = 1']], QueryModelDouble::$calls['findFirstWith']);
+
+        $this->assertSame(12.5, $controller->average());
+        $this->assertSame(7, $controller->count());
+        $this->assertSame(99.9, $controller->sum());
+        $this->assertSame(50.0, $controller->maximum());
+        $this->assertSame(2.0, $controller->minimum());
+        $this->assertSame([
+            'conditions' => '(active = 1)',
+            'group' => 'status',
+        ], QueryModelDouble::$calls['minimum']);
+    }
+
+    public function testJoinAndDynamicJoinBranches(): void
+    {
+        $controller = $this->newQueryController();
+
+        $this->assertSame([], $controller->getDynamicJoinsFromFilters(null));
+        $this->assertSame([], $controller->getJoinsDefinitionFromField('Author.email'));
+
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'Author.email',
+                    'operator' => 'contains',
+                    'value' => 'foo',
+                ],
+            ],
+        ]);
+        $this->assertSame([], $controller->getDynamicJoinsFromFilters());
+
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'Author.email',
+                    'operator' => 'contains',
+                    'value' => 'foo',
+                ],
+            ],
+        ]);
+        $controller->setDynamicJoins(new Collection([
+            'Author' => ['AuthorModel', [
+                '[FooModel].[authorId] = [Author].[id]',
+                '[Author].[deleted] = 0',
+            ]],
+        ], false));
+        $join = current($controller->getJoins()?->toArray() ?? []);
+        $this->assertStringContainsString(' and ', $join[1]);
+
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'Author.email',
+                    'operator' => 'contains',
+                    'value' => 'foo',
+                ],
+            ],
+        ]);
+
+        try {
+            $controller->setDynamicJoins(new Collection([
+                'Author' => ['AuthorModel', 123],
+            ], false));
+            $this->fail('Expected invalid dynamic join condition to throw.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('Invalid dynamic join condition for `Author`.', $exception->getMessage());
+        }
+
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'Author.email',
+                    'operator' => 'contains',
+                    'value' => 'foo',
+                ],
+            ],
+        ]);
+        $controller->setDynamicJoins(new Collection([
+            'Author' => ['AuthorModel', '[FooModel].[authorId] = [Author].[id]', 'Author', 123],
+        ], false));
+        $join = current($controller->getJoins()?->toArray() ?? []);
+        $this->assertSame('left', $join[3]);
+
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'Author.email',
+                    'operator' => 'contains',
+                    'value' => 'foo',
+                ],
+            ],
+        ]);
+        $controller->exposeSetDynamicJoinState(['Author' => 'known'], [
+            'orphan' => ['Model', '1 = 1', 'Alias'],
+        ]);
+        $controller->setDynamicJoins(new Collection([
+            'Author' => ['AuthorModel', '[FooModel].[authorId] = [Author].[id]'],
+        ], false));
+        $this->assertFalse($controller->getJoins()?->has('orphan'));
+
+        $controller = $this->newQueryController();
+        $controller->exposeSetDynamicJoinState(['Author' => 'Mapped'], []);
+        $controller->setJoins(new Collection([
+            'Author' => ['AuthorModel', '1 = 1', 'Author'],
+        ], false));
+        $this->assertSame([
+            ['AuthorModel', '1 = 1', 'Author'],
+        ], $controller->getJoinsDefinitionFromField('Author.email'));
+
+        $controller = $this->newQueryController();
+        $controller->exposeSetDynamicJoinState(['Author' => 'Mapped'], []);
+        $controller->setJoins(new Collection([
+            ['AuthorModel', '1 = 1', 'Author'],
+        ], false));
+        $this->assertSame([
+            ['AuthorModel', '1 = 1', 'Author'],
+        ], $controller->getJoinsDefinitionFromField('Author.email'));
+
+        $controller = $this->newQueryController([
+            'filters' => [
+                [
+                    'field' => 'Author.Profile.email',
+                    'operator' => 'contains',
+                    'value' => 'foo',
+                ],
+            ],
+        ]);
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Dynamic join alias not defined for `Author`');
+        $controller->setDynamicJoins(new Collection([
+            'Author.Profile' => ['ProfileModel', '1 = 1'],
+        ], false));
+    }
+
+    public function testJoinPayloadValidationAndFallbackLookupBranches(): void
+    {
+        $controller = $this->newQueryController();
+
+        $payload = $controller->exposeNormalizeJoinPayload([
+            [
+                'conditions' => '',
+            ],
+            [
+                0 => 'x = :x:',
+                1 => ['x' => 1],
+                2 => ['x' => Column::BIND_PARAM_INT],
+            ],
+        ]);
+        $this->assertSame('(x = :x:)', $payload[0]);
+        $this->assertSame(['x' => 1], $payload[1]);
+
+        $this->assertSame(['', [], []], $controller->exposeNormalizeJoinPayload([
+            [
+                'conditions' => '',
+            ],
+        ]));
+
+        foreach ([
+            'invalid block' => [
+                'Invalid join payload block at join index 0, block 1.',
+                [['conditions' => 'x = 1'], 'bad'],
+            ],
+            'invalid condition' => [
+                'Join payload condition must be a string at join index 0, block 0.',
+                [['conditions' => ['bad']]],
+            ],
+            'invalid bindTypes' => [
+                'Join payload bindTypes must be an array at join index 0, block 0.',
+                [['bindTypes' => 'bad']],
+            ],
+        ] as $case) {
+            [$message, $payload] = $case;
+
+            try {
+                $controller->exposeNormalizeJoinPayload($payload);
+                $this->fail('Expected join payload branch to throw: ' . $message);
+            }
+            catch (LogicException $exception) {
+                $this->assertSame($message, $exception->getMessage());
+            }
+        }
+
+        $this->assertSame('a = 1', $controller->exposeMergeSqlConditions('', 'a = 1'));
+        $this->assertSame('a = 1', $controller->exposeMergeSqlConditions('a = 1', ''));
+
+        $controller->setJoins(new Collection([
+            ['Ignored'],
+            ['AuthorModel', '1 = 1', 'Author'],
+        ], false));
+
+        $this->assertSame([
+            ['AuthorModel', '1 = 1', 'Author'],
+        ], $controller->getJoinsDefinitionFromField('Author.email'));
+    }
+
+    public function testFilterConditionBranchCoverage(): void
+    {
+        $controller = $this->newQueryController();
+
+        $this->assertNull($controller->defaultFilterCondition([], ['status']));
+        $this->assertNull($controller->defaultFilterCondition(['garbage'], ['status']));
+        $this->assertFalse($controller->isFilterAllowed('missing', ['status']));
+        $this->assertFalse($controller->isJoinFilterAllowed('Author.email', []));
+        $this->assertSame(Column::BIND_PARAM_STR, $controller->getBindTypeFromRawValue(['array']));
+        $this->assertSame('custom', $controller->exposeToPositiveOperator('not custom'));
+        $this->assertSame('custom', $controller->exposeToPositiveOperator('does not custom'));
+
+        try {
+            $controller->exposeToPositiveOperator('xnotx');
+            $this->fail('Expected unconvertible negative operator to throw.');
+        }
+        catch (LogicException $exception) {
+            $this->assertStringContainsString(
+                "Unable to convert negative operator 'xnotx'",
+                $exception->getMessage()
+            );
+        }
+
+        try {
+            $controller->exposeGetFilterScope([], null);
+            $this->fail('Expected missing field scope guard.');
+        }
+        catch (LogicException $exception) {
+            $this->assertSame('Cannot determine filter scope without field.', $exception->getMessage());
+        }
+
+        try {
+            $controller->defaultFilterCondition([
+                [
+                    'field' => 'status',
+                    'operator' => '=',
+                    'value' => 'active',
+                    'logic' => 'nand',
+                ],
+            ], ['status']);
+            $this->fail('Expected unsupported logical operator.');
+        }
+        catch (\Exception $exception) {
+            $this->assertSame('Unsupported logical operator: `nand`', $exception->getMessage());
+        }
+
+        $compiled = $controller->defaultFilterCondition([
+            [
+                [
+                    'field' => 'status',
+                    'operator' => '=',
+                    'value' => 'active',
+                    'logic' => 'or',
+                ],
+                [
+                    'field' => 'type',
+                    'operator' => '=',
+                    'value' => 'admin',
+                ],
+            ],
+            [
+                'field' => 'deletedAt',
+                'operator' => 'is null',
+            ],
+            [
+                'field' => 'enabled',
+                'operator' => 'is true',
+            ],
+        ], ['status', 'type', 'deletedAt', 'enabled']);
+
+        $this->assertIsArray($compiled);
+        $this->assertStringContainsString('[FooModel].[status] = :_', $compiled[0]);
+        $this->assertStringContainsString('[FooModel].[deletedAt] is null', $compiled[0]);
+        $this->assertStringContainsString('[FooModel].[enabled] = 1', $compiled[0]);
+
+        try {
+            $controller->defaultFilterCondition([
+                [
+                    'field' => 'status',
+                    'operator' => '=',
+                ],
+            ], ['status']);
+            $this->fail('Expected missing filter value guard.');
+        }
+        catch (\Exception $exception) {
+            $this->assertSame('Operator "=" requires a value.', $exception->getMessage());
+        }
+    }
+
+    public function testExistentialFilterConditionBranches(): void
+    {
+        $controller = $this->newQueryController();
+        $controller->setJoins(new Collection([
+            'Author' => [
+                'AuthorModel',
+                '[FooModel].[authorId] = [Author].[id]',
+                'Author',
+                'left',
+            ],
+        ], false));
+
+        $compiled = $controller->defaultFilterCondition([
+            [
+                'field' => 'Author.email',
+                'operator' => 'is empty',
+                'subquery' => true,
+            ],
+            [
+                'field' => 'Author.name',
+                'operator' => 'is not empty',
+                'subquery' => true,
+            ],
+        ], ['Author.email', 'Author.name']);
+
+        $this->assertIsArray($compiled);
+        $this->assertStringContainsString('NOT EXISTS', $compiled[0]);
+        $this->assertStringContainsString('EXISTS', $compiled[0]);
+
+        $compiled = $controller->defaultFilterCondition([
+            [
+                'field' => 'Author.email',
+                'operator' => 'contains',
+                'value' => 'alpha',
+            ],
+            [
+                'field' => 'Author.email',
+                'operator' => 'contains',
+                'value' => 'beta',
+                'logic' => 'or',
+            ],
+            [
+                'field' => 'Author.id',
+                'operator' => '!=',
+                'value' => 7,
+                'subquery' => true,
+            ],
+        ], ['Author.email', 'Author.id']);
+
+        $this->assertIsArray($compiled);
+        $this->assertStringContainsString('or EXISTS', $compiled[0]);
+        $this->assertStringContainsString('NOT EXISTS', $compiled[0]);
+
+        $this->assertNull($controller->defaultFilterCondition([
+            [
+                'field' => 'Author.email',
+                'operator' => 'contains',
+                'value' => [],
+            ],
+        ], ['Author.email']));
+
+        $controllerWithJoinPayload = $this->newQueryController();
+        $controllerWithJoinPayload->setJoins(new Collection([
+            'Author' => [
+                'AuthorModel',
+                '[FooModel].[authorId] = [Author].[id]',
+                'Author',
+                'left',
+                [
+                    'conditions' => '[Author].[deleted] = :authorDeleted:',
+                    'bind' => ['authorDeleted' => 0],
+                    'bindTypes' => ['authorDeleted' => Column::BIND_PARAM_INT],
+                ],
+            ],
+        ], false));
+        $compiled = $controllerWithJoinPayload->defaultFilterCondition([
+            [
+                'field' => 'Author.email',
+                'operator' => 'contains',
+                'value' => 'alpha',
+                'logic' => 'or',
+            ],
+        ], ['Author.email']);
+        $this->assertIsArray($compiled);
+        $this->assertSame(0, $compiled[1]['authorDeleted']);
+        $this->assertSame(Column::BIND_PARAM_INT, $compiled[2]['authorDeleted']);
+
+        try {
+            $controller->defaultFilterCondition([
+                [
+                    'field' => 'Author.email',
+                    'operator' => 'contains',
+                ],
+            ], ['Author.email']);
+            $this->fail('Expected missing existential filter value.');
+        }
+        catch (\Exception $exception) {
+            $this->assertSame('Operator "contains" requires a value.', $exception->getMessage());
+        }
+
+        try {
+            $controller->exposeBuildExistsConditionFromField('Missing.email', '1 = 1');
+            $this->fail('Expected missing existential join definition.');
+        }
+        catch (\Exception $exception) {
+            $this->assertStringContainsString(
+                'Unable to prepare existential subquery for the foreign field "Missing.email".',
+                $exception->getMessage()
+            );
+        }
+    }
+
+    public function testSaveFailureBranchesAndEagerLoadAfterSave(): void
+    {
+        $controller = $this->newQueryController([
+            ['id' => 9],
+        ]);
+        $batch = $controller->save('update');
+        $this->assertFalse($batch['saved']);
+        $this->assertSame(['total' => 1, 'saved' => 0, 'failed' => 1], $batch['stats']);
+        $this->assertSame('Entity not found.', $batch['results'][0]['messages'][0]->getMessage());
+
+        $controller = $this->newQueryController([
+            'id' => 9,
+        ]);
+        $create = $controller->create();
+        $this->assertFalse($create['saved']);
+        $this->assertSame('Identity fields are not allowed when forcing create.', $create['messages'][0]->getMessage());
+
+        $controller = $this->newQueryController();
+        $controller->unitIdentityColumns = [];
+        $this->assertNull($controller->exposeFindModelByIdentityPayload(['id' => 1]));
+
+        $controller = $this->newQueryController([
+            'id' => 5,
+            'name' => 'Alice',
+        ]);
+        $model = new QueryModelDouble();
+        $controller->unitModel = new QueryModelDouble();
+        $controller->unitFindFirstModel = $model;
+        $this->assertSame('update', $controller->save()['mode']);
+
+        $controller = $this->newQueryController();
+        $eventsManager = new \Phalcon\Events\Manager();
+        $eventsManager->attach('rest', static function (\Phalcon\Events\Event $event): ?bool {
+            return $event->getType() === 'beforeSave' ? false : null;
+        });
+        $controller->setEventsManager($eventsManager);
+        $model = new QueryModelDouble();
+        $model->messages = ['blocked'];
+        $this->assertSame([
+            'saved' => false,
+            'messages' => ['blocked'],
+        ], $controller->exposePersistAssignedModel($model, 'create'));
+
+        $controller = $this->newQueryController();
+        $model = new QueryModelDouble();
+        $controller->setWith(new Collection(['Author']));
+        $result = $controller->exposePersistAssignedModel($model, 'update');
+        $this->assertTrue($result['saved']);
+        $this->assertSame([['Author']], $model->loadedWith);
+    }
+
+    private function newStaticQueryController(array $params = []): Restful
     {
         $controller = new class extends Restful {
             public object $identity;
             /** @var array<string, mixed> */
             public array $unitParams = [];
             public ?ModelInterface $unitModel = null;
-            public ?ModelInterface $unitFindFirstModel = null;
-            public ?array $unitLastFind = null;
 
             public function initialize(): void
             {
@@ -1420,6 +2355,104 @@ class QueryStateTest extends AbstractUnit
                 return $this->unitModel ?? throw new \LogicException('No unit model configured.');
             }
 
+            public function expose(mixed $item, ?array $expose = null): array
+            {
+                return ['exposed' => true];
+            }
+        };
+
+        $controller->unitParams = $params;
+        $controller->setDI($this->di);
+        $controller->setEventsManager(new \Phalcon\Events\Manager());
+        $controller->identity = new class {
+            public function getUserId(): int
+            {
+                return 42;
+            }
+
+            public function hasRole(array|string $roles): bool
+            {
+                return false;
+            }
+        };
+
+        return $controller;
+    }
+
+    private function newQueryController(array $params = []): Restful
+    {
+        $controller = new class extends Restful {
+            public object $identity;
+            /** @var array<string, mixed> */
+            public array $unitParams = [];
+            public ?ModelInterface $unitModel = null;
+            public ?ModelInterface $unitFindFirstModel = null;
+            public ?array $unitLastFind = null;
+            public array $unitCreatedByColumns = ['createdBy'];
+            public ?string $unitSoftDeleteColumn = 'deleted';
+            public array $unitIdentityColumns = ['id'];
+
+            public function initialize(): void
+            {
+            }
+
+            public function getParam(
+                string $key,
+                array|string|null $filters = null,
+                mixed $default = null,
+                ?array $params = null
+            ): mixed {
+                $params ??= $this->unitParams;
+
+                return array_key_exists($key, $params) ? $params[$key] : $default;
+            }
+
+            public function getParams(?array $fields = null, bool $cached = true, bool $deep = true): array
+            {
+                return $this->unitParams;
+            }
+
+            public function hasParam(string $key, ?array $params = null, bool $cached = true): bool
+            {
+                $params ??= $this->unitParams;
+                return array_key_exists($key, $params);
+            }
+
+            public function getModelName(): ?string
+            {
+                return 'FooModel';
+            }
+
+            public function appendModelName(string $field, ?string $modelName = null): string
+            {
+                return '[' . ($modelName ?? $this->getModelName()) . '].[' . $field . ']';
+            }
+
+            public function getPrimaryKeyAttributes(?string $modelName = null): array
+            {
+                return ['id'];
+            }
+
+            public function getCreatedByColumns(): array
+            {
+                return $this->unitCreatedByColumns;
+            }
+
+            public function getSoftDeleteColumn(): ?string
+            {
+                return $this->unitSoftDeleteColumn;
+            }
+
+            public function getIdentityColumns(): array
+            {
+                return $this->unitIdentityColumns;
+            }
+
+            public function loadModel(?string $modelName = null): ModelInterface
+            {
+                return $this->unitModel ?? throw new \LogicException('No unit model configured.');
+            }
+
             public function findFirst(?array $find = null): ModelInterface|false|null
             {
                 $this->unitLastFind = $find;
@@ -1436,9 +2469,20 @@ class QueryStateTest extends AbstractUnit
                 return $this->normalizeJoins($joins);
             }
 
-            public function exposeNormalizeJoinPayload(array $payload, int $joinIndex = 0): array
+            public function exposeNormalizeJoinPayload(array $payload, int|string $joinIndex = 0): array
             {
                 return $this->normalizeJoinPayload($payload, $joinIndex);
+            }
+
+            public function exposeNormalizeDynamicJoinDefinition(string $alias, mixed $definition): array
+            {
+                return $this->normalizeDynamicJoinDefinition($alias, $definition);
+            }
+
+            public function exposeSetDynamicJoinState(array $mapping, array $build): void
+            {
+                $this->dynamicJoinsMapping = $mapping;
+                $this->dynamicJoinsBuild = $build;
             }
 
             public function exposeMergeSqlConditions(string $a, string $b): string
@@ -1494,6 +2538,11 @@ class QueryStateTest extends AbstractUnit
             public function exposeGetFilterScope(array $filter, ?string $aliasContext): string
             {
                 return $this->getFilterScope($filter, $aliasContext);
+            }
+
+            public function exposeResolveGroupCarrierLogic(array $group): ?string
+            {
+                return $this->resolveGroupCarrierLogic($group);
             }
 
             public function exposeCompileSingleFilterCondition(
@@ -1561,6 +2610,11 @@ class QueryStateTest extends AbstractUnit
             public function exposePersistAssignedModel(ModelInterface $model, string $mode): array
             {
                 return $this->persistAssignedModel($model, $mode);
+            }
+
+            public function exposeFindModelByIdentityPayload(array $payload): ?ModelInterface
+            {
+                return $this->findModelByIdentityPayload($payload);
             }
 
             public function exposeBuildRestSaveFailure(
