@@ -39,7 +39,7 @@ trait Validate
 
     protected function getAllowEmptyOption(bool $allowEmpty = true): bool|array
     {
-        return $allowEmpty ? [null, '', 'NULL'] : false;
+        return $allowEmpty ? [null, ''] : false;
     }
 
     protected function shouldSkipOptionalValidation(array|string $field, bool $allowEmpty): bool
@@ -53,7 +53,7 @@ trait Validate
             $value = (string)$value;
         }
 
-        return $value === null || $value === '' || $value === 'NULL';
+        return $value === null || $value === '';
     }
     
     /**

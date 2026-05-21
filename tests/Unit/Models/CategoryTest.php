@@ -126,7 +126,7 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals('NULL', $this->category->getDescription());
+        $this->assertEquals(null, $this->category->getDescription());
     }
     
     public function testSetDescription(): void
@@ -174,7 +174,7 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->category->getUpdatedAt());
+        $this->assertEquals(null, $this->category->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -198,7 +198,7 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->category->getDeletedAt());
+        $this->assertEquals(null, $this->category->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

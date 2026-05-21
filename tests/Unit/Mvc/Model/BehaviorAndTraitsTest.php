@@ -619,7 +619,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertIsString($model->deletedAt);
 
         $model->deleted = 0;
-        $model->deletedBy = 'NULL';
+        $model->deletedBy = null;
         $model->deletedAs = '';
         $model->deletedAt = 'kept';
         $model->getDeletedBehavior()->notify('beforeValidationOnUpdate', $model);
@@ -993,7 +993,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $model->json = '{"ok":true}';
         $model->color = '#ffffff';
 
-        $this->assertSame([null, '', 'NULL'], $model->publicGetAllowEmptyOption());
+        $this->assertSame([null, ''], $model->publicGetAllowEmptyOption());
         $this->assertFalse($model->publicGetAllowEmptyOption(false));
 
         $validator = $model->genericValidation();

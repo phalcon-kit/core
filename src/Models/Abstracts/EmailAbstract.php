@@ -87,21 +87,21 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $replyTo = 'NULL';
+    public mixed $replyTo = null;
         
     /**
      * Column: return_path
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $returnPath = 'NULL';
+    public mixed $returnPath = null;
         
     /**
      * Column: read_receipt_to
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $readReceiptTo = 'NULL';
+    public mixed $readReceiptTo = null;
         
     /**
      * Column: priority
@@ -122,14 +122,14 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $cc = 'NULL';
+    public mixed $cc = null;
         
     /**
      * Column: bcc
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $bcc = 'NULL';
+    public mixed $bcc = null;
         
     /**
      * Column: subject
@@ -150,7 +150,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $meta = 'NULL';
+    public mixed $meta = null;
         
     /**
      * Column: sent
@@ -164,7 +164,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $sentAt = 'NULL';
+    public mixed $sentAt = null;
         
     /**
      * Column: deleted
@@ -192,7 +192,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -206,7 +206,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

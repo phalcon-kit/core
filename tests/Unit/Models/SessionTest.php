@@ -126,7 +126,7 @@ class SessionTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetJwt(): void
     {
-        $this->assertEquals('NULL', $this->session->getJwt());
+        $this->assertEquals(null, $this->session->getJwt());
     }
     
     public function testSetJwt(): void
@@ -138,7 +138,7 @@ class SessionTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMeta(): void
     {
-        $this->assertEquals('NULL', $this->session->getMeta());
+        $this->assertEquals(null, $this->session->getMeta());
     }
     
     public function testSetMeta(): void

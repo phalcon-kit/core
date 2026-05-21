@@ -138,7 +138,7 @@ class RecordTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->record->getUpdatedAt());
+        $this->assertEquals(null, $this->record->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -162,7 +162,7 @@ class RecordTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->record->getDeletedAt());
+        $this->assertEquals(null, $this->record->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

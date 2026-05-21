@@ -70,7 +70,7 @@ abstract class MetaAbstract extends AbstractModel implements MetaAbstractInterfa
      * Attributes: Type(23)
      * @var mixed
      */
-    public mixed $value = 'NULL';
+    public mixed $value = null;
         
     /**
      * Column: meta_table
@@ -112,7 +112,7 @@ abstract class MetaAbstract extends AbstractModel implements MetaAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -126,7 +126,7 @@ abstract class MetaAbstract extends AbstractModel implements MetaAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

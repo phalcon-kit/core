@@ -102,7 +102,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals('NULL', $this->workspace->getDescription());
+        $this->assertEquals(null, $this->workspace->getDescription());
     }
     
     public function testSetDescription(): void
@@ -114,7 +114,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetIcon(): void
     {
-        $this->assertEquals('NULL', $this->workspace->getIcon());
+        $this->assertEquals(null, $this->workspace->getIcon());
     }
     
     public function testSetIcon(): void
@@ -126,7 +126,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetColor(): void
     {
-        $this->assertEquals('NULL', $this->workspace->getColor());
+        $this->assertEquals(null, $this->workspace->getColor());
     }
     
     public function testSetColor(): void
@@ -186,7 +186,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->workspace->getUpdatedAt());
+        $this->assertEquals(null, $this->workspace->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -210,7 +210,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->workspace->getDeletedAt());
+        $this->assertEquals(null, $this->workspace->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

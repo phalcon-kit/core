@@ -114,7 +114,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetReplyTo(): void
     {
-        $this->assertEquals('NULL', $this->email->getReplyTo());
+        $this->assertEquals(null, $this->email->getReplyTo());
     }
     
     public function testSetReplyTo(): void
@@ -126,7 +126,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetReturnPath(): void
     {
-        $this->assertEquals('NULL', $this->email->getReturnPath());
+        $this->assertEquals(null, $this->email->getReturnPath());
     }
     
     public function testSetReturnPath(): void
@@ -138,7 +138,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetReadReceiptTo(): void
     {
-        $this->assertEquals('NULL', $this->email->getReadReceiptTo());
+        $this->assertEquals(null, $this->email->getReadReceiptTo());
     }
     
     public function testSetReadReceiptTo(): void
@@ -174,7 +174,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetCc(): void
     {
-        $this->assertEquals('NULL', $this->email->getCc());
+        $this->assertEquals(null, $this->email->getCc());
     }
     
     public function testSetCc(): void
@@ -186,7 +186,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetBcc(): void
     {
-        $this->assertEquals('NULL', $this->email->getBcc());
+        $this->assertEquals(null, $this->email->getBcc());
     }
     
     public function testSetBcc(): void
@@ -222,7 +222,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMeta(): void
     {
-        $this->assertEquals('NULL', $this->email->getMeta());
+        $this->assertEquals(null, $this->email->getMeta());
     }
     
     public function testSetMeta(): void
@@ -246,7 +246,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetSentAt(): void
     {
-        $this->assertEquals('NULL', $this->email->getSentAt());
+        $this->assertEquals(null, $this->email->getSentAt());
     }
     
     public function testSetSentAt(): void
@@ -294,7 +294,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->email->getUpdatedAt());
+        $this->assertEquals(null, $this->email->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -318,7 +318,7 @@ class EmailTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->email->getDeletedAt());
+        $this->assertEquals(null, $this->email->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

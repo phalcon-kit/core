@@ -62,13 +62,13 @@ trait Deleted
                     $id = $model->readAttribute($field);
                     return $model->isDeleted($deletedField, $deletedValue)
                         ? $this->getCurrentUserIdCallback()()
-                        : ($id === null || $id === '' || $id === 'NULL' ? null : (int)$id);
+                        : ($id === null || $id === '' ? null : (int)$id);
                 }),
                 $fieldAs => $this->hasChangedCallback(function (ModelInterface $model, string $field) use ($deletedField, $deletedValue): ?int {
                     $id = $model->readAttribute($field);
                     return $model->isDeleted($deletedField, $deletedValue)
                         ? $this->getCurrentUserIdCallback(true)()
-                        : ($id === null || $id === '' || $id === 'NULL' ? null : (int)$id);
+                        : ($id === null || $id === '' ? null : (int)$id);
                 }),
                 $fieldAt => $this->hasChangedCallback(function (ModelInterface $model, string $field) use ($deletedField, $deletedValue): ?string {
                     return $model->isDeleted($deletedField, $deletedValue)

@@ -126,7 +126,7 @@ class LogTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetContext(): void
     {
-        $this->assertEquals('NULL', $this->log->getContext());
+        $this->assertEquals(null, $this->log->getContext());
     }
     
     public function testSetContext(): void

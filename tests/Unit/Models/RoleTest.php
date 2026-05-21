@@ -162,7 +162,7 @@ class RoleTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->role->getUpdatedAt());
+        $this->assertEquals(null, $this->role->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -186,7 +186,7 @@ class RoleTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->role->getDeletedAt());
+        $this->assertEquals(null, $this->role->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

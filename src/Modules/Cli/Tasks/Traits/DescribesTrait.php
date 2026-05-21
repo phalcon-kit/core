@@ -137,7 +137,8 @@ trait DescribesTrait
         }
 
         $columnDefault = $column->getDefault();
-        if (!isset($columnDefault)) {
+        // Phalcon reports SQL DEFAULT NULL as the string "NULL".
+        if (!isset($columnDefault) || $columnDefault === 'NULL') {
             return null;
         }
 

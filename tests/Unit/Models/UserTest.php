@@ -102,7 +102,7 @@ class UserTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetPassword(): void
     {
-        $this->assertEquals('NULL', $this->user->getPassword());
+        $this->assertEquals(null, $this->user->getPassword());
     }
     
     public function testSetPassword(): void
@@ -114,7 +114,7 @@ class UserTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetResetToken(): void
     {
-        $this->assertEquals('NULL', $this->user->getResetToken());
+        $this->assertEquals(null, $this->user->getResetToken());
     }
     
     public function testSetResetToken(): void
@@ -162,7 +162,7 @@ class UserTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->user->getUpdatedAt());
+        $this->assertEquals(null, $this->user->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -186,7 +186,7 @@ class UserTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->user->getDeletedAt());
+        $this->assertEquals(null, $this->user->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

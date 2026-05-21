@@ -162,7 +162,7 @@ class GroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->group->getUpdatedAt());
+        $this->assertEquals(null, $this->group->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -186,7 +186,7 @@ class GroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->group->getDeletedAt());
+        $this->assertEquals(null, $this->group->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

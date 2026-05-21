@@ -102,7 +102,7 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals('NULL', $this->meta->getValue());
+        $this->assertEquals(null, $this->meta->getValue());
     }
     
     public function testSetValue(): void
@@ -174,7 +174,7 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->meta->getUpdatedAt());
+        $this->assertEquals(null, $this->meta->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -198,7 +198,7 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->meta->getDeletedAt());
+        $this->assertEquals(null, $this->meta->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

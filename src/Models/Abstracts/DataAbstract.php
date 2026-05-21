@@ -94,7 +94,7 @@ abstract class DataAbstract extends AbstractModel implements DataAbstractInterfa
      * Attributes: Type(23)
      * @var mixed
      */
-    public mixed $value = 'NULL';
+    public mixed $value = null;
         
     /**
      * Column: deleted
@@ -122,7 +122,7 @@ abstract class DataAbstract extends AbstractModel implements DataAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -136,7 +136,7 @@ abstract class DataAbstract extends AbstractModel implements DataAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

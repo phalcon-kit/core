@@ -74,14 +74,14 @@ abstract class ProfileAbstract extends AbstractModel implements ProfileAbstractI
      * Attributes: Size(100) | Type(2)
      * @var mixed
      */
-    public mixed $firstName = 'NULL';
+    public mixed $firstName = null;
         
     /**
      * Column: last_name
      * Attributes: Size(100) | Type(2)
      * @var mixed
      */
-    public mixed $lastName = 'NULL';
+    public mixed $lastName = null;
         
     /**
      * Column: avatar_file_id
@@ -116,7 +116,7 @@ abstract class ProfileAbstract extends AbstractModel implements ProfileAbstractI
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -130,7 +130,7 @@ abstract class ProfileAbstract extends AbstractModel implements ProfileAbstractI
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

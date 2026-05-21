@@ -114,7 +114,7 @@ class SiteTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals('NULL', $this->site->getDescription());
+        $this->assertEquals(null, $this->site->getDescription());
     }
     
     public function testSetDescription(): void
@@ -126,7 +126,7 @@ class SiteTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetIcon(): void
     {
-        $this->assertEquals('NULL', $this->site->getIcon());
+        $this->assertEquals(null, $this->site->getIcon());
     }
     
     public function testSetIcon(): void
@@ -138,7 +138,7 @@ class SiteTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetColor(): void
     {
-        $this->assertEquals('NULL', $this->site->getColor());
+        $this->assertEquals(null, $this->site->getColor());
     }
     
     public function testSetColor(): void
@@ -198,7 +198,7 @@ class SiteTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->site->getUpdatedAt());
+        $this->assertEquals(null, $this->site->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -222,7 +222,7 @@ class SiteTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->site->getDeletedAt());
+        $this->assertEquals(null, $this->site->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

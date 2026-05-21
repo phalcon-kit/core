@@ -91,7 +91,7 @@ abstract class FlagAbstract extends AbstractModel implements FlagAbstractInterfa
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $meta = 'NULL';
+    public mixed $meta = null;
         
     /**
      * Column: deleted
@@ -119,7 +119,7 @@ abstract class FlagAbstract extends AbstractModel implements FlagAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -133,7 +133,7 @@ abstract class FlagAbstract extends AbstractModel implements FlagAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

@@ -138,7 +138,7 @@ class BackupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->backup->getUpdatedAt());
+        $this->assertEquals(null, $this->backup->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -162,7 +162,7 @@ class BackupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->backup->getDeletedAt());
+        $this->assertEquals(null, $this->backup->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

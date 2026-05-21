@@ -71,7 +71,7 @@ abstract class LogAbstract extends AbstractModel implements LogAbstractInterface
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $context = 'NULL';
+    public mixed $context = null;
         
     /**
      * Column: created_at

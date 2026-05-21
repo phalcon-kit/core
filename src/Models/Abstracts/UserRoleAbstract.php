@@ -109,7 +109,7 @@ abstract class UserRoleAbstract extends AbstractModel implements UserRoleAbstrac
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -123,7 +123,7 @@ abstract class UserRoleAbstract extends AbstractModel implements UserRoleAbstrac
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

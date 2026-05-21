@@ -162,7 +162,7 @@ class UserFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->userFeature->getUpdatedAt());
+        $this->assertEquals(null, $this->userFeature->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -186,7 +186,7 @@ class UserFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->userFeature->getDeletedAt());
+        $this->assertEquals(null, $this->userFeature->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

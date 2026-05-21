@@ -58,7 +58,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
      * Attributes: Size(100) | Type(2)
      * @var mixed
      */
-    public mixed $label = 'NULL';
+    public mixed $label = null;
         
     /**
      * Column: task
@@ -79,7 +79,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $params = 'NULL';
+    public mixed $params = null;
         
     /**
      * Column: status
@@ -93,7 +93,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $result = 'NULL';
+    public mixed $result = null;
         
     /**
      * Column: priority
@@ -107,7 +107,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $runAt = 'NULL';
+    public mixed $runAt = null;
         
     /**
      * Column: deleted
@@ -135,7 +135,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -149,7 +149,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

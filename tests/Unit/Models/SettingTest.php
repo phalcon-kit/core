@@ -102,7 +102,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetLabel(): void
     {
-        $this->assertEquals('NULL', $this->setting->getLabel());
+        $this->assertEquals(null, $this->setting->getLabel());
     }
     
     public function testSetLabel(): void
@@ -114,7 +114,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals('NULL', $this->setting->getValue());
+        $this->assertEquals(null, $this->setting->getValue());
     }
     
     public function testSetValue(): void
@@ -126,7 +126,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetCategory(): void
     {
-        $this->assertEquals('NULL', $this->setting->getCategory());
+        $this->assertEquals(null, $this->setting->getCategory());
     }
     
     public function testSetCategory(): void
@@ -174,7 +174,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->setting->getUpdatedAt());
+        $this->assertEquals(null, $this->setting->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -198,7 +198,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->setting->getDeletedAt());
+        $this->assertEquals(null, $this->setting->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

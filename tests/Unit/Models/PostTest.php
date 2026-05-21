@@ -114,7 +114,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals('NULL', $this->post->getDescription());
+        $this->assertEquals(null, $this->post->getDescription());
     }
     
     public function testSetDescription(): void
@@ -126,7 +126,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetContent(): void
     {
-        $this->assertEquals('NULL', $this->post->getContent());
+        $this->assertEquals(null, $this->post->getContent());
     }
     
     public function testSetContent(): void
@@ -174,7 +174,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->post->getUpdatedAt());
+        $this->assertEquals(null, $this->post->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -198,7 +198,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->post->getDeletedAt());
+        $this->assertEquals(null, $this->post->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

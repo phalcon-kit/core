@@ -150,7 +150,7 @@ class PostCategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->postCategory->getUpdatedAt());
+        $this->assertEquals(null, $this->postCategory->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -174,7 +174,7 @@ class PostCategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->postCategory->getDeletedAt());
+        $this->assertEquals(null, $this->postCategory->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

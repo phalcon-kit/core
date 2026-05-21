@@ -90,21 +90,21 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $refreshToken = 'NULL';
+    public mixed $refreshToken = null;
         
     /**
      * Column: email
      * Attributes: Size(320) | Type(2)
      * @var mixed
      */
-    public mixed $email = 'NULL';
+    public mixed $email = null;
         
     /**
      * Column: meta
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $meta = 'NULL';
+    public mixed $meta = null;
         
     /**
      * Column: deleted
@@ -132,7 +132,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -146,7 +146,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

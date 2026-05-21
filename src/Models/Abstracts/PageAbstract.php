@@ -82,7 +82,7 @@ abstract class PageAbstract extends AbstractModel implements PageAbstractInterfa
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $description = 'NULL';
+    public mixed $description = null;
         
     /**
      * Column: deleted
@@ -110,7 +110,7 @@ abstract class PageAbstract extends AbstractModel implements PageAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -124,7 +124,7 @@ abstract class PageAbstract extends AbstractModel implements PageAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

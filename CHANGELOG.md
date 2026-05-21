@@ -277,6 +277,8 @@ tag has been cut yet.
   related models.
 - Fixed Transformable behavior so literal values such as generated slugs named
   `range` are not invoked as PHP callable strings.
+- Fixed scaffolded/generated nullable model defaults so SQL `NULL` is
+  represented as PHP `null` instead of the string `'NULL'`.
 - Fixed local static-analysis behavior when Swoole classes are referenced but
   the extension is not installed in the analyzer runtime.
 - Fixed redundant null coalescing and key exposure logic in query/order paths.

@@ -75,14 +75,14 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
      * Attributes: Type(6)
      * @var mixed
      */
-    public mixed $jwt = 'NULL';
+    public mixed $jwt = null;
         
     /**
      * Column: meta
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $meta = 'NULL';
+    public mixed $meta = null;
         
     /**
      * Column: expires_at

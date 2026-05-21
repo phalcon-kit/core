@@ -65,21 +65,21 @@ abstract class SettingAbstract extends AbstractModel implements SettingAbstractI
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $label = 'NULL';
+    public mixed $label = null;
         
     /**
      * Column: value
      * Attributes: Type(6)
      * @var mixed
      */
-    public mixed $value = 'NULL';
+    public mixed $value = null;
         
     /**
      * Column: category
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $category = 'NULL';
+    public mixed $category = null;
         
     /**
      * Column: deleted
@@ -107,7 +107,7 @@ abstract class SettingAbstract extends AbstractModel implements SettingAbstractI
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -121,7 +121,7 @@ abstract class SettingAbstract extends AbstractModel implements SettingAbstractI
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

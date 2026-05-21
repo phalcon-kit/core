@@ -126,7 +126,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals('NULL', $this->column->getDescription());
+        $this->assertEquals(null, $this->column->getDescription());
     }
     
     public function testSetDescription(): void
@@ -138,7 +138,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetOptions(): void
     {
-        $this->assertEquals('NULL', $this->column->getOptions());
+        $this->assertEquals(null, $this->column->getOptions());
     }
     
     public function testSetOptions(): void
@@ -186,7 +186,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->column->getUpdatedAt());
+        $this->assertEquals(null, $this->column->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -210,7 +210,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->column->getDeletedAt());
+        $this->assertEquals(null, $this->column->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

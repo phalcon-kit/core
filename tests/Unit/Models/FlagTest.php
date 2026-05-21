@@ -138,7 +138,7 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMeta(): void
     {
-        $this->assertEquals('NULL', $this->flag->getMeta());
+        $this->assertEquals(null, $this->flag->getMeta());
     }
     
     public function testSetMeta(): void
@@ -186,7 +186,7 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->flag->getUpdatedAt());
+        $this->assertEquals(null, $this->flag->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -210,7 +210,7 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->flag->getDeletedAt());
+        $this->assertEquals(null, $this->flag->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

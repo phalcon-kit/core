@@ -126,7 +126,7 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetContent(): void
     {
-        $this->assertEquals('NULL', $this->template->getContent());
+        $this->assertEquals(null, $this->template->getContent());
     }
     
     public function testSetContent(): void
@@ -174,7 +174,7 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->template->getUpdatedAt());
+        $this->assertEquals(null, $this->template->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -198,7 +198,7 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->template->getDeletedAt());
+        $this->assertEquals(null, $this->template->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

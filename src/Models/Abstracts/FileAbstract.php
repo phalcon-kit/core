@@ -73,7 +73,7 @@ abstract class FileAbstract extends AbstractModel implements FileAbstractInterfa
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $label = 'NULL';
+    public mixed $label = null;
         
     /**
      * Column: category
@@ -94,14 +94,14 @@ abstract class FileAbstract extends AbstractModel implements FileAbstractInterfa
      * Attributes: Size(100) | Type(2)
      * @var mixed
      */
-    public mixed $mimeType = 'NULL';
+    public mixed $mimeType = null;
         
     /**
      * Column: extension
      * Attributes: Size(20) | Type(2)
      * @var mixed
      */
-    public mixed $extension = 'NULL';
+    public mixed $extension = null;
         
     /**
      * Column: size
@@ -136,7 +136,7 @@ abstract class FileAbstract extends AbstractModel implements FileAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -150,7 +150,7 @@ abstract class FileAbstract extends AbstractModel implements FileAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

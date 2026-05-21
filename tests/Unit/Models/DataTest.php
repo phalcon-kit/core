@@ -126,7 +126,7 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals('NULL', $this->data->getValue());
+        $this->assertEquals(null, $this->data->getValue());
     }
     
     public function testSetValue(): void
@@ -174,7 +174,7 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->data->getUpdatedAt());
+        $this->assertEquals(null, $this->data->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -198,7 +198,7 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->data->getDeletedAt());
+        $this->assertEquals(null, $this->data->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

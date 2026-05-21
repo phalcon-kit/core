@@ -90,7 +90,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetLabel(): void
     {
-        $this->assertEquals('NULL', $this->file->getLabel());
+        $this->assertEquals(null, $this->file->getLabel());
     }
     
     public function testSetLabel(): void
@@ -126,7 +126,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMimeType(): void
     {
-        $this->assertEquals('NULL', $this->file->getMimeType());
+        $this->assertEquals(null, $this->file->getMimeType());
     }
     
     public function testSetMimeType(): void
@@ -138,7 +138,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetExtension(): void
     {
-        $this->assertEquals('NULL', $this->file->getExtension());
+        $this->assertEquals(null, $this->file->getExtension());
     }
     
     public function testSetExtension(): void
@@ -198,7 +198,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->file->getUpdatedAt());
+        $this->assertEquals(null, $this->file->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -222,7 +222,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->file->getDeletedAt());
+        $this->assertEquals(null, $this->file->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

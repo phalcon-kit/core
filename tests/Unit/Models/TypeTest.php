@@ -162,7 +162,7 @@ class TypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->type->getUpdatedAt());
+        $this->assertEquals(null, $this->type->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -186,7 +186,7 @@ class TypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->type->getDeletedAt());
+        $this->assertEquals(null, $this->type->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

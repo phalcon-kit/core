@@ -150,7 +150,7 @@ class AuditTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetBefore(): void
     {
-        $this->assertEquals('NULL', $this->audit->getBefore());
+        $this->assertEquals(null, $this->audit->getBefore());
     }
     
     public function testSetBefore(): void
@@ -162,7 +162,7 @@ class AuditTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetAfter(): void
     {
-        $this->assertEquals('NULL', $this->audit->getAfter());
+        $this->assertEquals(null, $this->audit->getAfter());
     }
     
     public function testSetAfter(): void

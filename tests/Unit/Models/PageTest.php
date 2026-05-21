@@ -114,7 +114,7 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals('NULL', $this->page->getDescription());
+        $this->assertEquals(null, $this->page->getDescription());
     }
     
     public function testSetDescription(): void
@@ -162,7 +162,7 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->page->getUpdatedAt());
+        $this->assertEquals(null, $this->page->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -186,7 +186,7 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->page->getDeletedAt());
+        $this->assertEquals(null, $this->page->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

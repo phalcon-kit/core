@@ -85,21 +85,21 @@ abstract class WorkspaceAbstract extends AbstractModel implements WorkspaceAbstr
      * Attributes: Size(240) | Type(2)
      * @var mixed
      */
-    public mixed $description = 'NULL';
+    public mixed $description = null;
         
     /**
      * Column: icon
      * Attributes: Size(64) | Type(2)
      * @var mixed
      */
-    public mixed $icon = 'NULL';
+    public mixed $icon = null;
         
     /**
      * Column: color
      * Attributes: Size(9) | Type(5)
      * @var mixed
      */
-    public mixed $color = 'NULL';
+    public mixed $color = null;
         
     /**
      * Column: status
@@ -134,7 +134,7 @@ abstract class WorkspaceAbstract extends AbstractModel implements WorkspaceAbstr
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -148,7 +148,7 @@ abstract class WorkspaceAbstract extends AbstractModel implements WorkspaceAbstr
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

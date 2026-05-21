@@ -120,14 +120,14 @@ abstract class UserAbstract extends AbstractModel implements UserAbstractInterfa
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $password = 'NULL';
+    public mixed $password = null;
         
     /**
      * Column: reset_token
      * Attributes: Size(255) | Type(2)
      * @var mixed
      */
-    public mixed $resetToken = 'NULL';
+    public mixed $resetToken = null;
         
     /**
      * Column: deleted
@@ -155,7 +155,7 @@ abstract class UserAbstract extends AbstractModel implements UserAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = 'NULL';
+    public mixed $updatedAt = null;
         
     /**
      * Column: updated_by
@@ -169,7 +169,7 @@ abstract class UserAbstract extends AbstractModel implements UserAbstractInterfa
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = 'NULL';
+    public mixed $deletedAt = null;
         
     /**
      * Column: deleted_by

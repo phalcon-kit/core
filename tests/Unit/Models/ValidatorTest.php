@@ -138,7 +138,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetParams(): void
     {
-        $this->assertEquals('NULL', $this->validator->getParams());
+        $this->assertEquals(null, $this->validator->getParams());
     }
     
     public function testSetParams(): void
@@ -186,7 +186,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->validator->getUpdatedAt());
+        $this->assertEquals(null, $this->validator->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -210,7 +210,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->validator->getDeletedAt());
+        $this->assertEquals(null, $this->validator->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

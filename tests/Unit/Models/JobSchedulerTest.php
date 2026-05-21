@@ -138,7 +138,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetParams(): void
     {
-        $this->assertEquals('NULL', $this->jobScheduler->getParams());
+        $this->assertEquals(null, $this->jobScheduler->getParams());
     }
     
     public function testSetParams(): void
@@ -210,7 +210,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->jobScheduler->getUpdatedAt());
+        $this->assertEquals(null, $this->jobScheduler->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -234,7 +234,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->jobScheduler->getDeletedAt());
+        $this->assertEquals(null, $this->jobScheduler->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

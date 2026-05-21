@@ -138,7 +138,7 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals('NULL', $this->translate->getValue());
+        $this->assertEquals(null, $this->translate->getValue());
     }
     
     public function testSetValue(): void
@@ -186,7 +186,7 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->translate->getUpdatedAt());
+        $this->assertEquals(null, $this->translate->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -210,7 +210,7 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->translate->getDeletedAt());
+        $this->assertEquals(null, $this->translate->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

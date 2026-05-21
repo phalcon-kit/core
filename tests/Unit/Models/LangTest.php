@@ -150,7 +150,7 @@ class LangTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->lang->getUpdatedAt());
+        $this->assertEquals(null, $this->lang->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -174,7 +174,7 @@ class LangTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->lang->getDeletedAt());
+        $this->assertEquals(null, $this->lang->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

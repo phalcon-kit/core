@@ -69,14 +69,14 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
      * Attributes: Type(23)
      * @var mixed
      */
-    public mixed $before = 'NULL';
+    public mixed $before = null;
         
     /**
      * Column: after
      * Attributes: Type(23)
      * @var mixed
      */
-    public mixed $after = 'NULL';
+    public mixed $after = null;
         
     /**
      * Column: deleted

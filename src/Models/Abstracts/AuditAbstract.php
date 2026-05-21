@@ -99,14 +99,14 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $before = 'NULL';
+    public mixed $before = null;
         
     /**
      * Column: after
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $after = 'NULL';
+    public mixed $after = null;
         
     /**
      * Column: created_at

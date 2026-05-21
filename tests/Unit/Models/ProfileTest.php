@@ -102,7 +102,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetFirstName(): void
     {
-        $this->assertEquals('NULL', $this->profile->getFirstName());
+        $this->assertEquals(null, $this->profile->getFirstName());
     }
     
     public function testSetFirstName(): void
@@ -114,7 +114,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetLastName(): void
     {
-        $this->assertEquals('NULL', $this->profile->getLastName());
+        $this->assertEquals(null, $this->profile->getLastName());
     }
     
     public function testSetLastName(): void
@@ -174,7 +174,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals('NULL', $this->profile->getUpdatedAt());
+        $this->assertEquals(null, $this->profile->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -198,7 +198,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals('NULL', $this->profile->getDeletedAt());
+        $this->assertEquals(null, $this->profile->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void
