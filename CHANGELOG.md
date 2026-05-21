@@ -215,6 +215,14 @@ tag has been cut yet.
   and field maps preserve their keys during compilation.
 - Fixed keyed REST join payload normalization so associative join collections
   can still compile payload conditions after key preservation.
+- Fixed Redis session adapter detection so the session provider applies Redis
+  session INI settings when the configured adapter class extends the Redis
+  adapter.
+- Fixed PhalconKit debug class links to point at generated Markdown API files
+  and removed a redundant rewrite pass for legacy debug span markup no longer
+  emitted by Phalcon 5.
+- Fixed debug code preview styling so expanded full-file code blocks scroll
+  inside their panel instead of forcing the debug container wider.
 - Fixed PHPUnit test discovery so fixture/double classes are not reported as
   non-TestCase warnings by `composer phpunit`.
 - Fixed eager loading for non-through relations so intermediate relationship

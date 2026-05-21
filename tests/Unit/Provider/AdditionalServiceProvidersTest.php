@@ -29,6 +29,7 @@ use Phalcon\Http\Response\Cookies;
 use Phalcon\Mvc\Model\MetaData\Memory as MetadataMemory;
 use Phalcon\Mvc\Model\MetaData\Stream as MetadataStream;
 use Phalcon\Session\Adapter\Noop as SessionNoop;
+use Phalcon\Session\Adapter\Redis as SessionRedis;
 use Phalcon\Session\Manager as SessionManager;
 use PhalconKit\Acl\Acl;
 use PhalconKit\Assets\Manager as AssetsManager;
@@ -72,6 +73,8 @@ use PhalconKit\Provider\Swoole\ServiceProvider as SwooleProvider;
 use PhalconKit\Provider\Volt\ServiceProvider as VoltProvider;
 use PhalconKit\Support\Debug;
 use PhalconKit\Tests\Unit\AbstractUnit;
+use PhalconKit\Ws\Dispatcher as WsDispatcher;
+use PhalconKit\Ws\Router as WsRouter;
 use PhpImap\Mailbox;
 use ReCaptcha\ReCaptcha;
 use Redis;
@@ -244,6 +247,23 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $di->get('crypt');
     }
 
+    public function testCryptProviderRejectsUnsupportedCipher(): void
+    {
+        $di = $this->createDi([
+            'crypt' => [
+                'cipher' => 'not-a-real-cipher',
+                'key' => str_repeat('k', 32),
+                'useSigning' => false,
+            ],
+        ]);
+        (new CryptProvider($di))->register($di);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Invalid cipher "not-a-real-cipher"');
+
+        $di->get('crypt');
+    }
+
     public function testDatabaseProviderRejectsNonArrayDriverOptions(): void
     {
         $di = $this->createDi([
@@ -300,6 +320,35 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertSame($di->get('eventsManager'), $db->getEventsManager());
     }
 
+    public function testDatabaseProviderFallsBackToDefaultDriverAndBuildsDialect(): void
+    {
+        $fakePdoAdapter = $this->createFakePdoAdapterClass();
+        $fakeDialect = $this->createFakeDialectClass();
+        $di = $this->createDi([
+            'database' => [
+                'default' => 'unit',
+                'drivers' => [
+                    'unit' => [
+                        'adapter' => $fakePdoAdapter,
+                        'dialectClass' => $fakeDialect,
+                        'host' => 'unit-host',
+                    ],
+                ],
+            ],
+        ]);
+        $di->set('eventsManager', new Manager());
+        $provider = new class ($di) extends DatabaseProvider {
+            protected ?string $driverName = 'missing';
+        };
+        $provider->register($di);
+
+        $db = $di->get('db');
+
+        $this->assertInstanceOf($fakePdoAdapter, $db);
+        $this->assertSame('unit-host', $db->descriptor['host']);
+        $this->assertInstanceOf($fakeDialect, $db->descriptor['dialectClass']);
+    }
+
     public function testDebugProviderRegistersDebugServiceAndReportsCyclicGuard(): void
     {
         $di = $this->createDi([
@@ -320,6 +369,36 @@ class AdditionalServiceProvidersTest extends AbstractUnit
             $provider->causeCyclicError()
         );
         $this->assertInstanceOf(Debug::class, $di->get('debug'));
+    }
+
+    public function testDebugProviderAppliesConfiguredUriWhenEnabled(): void
+    {
+        $di = $this->createDi([
+            'app' => [
+                'debug' => true,
+            ],
+            'debug' => [
+                'enable' => true,
+                'exceptions' => false,
+                'lowSeverity' => false,
+                'showFiles' => false,
+                'showBackTrace' => false,
+                'showFileFragment' => false,
+                'blacklist' => [
+                    'server' => ['HTTP_AUTHORIZATION'],
+                ],
+                'uri' => '/debug-assets/',
+            ],
+        ]);
+        $this->bootstrap->mode = Bootstrap::MODE_MVC;
+        $di->set('bootstrap', $this->bootstrap);
+        (new DebugProvider($di))->register($di);
+
+        $debug = $di->get('debug');
+        $uri = new \ReflectionProperty(\Phalcon\Support\Debug::class, 'uri');
+
+        $this->assertInstanceOf(Debug::class, $debug);
+        $this->assertSame('/debug-assets/', $uri->getValue($debug));
     }
 
     public function testDispatcherProviderRegistersMvcDispatcherWithDefaultNamespace(): void
@@ -354,6 +433,20 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $dispatcher = $di->get('dispatcher');
 
         $this->assertInstanceOf(CliDispatcher::class, $dispatcher);
+        $this->assertSame($di, $dispatcher->getDI());
+    }
+
+    public function testDispatcherProviderRegistersWsDispatcherForWsBootstrapMode(): void
+    {
+        $di = $this->createDi();
+        $this->bootstrap->mode = Bootstrap::MODE_WS;
+        $di->set('bootstrap', $this->bootstrap);
+        $di->set('eventsManager', new Manager());
+        (new DispatcherProvider($di))->register($di);
+
+        $dispatcher = $di->get('dispatcher');
+
+        $this->assertInstanceOf(WsDispatcher::class, $dispatcher);
         $this->assertSame($di, $dispatcher->getDI());
     }
 
@@ -521,6 +614,34 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertInstanceOf(MetadataStream::class, $di->get('modelsMetadata'));
     }
 
+    public function testModelsMetadataProviderCanUseCacheFactoryAdapter(): void
+    {
+        $fakeMetadataAdapter = $this->createFakeMetadataAdapterClass();
+        $di = $this->createDi([
+            'metadata' => [
+                'driverCli' => 'unit',
+                'driver' => 'unit',
+                'drivers' => [
+                    'unit' => [
+                        'adapter' => $fakeMetadataAdapter,
+                        'prefix' => 'unit-prefix',
+                    ],
+                ],
+                'default' => [
+                    'lifetime' => 60,
+                ],
+            ],
+        ]);
+        $di->set('bootstrap', $this->bootstrap);
+        (new ModelsMetadataProvider($di))->register($di);
+
+        $metadata = $di->get('modelsMetadata');
+
+        $this->assertInstanceOf($fakeMetadataAdapter, $metadata);
+        $this->assertSame(60, $metadata->options['lifetime']);
+        $this->assertSame('unit-prefix', $metadata->options['prefix']);
+    }
+
     public function testOcrProviderRegistersTesseractClient(): void
     {
         $di = $this->createDi();
@@ -673,6 +794,58 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         }
     }
 
+    public function testRedisProviderAttemptsConfiguredAuth(): void
+    {
+        if (!class_exists(Redis::class)) {
+            $this->markTestSkipped('Redis extension is not available.');
+        }
+
+        $di = $this->createDi([
+            'redis' => [
+                'host' => '127.0.0.1',
+                'port' => 0,
+                'timeout' => 0.01,
+                'persistentId' => null,
+                'retryInterval' => 0,
+                'readTimeout' => 0.01,
+                'context' => null,
+                'auth' => 'secret',
+                'options' => [],
+            ],
+        ]);
+        (new RedisProvider($di))->register($di);
+
+        $this->expectException(\RedisException::class);
+
+        $di->get('redis');
+    }
+
+    public function testRedisProviderAttemptsConfiguredDatabaseSelection(): void
+    {
+        if (!class_exists(Redis::class)) {
+            $this->markTestSkipped('Redis extension is not available.');
+        }
+
+        $di = $this->createDi([
+            'redis' => [
+                'host' => '127.0.0.1',
+                'port' => 0,
+                'timeout' => 0.01,
+                'persistentId' => null,
+                'retryInterval' => 0,
+                'readTimeout' => 0.01,
+                'context' => null,
+                'database' => 2,
+                'options' => [],
+            ],
+        ]);
+        (new RedisProvider($di))->register($di);
+
+        $this->expectException(\RedisException::class);
+
+        $di->get('redis');
+    }
+
     public function testRouterProviderRegistersCliRouterWithConfiguredDefaults(): void
     {
         $di = $this->createDi();
@@ -697,6 +870,33 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertSame('unit', $router->getModuleName());
         $this->assertSame('smoke', $router->getTaskName());
         $this->assertSame('run', $router->getActionName());
+        $this->assertSame($di, $router->getDI());
+    }
+
+    public function testRouterProviderRegistersWsRouterWithConfiguredDefaults(): void
+    {
+        $di = $this->createDi();
+        $this->bootstrap->mode = Bootstrap::MODE_WS;
+        $this->bootstrap->router = null;
+        $this->bootstrap->setConfig(new Config([
+            'router' => [
+                'ws' => [
+                    'module' => 'socket',
+                    'task' => 'events',
+                    'action' => 'listen',
+                ],
+            ],
+        ]));
+        $di->set('bootstrap', $this->bootstrap);
+        (new RouterProvider($di))->register($di);
+
+        $router = $di->get('router');
+        $router->handle([]);
+
+        $this->assertInstanceOf(WsRouter::class, $router);
+        $this->assertSame('socket', $router->getModuleName());
+        $this->assertSame('events', $router->getTaskName());
+        $this->assertSame('listen', $router->getActionName());
         $this->assertSame($di, $router->getDI());
     }
 
@@ -739,6 +939,110 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         }
     }
 
+    public function testSessionProviderDestroysExistingSessionBeforeStartingConfiguredSession(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        $di = $this->createDi([
+            'session' => [
+                'driver' => 'noop',
+                'drivers' => [
+                    'noop' => [
+                        'adapter' => SessionNoop::class,
+                    ],
+                ],
+                'default' => [],
+                'ini' => [],
+            ],
+        ]);
+        (new SessionProvider($di))->register($di);
+
+        $session = null;
+        try {
+            $session = $di->get('session');
+
+            $this->assertInstanceOf(SessionManager::class, $session);
+            $this->assertInstanceOf(SessionNoop::class, $session->getAdapter());
+        } finally {
+            if ($session instanceof SessionManager && $session->exists()) {
+                $session->destroy();
+            }
+        }
+    }
+
+    public function testSessionProviderRegistersFactoryBackedSessionAdapter(): void
+    {
+        $adapter = $this->createFakeSessionAdapterClass();
+        $di = $this->createDi([
+            'session' => [
+                'driver' => 'unit',
+                'drivers' => [
+                    'unit' => [
+                        'adapter' => $adapter,
+                    ],
+                ],
+                'default' => [],
+                'ini' => [],
+            ],
+        ]);
+        (new SessionProvider($di))->register($di);
+
+        $session = null;
+        try {
+            $session = $di->get('session');
+
+            $this->assertInstanceOf(SessionManager::class, $session);
+            $this->assertInstanceOf($adapter, $session->getAdapter());
+        } finally {
+            if ($session instanceof SessionManager && $session->exists()) {
+                $session->destroy();
+            }
+        }
+    }
+
+    public function testSessionProviderConfiguresRedisSessionIniForRedisAdapter(): void
+    {
+        $originalSaveHandler = ini_get('session.save_handler');
+        $originalSavePath = ini_get('session.save_path');
+        $adapter = $this->createFakeRedisSessionAdapterClass();
+        $di = $this->createDi([
+            'session' => [
+                'driver' => 'redis',
+                'drivers' => [
+                    'redis' => [
+                        'adapter' => $adapter,
+                        'host' => '127.0.0.1',
+                        'port' => 6379,
+                        'prefix' => 'unit_',
+                    ],
+                ],
+                'default' => [],
+                'ini' => [],
+            ],
+        ]);
+        (new SessionProvider($di))->register($di);
+
+        $session = null;
+        try {
+            $session = $di->get('session');
+
+            $this->assertInstanceOf(SessionManager::class, $session);
+            $this->assertInstanceOf($adapter, $session->getAdapter());
+            $this->assertStringContainsString('127.0.0.1:6379?', (string)ini_get('session.save_path'));
+            $this->assertStringContainsString('prefix=unit_', (string)ini_get('session.save_path'));
+        } finally {
+            if ($session instanceof SessionManager && $session->exists()) {
+                $session->destroy();
+            }
+            if ($originalSaveHandler !== 'user') {
+                ini_set('session.save_handler', $originalSaveHandler);
+            }
+            ini_set('session.save_path', $originalSavePath);
+        }
+    }
+
     public function testSwooleProviderReportsMissingExtension(): void
     {
         $di = $this->createDi();
@@ -748,10 +1052,45 @@ class AdditionalServiceProvidersTest extends AbstractUnit
             $this->markTestSkipped('Swoole is available in this environment.');
         }
 
+        if (function_exists('PhalconKit\\Provider\\Swoole\\extension_loaded')) {
+            $this->markTestSkipped('Swoole provider doubles are already installed.');
+        }
+
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Swoole not available');
 
         $di->get('swoole');
+    }
+
+    public function testSwooleProviderBuildsServerWithConfiguredDefaults(): void
+    {
+        if (extension_loaded('swoole')) {
+            $this->markTestSkipped('Real Swoole extension is available.');
+        }
+
+        $this->installSwooleProviderDoubles();
+        $di = $this->createDi([
+            'swoole' => [
+                'host' => '127.0.0.1',
+                'port' => 9502,
+                'settings' => [
+                    'worker_num' => 3,
+                ],
+            ],
+        ]);
+        (new SwooleProvider($di))->register($di);
+
+        $server = $di->get('swoole');
+
+        $this->assertSame('127.0.0.1', $server->host);
+        $this->assertSame(9502, $server->port);
+        $this->assertSame(3, $server->settings['worker_num']);
+        $this->assertSame(1000, $server->settings['max_conn']);
+        $this->assertFalse($server->settings['daemonize']);
+        $this->assertSame(60, $server->settings['heartbeat_check_interval']);
+        $this->assertSame(120, $server->settings['heartbeat_idle_time']);
+        $this->assertSame(SWOOLE_LOG_WARNING, $server->settings['log_level']);
+        $this->assertSame(0, $server->settings['trace_flags']);
     }
 
     public function testVoltProviderRegistersEngineForConfiguredView(): void
@@ -796,5 +1135,145 @@ class AdditionalServiceProvidersTest extends AbstractUnit
                 return [];
             }
         });
+    }
+
+    private function createFakeDialectClass(): string
+    {
+        return get_class(new class extends \Phalcon\Db\Dialect\Mysql {
+        });
+    }
+
+    private function createFakeMetadataAdapterClass(): string
+    {
+        return get_class(new class {
+            /** @var array<string, mixed> */
+            public array $options;
+
+            public function __construct(mixed $factory = null, array $options = [])
+            {
+                $this->options = $options;
+            }
+        });
+    }
+
+    private function createFakeSessionAdapterClass(): string
+    {
+        return get_class(new class implements \SessionHandlerInterface {
+            public function __construct(mixed $factory = null, array $options = [])
+            {
+            }
+
+            public function open(string $path, string $name): bool
+            {
+                return true;
+            }
+
+            public function close(): bool
+            {
+                return true;
+            }
+
+            public function read(string $id): string|false
+            {
+                return '';
+            }
+
+            public function write(string $id, string $data): bool
+            {
+                return true;
+            }
+
+            public function destroy(string $id): bool
+            {
+                return true;
+            }
+
+            public function gc(int $max_lifetime): int|false
+            {
+                return 1;
+            }
+        });
+    }
+
+    private function createFakeRedisSessionAdapterClass(): string
+    {
+        return get_class(new class (null, []) extends SessionRedis {
+            public function __construct($factory = null, array $options = [])
+            {
+            }
+
+            public function open($path, $name): bool
+            {
+                return true;
+            }
+
+            public function close(): bool
+            {
+                return true;
+            }
+
+            public function read($id): string
+            {
+                return '';
+            }
+
+            public function write($id, $data): bool
+            {
+                return true;
+            }
+
+            public function destroy($id): bool
+            {
+                return true;
+            }
+
+            public function gc(int $max_lifetime): int|false
+            {
+                return 1;
+            }
+        });
+    }
+
+    private function installSwooleProviderDoubles(): void
+    {
+        if (!defined('SWOOLE_LOG_WARNING')) {
+            define('SWOOLE_LOG_WARNING', 2);
+        }
+
+        if (!function_exists('PhalconKit\\Provider\\Swoole\\extension_loaded')) {
+            eval(<<<'PHP'
+namespace PhalconKit\Provider\Swoole;
+
+function extension_loaded(string $extension): bool
+{
+    return $extension === 'swoole' || \extension_loaded($extension);
+}
+
+function defined(string $constant): bool
+{
+    return $constant === 'SWOOLE_LOG_WARNING' || \defined($constant);
+}
+PHP);
+        }
+
+        if (!class_exists('Swoole\\WebSocket\\Server')) {
+            eval(<<<'PHP'
+namespace Swoole\WebSocket;
+
+class Server
+{
+    public array $settings = [];
+
+    public function __construct(public string $host, public int $port)
+    {
+    }
+
+    public function set(array $settings): void
+    {
+        $this->settings = $settings;
+    }
+}
+PHP);
+        }
     }
 }

@@ -72,7 +72,7 @@ class ServiceProvider extends AbstractServiceProvider
                 $session->setAdapter($adapterInstance);
                 
                 // ini_set save_handler and save_path for redis
-                if ($adapter instanceof Redis) {
+                if (is_a($adapter, Redis::class, true)) {
                     ini_set('session.save_handler', 'redis');
                     ini_set('session.save_path', $options['host'] . ':' . $options['port'] . '?' . http_build_query($options));
                 }

@@ -72,6 +72,10 @@ class DebugTest extends AbstractUnit
         $this->assertStringStartsWith('<style>', $css);
         $this->assertStringContainsString(':root', $css);
         $this->assertStringContainsString('.error-main', $css);
+        $this->assertStringContainsString('#tabs{width:100%;min-width:0;overflow:hidden}', $css);
+        $this->assertStringContainsString('pre.prettyprint{display:block;inline-size:100%;max-inline-size:100%;', $css);
+        $this->assertStringContainsString('contain:inline-size;', $css);
+        $this->assertStringContainsString('pre.prettyprint .code-line{display:inline-flex;min-width:100%;width:auto;', $css);
         $this->assertStringEndsWith('</style>', $css);
     }
 
@@ -91,7 +95,7 @@ class DebugTest extends AbstractUnit
 
         $this->assertStringContainsString('RuntimeException', $html);
         $this->assertStringContainsString(
-            'https://github.com/phalcon-kit/docs/tree/main/docs/api/classes/PhalconKit/Support/Debug/',
+            'https://github.com/phalcon-kit/docs/tree/main/docs/api/classes/PhalconKit/Support/Debug.md',
             $html
         );
         $this->assertStringContainsString('PhalconKit\\Support\\Debug', $html);

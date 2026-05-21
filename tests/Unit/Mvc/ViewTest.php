@@ -63,4 +63,56 @@ class ViewTest extends AbstractUnit
 
         $this->assertSame('<!--[if IE]>keep<![endif]--><div>ok</div>', $view->getContent(true));
     }
+
+    public function testRenderFallsBackToSluggedTemplateName(): void
+    {
+        $view = $this->createViewWithTemplate('record-status/list-items.phtml', 'Hello <?= $name ?>');
+        $view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+
+        ob_start();
+        try {
+            $result = $view->render('RecordStatus', 'ListItems', [
+                'name' => 'Ada',
+            ]);
+            $output = ob_get_clean();
+        } catch (\Throwable $throwable) {
+            ob_end_clean();
+            throw $throwable;
+        }
+
+        $this->assertNotFalse($result);
+        $this->assertSame('Hello Ada', trim((string)$output));
+    }
+
+    public function testGetRenderFallsBackToSluggedTemplateName(): void
+    {
+        $view = $this->createViewWithTemplate('record-status/list-items.phtml', 'Hello <?= $name ?>');
+
+        $content = $view->getRender('RecordStatus', 'ListItems', [
+            'name' => 'Lovelace',
+        ], static function (View $view): void {
+            $view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+        });
+
+        $this->assertSame('Hello Lovelace', trim($content));
+    }
+
+    private function createViewWithTemplate(string $template, string $content): View
+    {
+        $viewsDir = sys_get_temp_dir() . '/phalconkit-view-' . bin2hex(random_bytes(8)) . '/';
+        $templatePath = $viewsDir . $template;
+        $templateDir = dirname($templatePath);
+
+        if (!is_dir($templateDir)) {
+            mkdir($templateDir, 0777, true);
+        }
+
+        file_put_contents($templatePath, $content);
+
+        $view = new View();
+        $view->setDI($this->di);
+        $view->setViewsDir($viewsDir);
+
+        return $view;
+    }
 }
