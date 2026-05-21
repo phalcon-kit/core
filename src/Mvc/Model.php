@@ -135,8 +135,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
     #[\Override]
     public function __get(string $property): mixed
     {
-        $localized = $this->readLocalizedProperty($property, $found);
-        if ($found) {
+        $localizedFound = false;
+        $localized = $this->readLocalizedProperty($property, $localizedFound);
+        if ($localizedFound) {
             return $localized;
         }
 
@@ -148,8 +149,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
             return $this->getLoadedRelatedAlias($property);
         }
 
-        $declaredRelation = $this->readDeclaredRelationAlias($property, $found);
-        if ($found) {
+        $declaredRelationFound = false;
+        $declaredRelation = $this->readDeclaredRelationAlias($property, $declaredRelationFound);
+        if ($declaredRelationFound) {
             return $declaredRelation;
         }
 
@@ -172,7 +174,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         return true;
     }
 
-    private function readLocalizedProperty(string $property, ?bool &$found = null): mixed
+    private function readLocalizedProperty(string $property, bool &$found): mixed
     {
         $found = false;
         $lang = $this->getCurrentLocale();
@@ -213,7 +215,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         }
     }
 
-    private function readDeclaredRelationAlias(string $property, ?bool &$found = null): mixed
+    private function readDeclaredRelationAlias(string $property, bool &$found): mixed
     {
         $found = false;
         $alias = $this->normalizeRelationAlias($property);
