@@ -38,10 +38,51 @@ class ProfilerTest extends AbstractUnit
     
     public function testProfilerToArray(): void
     {
+        $this->assertSame([], $this->profiler->getProfiles());
+        $this->assertSame(0.0, $this->profiler->getTotalElapsedNanoseconds());
+        $this->assertSame(0.0, $this->profiler->getTotalElapsedSeconds());
+
         $profiles = $this->profiler->toArray();
         $this->assertIsArray($profiles['profiles']);
         $this->assertEquals(0, $profiles['numberTotalStatements']);
         $this->assertEquals(0.0, $profiles['totalElapsedSeconds']);
+    }
+
+    public function testProfilerToArrayWithManualProfile(): void
+    {
+        $this->profiler->startProfile(
+            'SELECT * FROM user WHERE id = :id:',
+            ['id' => 42],
+            ['id' => Column::BIND_PARAM_INT]
+        );
+        $this->profiler->stopProfile();
+
+        $this->assertCount(1, $this->profiler->getProfiles());
+        $this->assertGreaterThanOrEqual(0.0, $this->profiler->getTotalElapsedNanoseconds());
+        $this->assertGreaterThanOrEqual(0.0, $this->profiler->getTotalElapsedSeconds());
+
+        $profiles = $this->profiler->toArray();
+
+        $this->assertCount(1, $profiles['profiles']);
+        $this->assertSame(1, $profiles['numberTotalStatements']);
+        $this->assertGreaterThanOrEqual(0.0, $profiles['totalElapsedSeconds']);
+        $this->assertSame('SELECT * FROM user WHERE id = :id:', $profiles['profiles'][0]['sqlStatement']);
+        $this->assertSame(['id' => 42], $profiles['profiles'][0]['sqlVariables']);
+        $this->assertSame(['id' => Column::BIND_PARAM_INT], $profiles['profiles'][0]['sqlBindTypes']);
+        $this->assertGreaterThan(0.0, $profiles['profiles'][0]['initialTime']);
+        $this->assertGreaterThan(0.0, $profiles['profiles'][0]['finalTime']);
+        $this->assertGreaterThanOrEqual(0.0, $profiles['profiles'][0]['elapsedSeconds']);
+    }
+
+    public function testProfilerDefensiveFallbacksWhenParentStateIsInvalid(): void
+    {
+        $parent = new \ReflectionClass(\Phalcon\Db\Profiler::class);
+        $parent->getProperty('allProfiles')->setValue($this->profiler, null);
+        $parent->getProperty('totalNanoseconds')->setValue($this->profiler, null);
+
+        $this->assertSame([], $this->profiler->getProfiles());
+        $this->assertSame(0.0, $this->profiler->getTotalElapsedNanoseconds());
+        $this->assertSame(0.0, $this->profiler->getTotalElapsedSeconds());
     }
     
     public function testProfilerWithProfiles(): void

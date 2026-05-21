@@ -127,5 +127,23 @@ class ModelTransformerTest extends AbstractUnit
 
         $this->assertInstanceOf(Item::class, $item);
         $this->assertSame($role, $item->getData());
+
+        $plainModel = $this->createStub(ModelInterface::class);
+        $collection = $transformer->exposeCollection($plainModel, 'RoleList', $transformer);
+        $this->assertSame([], $collection->getData());
+        $this->assertNull($transformer->exposeItem($plainModel, 'CreatedByEntity', $transformer));
+
+        $nonIterableCollection = new ProtectedRelationshipUser();
+        $nonIterableCollection->setLoadedRelatedAlias('RoleList', $role);
+        $collection = $transformer->exposeCollection($nonIterableCollection, 'RoleList', $transformer);
+        $this->assertSame([], $collection->getData());
+
+        $iterableItem = new ProtectedRelationshipUser();
+        $iterableItem->setLoadedRelatedAlias('CreatedByEntity', [$role]);
+        $this->assertNull($transformer->exposeItem($iterableItem, 'CreatedByEntity', $transformer));
+
+        $nullItem = new ProtectedRelationshipUser();
+        $nullItem->setLoadedRelatedAlias('CreatedByEntity', null);
+        $this->assertNull($transformer->exposeItem($nullItem, 'CreatedByEntity', $transformer));
     }
 }

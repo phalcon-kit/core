@@ -324,9 +324,11 @@ DOC;
      */
     public function getArgs(): array
     {
+        // @codeCoverageIgnoreStart
         if (!Php::isCli()) {
             return [];
         }
+        // @codeCoverageIgnoreEnd
         
         $args = [];
         $argv = array_slice($_SERVER['argv'] ?? [], 1);

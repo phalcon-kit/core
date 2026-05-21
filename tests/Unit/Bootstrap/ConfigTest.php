@@ -140,6 +140,27 @@ class ConfigTest extends AbstractUnit
         }
     }
 
+    public function testGetDateTimeAppliesModifierFromProvidedDate(): void
+    {
+        $config = new Config();
+        $date = new \DateTimeImmutable('2026-05-21 10:00:00');
+
+        $this->assertSame(
+            '2026-05-22 10:00:00',
+            $config->getDateTime('+1 day', $date)->format('Y-m-d H:i:s')
+        );
+    }
+
+    public function testPdoMysqlAttributeFallsBackToLegacyPdoConstant(): void
+    {
+        $method = new \ReflectionMethod(Config::class, 'pdoMysqlAttribute');
+
+        $this->assertSame(
+            \PDO::ATTR_ERRMODE,
+            $method->invoke(null, 'MISSING_ATTRIBUTE', 'ATTR_ERRMODE')
+        );
+    }
+
     public function testGetModelClass(): void
     {
         $config = new \PhalconKit\Bootstrap\Config();

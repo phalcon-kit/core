@@ -41,11 +41,7 @@ class Profiler extends \Phalcon\Db\Profiler
     #[\Override]
     public function getTotalElapsedSeconds(): float
     {
-        try {
-            return parent::getTotalElapsedSeconds();
-        } catch (\TypeError) {
-            return 0.0;
-        }
+        return parent::getTotalElapsedSeconds();
     }
 
     public function toArray(): array
