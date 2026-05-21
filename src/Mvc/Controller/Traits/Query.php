@@ -207,13 +207,11 @@ trait Query
             return [];
         }
         
-//        return $this->compileFind($this->prepareCollectionToCompile($find));
-
         $build = $this->prepareCollectionToCompile($find);
 
         foreach (['distinct', 'group', 'order'] as $keyToJoin) {
             if (isset($build[$keyToJoin]) && is_array($build[$keyToJoin])) {
-                $build[$keyToJoin] = trim(implode(', ', Helper::flatten($build[$keyToJoin])));
+                $build[$keyToJoin] = $this->prepareFindListToString($build[$keyToJoin]);
                 if ($build[$keyToJoin] === '') {
                     unset($build[$keyToJoin]);
                 }
@@ -244,6 +242,29 @@ trait Query
 //        }
 
         return $this->compileFind($build);
+    }
+
+    /**
+     * Converts find list options to their PHQL string form.
+     *
+     * Collection-backed query options can be represented either as plain values
+     * or as enabled field maps, for example ['id' => true]. Values remain the
+     * default source, but true map entries use their string key as the selected
+     * field instead of compiling to "1".
+     */
+    protected function prepareFindListToString(array $items): string
+    {
+        $list = [];
+        foreach ($items as $key => $value) {
+            if ($value === true && is_string($key)) {
+                $list[] = $key;
+                continue;
+            }
+
+            $list[] = $value;
+        }
+
+        return trim(implode(', ', Helper::flatten($list)));
     }
     
     /**
