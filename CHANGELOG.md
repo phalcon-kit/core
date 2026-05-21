@@ -142,6 +142,12 @@ tag has been cut yet.
 - Added low-level coverage for bootstrap provider/module error paths, CLI
   argument parsing, CLI/WebSocket constructors, MVC application/view wrappers,
   and CLI exception/router serialization helpers.
+- Added service-provider unit coverage for core DI registrations, common
+  framework services, configured logger/filter/security services, and locale
+  session/http priority edge cases.
+- Added a fallback path for the PHPUnit coverage wrapper so
+  `composer test:coverage` works with Xdebug even when the optional
+  `phpunit-coverage` helper is not installed.
 
 ### Changed
 

@@ -18,11 +18,20 @@ use PhalconKit\Locale;
 class LocaleTest extends AbstractUnit
 {
     private ?Locale $locale;
+    private array $serverStorage = [];
     
     protected function setUp(): void
     {
         parent::setUp();
+        $this->serverStorage = $_SERVER;
         $this->locale = $this->di->get('locale');
+    }
+
+    protected function tearDown(): void
+    {
+        $_SERVER = $this->serverStorage;
+
+        parent::tearDown();
     }
     
     public function testLocaleInstanceFromDi(): void
@@ -192,6 +201,50 @@ class LocaleTest extends AbstractUnit
         $this->locale->saveIntoSession($locale);
         $this->assertEquals($locale, $this->locale->getFromSession());
     }
+
+    public function testSaveIntoSessionDoesNotPersistOutsideSessionModeUnlessForced(): void
+    {
+        $this->locale->sessionKey = 'test-locale-no-save';
+        $this->locale->setAllowed(['en', 'fr']);
+        $this->locale->setMode(Locale::MODE_DEFAULT);
+
+        $this->locale->saveIntoSession('fr');
+
+        $this->assertNull($this->locale->getFromSession());
+
+        $this->locale->saveIntoSession('fr', true);
+
+        $this->assertSame('fr', $this->locale->getFromSession());
+    }
+
+    public function testPrepareSessionPrefersRouteLocaleOverSessionAndHttp(): void
+    {
+        $locale = new class extends Locale {
+            public function getFromRoute(?string $default = null): ?string
+            {
+                return $this->lookup('es');
+            }
+
+            public function getFromSession(?string $default = null): ?string
+            {
+                return $this->lookup('fr');
+            }
+
+            public function getFromHttp(?string $default = null): ?string
+            {
+                return $this->lookup('en');
+            }
+
+            public function saveIntoSession(?string $locale = null, ?bool $force = false): void
+            {
+            }
+        };
+        $locale->setAllowed(['en', 'fr', 'es']);
+        $locale->setDefault('en');
+        $locale->setMode(Locale::MODE_SESSION);
+
+        $this->assertSame('es', $locale->prepare());
+    }
     
     public function testGetFromHttp(): void
     {
@@ -204,6 +257,14 @@ class LocaleTest extends AbstractUnit
         // @todo fix this
 //        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = '';
 //        $this->assertEquals('fr', $this->locale->getFromHttp('fr'));
+    }
+
+    public function testGetFromHttpUsesAcceptedHeaderWhenBestLanguageLookupFails(): void
+    {
+        $this->locale->setAllowed(['en', 'fr']);
+        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'de_DE';
+
+        $this->assertSame('de_DE', $this->locale->getFromHttp('fr'));
     }
     
     public function testLookup(): void
