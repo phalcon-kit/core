@@ -19,6 +19,8 @@ use Phalcon\Mvc\RouterInterface as MvcRouterInterface;
 use PhalconKit\Bootstrap;
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Exception;
+use PhalconKit\Cli\Console;
 use PhalconKit\Mvc\Router as MvcRouter;
 use PhalconKit\Cli\Router as CliRouter;
 
@@ -113,6 +115,7 @@ class BootstrapTest extends AbstractUnit
     
     public function testBootstrapArgs(): void
     {
+        $server = $_SERVER;
         $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
         
         $_SERVER['argv'] = [
@@ -137,5 +140,87 @@ class BootstrapTest extends AbstractUnit
         $this->assertEquals('module', $args['module']);
         $this->assertEquals('task', $args['task']);
         $this->assertEquals('action', $args['action']);
+
+        $_SERVER = $server;
+    }
+
+    public function testBootstrapArgsParsesOptionsBeforeCommandParts(): void
+    {
+        $server = $_SERVER;
+        $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
+
+        $_SERVER['argv'] = [
+            './phalcon-kit',
+            '--debug',
+            '--format=json',
+            'api',
+            'foo',
+            'bar',
+            'one',
+            'two',
+        ];
+
+        $args = $bootstrap->getArgs();
+
+        $this->assertSame('api', $args['module']);
+        $this->assertSame('foo', $args['task']);
+        $this->assertSame('bar', $args['action']);
+        $this->assertTrue($args['debug']);
+        $this->assertSame('json', $args['format']);
+        $this->assertSame(['one', 'two'], $args['params']);
+
+        $_SERVER = $server;
+    }
+
+    public function testRegisterServicesRejectsNonStringProvider(): void
+    {
+        $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Service Provider `bad` class name must be a string.');
+
+        $bootstrap->registerServices([
+            'bad' => 123,
+        ]);
+    }
+
+    public function testRegisterServicesRejectsMissingProviderClass(): void
+    {
+        $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Service Provider `bad` class `Missing\\Provider` not found.');
+
+        $bootstrap->registerServices([
+            'bad' => 'Missing\\Provider',
+        ]);
+    }
+
+    public function testRegisterServicesRejectsClassThatIsNotProvider(): void
+    {
+        $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Service Provider `stdClass` must implement ServiceProviderInterface.');
+
+        $bootstrap->registerServices([
+            'bad' => \stdClass::class,
+        ]);
+    }
+
+    public function testRegisterModulesAppliesProvidedModulesAndDefaultModule(): void
+    {
+        $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
+        $console = new Console($bootstrap->getDI());
+        $modules = [
+            'foo' => [
+                'className' => \stdClass::class,
+            ],
+        ];
+
+        $bootstrap->registerModules($console, $modules, 'foo');
+
+        $this->assertSame($modules, $console->getModules());
+        $this->assertSame('foo', $console->getDefaultModule());
     }
 }

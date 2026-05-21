@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Cli;
 
+use Phalcon\Di\FactoryDefault\Cli;
 use PhalconKit\Bootstrap;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -32,5 +33,13 @@ class ConsoleTest extends AbstractUnit
     {
         $this->assertInstanceOf(\Phalcon\Cli\Console::class, $this->console);
         $this->assertInstanceOf(\PhalconKit\Cli\Console::class, $this->console);
+    }
+
+    public function testConstructorAcceptsContainer(): void
+    {
+        $di = new Cli();
+        $console = new \PhalconKit\Cli\Console($di);
+
+        $this->assertSame($di, $console->getDI());
     }
 }

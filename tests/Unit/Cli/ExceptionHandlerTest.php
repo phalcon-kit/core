@@ -47,4 +47,28 @@ class ExceptionHandlerTest extends AbstractUnit
         // Clean up
         fclose($memoryStream);
     }
+
+    public function testExceptionHandlerWritesStringMessages(): void
+    {
+        $memoryStream = fopen('php://memory', 'r+');
+
+        new ExceptionHandler('Plain message', $memoryStream)->write();
+
+        rewind($memoryStream);
+        $this->assertSame('Plain message' . PHP_EOL, stream_get_contents($memoryStream));
+
+        fclose($memoryStream);
+    }
+
+    public function testExceptionHandlerWritesThrowables(): void
+    {
+        $memoryStream = fopen('php://memory', 'r+');
+
+        new ExceptionHandler(new \RuntimeException('Runtime message'), $memoryStream)->write();
+
+        rewind($memoryStream);
+        $this->assertStringContainsString('Runtime message', stream_get_contents($memoryStream));
+
+        fclose($memoryStream);
+    }
 }

@@ -61,4 +61,21 @@ class RouterTest extends AbstractUnit
         $this->assertEquals('not-found', $this->router->getActionName());
         $this->assertEquals(['test' => 'test'], $this->router->getParams());
     }
+
+    public function testToArrayReflectsHandledRouteParts(): void
+    {
+        $this->router->handle([
+            'module' => 'cli',
+            'task' => 'cache',
+            'action' => 'wipe',
+            'params' => ['all' => true],
+        ]);
+
+        $routerToArray = $this->router->toArray();
+
+        $this->assertSame('cli', $routerToArray['module']);
+        $this->assertSame('cache', $routerToArray['task']);
+        $this->assertSame('wipe', $routerToArray['action']);
+        $this->assertSame(['all' => true], $routerToArray['params']);
+    }
 }

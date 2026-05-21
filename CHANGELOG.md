@@ -139,6 +139,9 @@ tag has been cut yet.
 - Added framework-glue coverage for HTTP responses, MVC module routes, MVC
   module service wiring, collection policy edge cases, config-backed model
   maps, and common provider services.
+- Added low-level coverage for bootstrap provider/module error paths, CLI
+  argument parsing, CLI/WebSocket constructors, MVC application/view wrappers,
+  and CLI exception/router serialization helpers.
 
 ### Changed
 
