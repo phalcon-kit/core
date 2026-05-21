@@ -80,6 +80,9 @@ tag has been cut yet.
   `zemit-cms/core` migration guide.
 - Added more targeted Composer package metadata for REST APIs, scaffolding,
   eager loading, identity, permissions, CLI, and WebSocket use cases.
+- Linked the public README and guide index more explicitly to the bundled AI
+  skill documentation and added AI/agent guidance to the documentation issue
+  template.
 
 ### Changed
 
@@ -140,6 +143,8 @@ tag has been cut yet.
   different Psalm results.
 - Fixed stale GitHub Code Scanning results by restoring Psalm SARIF upload from
   the PHP security workflow with a stable category and error-only report output.
+- Fixed Code Scanning triage guardrails so empty SARIF cleanup refuses
+  non-matching tool/category pairs instead of creating unrelated empty analyses.
 - Fixed noisy OpenSSF Scorecard Code Scanning output by keeping Scorecard
   published as JSON/API results instead of repository alerts.
 - Fixed Composer audit handling so unlocked or lock-file-less installs do not

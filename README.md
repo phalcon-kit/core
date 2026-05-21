@@ -174,6 +174,7 @@ IMAP, sockets, SimpleXML, and GD.
 - Add roles and row-level access: [Identity And Permissions](guides/identity-and-permissions.md)
 - Deploy behind PHP-FPM or WebSocket proxying: [Web Server And WebSocket](guides/web-server-and-websocket.md)
 - Run checks before release: [Quality And Maintenance](guides/quality-and-maintenance.md)
+- Use the bundled AI skills: [AI-Assisted Development](AI.md)
 - Migrate from the old package name: [Migration From zemit-cms/core](guides/migration-from-zemit.md)
 
 The full guide index is in [guides/README.md](guides/README.md).
@@ -234,7 +235,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and
 
 Phalcon Kit includes optional agent instructions under `resources/skills/`.
 They help AI coding agents follow the same PhalconKit conventions documented in
-the human-facing guides. They do not add runtime AI behavior or change PHP APIs.
+the human-facing guides: database-first scaffolding, REST resources, eager
+loading, transformers, identity, permissions, CLI tasks, WebSocket workers, and
+provider/config patterns. They do not add runtime AI behavior or change PHP
+APIs.
+
+See [AI-Assisted Development](AI.md) for the bundled skills, example prompts,
+safety defaults, and maintainer rules for keeping human docs and agent
+references synchronized.
 
 ## Package History
 

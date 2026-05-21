@@ -54,6 +54,12 @@ docs for native framework behavior and these guides for PhalconKit conventions.
 
 ## Agent References
 
+Read [AI-Assisted Development](../AI.md) for the bundled skill paths, usage
+examples, safety defaults, and coverage notes.
+
 Agent-specific instructions live under `resources/skills/`. Human readers
 should start here in `guides/`; agents can use the skills for stricter coding
-rules and deeper implementation conventions.
+rules and deeper implementation conventions. The human docs and skill
+references should stay aligned on the same public concepts: database-first
+scaffolding, REST controllers, eager loading, transformers, identity,
+permissions, CLI/WebSocket workflows, providers, and generated-file boundaries.

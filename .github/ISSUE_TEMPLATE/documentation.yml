@@ -16,6 +16,7 @@ body:
         - Database scaffolding and models
         - Identity and permissions
         - Deployment, CLI, or WebSocket guides
+        - AI skills and agent guidance
         - API reference
         - Other
     validations:
