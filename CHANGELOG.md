@@ -233,6 +233,12 @@ tag has been cut yet.
   non-TestCase warnings by `composer phpunit`.
 - Fixed eager loading for non-through relations so intermediate relationship
   metadata is only read for through relations.
+- Fixed Redis provider setup so failed connection, auth, or database selection
+  responses cannot produce an unusable shared Redis service.
+- Fixed nullable model blame fields so generated models and optional
+  validations treat SQL null values consistently across create/update saves.
+- Fixed DB-backed PHPUnit tests so query logger/profiler checks avoid table
+  scans and locked model tables are reported as skips instead of hanging.
 - Fixed multibyte string precision formatting in `mb_vsprintf()`.
 - Fixed logger formatter `date`/`dateFormat` handling during logger loading.
 - Standardized logger configuration on `dateFormat` and `LOGGER_*_DATE_FORMAT`

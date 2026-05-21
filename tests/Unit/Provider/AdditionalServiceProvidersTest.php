@@ -835,7 +835,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
                 'retryInterval' => 0,
                 'readTimeout' => 0.01,
                 'context' => null,
-                'database' => 2,
+                'database' => -1,
                 'options' => [],
             ],
         ]);

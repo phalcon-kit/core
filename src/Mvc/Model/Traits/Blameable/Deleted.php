@@ -62,21 +62,39 @@ trait Deleted
                     $id = $model->readAttribute($field);
                     return $model->isDeleted($deletedField, $deletedValue)
                         ? $this->getCurrentUserIdCallback()()
-                        : ($id === null || $id === '' ? null : (int)$id);
+                        : $this->normalizeNullableBlameId($id);
                 }),
                 $fieldAs => $this->hasChangedCallback(function (ModelInterface $model, string $field) use ($deletedField, $deletedValue): ?int {
                     $id = $model->readAttribute($field);
                     return $model->isDeleted($deletedField, $deletedValue)
                         ? $this->getCurrentUserIdCallback(true)()
-                        : ($id === null || $id === '' ? null : (int)$id);
+                        : $this->normalizeNullableBlameId($id);
                 }),
                 $fieldAt => $this->hasChangedCallback(function (ModelInterface $model, string $field) use ($deletedField, $deletedValue): ?string {
+                    $value = $model->readAttribute($field);
                     return $model->isDeleted($deletedField, $deletedValue)
                         ? $this->getDateCallback(Column::DATETIME_FORMAT)()
-                        : $model->readAttribute($field);
+                        : $this->normalizeNullableBlameDate($value);
                 }),
             ],
         ]));
+    }
+
+    private function normalizeNullableBlameId(mixed $id): ?int
+    {
+        return $this->isNullBlameValue($id) ? null : (int)$id;
+    }
+
+    private function normalizeNullableBlameDate(mixed $date): ?string
+    {
+        return $this->isNullBlameValue($date) ? null : (string)$date;
+    }
+
+    private function isNullBlameValue(mixed $value): bool
+    {
+        return $value === null ||
+            $value === '' ||
+            (is_string($value) && strcasecmp(trim($value), 'NULL') === 0);
     }
     
     /**

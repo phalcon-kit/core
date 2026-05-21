@@ -626,6 +626,15 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertNull($model->deletedBy);
         $this->assertNull($model->deletedAs);
         $this->assertSame('kept', $model->deletedAt);
+
+        $model->deleted = 0;
+        $model->deletedBy = 'NULL';
+        $model->deletedAs = ' NULL ';
+        $model->deletedAt = 'NULL';
+        $model->getDeletedBehavior()->notify('beforeValidationOnUpdate', $model);
+        $this->assertNull($model->deletedBy);
+        $this->assertNull($model->deletedAs);
+        $this->assertNull($model->deletedAt);
     }
 
     public function testIdentityTraitAccessors(): void
@@ -1028,6 +1037,12 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame($skipped, $model->addDateValidation($skipped, 'date', true));
         $this->assertCount(0, $skipped->getValidators());
 
+        $model->date = 'NULL';
+        $this->assertTrue($model->publicShouldSkipOptionalValidation('date', true));
+        $skippedSqlNull = new Validation();
+        $this->assertSame($skippedSqlNull, $model->addDateValidation($skippedSqlNull, 'date', true));
+        $this->assertCount(0, $skippedSqlNull->getValidators());
+
         $model->id = null;
         $unsignedInt = new Validation();
         $this->assertSame($unsignedInt, $model->addUnsignedIntValidation($unsignedInt, 'id', true));
@@ -1043,10 +1058,20 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame($datetime, $model->addDateTimeValidation($datetime, 'datetime', true));
         $this->assertCount(0, $datetime->getValidators());
 
+        $model->datetime = 'NULL';
+        $datetimeSqlNull = new Validation();
+        $this->assertSame($datetimeSqlNull, $model->addDateTimeValidation($datetimeSqlNull, 'datetime', true));
+        $this->assertCount(0, $datetimeSqlNull->getValidators());
+
         $model->createdBy = null;
         $created = new Validation();
         $this->assertSame($created, $model->addCreatedValidation($created, 'createdBy', 'createdAt', true));
         $this->assertCount(0, $created->getValidators());
+
+        $model->createdBy = 'NULL';
+        $createdSqlNull = new Validation();
+        $this->assertSame($createdSqlNull, $model->addCreatedValidation($createdSqlNull, 'createdBy', 'createdAt', true));
+        $this->assertCount(0, $createdSqlNull->getValidators());
 
         $model->position = new RawValue('position + 1');
         $this->assertFalse($model->publicShouldSkipOptionalValidation('position', true));

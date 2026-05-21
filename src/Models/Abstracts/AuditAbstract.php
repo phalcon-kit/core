@@ -120,7 +120,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = 0;
+    public mixed $createdBy = null;
         
     /**
      * Column: created_as

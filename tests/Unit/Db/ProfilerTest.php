@@ -87,9 +87,9 @@ class ProfilerTest extends AbstractUnit
     
     public function testProfilerWithProfiles(): void
     {
-        $query0 = 'SELECT * FROM user';
-        $query1 = 'SELECT count(*) FROM user';
-        $query2 = 'SELECT * FROM user where id = :id';
+        $query0 = 'SELECT 1';
+        $query1 = 'SELECT 2';
+        $query2 = 'SELECT :id AS id';
         $params = ['id' => 1];
         $types = ['id' => Column::BIND_PARAM_INT];
         

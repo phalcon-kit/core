@@ -38,7 +38,7 @@ class LoggerTest extends AbstractUnit
         // set database logger to stream
         $loggerConfig = $this->getConfig()->pathToArray('loggers.database');
         $filePath = $loggerConfig['path'] . $loggerConfig['filename'];
-        $query = 'SELECT * from user';
+        $query = 'SELECT 1';
         
         // disable logger completely
         $this->getConfig()->set('logger.enable', false);

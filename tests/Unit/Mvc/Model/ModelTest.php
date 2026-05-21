@@ -25,17 +25,41 @@ use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\ProtectedRelationshipUser;
 
 class ModelTest extends AbstractUnit
 {
+    private static ?string $databaseLockSkipMessage = null;
+
     public function prepareTests(): void
     {
+        if (self::$databaseLockSkipMessage !== null) {
+            $this->markTestSkipped(self::$databaseLockSkipMessage);
+        }
+
         $db = $this->getDb();
-        $db->execute('SET FOREIGN_KEY_CHECKS=0;');
-        $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new User()->getSource()));
-        $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new UserRole()->getSource()));
-        $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new Role()->getSource()));
-        $db->execute('SET FOREIGN_KEY_CHECKS=1;');
+        try {
+            $db->execute('SET SESSION lock_wait_timeout=1;');
+            $db->execute('SET SESSION innodb_lock_wait_timeout=1;');
+            $db->execute('SET FOREIGN_KEY_CHECKS=0;');
+            $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new AuditDetail()->getSource()));
+            $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new Audit()->getSource()));
+            $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new User()->getSource()));
+            $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new UserRole()->getSource()));
+            $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new Role()->getSource()));
+        }
+        catch (\Throwable $e) {
+            if (str_contains($e->getMessage(), 'Lock wait timeout')) {
+                self::$databaseLockSkipMessage = 'Database tables are locked: ' . $e->getMessage();
+                $this->markTestSkipped(self::$databaseLockSkipMessage);
+            }
+
+            throw $e;
+        }
+        finally {
+            $db->execute('SET FOREIGN_KEY_CHECKS=1;');
+        }
+
         $this->addModelsPermissions([Audit::class => ['*']]);
         $this->addModelsPermissions([AuditDetail::class => ['*']]);
         $this->addModelsPermissions([User::class => ['*']]);
+        $this->addModelsPermissions([ProtectedRelationshipUser::class => ['*']]);
         $this->addModelsPermissions([UserRole::class => ['*']]);
         $this->addModelsPermissions([Role::class => ['*']]);
         $this->assertEquals('user', new User()->getSource());

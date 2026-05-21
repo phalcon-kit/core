@@ -53,7 +53,14 @@ trait Validate
             $value = (string)$value;
         }
 
-        return $value === null || $value === '';
+        return $this->isOptionalEmptyValue($value);
+    }
+
+    protected function isOptionalEmptyValue(mixed $value): bool
+    {
+        return $value === null ||
+            $value === '' ||
+            (is_string($value) && strcasecmp(trim($value), 'NULL') === 0);
     }
     
     /**

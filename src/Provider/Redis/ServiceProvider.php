@@ -43,7 +43,7 @@ class ServiceProvider extends AbstractServiceProvider
 
             $redis = new Redis($redisOptions);
 
-            $redis->connect(
+            if (!$redis->connect(
                 $redisConfig['host'],
                 $redisConfig['port'],
                 $redisConfig['timeout'],
@@ -51,14 +51,16 @@ class ServiceProvider extends AbstractServiceProvider
                 $redisConfig['retryInterval'],
                 $redisConfig['readTimeout'],
                 $redisConfig['context']
-            );
-
-            if (!empty($redisConfig['auth'])) {
-                $redis->auth($redisConfig['auth']);
+            )) {
+                throw new \RedisException('Redis connection failed.');
             }
 
-            if (isset($redisConfig['database'])) {
-                $redis->select((int)$redisConfig['database']);
+            if (!empty($redisConfig['auth']) && !$redis->auth($redisConfig['auth'])) {
+                throw new \RedisException('Redis authentication failed.');
+            }
+
+            if (isset($redisConfig['database']) && !$redis->select((int)$redisConfig['database'])) {
+                throw new \RedisException('Redis database selection failed.');
             }
 
             return $redis;

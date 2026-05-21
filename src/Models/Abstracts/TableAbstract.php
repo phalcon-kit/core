@@ -135,7 +135,7 @@ abstract class TableAbstract extends AbstractModel implements TableAbstractInter
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = 0;
+    public mixed $createdBy = null;
         
     /**
      * Column: updated_at
@@ -149,7 +149,7 @@ abstract class TableAbstract extends AbstractModel implements TableAbstractInter
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $updatedBy = 0;
+    public mixed $updatedBy = null;
         
     /**
      * Column: deleted_at
@@ -163,7 +163,7 @@ abstract class TableAbstract extends AbstractModel implements TableAbstractInter
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $deletedBy = 0;
+    public mixed $deletedBy = null;
     
     /**
      * Returns the value of the field "id"

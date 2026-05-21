@@ -90,7 +90,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = 0;
+    public mixed $createdBy = null;
     
     /**
      * Returns the value of the field "id"
