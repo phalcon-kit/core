@@ -75,6 +75,9 @@ tag has been cut yet.
   advanced filter examples to the public guides.
 - Reframed the public README and guides around user tasks, faster Phalcon REST
   API development, and schema-to-resource how-to workflows.
+- Added a first REST resource tutorial with request/response examples, a legacy
+  resource-walkthrough redirect, README FAQ, docs badge, and
+  `zemit-cms/core` migration guide.
 
 ### Changed
 
@@ -174,6 +177,8 @@ tag has been cut yet.
   8.5 security workflow without publishing informational Psalm notes as alerts.
 - Kept Scorecard and zizmor out of GitHub Code Scanning so the Security tab
   stays focused on actionable code-analysis alerts.
+- Configured zizmor to require action refs without requiring every GitHub Action
+  to be pinned to a commit hash.
 - Added Dependabot cooldowns and replaced the Redis CI service `latest` tag
   with an explicit version tag.
 - Tightened public repository hygiene around ignored AI/tooling files and

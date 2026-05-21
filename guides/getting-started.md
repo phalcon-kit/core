@@ -2,11 +2,12 @@
 
 This guide gets you from install to a runnable PhalconKit application. If your
 main goal is a REST API, read this first and then continue with the
-[Resource Walkthrough](resource-walkthrough.md).
+[Build Your First REST Resource](first-rest-resource.md).
 
 ## 1. Create Or Install
 
-For a new application:
+For a new application, start from the
+[`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
 
 ```shell
 composer create-project phalcon-kit/app my-api
@@ -98,7 +99,7 @@ The fastest path is:
 4. Add a model-backed API controller.
 5. Configure permissions.
 
-The full example is in [Resource Walkthrough](resource-walkthrough.md).
+The full example is in [Build Your First REST Resource](first-rest-resource.md).
 
 ## Useful Entrypoints
 
@@ -142,7 +143,8 @@ echo (new Bootstrap('ws'))->run();
 
 ## Next Steps
 
-- [Resource Walkthrough](resource-walkthrough.md): build a complete resource.
+- [Build Your First REST Resource](first-rest-resource.md): build a complete
+  resource.
 - [Configuration](configuration.md): configure modules, providers, aliases, and
   permissions.
 - [Database And Scaffolding](database-scaffolding.md): generate model layers.

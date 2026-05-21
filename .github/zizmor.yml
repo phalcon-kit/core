@@ -1,0 +1,7 @@
+# This repo uses version-tagged GitHub Actions plus Dependabot updates instead
+# of hash-pinning every action reference.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "*": ref-pin

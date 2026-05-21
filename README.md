@@ -5,6 +5,7 @@
 ![PHP](https://img.shields.io/packagist/dependency-v/phalcon-kit/core/php)
 ![Downloads](https://img.shields.io/packagist/dt/phalcon-kit/core)
 [![Legacy Installs](https://img.shields.io/packagist/dt/zemit-cms/core?label=legacy%20installs)](https://packagist.org/packages/zemit-cms/core)
+[![Docs](https://img.shields.io/badge/docs-guides-blue)](guides/README.md)
 ![License](https://img.shields.io/packagist/l/phalcon-kit/core)
 
 Build Phalcon applications faster, especially REST APIs backed by a real
@@ -22,7 +23,8 @@ behavior.
 
 ## Quick Start
 
-Start a new application:
+Start a new application from the
+[`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
 
 ```shell
 composer create-project phalcon-kit/app my-api
@@ -115,8 +117,8 @@ That controller participates in the standard REST flow: list/detail lookup,
 save/create/update, delete/restore, filter/search/order/limit handling, relation
 assignment, exposers or transformers, eager loading, and permission conditions.
 
-See the [Resource Walkthrough](guides/resource-walkthrough.md) for the complete
-schema-to-controller example.
+See [Build Your First REST Resource](guides/first-rest-resource.md) for the
+complete schema-to-controller example with request and response payloads.
 
 ## What You Write
 
@@ -163,7 +165,7 @@ IMAP, sockets, SimpleXML, and GD.
 
 ## Learn By Task
 
-- Build your first resource: [Resource Walkthrough](guides/resource-walkthrough.md)
+- Build your first resource: [Build Your First REST Resource](guides/first-rest-resource.md)
 - Start a project: [Getting Started](guides/getting-started.md)
 - Configure modules and providers: [Configuration](guides/configuration.md)
 - Generate models from a database: [Database And Scaffolding](guides/database-scaffolding.md)
@@ -172,8 +174,48 @@ IMAP, sockets, SimpleXML, and GD.
 - Add roles and row-level access: [Identity And Permissions](guides/identity-and-permissions.md)
 - Deploy behind PHP-FPM or WebSocket proxying: [Web Server And WebSocket](guides/web-server-and-websocket.md)
 - Run checks before release: [Quality And Maintenance](guides/quality-and-maintenance.md)
+- Migrate from the old package name: [Migration From zemit-cms/core](guides/migration-from-zemit.md)
 
 The full guide index is in [guides/README.md](guides/README.md).
+
+## FAQ
+
+### Is Phalcon Kit a replacement for Phalcon?
+
+No. Phalcon Kit extends Phalcon. You still use Phalcon models, controllers,
+services, DI, routing, validation, and events. Phalcon Kit adds application
+structure, scaffolding, REST conventions, identity, permissions, and reusable
+helpers around them.
+
+### Do I need to know Phalcon?
+
+Yes, at least the basics. Phalcon Kit is most useful when you want to build with
+Phalcon but avoid repeatedly writing the same model/API/permission plumbing.
+
+### Does it generate controllers?
+
+The main supported scaffolding path is model generation from the database:
+abstracts, interfaces, relationships, validations, enum classes, and tests.
+REST controllers are usually small app-owned classes because save/filter/expose
+policy is business-specific.
+
+### Should I use exposers or transformers?
+
+Use exposers for simple CRUD output. Use transformers when public clients need a
+stable response shape, conditional includes, renamed fields, or better control
+over nested resources.
+
+### Can I use Nginx instead of Apache?
+
+Yes. Phalcon Kit needs a web server or proxy that serves `public/` and forwards
+PHP requests to PHP-FPM. Nginx, Apache, Caddy, containers, and platform proxies
+are all valid.
+
+### What happened to zemit-cms/core?
+
+`zemit-cms/core` is the historical package name. New projects should install
+`phalcon-kit/core`. Existing projects can stay pinned until they are ready to
+test the package-name migration.
 
 ## For Contributors
 

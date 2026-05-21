@@ -5,8 +5,8 @@ with Phalcon Kit. Start with the task you are trying to complete.
 
 ## I Want To Build A REST API
 
-1. [Resource Walkthrough](resource-walkthrough.md): build a resource from schema
-   to controller and permissions.
+1. [Build Your First REST Resource](first-rest-resource.md): build a resource
+   from schema to controller, permissions, and request/response examples.
 2. [REST APIs](rest-api.md): learn the REST controller policy methods.
 3. [Models And Eager Loading](models-and-eager-loading.md): load relation graphs
    without lazy-loading loops.
@@ -27,8 +27,8 @@ with Phalcon Kit. Start with the task you are trying to complete.
    scaffold generated model layers.
 2. [Models And Eager Loading](models-and-eager-loading.md): add concrete model
    behavior and relationship loading.
-3. [Resource Walkthrough](resource-walkthrough.md): connect generated models to
-   a REST controller.
+3. [Build Your First REST Resource](first-rest-resource.md): connect generated
+   models to a REST controller.
 
 ## I Want To Deploy Or Maintain The Package
 
@@ -37,6 +37,12 @@ with Phalcon Kit. Start with the task you are trying to complete.
 2. [Quality And Maintenance](quality-and-maintenance.md): local QA commands and
    CI expectations.
 3. [Release Process](release.md): release checklist and package-history notes.
+
+## I Am Using zemit-cms/core
+
+Read [Migration From zemit-cms/core](migration-from-zemit.md) before changing
+package constraints. The short version: new projects use `phalcon-kit/core`;
+older projects should stay pinned until the migration can be tested.
 
 ## Official Phalcon Docs
 

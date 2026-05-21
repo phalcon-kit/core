@@ -137,6 +137,49 @@ nested save payload:
 The controller decides which nested fields are accepted. The model layer handles
 relationship assignment, validation messages, and save behavior.
 
+## Common Request Patterns
+
+Filter active projects assigned to a user, search text fields, sort newest
+first, and limit the page:
+
+```http
+GET /api/project/find-with?filter[status]=active&filter[UserNode.userId]=10&search=review&order[id]=desc&limit=20&offset=0
+```
+
+Create a resource with a nested relation:
+
+```http
+POST /api/project/create
+Content-Type: application/json
+
+{
+  "label": "Systematic Review 2026",
+  "status": "active",
+  "usernode": [
+    {
+      "userId": 10,
+      "type": "leader"
+    }
+  ]
+}
+```
+
+Patch an existing resource with the same save policy:
+
+```http
+POST /api/project/update
+Content-Type: application/json
+
+{
+  "id": 42,
+  "status": "archived"
+}
+```
+
+Those requests all flow through the controller policy: unknown save fields,
+unknown filters, disallowed joins, and unauthorized rows are rejected or ignored
+according to the app's REST configuration.
+
 ## Filter On Related Data
 
 Use joins when filters or ordering depend on related tables:

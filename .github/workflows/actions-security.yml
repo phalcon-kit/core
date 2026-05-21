@@ -28,3 +28,4 @@ jobs:
         with:
           advanced-security: false
           annotations: true
+          config: .github/zizmor.yml
