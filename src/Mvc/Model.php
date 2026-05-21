@@ -206,7 +206,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         try {
             return (bool)$this
                 ->getModelsManager()
-                ->getRelationByAlias(get_class($this), mb_strtolower($property));
+                ->getRelationByAlias(get_class($this), $this->normalizeRelationAlias($property));
         }
         catch (\Throwable) {
             return false;
@@ -216,7 +216,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
     private function readDeclaredRelationAlias(string $property, ?bool &$found = null): mixed
     {
         $found = false;
-        $alias = mb_strtolower($property);
+        $alias = $this->normalizeRelationAlias($property);
 
         if (!$this->isModelRelationAlias($alias)) {
             return null;

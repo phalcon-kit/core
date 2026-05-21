@@ -414,6 +414,34 @@ class ModelTest extends AbstractUnit
         $this->assertFalse($user->hasLoadedRelatedAlias('rolelist'));
     }
 
+    public function testNullDirtyRelationshipAliasIsStillTracked(): void
+    {
+        $user = new ProtectedRelationshipUser();
+
+        $user->CreatedByEntity = null;
+
+        $this->assertTrue($user->hasDirtyRelatedAlias('CreatedByEntity'));
+        $this->assertNull($user->getDirtyRelatedAlias('CreatedByEntity'));
+        $this->assertNull($user->CreatedByEntity);
+    }
+
+    public function testBulkRelationshipAliasSettersNormalizeAliases(): void
+    {
+        $user = new ProtectedRelationshipUser();
+        $role = new Role();
+        $role->setKey('bulk-role');
+
+        $user->setLoadedRelated(['RoleList' => [$role]]);
+        $user->setDirtyRelated(['CreatedByEntity' => null]);
+        $user->setKeepMissingRelated(['RoleList' => false]);
+
+        $this->assertTrue($user->hasLoadedRelatedAlias('rolelist'));
+        $this->assertSame([$role], $user->getLoadedRelatedAlias('ROLELIST'));
+        $this->assertTrue($user->hasDirtyRelatedAlias('createdbyentity'));
+        $this->assertNull($user->getDirtyRelatedAlias('CreatedByEntity'));
+        $this->assertFalse($user->getKeepMissingRelatedAlias('rolelist'));
+    }
+
     public function testProtectedRelationshipPropertiesWorkWithAssignAndEagerLoading(): void
     {
         $this->prepareTests();

@@ -64,7 +64,7 @@ trait Relationship
      */
     public function setKeepMissingRelated(array $keepMissingRelated): void
     {
-        $this->keepMissingRelated = $keepMissingRelated;
+        $this->keepMissingRelated = $this->normalizeRelationAliases($keepMissingRelated);
     }
     
     /**
@@ -80,7 +80,7 @@ trait Relationship
      */
     public function getKeepMissingRelatedAlias(string $alias): bool
     {
-        return (bool)($this->keepMissingRelated[mb_strtolower($alias)] ?? true);
+        return (bool)($this->keepMissingRelated[$this->normalizeRelationAlias($alias)] ?? true);
     }
     
     /**
@@ -88,7 +88,7 @@ trait Relationship
      */
     public function setKeepMissingRelatedAlias(string $alias, bool $keepMissing): void
     {
-        $this->keepMissingRelated[mb_strtolower($alias)] = $keepMissing;
+        $this->keepMissingRelated[$this->normalizeRelationAlias($alias)] = $keepMissing;
     }
     
     /**
@@ -120,7 +120,7 @@ trait Relationship
      */
     public function setDirtyRelated(array $dirtyRelated): void
     {
-        $this->dirtyRelated = $dirtyRelated;
+        $this->dirtyRelated = $this->normalizeRelationAliases($dirtyRelated);
     }
     
     /**
@@ -128,7 +128,7 @@ trait Relationship
      */
     public function getDirtyRelatedAlias(string $alias): mixed
     {
-        return $this->dirtyRelated[mb_strtolower($alias)];
+        return $this->dirtyRelated[$this->normalizeRelationAlias($alias)];
     }
     
     /**
@@ -136,7 +136,7 @@ trait Relationship
      */
     public function setDirtyRelatedAlias(string $alias, mixed $value): void
     {
-        $alias = mb_strtolower($alias);
+        $alias = $this->normalizeRelationAlias($alias);
         $this->dirtyRelated[$alias] = $value;
         $this->writeDeclaredRelatedAlias($alias, $value);
     }
@@ -154,7 +154,7 @@ trait Relationship
      */
     public function hasDirtyRelatedAlias(string $alias): bool
     {
-        return isset($this->dirtyRelated[mb_strtolower($alias)]);
+        return array_key_exists($this->normalizeRelationAlias($alias), $this->dirtyRelated);
     }
 
     /**
@@ -170,7 +170,7 @@ trait Relationship
      */
     public function setLoadedRelated(array $loadedRelated): void
     {
-        $this->loadedRelated = $loadedRelated;
+        $this->loadedRelated = $this->normalizeRelationAliases($loadedRelated);
     }
 
     /**
@@ -178,7 +178,7 @@ trait Relationship
      */
     public function getLoadedRelatedAlias(string $alias): mixed
     {
-        return $this->loadedRelated[mb_strtolower($alias)] ?? null;
+        return $this->loadedRelated[$this->normalizeRelationAlias($alias)] ?? null;
     }
 
     /**
@@ -186,7 +186,7 @@ trait Relationship
      */
     public function setLoadedRelatedAlias(string $alias, mixed $value): void
     {
-        $alias = mb_strtolower($alias);
+        $alias = $this->normalizeRelationAlias($alias);
         $this->loadedRelated[$alias] = $value;
         $this->writeDeclaredRelatedAlias($alias, $value);
     }
@@ -196,7 +196,22 @@ trait Relationship
      */
     public function hasLoadedRelatedAlias(string $alias): bool
     {
-        return array_key_exists(mb_strtolower($alias), $this->loadedRelated);
+        return array_key_exists($this->normalizeRelationAlias($alias), $this->loadedRelated);
+    }
+
+    private function normalizeRelationAlias(string $alias): string
+    {
+        return mb_strtolower($alias);
+    }
+
+    private function normalizeRelationAliases(array $related): array
+    {
+        $normalized = [];
+        foreach ($related as $alias => $value) {
+            $normalized[is_string($alias) ? $this->normalizeRelationAlias($alias) : $alias] = $value;
+        }
+
+        return $normalized;
     }
 
     private function writeDeclaredRelatedAlias(string $alias, mixed $value): void
@@ -385,9 +400,9 @@ trait Relationship
                     $this->{$alias}->setDirtyState(Model::DIRTY_STATE_TRANSIENT);
                 }
 
-                $this->dirtyRelated[mb_strtolower($alias)] = $this->{$alias} ?? false;
+                $this->dirtyRelated[$this->normalizeRelationAlias($alias)] = $this->{$alias} ?? false;
                 if (empty($assign)) {
-                    $this->dirtyRelated[mb_strtolower($alias)] = [];
+                    $this->dirtyRelated[$this->normalizeRelationAlias($alias)] = [];
                 }
             }
         }
