@@ -29,6 +29,7 @@ class GroupRoleTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->groupRole = new GroupRole();
     }
     
@@ -49,6 +50,18 @@ class GroupRoleTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->groupRole);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->groupRole);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->groupRole->initialize();
+
+        $this->assertSame('group_role', $this->groupRole->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->groupRole->validation());
     }
     
     public function testGetId(): void

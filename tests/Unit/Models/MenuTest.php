@@ -29,6 +29,7 @@ class MenuTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->menu = new Menu();
     }
     
@@ -49,6 +50,18 @@ class MenuTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->menu);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->menu);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->menu->initialize();
+
+        $this->assertSame('menu', $this->menu->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->menu->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class MenuTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->menu->getUpdatedAt());
+        $this->assertEquals('NULL', $this->menu->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class MenuTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->menu->getDeletedAt());
+        $this->assertEquals('NULL', $this->menu->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

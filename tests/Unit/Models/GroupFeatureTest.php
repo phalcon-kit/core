@@ -29,6 +29,7 @@ class GroupFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->groupFeature = new GroupFeature();
     }
     
@@ -49,6 +50,18 @@ class GroupFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->groupFeature);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->groupFeature);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->groupFeature->initialize();
+
+        $this->assertSame('group_feature', $this->groupFeature->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->groupFeature->validation());
     }
     
     public function testGetId(): void

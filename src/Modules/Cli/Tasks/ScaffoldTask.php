@@ -231,6 +231,7 @@ DOC;
     {
         return <<<PHP
 <?php
+
 {$this->getLicenseStamp()}
 {$this->getStrictTypes()}
 namespace {$this->getAbstractsInterfacesNamespace()};
@@ -259,6 +260,7 @@ PHP;
     {
         return <<<PHP
 <?php
+
 {$this->getLicenseStamp()}
 {$this->getStrictTypes()}
 namespace {$this->getModelsInterfacesNamespace()};
@@ -286,6 +288,7 @@ PHP;
         $getSetInterfaceItems = $this->getGetSetMethods($columns, 'interface');
         return <<<PHP
 <?php
+
 {$this->getLicenseStamp()}
 {$this->getStrictTypes()}
 namespace {$this->getAbstractsInterfacesNamespace()};
@@ -319,11 +322,16 @@ PHP;
         $getSetMethods = $this->getGetSetMethods($columns);
         $columnMapMethod = $this->getColumnMapMethod($columns);
         $validationItems = $this->getValidationItems($columns, $indexes);
-        $modelsExtend = $this->getModelsExtend();
-        $modelsExtendBaseName = basename($modelsExtend);
+        $modelsExtend = ltrim($this->getModelsExtend(), '\\');
+        $modelsExtendBaseName = basename(str_replace('\\', '/', $modelsExtend));
+        $relationshipUseItems = trim($relationships['useItems']);
+        if ($relationshipUseItems !== '') {
+            $relationshipUseItems .= "\n";
+        }
         
         return <<<PHP
 <?php
+
 {$this->getLicenseStamp()}
 {$this->getStrictTypes()}
 namespace {$this->getAbstractsNamespace()};
@@ -331,8 +339,7 @@ namespace {$this->getAbstractsNamespace()};
 use Phalcon\Db\RawValue;
 use PhalconKit\Filter\Validation;
 use {$modelsExtend};
-{$relationships['useItems']}
-use {$this->getAbstractsInterfacesNamespace()}\\{$definitions['abstractInterface']['name']};
+{$relationshipUseItems}use {$this->getAbstractsInterfacesNamespace()}\\{$definitions['abstractInterface']['name']};
 
 /**
  * Class {$definitions['abstract']['name']}
@@ -389,13 +396,16 @@ PHP;
         $enumValues = implode(PHP_EOL, $enumValues);
         return <<<PHP
 <?php
+
 {$this->getLicenseStamp()}
 {$this->getStrictTypes()}
 namespace {$this->getEnumsNamespace()};
 
-enum {$enumName}: string {
+enum {$enumName}: string
+{
 {$enumValues}
 }
+
 PHP;
     }
     
@@ -409,6 +419,7 @@ PHP;
     {
         return <<<PHP
 <?php
+
 {$this->getLicenseStamp()}
 {$this->getStrictTypes()}
 namespace {$this->getModelsNamespace()};
@@ -438,9 +449,11 @@ PHP;
     public function createModelTestOutput(array $definitions, array $columns): string
     {
         $property = lcfirst($definitions['model']['name']);
+        $source = Helper::uncamelize($definitions['model']['name']);
         $getSetTestItems = $this->getGetSetMethods($columns, 'test', $property);
         return <<<PHP
 <?php
+
 {$this->getLicenseStamp()}
 {$this->getStrictTypes()}
 namespace {$this->getModelsTestsNamespace()};
@@ -461,6 +474,7 @@ class {$definitions['modelTest']['name']} extends \PhalconKit\Tests\Unit\Abstrac
     
     protected function setUp(): void
     {
+        parent::setUp();
         \$this->{$property} = new {$definitions['model']['name']}();
     }
     
@@ -481,6 +495,18 @@ class {$definitions['modelTest']['name']} extends \PhalconKit\Tests\Unit\Abstrac
         // Phalcon
         \$this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, \$this->{$property});
         \$this->assertInstanceOf(\Phalcon\Mvc\Model::class, \$this->{$property});
+    }
+
+    public function testInitialize(): void
+    {
+        \$this->{$property}->initialize();
+
+        \$this->assertSame('{$source}', \$this->{$property}->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        \$this->assertIsBool(\$this->{$property}->validation());
     }
     
     {$getSetTestItems}
@@ -613,9 +639,11 @@ PHP;
     {
         if ($this->isNoRelationships()) {
             return [
-                ' *',
-                '',
-                ''
+                'interfaceInjectableItems' => ' *',
+                'injectableItems' => ' *',
+                'useItems' => '',
+                'interfaceUseItems' => '',
+                'items' => '// no default relationship found',
             ];
         }
         
@@ -827,7 +855,10 @@ PHP;
         
         // Avoid empty lines if not relationship were found
         if (empty($relationshipInjectableItems)) {
-            $relationshipInjectableItems = [' * '];
+            $relationshipInjectableItems = [' *'];
+        }
+        if (empty($interfaceInjectableItems)) {
+            $interfaceInjectableItems = [' *'];
         }
         if (empty($relationshipItems)) {
             $relationshipItems = ['// no default relationship found'];
@@ -989,11 +1020,13 @@ PHP;
             if ($type === 'default') {
                 $propertyItems[] = <<<PHP
     {$getMethodComments}
+    #[\Override]
     public function {$getMethod}(){$propertyType}
     {
         return \$this->{$definition['name']};
     }
     {$setMethodComments}
+    #[\Override]
     public function {$setMethod}({$definition['param']}){$voidType}
     {
         \$this->{$definition['name']} = \${$definition['name']};

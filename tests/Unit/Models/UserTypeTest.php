@@ -29,6 +29,7 @@ class UserTypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->userType = new UserType();
     }
     
@@ -49,6 +50,18 @@ class UserTypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->userType);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->userType);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->userType->initialize();
+
+        $this->assertSame('user_type', $this->userType->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->userType->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class UserTypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->userType->getUpdatedAt());
+        $this->assertEquals('NULL', $this->userType->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class UserTypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->userType->getDeletedAt());
+        $this->assertEquals('NULL', $this->userType->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

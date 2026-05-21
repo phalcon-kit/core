@@ -29,6 +29,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->job = new Job();
     }
     
@@ -49,6 +50,18 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->job);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->job);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->job->initialize();
+
+        $this->assertSame('job', $this->job->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->job->validation());
     }
     
     public function testGetId(): void
@@ -77,7 +90,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetLabel(): void
     {
-        $this->assertEquals(null, $this->job->getLabel());
+        $this->assertEquals('NULL', $this->job->getLabel());
     }
     
     public function testSetLabel(): void
@@ -113,7 +126,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetParams(): void
     {
-        $this->assertEquals(null, $this->job->getParams());
+        $this->assertEquals('NULL', $this->job->getParams());
     }
     
     public function testSetParams(): void
@@ -125,7 +138,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetStatus(): void
     {
-        $this->assertEquals('new', $this->job->getStatus());
+        $this->assertEquals('\'new\'', $this->job->getStatus());
     }
     
     public function testSetStatus(): void
@@ -137,7 +150,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetResult(): void
     {
-        $this->assertEquals(null, $this->job->getResult());
+        $this->assertEquals('NULL', $this->job->getResult());
     }
     
     public function testSetResult(): void
@@ -161,7 +174,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetRunAt(): void
     {
-        $this->assertEquals(null, $this->job->getRunAt());
+        $this->assertEquals('NULL', $this->job->getRunAt());
     }
     
     public function testSetRunAt(): void
@@ -209,7 +222,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->job->getUpdatedAt());
+        $this->assertEquals('NULL', $this->job->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -233,7 +246,7 @@ class JobTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->job->getDeletedAt());
+        $this->assertEquals('NULL', $this->job->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

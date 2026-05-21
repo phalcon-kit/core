@@ -29,6 +29,7 @@ class FileRelationTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->fileRelation = new FileRelation();
     }
     
@@ -49,6 +50,18 @@ class FileRelationTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->fileRelation);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->fileRelation);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->fileRelation->initialize();
+
+        $this->assertSame('file_relation', $this->fileRelation->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->fileRelation->validation());
     }
     
     public function testGetId(): void

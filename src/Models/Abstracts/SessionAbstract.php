@@ -33,7 +33,7 @@ use PhalconKit\Models\Abstracts\Interfaces\SessionAbstractInterface;
  * @property User $AsUserEntity
  * @method User getAsUserEntity(?array $params = null)
  */
-abstract class SessionAbstract extends \PhalconKit\Models\AbstractModel implements SessionAbstractInterface
+abstract class SessionAbstract extends AbstractModel implements SessionAbstractInterface
 {
     /**
      * Column: id
@@ -54,14 +54,14 @@ abstract class SessionAbstract extends \PhalconKit\Models\AbstractModel implemen
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $userId = null;
+    public mixed $userId = 0;
         
     /**
      * Column: as_user_id
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $asUserId = null;
+    public mixed $asUserId = 0;
         
     /**
      * Column: token
@@ -75,14 +75,14 @@ abstract class SessionAbstract extends \PhalconKit\Models\AbstractModel implemen
      * Attributes: Type(6)
      * @var mixed
      */
-    public mixed $jwt = null;
+    public mixed $jwt = 'NULL';
         
     /**
      * Column: meta
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $meta = null;
+    public mixed $meta = 'NULL';
         
     /**
      * Column: expires_at
@@ -343,6 +343,9 @@ abstract class SessionAbstract extends \PhalconKit\Models\AbstractModel implemen
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
+        $this->addUniquenessValidation($validator, ['token'], true); // token_UNIQUE
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'userId', true);

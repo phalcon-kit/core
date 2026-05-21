@@ -29,6 +29,7 @@ class Oauth2Test extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->oauth2 = new Oauth2();
     }
     
@@ -49,6 +50,18 @@ class Oauth2Test extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->oauth2);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->oauth2);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->oauth2->initialize();
+
+        $this->assertSame('oauth2', $this->oauth2->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->oauth2->validation());
     }
     
     public function testGetId(): void
@@ -125,7 +138,7 @@ class Oauth2Test extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetRefreshToken(): void
     {
-        $this->assertEquals(null, $this->oauth2->getRefreshToken());
+        $this->assertEquals('NULL', $this->oauth2->getRefreshToken());
     }
     
     public function testSetRefreshToken(): void
@@ -137,7 +150,7 @@ class Oauth2Test extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetEmail(): void
     {
-        $this->assertEquals(null, $this->oauth2->getEmail());
+        $this->assertEquals('NULL', $this->oauth2->getEmail());
     }
     
     public function testSetEmail(): void
@@ -149,7 +162,7 @@ class Oauth2Test extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMeta(): void
     {
-        $this->assertEquals(null, $this->oauth2->getMeta());
+        $this->assertEquals('NULL', $this->oauth2->getMeta());
     }
     
     public function testSetMeta(): void
@@ -197,7 +210,7 @@ class Oauth2Test extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->oauth2->getUpdatedAt());
+        $this->assertEquals('NULL', $this->oauth2->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -221,7 +234,7 @@ class Oauth2Test extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->oauth2->getDeletedAt());
+        $this->assertEquals('NULL', $this->oauth2->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

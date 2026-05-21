@@ -29,6 +29,7 @@ class PhalconMigrationsTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->phalconMigrations = new PhalconMigrations();
     }
     
@@ -49,6 +50,18 @@ class PhalconMigrationsTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->phalconMigrations);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->phalconMigrations);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->phalconMigrations->initialize();
+
+        $this->assertSame('phalcon_migrations', $this->phalconMigrations->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->phalconMigrations->validation());
     }
     
     public function testGetVersion(): void

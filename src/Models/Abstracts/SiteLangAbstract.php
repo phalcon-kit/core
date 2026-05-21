@@ -39,7 +39,7 @@ use PhalconKit\Models\Abstracts\Interfaces\SiteLangAbstractInterface;
  * @property User $CreatedByEntity
  * @method User getCreatedByEntity(?array $params = null)
  */
-abstract class SiteLangAbstract extends \PhalconKit\Models\AbstractModel implements SiteLangAbstractInterface
+abstract class SiteLangAbstract extends AbstractModel implements SiteLangAbstractInterface
 {
     /**
      * Column: id
@@ -88,7 +88,7 @@ abstract class SiteLangAbstract extends \PhalconKit\Models\AbstractModel impleme
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -287,6 +287,9 @@ abstract class SiteLangAbstract extends \PhalconKit\Models\AbstractModel impleme
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
+        $this->addUniquenessValidation($validator, ['siteId', 'langId'], true); // uq_site_lang
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'siteId', false);

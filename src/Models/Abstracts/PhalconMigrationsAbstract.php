@@ -24,8 +24,9 @@ use PhalconKit\Models\Abstracts\Interfaces\PhalconMigrationsAbstractInterface;
  * This class defines a PhalconMigrations abstract model that extends the AbstractModel class and implements the PhalconMigrationsAbstractInterface.
  * It provides properties and methods for managing PhalconMigrations data.
  *
+ *
  */
-abstract class PhalconMigrationsAbstract extends \PhalconKit\Models\AbstractModel implements PhalconMigrationsAbstractInterface
+abstract class PhalconMigrationsAbstract extends AbstractModel implements PhalconMigrationsAbstractInterface
 {
     /**
      * Column: version
@@ -141,6 +142,7 @@ abstract class PhalconMigrationsAbstract extends \PhalconKit\Models\AbstractMode
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['version'], true); // PRIMARY
         $this->addStringLengthValidation($validator, 'version', 0, 255, false);
         
         return $validator;

@@ -29,6 +29,7 @@ class PostCategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->postCategory = new PostCategory();
     }
     
@@ -49,6 +50,18 @@ class PostCategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->postCategory);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->postCategory);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->postCategory->initialize();
+
+        $this->assertSame('post_category', $this->postCategory->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->postCategory->validation());
     }
     
     public function testGetId(): void
@@ -137,7 +150,7 @@ class PostCategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->postCategory->getUpdatedAt());
+        $this->assertEquals('NULL', $this->postCategory->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -161,7 +174,7 @@ class PostCategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->postCategory->getDeletedAt());
+        $this->assertEquals('NULL', $this->postCategory->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

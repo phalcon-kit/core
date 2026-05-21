@@ -38,7 +38,7 @@ use PhalconKit\Models\Abstracts\Interfaces\RoleRoleAbstractInterface;
  * @property User $CreatedByEntity
  * @method User getCreatedByEntity(?array $params = null)
  */
-abstract class RoleRoleAbstract extends \PhalconKit\Models\AbstractModel implements RoleRoleAbstractInterface
+abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstractInterface
 {
     /**
      * Column: id
@@ -94,7 +94,7 @@ abstract class RoleRoleAbstract extends \PhalconKit\Models\AbstractModel impleme
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -318,6 +318,9 @@ abstract class RoleRoleAbstract extends \PhalconKit\Models\AbstractModel impleme
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
+        $this->addUniquenessValidation($validator, ['parentId', 'childId'], true); // uq_role_hierarchy
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'parentId', false);

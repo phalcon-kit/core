@@ -29,6 +29,7 @@ class AuditTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->audit = new Audit();
     }
     
@@ -49,6 +50,18 @@ class AuditTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->audit);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->audit);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->audit->initialize();
+
+        $this->assertSame('audit', $this->audit->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->audit->validation());
     }
     
     public function testGetId(): void
@@ -125,7 +138,7 @@ class AuditTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetEvent(): void
     {
-        $this->assertEquals('other', $this->audit->getEvent());
+        $this->assertEquals('\'other\'', $this->audit->getEvent());
     }
     
     public function testSetEvent(): void
@@ -137,7 +150,7 @@ class AuditTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetBefore(): void
     {
-        $this->assertEquals(null, $this->audit->getBefore());
+        $this->assertEquals('NULL', $this->audit->getBefore());
     }
     
     public function testSetBefore(): void
@@ -149,7 +162,7 @@ class AuditTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetAfter(): void
     {
-        $this->assertEquals(null, $this->audit->getAfter());
+        $this->assertEquals('NULL', $this->audit->getAfter());
     }
     
     public function testSetAfter(): void

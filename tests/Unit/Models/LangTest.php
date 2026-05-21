@@ -29,6 +29,7 @@ class LangTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->lang = new Lang();
     }
     
@@ -49,6 +50,18 @@ class LangTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->lang);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->lang);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->lang->initialize();
+
+        $this->assertSame('lang', $this->lang->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->lang->validation());
     }
     
     public function testGetId(): void
@@ -137,7 +150,7 @@ class LangTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->lang->getUpdatedAt());
+        $this->assertEquals('NULL', $this->lang->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -161,7 +174,7 @@ class LangTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->lang->getDeletedAt());
+        $this->assertEquals('NULL', $this->lang->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

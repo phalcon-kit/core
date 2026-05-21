@@ -29,6 +29,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->setting = new Setting();
     }
     
@@ -49,6 +50,18 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->setting);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->setting);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->setting->initialize();
+
+        $this->assertSame('setting', $this->setting->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->setting->validation());
     }
     
     public function testGetId(): void
@@ -89,7 +102,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetLabel(): void
     {
-        $this->assertEquals(null, $this->setting->getLabel());
+        $this->assertEquals('NULL', $this->setting->getLabel());
     }
     
     public function testSetLabel(): void
@@ -101,7 +114,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals(null, $this->setting->getValue());
+        $this->assertEquals('NULL', $this->setting->getValue());
     }
     
     public function testSetValue(): void
@@ -113,7 +126,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetCategory(): void
     {
-        $this->assertEquals(null, $this->setting->getCategory());
+        $this->assertEquals('NULL', $this->setting->getCategory());
     }
     
     public function testSetCategory(): void
@@ -161,7 +174,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->setting->getUpdatedAt());
+        $this->assertEquals('NULL', $this->setting->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -185,7 +198,7 @@ class SettingTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->setting->getDeletedAt());
+        $this->assertEquals('NULL', $this->setting->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

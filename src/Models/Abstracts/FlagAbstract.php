@@ -42,7 +42,7 @@ use PhalconKit\Models\Abstracts\Interfaces\FlagAbstractInterface;
  * @property User $DeletedByEntity
  * @method User getDeletedByEntity(?array $params = null)
  */
-abstract class FlagAbstract extends \PhalconKit\Models\AbstractModel implements FlagAbstractInterface
+abstract class FlagAbstract extends AbstractModel implements FlagAbstractInterface
 {
     /**
      * Column: id
@@ -91,7 +91,7 @@ abstract class FlagAbstract extends \PhalconKit\Models\AbstractModel implements 
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $meta = null;
+    public mixed $meta = 'NULL';
         
     /**
      * Column: deleted
@@ -112,35 +112,35 @@ abstract class FlagAbstract extends \PhalconKit\Models\AbstractModel implements 
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
         
     /**
      * Column: updated_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = null;
+    public mixed $updatedAt = 'NULL';
         
     /**
      * Column: updated_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $updatedBy = null;
+    public mixed $updatedBy = 0;
         
     /**
      * Column: deleted_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = null;
+    public mixed $deletedAt = 'NULL';
         
     /**
      * Column: deleted_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $deletedBy = null;
+    public mixed $deletedBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -516,6 +516,9 @@ abstract class FlagAbstract extends \PhalconKit\Models\AbstractModel implements 
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
+        $this->addUniquenessValidation($validator, ['siteId', 'key'], true); // uq_site_flag
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'siteId', false);

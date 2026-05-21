@@ -29,6 +29,7 @@ class WorkspaceLangTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->workspaceLang = new WorkspaceLang();
     }
     
@@ -49,6 +50,18 @@ class WorkspaceLangTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->workspaceLang);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->workspaceLang);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->workspaceLang->initialize();
+
+        $this->assertSame('workspace_lang', $this->workspaceLang->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->workspaceLang->validation());
     }
     
     public function testGetId(): void

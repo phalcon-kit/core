@@ -29,6 +29,7 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->meta = new Meta();
     }
     
@@ -49,6 +50,18 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->meta);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->meta);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->meta->initialize();
+
+        $this->assertSame('meta', $this->meta->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->meta->validation());
     }
     
     public function testGetId(): void
@@ -89,7 +102,7 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals(null, $this->meta->getValue());
+        $this->assertEquals('NULL', $this->meta->getValue());
     }
     
     public function testSetValue(): void
@@ -161,7 +174,7 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->meta->getUpdatedAt());
+        $this->assertEquals('NULL', $this->meta->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -185,7 +198,7 @@ class MetaTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->meta->getDeletedAt());
+        $this->assertEquals('NULL', $this->meta->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

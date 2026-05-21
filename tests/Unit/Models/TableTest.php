@@ -29,6 +29,7 @@ class TableTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->table = new Table();
     }
     
@@ -49,6 +50,18 @@ class TableTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->table);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->table);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->table->initialize();
+
+        $this->assertSame('table', $this->table->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->table->validation());
     }
     
     public function testGetId(): void
@@ -101,7 +114,7 @@ class TableTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals(null, $this->table->getDescription());
+        $this->assertEquals('NULL', $this->table->getDescription());
     }
     
     public function testSetDescription(): void
@@ -113,7 +126,7 @@ class TableTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetIcon(): void
     {
-        $this->assertEquals(null, $this->table->getIcon());
+        $this->assertEquals('NULL', $this->table->getIcon());
     }
     
     public function testSetIcon(): void
@@ -125,7 +138,7 @@ class TableTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetColor(): void
     {
-        $this->assertEquals(null, $this->table->getColor());
+        $this->assertEquals('NULL', $this->table->getColor());
     }
     
     public function testSetColor(): void
@@ -173,7 +186,7 @@ class TableTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->table->getUpdatedAt());
+        $this->assertEquals('NULL', $this->table->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -197,7 +210,7 @@ class TableTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->table->getDeletedAt());
+        $this->assertEquals('NULL', $this->table->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

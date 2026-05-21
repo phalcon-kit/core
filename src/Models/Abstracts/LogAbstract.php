@@ -29,7 +29,7 @@ use PhalconKit\Models\Abstracts\Interfaces\LogAbstractInterface;
  * @property User $CreatedByEntity
  * @method User getCreatedByEntity(?array $params = null)
  */
-abstract class LogAbstract extends \PhalconKit\Models\AbstractModel implements LogAbstractInterface
+abstract class LogAbstract extends AbstractModel implements LogAbstractInterface
 {
     /**
      * Column: id
@@ -57,7 +57,7 @@ abstract class LogAbstract extends \PhalconKit\Models\AbstractModel implements L
      * Attributes: NotNull | Size('critical','alert','error','warning','notice','info','debug','emergency','other') | Type(18)
      * @var mixed
      */
-    public mixed $type = 'other';
+    public mixed $type = '\'other\'';
         
     /**
      * Column: message
@@ -71,7 +71,7 @@ abstract class LogAbstract extends \PhalconKit\Models\AbstractModel implements L
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $context = null;
+    public mixed $context = 'NULL';
         
     /**
      * Column: created_at
@@ -85,7 +85,7 @@ abstract class LogAbstract extends \PhalconKit\Models\AbstractModel implements L
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -305,6 +305,8 @@ abstract class LogAbstract extends \PhalconKit\Models\AbstractModel implements L
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addInclusionInValidation($validator, 'type', ['critical','alert','error','warning','notice','info','debug','emergency','other'], false);

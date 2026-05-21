@@ -29,6 +29,7 @@ class RecordTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->record = new Record();
     }
     
@@ -49,6 +50,18 @@ class RecordTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->record);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->record);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->record->initialize();
+
+        $this->assertSame('record', $this->record->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->record->validation());
     }
     
     public function testGetId(): void
@@ -125,7 +138,7 @@ class RecordTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->record->getUpdatedAt());
+        $this->assertEquals('NULL', $this->record->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -149,7 +162,7 @@ class RecordTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->record->getDeletedAt());
+        $this->assertEquals('NULL', $this->record->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

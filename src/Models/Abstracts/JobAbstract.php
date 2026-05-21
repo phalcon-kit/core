@@ -37,7 +37,7 @@ use PhalconKit\Models\Abstracts\Interfaces\JobAbstractInterface;
  * @property User $DeletedByEntity
  * @method User getDeletedByEntity(?array $params = null)
  */
-abstract class JobAbstract extends \PhalconKit\Models\AbstractModel implements JobAbstractInterface
+abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
 {
     /**
      * Column: id
@@ -58,7 +58,7 @@ abstract class JobAbstract extends \PhalconKit\Models\AbstractModel implements J
      * Attributes: Size(100) | Type(2)
      * @var mixed
      */
-    public mixed $label = null;
+    public mixed $label = 'NULL';
         
     /**
      * Column: task
@@ -79,21 +79,21 @@ abstract class JobAbstract extends \PhalconKit\Models\AbstractModel implements J
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $params = null;
+    public mixed $params = 'NULL';
         
     /**
      * Column: status
      * Attributes: NotNull | Size('new','progress','failed','finished') | Type(18)
      * @var mixed
      */
-    public mixed $status = 'new';
+    public mixed $status = '\'new\'';
         
     /**
      * Column: result
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $result = null;
+    public mixed $result = 'NULL';
         
     /**
      * Column: priority
@@ -107,7 +107,7 @@ abstract class JobAbstract extends \PhalconKit\Models\AbstractModel implements J
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $runAt = null;
+    public mixed $runAt = 'NULL';
         
     /**
      * Column: deleted
@@ -128,35 +128,35 @@ abstract class JobAbstract extends \PhalconKit\Models\AbstractModel implements J
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
         
     /**
      * Column: updated_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = null;
+    public mixed $updatedAt = 'NULL';
         
     /**
      * Column: updated_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $updatedBy = null;
+    public mixed $updatedBy = 0;
         
     /**
      * Column: deleted_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = null;
+    public mixed $deletedAt = 'NULL';
         
     /**
      * Column: deleted_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $deletedBy = null;
+    public mixed $deletedBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -605,6 +605,8 @@ abstract class JobAbstract extends \PhalconKit\Models\AbstractModel implements J
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addStringLengthValidation($validator, 'label', 0, 100, true);

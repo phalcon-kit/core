@@ -29,6 +29,7 @@ class RoleFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->roleFeature = new RoleFeature();
     }
     
@@ -49,6 +50,18 @@ class RoleFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->roleFeature);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->roleFeature);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->roleFeature->initialize();
+
+        $this->assertSame('role_feature', $this->roleFeature->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->roleFeature->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class RoleFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->roleFeature->getUpdatedAt());
+        $this->assertEquals('NULL', $this->roleFeature->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class RoleFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->roleFeature->getDeletedAt());
+        $this->assertEquals('NULL', $this->roleFeature->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

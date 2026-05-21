@@ -29,6 +29,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->validator = new Validator();
     }
     
@@ -49,6 +50,18 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->validator);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->validator);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->validator->initialize();
+
+        $this->assertSame('validator', $this->validator->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->validator->validation());
     }
     
     public function testGetId(): void
@@ -113,7 +126,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetType(): void
     {
-        $this->assertEquals('text', $this->validator->getType());
+        $this->assertEquals('\'text\'', $this->validator->getType());
     }
     
     public function testSetType(): void
@@ -125,7 +138,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetParams(): void
     {
-        $this->assertEquals(null, $this->validator->getParams());
+        $this->assertEquals('NULL', $this->validator->getParams());
     }
     
     public function testSetParams(): void
@@ -173,7 +186,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->validator->getUpdatedAt());
+        $this->assertEquals('NULL', $this->validator->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -197,7 +210,7 @@ class ValidatorTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->validator->getDeletedAt());
+        $this->assertEquals('NULL', $this->validator->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

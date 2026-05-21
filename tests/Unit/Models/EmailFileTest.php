@@ -29,6 +29,7 @@ class EmailFileTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->emailFile = new EmailFile();
     }
     
@@ -49,6 +50,18 @@ class EmailFileTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->emailFile);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->emailFile);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->emailFile->initialize();
+
+        $this->assertSame('email_file', $this->emailFile->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->emailFile->validation());
     }
     
     public function testGetId(): void

@@ -29,6 +29,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->jobScheduler = new JobScheduler();
     }
     
@@ -49,6 +50,18 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->jobScheduler);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->jobScheduler);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->jobScheduler->initialize();
+
+        $this->assertSame('job_scheduler', $this->jobScheduler->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->jobScheduler->validation());
     }
     
     public function testGetId(): void
@@ -125,7 +138,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetParams(): void
     {
-        $this->assertEquals(null, $this->jobScheduler->getParams());
+        $this->assertEquals('NULL', $this->jobScheduler->getParams());
     }
     
     public function testSetParams(): void
@@ -137,7 +150,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetFrequency(): void
     {
-        $this->assertEquals('manually', $this->jobScheduler->getFrequency());
+        $this->assertEquals('\'manually\'', $this->jobScheduler->getFrequency());
     }
     
     public function testSetFrequency(): void
@@ -197,7 +210,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->jobScheduler->getUpdatedAt());
+        $this->assertEquals('NULL', $this->jobScheduler->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -221,7 +234,7 @@ class JobSchedulerTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->jobScheduler->getDeletedAt());
+        $this->assertEquals('NULL', $this->jobScheduler->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

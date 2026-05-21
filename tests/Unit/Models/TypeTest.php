@@ -29,6 +29,7 @@ class TypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->type = new Type();
     }
     
@@ -49,6 +50,18 @@ class TypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->type);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->type);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->type->initialize();
+
+        $this->assertSame('type', $this->type->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->type->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class TypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->type->getUpdatedAt());
+        $this->assertEquals('NULL', $this->type->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class TypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->type->getDeletedAt());
+        $this->assertEquals('NULL', $this->type->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

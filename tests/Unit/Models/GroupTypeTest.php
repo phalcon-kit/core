@@ -29,6 +29,7 @@ class GroupTypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->groupType = new GroupType();
     }
     
@@ -49,6 +50,18 @@ class GroupTypeTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->groupType);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->groupType);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->groupType->initialize();
+
+        $this->assertSame('group_type', $this->groupType->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->groupType->validation());
     }
     
     public function testGetId(): void

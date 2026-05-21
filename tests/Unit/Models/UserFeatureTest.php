@@ -29,6 +29,7 @@ class UserFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->userFeature = new UserFeature();
     }
     
@@ -49,6 +50,18 @@ class UserFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->userFeature);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->userFeature);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->userFeature->initialize();
+
+        $this->assertSame('user_feature', $this->userFeature->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->userFeature->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class UserFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->userFeature->getUpdatedAt());
+        $this->assertEquals('NULL', $this->userFeature->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class UserFeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->userFeature->getDeletedAt());
+        $this->assertEquals('NULL', $this->userFeature->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

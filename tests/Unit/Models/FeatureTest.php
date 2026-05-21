@@ -29,6 +29,7 @@ class FeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->feature = new Feature();
     }
     
@@ -49,6 +50,18 @@ class FeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->feature);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->feature);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->feature->initialize();
+
+        $this->assertSame('feature', $this->feature->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->feature->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class FeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->feature->getUpdatedAt());
+        $this->assertEquals('NULL', $this->feature->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class FeatureTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->feature->getDeletedAt());
+        $this->assertEquals('NULL', $this->feature->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

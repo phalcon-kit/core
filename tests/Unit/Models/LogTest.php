@@ -29,6 +29,7 @@ class LogTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->log = new Log();
     }
     
@@ -49,6 +50,18 @@ class LogTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->log);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->log);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->log->initialize();
+
+        $this->assertSame('log', $this->log->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->log->validation());
     }
     
     public function testGetId(): void
@@ -89,7 +102,7 @@ class LogTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetType(): void
     {
-        $this->assertEquals('other', $this->log->getType());
+        $this->assertEquals('\'other\'', $this->log->getType());
     }
     
     public function testSetType(): void
@@ -113,7 +126,7 @@ class LogTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetContext(): void
     {
-        $this->assertEquals(null, $this->log->getContext());
+        $this->assertEquals('NULL', $this->log->getContext());
     }
     
     public function testSetContext(): void

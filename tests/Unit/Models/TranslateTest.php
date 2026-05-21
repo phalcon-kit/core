@@ -29,6 +29,7 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->translate = new Translate();
     }
     
@@ -49,6 +50,18 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->translate);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->translate);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->translate->initialize();
+
+        $this->assertSame('translate', $this->translate->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->translate->validation());
     }
     
     public function testGetId(): void
@@ -125,7 +138,7 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals(null, $this->translate->getValue());
+        $this->assertEquals('NULL', $this->translate->getValue());
     }
     
     public function testSetValue(): void
@@ -173,7 +186,7 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->translate->getUpdatedAt());
+        $this->assertEquals('NULL', $this->translate->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -197,7 +210,7 @@ class TranslateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->translate->getDeletedAt());
+        $this->assertEquals('NULL', $this->translate->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

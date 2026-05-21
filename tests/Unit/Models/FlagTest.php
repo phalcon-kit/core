@@ -29,6 +29,7 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->flag = new Flag();
     }
     
@@ -49,6 +50,18 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->flag);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->flag);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->flag->initialize();
+
+        $this->assertSame('flag', $this->flag->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->flag->validation());
     }
     
     public function testGetId(): void
@@ -125,7 +138,7 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMeta(): void
     {
-        $this->assertEquals(null, $this->flag->getMeta());
+        $this->assertEquals('NULL', $this->flag->getMeta());
     }
     
     public function testSetMeta(): void
@@ -173,7 +186,7 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->flag->getUpdatedAt());
+        $this->assertEquals('NULL', $this->flag->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -197,7 +210,7 @@ class FlagTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->flag->getDeletedAt());
+        $this->assertEquals('NULL', $this->flag->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

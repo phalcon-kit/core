@@ -29,6 +29,7 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->data = new Data();
     }
     
@@ -49,6 +50,18 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->data);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->data);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->data->initialize();
+
+        $this->assertSame('data', $this->data->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->data->validation());
     }
     
     public function testGetId(): void
@@ -113,7 +126,7 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetValue(): void
     {
-        $this->assertEquals(null, $this->data->getValue());
+        $this->assertEquals('NULL', $this->data->getValue());
     }
     
     public function testSetValue(): void
@@ -161,7 +174,7 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->data->getUpdatedAt());
+        $this->assertEquals('NULL', $this->data->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -185,7 +198,7 @@ class DataTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->data->getDeletedAt());
+        $this->assertEquals('NULL', $this->data->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

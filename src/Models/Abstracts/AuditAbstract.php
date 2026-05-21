@@ -43,7 +43,7 @@ use PhalconKit\Models\Abstracts\Interfaces\AuditAbstractInterface;
  * @property User $CreatedAsEntity
  * @method User getCreatedAsEntity(?array $params = null)
  */
-abstract class AuditAbstract extends \PhalconKit\Models\AbstractModel implements AuditAbstractInterface
+abstract class AuditAbstract extends AbstractModel implements AuditAbstractInterface
 {
     /**
      * Column: id
@@ -57,7 +57,7 @@ abstract class AuditAbstract extends \PhalconKit\Models\AbstractModel implements
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $parentId = null;
+    public mixed $parentId = 0;
         
     /**
      * Column: uuid
@@ -92,21 +92,21 @@ abstract class AuditAbstract extends \PhalconKit\Models\AbstractModel implements
      * Attributes: NotNull | Size('create','update','delete','restore','other') | Type(18)
      * @var mixed
      */
-    public mixed $event = 'other';
+    public mixed $event = '\'other\'';
         
     /**
      * Column: before
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $before = null;
+    public mixed $before = 'NULL';
         
     /**
      * Column: after
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $after = null;
+    public mixed $after = 'NULL';
         
     /**
      * Column: created_at
@@ -120,14 +120,14 @@ abstract class AuditAbstract extends \PhalconKit\Models\AbstractModel implements
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
         
     /**
      * Column: created_as
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdAs = null;
+    public mixed $createdAs = 0;
     
     /**
      * Returns the value of the field "id"
@@ -453,6 +453,8 @@ abstract class AuditAbstract extends \PhalconKit\Models\AbstractModel implements
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addUnsignedIntValidation($validator, 'parentId', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);

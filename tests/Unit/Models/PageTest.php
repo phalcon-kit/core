@@ -29,6 +29,7 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->page = new Page();
     }
     
@@ -49,6 +50,18 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->page);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->page);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->page->initialize();
+
+        $this->assertSame('page', $this->page->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->page->validation());
     }
     
     public function testGetId(): void
@@ -101,7 +114,7 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals(null, $this->page->getDescription());
+        $this->assertEquals('NULL', $this->page->getDescription());
     }
     
     public function testSetDescription(): void
@@ -149,7 +162,7 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->page->getUpdatedAt());
+        $this->assertEquals('NULL', $this->page->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class PageTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->page->getDeletedAt());
+        $this->assertEquals('NULL', $this->page->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

@@ -29,6 +29,7 @@ class RoleRoleTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->roleRole = new RoleRole();
     }
     
@@ -49,6 +50,18 @@ class RoleRoleTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->roleRole);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->roleRole);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->roleRole->initialize();
+
+        $this->assertSame('role_role', $this->roleRole->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->roleRole->validation());
     }
     
     public function testGetId(): void

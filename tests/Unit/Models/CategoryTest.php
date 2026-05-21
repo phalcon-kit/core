@@ -29,6 +29,7 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->category = new Category();
     }
     
@@ -49,6 +50,18 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->category);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->category);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->category->initialize();
+
+        $this->assertSame('category', $this->category->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->category->validation());
     }
     
     public function testGetId(): void
@@ -113,7 +126,7 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals(null, $this->category->getDescription());
+        $this->assertEquals('NULL', $this->category->getDescription());
     }
     
     public function testSetDescription(): void
@@ -161,7 +174,7 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->category->getUpdatedAt());
+        $this->assertEquals('NULL', $this->category->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -185,7 +198,7 @@ class CategoryTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->category->getDeletedAt());
+        $this->assertEquals('NULL', $this->category->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

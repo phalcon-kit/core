@@ -39,7 +39,7 @@ use PhalconKit\Models\Abstracts\Interfaces\GroupRoleAbstractInterface;
  * @property User $CreatedByEntity
  * @method User getCreatedByEntity(?array $params = null)
  */
-abstract class GroupRoleAbstract extends \PhalconKit\Models\AbstractModel implements GroupRoleAbstractInterface
+abstract class GroupRoleAbstract extends AbstractModel implements GroupRoleAbstractInterface
 {
     /**
      * Column: id
@@ -95,7 +95,7 @@ abstract class GroupRoleAbstract extends \PhalconKit\Models\AbstractModel implem
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -319,6 +319,9 @@ abstract class GroupRoleAbstract extends \PhalconKit\Models\AbstractModel implem
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
+        $this->addUniquenessValidation($validator, ['groupId', 'roleId'], true); // uq_group_role
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'groupId', false);

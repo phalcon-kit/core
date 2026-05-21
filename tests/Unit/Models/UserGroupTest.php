@@ -29,6 +29,7 @@ class UserGroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->userGroup = new UserGroup();
     }
     
@@ -49,6 +50,18 @@ class UserGroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->userGroup);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->userGroup);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->userGroup->initialize();
+
+        $this->assertSame('user_group', $this->userGroup->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->userGroup->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class UserGroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->userGroup->getUpdatedAt());
+        $this->assertEquals('NULL', $this->userGroup->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class UserGroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->userGroup->getDeletedAt());
+        $this->assertEquals('NULL', $this->userGroup->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

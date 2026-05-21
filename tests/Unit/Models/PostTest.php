@@ -29,6 +29,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->post = new Post();
     }
     
@@ -49,6 +50,18 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->post);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->post);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->post->initialize();
+
+        $this->assertSame('post', $this->post->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->post->validation());
     }
     
     public function testGetId(): void
@@ -101,7 +114,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals(null, $this->post->getDescription());
+        $this->assertEquals('NULL', $this->post->getDescription());
     }
     
     public function testSetDescription(): void
@@ -113,7 +126,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetContent(): void
     {
-        $this->assertEquals(null, $this->post->getContent());
+        $this->assertEquals('NULL', $this->post->getContent());
     }
     
     public function testSetContent(): void
@@ -161,7 +174,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->post->getUpdatedAt());
+        $this->assertEquals('NULL', $this->post->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -185,7 +198,7 @@ class PostTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->post->getDeletedAt());
+        $this->assertEquals('NULL', $this->post->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

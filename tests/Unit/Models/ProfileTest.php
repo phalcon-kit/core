@@ -29,6 +29,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->profile = new Profile();
     }
     
@@ -49,6 +50,18 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->profile);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->profile);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->profile->initialize();
+
+        $this->assertSame('profile', $this->profile->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->profile->validation());
     }
     
     public function testGetId(): void
@@ -89,7 +102,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetFirstName(): void
     {
-        $this->assertEquals(null, $this->profile->getFirstName());
+        $this->assertEquals('NULL', $this->profile->getFirstName());
     }
     
     public function testSetFirstName(): void
@@ -101,7 +114,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetLastName(): void
     {
-        $this->assertEquals(null, $this->profile->getLastName());
+        $this->assertEquals('NULL', $this->profile->getLastName());
     }
     
     public function testSetLastName(): void
@@ -161,7 +174,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->profile->getUpdatedAt());
+        $this->assertEquals('NULL', $this->profile->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -185,7 +198,7 @@ class ProfileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->profile->getDeletedAt());
+        $this->assertEquals('NULL', $this->profile->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

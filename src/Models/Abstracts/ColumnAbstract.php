@@ -61,7 +61,7 @@ use PhalconKit\Models\Abstracts\Interfaces\ColumnAbstractInterface;
  * @property User $DeletedByEntity
  * @method User getDeletedByEntity(?array $params = null)
  */
-abstract class ColumnAbstract extends \PhalconKit\Models\AbstractModel implements ColumnAbstractInterface
+abstract class ColumnAbstract extends AbstractModel implements ColumnAbstractInterface
 {
     /**
      * Column: id
@@ -96,21 +96,21 @@ abstract class ColumnAbstract extends \PhalconKit\Models\AbstractModel implement
      * Attributes: NotNull | Size('linkToAnotherRecord','singleLineText','longText','attachment','checkbox','multipleSelect','singleSelect','user','date','phoneNumber','email','url','number','currency','percent','duration','rating','formula','rollup','count','lookup','createdTime','lastModifiedTime','createdBy','lastModifiedBy','autonumber','barcode','button') | Type(18)
      * @var mixed
      */
-    public mixed $type = 'singleLineText';
+    public mixed $type = '\'singleLineText\'';
         
     /**
      * Column: description
      * Attributes: Size(120) | Type(2)
      * @var mixed
      */
-    public mixed $description = null;
+    public mixed $description = 'NULL';
         
     /**
      * Column: options
      * Attributes: Type(24)
      * @var mixed
      */
-    public mixed $options = null;
+    public mixed $options = 'NULL';
         
     /**
      * Column: deleted
@@ -131,35 +131,35 @@ abstract class ColumnAbstract extends \PhalconKit\Models\AbstractModel implement
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
         
     /**
      * Column: updated_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = null;
+    public mixed $updatedAt = 'NULL';
         
     /**
      * Column: updated_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $updatedBy = null;
+    public mixed $updatedBy = 0;
         
     /**
      * Column: deleted_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = null;
+    public mixed $deletedAt = 'NULL';
         
     /**
      * Column: deleted_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $deletedBy = null;
+    public mixed $deletedBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -559,6 +559,8 @@ abstract class ColumnAbstract extends \PhalconKit\Models\AbstractModel implement
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'tableId', false);

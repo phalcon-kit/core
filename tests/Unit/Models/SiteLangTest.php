@@ -29,6 +29,7 @@ class SiteLangTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->siteLang = new SiteLang();
     }
     
@@ -49,6 +50,18 @@ class SiteLangTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->siteLang);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->siteLang);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->siteLang->initialize();
+
+        $this->assertSame('site_lang', $this->siteLang->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->siteLang->validation());
     }
     
     public function testGetId(): void

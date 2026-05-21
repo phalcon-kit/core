@@ -29,6 +29,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->file = new File();
     }
     
@@ -49,6 +50,18 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->file);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->file);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->file->initialize();
+
+        $this->assertSame('file', $this->file->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->file->validation());
     }
     
     public function testGetId(): void
@@ -77,7 +90,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetLabel(): void
     {
-        $this->assertEquals(null, $this->file->getLabel());
+        $this->assertEquals('NULL', $this->file->getLabel());
     }
     
     public function testSetLabel(): void
@@ -89,7 +102,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetCategory(): void
     {
-        $this->assertEquals('other', $this->file->getCategory());
+        $this->assertEquals('\'other\'', $this->file->getCategory());
     }
     
     public function testSetCategory(): void
@@ -113,7 +126,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMimeType(): void
     {
-        $this->assertEquals(null, $this->file->getMimeType());
+        $this->assertEquals('NULL', $this->file->getMimeType());
     }
     
     public function testSetMimeType(): void
@@ -125,7 +138,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetExtension(): void
     {
-        $this->assertEquals(null, $this->file->getExtension());
+        $this->assertEquals('NULL', $this->file->getExtension());
     }
     
     public function testSetExtension(): void
@@ -185,7 +198,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->file->getUpdatedAt());
+        $this->assertEquals('NULL', $this->file->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -209,7 +222,7 @@ class FileTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->file->getDeletedAt());
+        $this->assertEquals('NULL', $this->file->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

@@ -46,7 +46,7 @@ use PhalconKit\Models\Abstracts\Interfaces\ProfileAbstractInterface;
  * @property User $DeletedByEntity
  * @method User getDeletedByEntity(?array $params = null)
  */
-abstract class ProfileAbstract extends \PhalconKit\Models\AbstractModel implements ProfileAbstractInterface
+abstract class ProfileAbstract extends AbstractModel implements ProfileAbstractInterface
 {
     /**
      * Column: id
@@ -74,21 +74,21 @@ abstract class ProfileAbstract extends \PhalconKit\Models\AbstractModel implemen
      * Attributes: Size(100) | Type(2)
      * @var mixed
      */
-    public mixed $firstName = null;
+    public mixed $firstName = 'NULL';
         
     /**
      * Column: last_name
      * Attributes: Size(100) | Type(2)
      * @var mixed
      */
-    public mixed $lastName = null;
+    public mixed $lastName = 'NULL';
         
     /**
      * Column: avatar_file_id
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $avatarFileId = null;
+    public mixed $avatarFileId = 0;
         
     /**
      * Column: deleted
@@ -109,35 +109,35 @@ abstract class ProfileAbstract extends \PhalconKit\Models\AbstractModel implemen
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $createdBy = null;
+    public mixed $createdBy = 0;
         
     /**
      * Column: updated_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $updatedAt = null;
+    public mixed $updatedAt = 'NULL';
         
     /**
      * Column: updated_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $updatedBy = null;
+    public mixed $updatedBy = 0;
         
     /**
      * Column: deleted_at
      * Attributes: Type(4)
      * @var mixed
      */
-    public mixed $deletedAt = null;
+    public mixed $deletedAt = 'NULL';
         
     /**
      * Column: deleted_by
      * Attributes: Numeric | Unsigned | Size(1) | Type(14)
      * @var mixed
      */
-    public mixed $deletedBy = null;
+    public mixed $deletedBy = 0;
     
     /**
      * Returns the value of the field "id"
@@ -490,6 +490,9 @@ abstract class ProfileAbstract extends \PhalconKit\Models\AbstractModel implemen
     {
         $validator ??= new Validation();
     
+        $this->addUniquenessValidation($validator, ['id'], true); // PRIMARY
+        $this->addUniquenessValidation($validator, ['uuid'], true); // uuid_UNIQUE
+        $this->addUniquenessValidation($validator, ['userId'], true); // user_id_UNIQUE
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'userId', false);

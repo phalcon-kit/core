@@ -29,6 +29,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->column = new Column();
     }
     
@@ -49,6 +50,18 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->column);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->column);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->column->initialize();
+
+        $this->assertSame('column', $this->column->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->column->validation());
     }
     
     public function testGetId(): void
@@ -101,7 +114,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetType(): void
     {
-        $this->assertEquals('singleLineText', $this->column->getType());
+        $this->assertEquals('\'singleLineText\'', $this->column->getType());
     }
     
     public function testSetType(): void
@@ -113,7 +126,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals(null, $this->column->getDescription());
+        $this->assertEquals('NULL', $this->column->getDescription());
     }
     
     public function testSetDescription(): void
@@ -125,7 +138,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetOptions(): void
     {
-        $this->assertEquals(null, $this->column->getOptions());
+        $this->assertEquals('NULL', $this->column->getOptions());
     }
     
     public function testSetOptions(): void
@@ -173,7 +186,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->column->getUpdatedAt());
+        $this->assertEquals('NULL', $this->column->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -197,7 +210,7 @@ class ColumnTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->column->getDeletedAt());
+        $this->assertEquals('NULL', $this->column->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

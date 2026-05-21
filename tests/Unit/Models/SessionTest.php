@@ -29,6 +29,7 @@ class SessionTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->session = new Session();
     }
     
@@ -49,6 +50,18 @@ class SessionTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->session);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->session);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->session->initialize();
+
+        $this->assertSame('session', $this->session->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->session->validation());
     }
     
     public function testGetId(): void
@@ -113,7 +126,7 @@ class SessionTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetJwt(): void
     {
-        $this->assertEquals(null, $this->session->getJwt());
+        $this->assertEquals('NULL', $this->session->getJwt());
     }
     
     public function testSetJwt(): void
@@ -125,7 +138,7 @@ class SessionTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetMeta(): void
     {
-        $this->assertEquals(null, $this->session->getMeta());
+        $this->assertEquals('NULL', $this->session->getMeta());
     }
     
     public function testSetMeta(): void

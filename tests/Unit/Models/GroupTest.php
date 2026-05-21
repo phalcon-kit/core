@@ -29,6 +29,7 @@ class GroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->group = new Group();
     }
     
@@ -49,6 +50,18 @@ class GroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->group);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->group);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->group->initialize();
+
+        $this->assertSame('group', $this->group->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->group->validation());
     }
     
     public function testGetId(): void
@@ -149,7 +162,7 @@ class GroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->group->getUpdatedAt());
+        $this->assertEquals('NULL', $this->group->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -173,7 +186,7 @@ class GroupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->group->getDeletedAt());
+        $this->assertEquals('NULL', $this->group->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

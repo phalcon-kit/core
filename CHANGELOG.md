@@ -225,6 +225,10 @@ tag has been cut yet.
   their panel, code padding is balanced, static previews show all sections
   without large source code blocks, tab switching targets Phalcon 5 panel IDs,
   and debug table headers align with their columns.
+- Fixed scaffolded model tests so they bootstrap the parent unit test setup,
+  cover generated initialization and validation lifecycle paths, and keep
+  generated model headers, imports, enum braces, and override attributes
+  compatible with PHPCS and Psalm.
 - Fixed PHPUnit test discovery so fixture/double classes are not reported as
   non-TestCase warnings by `composer phpunit`.
 - Fixed eager loading for non-through relations so intermediate relationship

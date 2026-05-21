@@ -29,6 +29,7 @@ class BackupTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->backup = new Backup();
     }
     
@@ -49,6 +50,18 @@ class BackupTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->backup);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->backup);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->backup->initialize();
+
+        $this->assertSame('backup', $this->backup->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->backup->validation());
     }
     
     public function testGetId(): void
@@ -125,7 +138,7 @@ class BackupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->backup->getUpdatedAt());
+        $this->assertEquals('NULL', $this->backup->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -149,7 +162,7 @@ class BackupTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->backup->getDeletedAt());
+        $this->assertEquals('NULL', $this->backup->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

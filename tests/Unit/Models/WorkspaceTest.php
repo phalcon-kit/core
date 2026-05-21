@@ -29,6 +29,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->workspace = new Workspace();
     }
     
@@ -49,6 +50,18 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->workspace);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->workspace);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->workspace->initialize();
+
+        $this->assertSame('workspace', $this->workspace->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->workspace->validation());
     }
     
     public function testGetId(): void
@@ -89,7 +102,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDescription(): void
     {
-        $this->assertEquals(null, $this->workspace->getDescription());
+        $this->assertEquals('NULL', $this->workspace->getDescription());
     }
     
     public function testSetDescription(): void
@@ -101,7 +114,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetIcon(): void
     {
-        $this->assertEquals(null, $this->workspace->getIcon());
+        $this->assertEquals('NULL', $this->workspace->getIcon());
     }
     
     public function testSetIcon(): void
@@ -113,7 +126,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetColor(): void
     {
-        $this->assertEquals(null, $this->workspace->getColor());
+        $this->assertEquals('NULL', $this->workspace->getColor());
     }
     
     public function testSetColor(): void
@@ -125,7 +138,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetStatus(): void
     {
-        $this->assertEquals('active', $this->workspace->getStatus());
+        $this->assertEquals('\'active\'', $this->workspace->getStatus());
     }
     
     public function testSetStatus(): void
@@ -173,7 +186,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->workspace->getUpdatedAt());
+        $this->assertEquals('NULL', $this->workspace->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -197,7 +210,7 @@ class WorkspaceTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->workspace->getDeletedAt());
+        $this->assertEquals('NULL', $this->workspace->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void

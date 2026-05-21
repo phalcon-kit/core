@@ -17,7 +17,7 @@ use Phalcon\Db\RawValue;
 use PhalconKit\Mvc\ModelInterface;
 
 /**
-
+ *
  */
 interface PhalconMigrationsAbstractInterface extends ModelInterface
 {

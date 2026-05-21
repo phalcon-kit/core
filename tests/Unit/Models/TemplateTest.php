@@ -29,6 +29,7 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
     
     protected function setUp(): void
     {
+        parent::setUp();
         $this->template = new Template();
     }
     
@@ -49,6 +50,18 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
         // Phalcon
         $this->assertInstanceOf(\Phalcon\Mvc\ModelInterface::class, $this->template);
         $this->assertInstanceOf(\Phalcon\Mvc\Model::class, $this->template);
+    }
+
+    public function testInitialize(): void
+    {
+        $this->template->initialize();
+
+        $this->assertSame('template', $this->template->getSource());
+    }
+
+    public function testValidationShouldReturnABoolean(): void
+    {
+        $this->assertIsBool($this->template->validation());
     }
     
     public function testGetId(): void
@@ -113,7 +126,7 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetContent(): void
     {
-        $this->assertEquals(null, $this->template->getContent());
+        $this->assertEquals('NULL', $this->template->getContent());
     }
     
     public function testSetContent(): void
@@ -161,7 +174,7 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetUpdatedAt(): void
     {
-        $this->assertEquals(null, $this->template->getUpdatedAt());
+        $this->assertEquals('NULL', $this->template->getUpdatedAt());
     }
     
     public function testSetUpdatedAt(): void
@@ -185,7 +198,7 @@ class TemplateTest extends \PhalconKit\Tests\Unit\AbstractUnit
 
     public function testGetDeletedAt(): void
     {
-        $this->assertEquals(null, $this->template->getDeletedAt());
+        $this->assertEquals('NULL', $this->template->getDeletedAt());
     }
     
     public function testSetDeletedAt(): void
