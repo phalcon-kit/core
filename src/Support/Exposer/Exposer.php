@@ -343,10 +343,6 @@ class Exposer
                 $currentKey = ($key !== null) ? ($context . '.' . $key) : $context;
             }
             
-            if ($currentKey === null) {
-                continue;
-            }
-            
             /* --------------------------------------------------------
              * Assign rule
              * -------------------------------------------------------- */

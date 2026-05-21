@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Support\Exposer;
 
 use PhalconKit\Support\Exposer\Builder;
+use PhalconKit\Support\Exposer\BuilderInterface;
 use PhalconKit\Support\Exposer\Exposer;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -209,5 +210,127 @@ class ExposerTest extends AbstractUnit
         ]);
         $actual = Exposer::expose($builder);
         $this->assertEquals($result, $actual);
+    }
+
+    public function testProtectedFieldsAreHiddenUnlessExplicitlyAllowed(): void
+    {
+        $data = [
+            'name' => 'Ada',
+            '_token' => 'secret',
+        ];
+
+        $builder = Exposer::createBuilder($data);
+
+        $this->assertSame(['name' => 'Ada'], Exposer::expose($builder));
+
+        $builder = Exposer::createBuilder($data, protected: true);
+
+        $this->assertSame($data, Exposer::expose($builder));
+    }
+
+    public function testCallableRulesCanMutateFormatHideAndAddNestedRules(): void
+    {
+        $data = [
+            'name' => 'ada',
+            'nickname' => 'countess',
+            'secret' => 'hidden',
+            'profile' => [
+                'email' => 'ada@example.test',
+                'role' => 'admin',
+            ],
+        ];
+
+        $builder = Exposer::createBuilder($data, [
+            false,
+            'name' => static function (Builder $builder): BuilderInterface {
+                $builder->setValue(mb_strtoupper((string) $builder->getValue()));
+
+                return $builder;
+            },
+            'nickname' => static fn (): string => 'Lady %s',
+            'secret' => static fn (): bool => false,
+            'profile' => static fn (): array => [
+                'email' => true,
+            ],
+        ]);
+
+        $this->assertSame([
+            'name' => 'ADA',
+            'nickname' => 'Lady countess',
+            'profile' => [
+                'email' => 'ada@example.test',
+            ],
+        ], Exposer::expose($builder));
+    }
+
+    public function testExposeCanUseObjectToArrayAndDenyRootWithoutColumns(): void
+    {
+        $object = new class {
+            public function toArray(): array
+            {
+                return [
+                    'id' => 123,
+                    'label' => 'Example',
+                ];
+            }
+        };
+
+        $builder = Exposer::createBuilder($object, [
+            false,
+            'label',
+        ]);
+
+        $this->assertSame(['label' => 'Example'], Exposer::expose($builder));
+
+        $builder = Exposer::createBuilder(['id' => 123], expose: false);
+
+        $this->assertSame([], Exposer::expose($builder));
+    }
+
+    public function testParentCallableIterableRuleDoesNotCascadeDuplicateRules(): void
+    {
+        $builder = new Builder();
+        $builder->setColumns([
+            'profile' => static fn (): array => [
+                'other' => true,
+            ],
+        ]);
+        $builder->setExpose(true);
+        $builder->setContextKey('profile');
+        $builder->setValue([
+            'name' => 'Ada',
+        ]);
+
+        $this->assertSame([
+            'name' => 'Ada',
+        ], Exposer::expose($builder));
+    }
+
+    public function testCallableUnsupportedReturnKeepsCurrentExposureState(): void
+    {
+        $builder = Exposer::createBuilder([
+            'value' => 'kept',
+        ], [
+            false,
+            'value' => static fn (): int => 123,
+        ]);
+
+        $this->assertSame(['value' => 'kept'], Exposer::expose($builder));
+    }
+
+    public function testParseColumnsSupportsBooleanKeysAndSkipsNonStringNumericValues(): void
+    {
+        $columns = static function (): \Generator {
+            yield 0 => 123;
+            yield true => false;
+            yield 'name' => '';
+        };
+
+        $parsed = Exposer::parseColumnsRecursive($columns());
+
+        $this->assertSame([
+            '' => true,
+            'name' => true,
+        ], $parsed);
     }
 }

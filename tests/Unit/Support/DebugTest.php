@@ -84,4 +84,16 @@ class DebugTest extends AbstractUnit
         $this->assertStringContainsString('Show full file', $js);
         $this->assertStringEndsWith('</script>', $js);
     }
+
+    public function testRenderHtmlLinksPhalconKitClasses(): void
+    {
+        $html = (new Debug())->renderHtml(new \RuntimeException(Debug::class));
+
+        $this->assertStringContainsString('RuntimeException', $html);
+        $this->assertStringContainsString(
+            'https://github.com/phalcon-kit/docs/tree/main/docs/api/classes/PhalconKit/Support/Debug/',
+            $html
+        );
+        $this->assertStringContainsString('PhalconKit\\Support\\Debug', $html);
+    }
 }
