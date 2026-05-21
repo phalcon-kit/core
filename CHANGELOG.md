@@ -221,8 +221,10 @@ tag has been cut yet.
 - Fixed PhalconKit debug class links to point at generated Markdown API files
   and removed a redundant rewrite pass for legacy debug span markup no longer
   emitted by Phalcon 5.
-- Fixed debug code preview styling so expanded full-file code blocks scroll
-  inside their panel instead of forcing the debug container wider.
+- Fixed debug preview styling so expanded full-file code blocks scroll inside
+  their panel, code padding is balanced, static previews show all sections
+  without large source code blocks, tab switching targets Phalcon 5 panel IDs,
+  and debug table headers align with their columns.
 - Fixed PHPUnit test discovery so fixture/double classes are not reported as
   non-TestCase warnings by `composer phpunit`.
 - Fixed eager loading for non-through relations so intermediate relationship

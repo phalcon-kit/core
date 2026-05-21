@@ -72,8 +72,16 @@ class DebugTest extends AbstractUnit
         $this->assertStringStartsWith('<style>', $css);
         $this->assertStringContainsString(':root', $css);
         $this->assertStringContainsString('.error-main', $css);
-        $this->assertStringContainsString('#tabs{width:100%;min-width:0;overflow:hidden}', $css);
+        $this->assertStringContainsString('#tabs{width:100%;min-width:0;overflow:hidden;background:var(--bg-panel)}', $css);
+        $this->assertStringContainsString('--panel-pad-x:24px;--panel-pad-y:20px;--code-pad-x:16px;', $css);
+        $this->assertStringContainsString('#tabs>ul{display:none;', $css);
+        $this->assertStringContainsString('#tabs.debug-js>ul{display:flex}', $css);
+        $this->assertStringContainsString('#tabs>div[id^=error-tabs-],#tabs>div[id]{display:block;', $css);
+        $this->assertStringContainsString('#tabs.debug-js>div[id^=error-tabs-],#tabs.debug-js>div[id]{display:none;', $css);
+        $this->assertStringContainsString('.superglobal-detail th.key,.superglobal-detail td.key,#memory th:first-child,#memory td:first-child{width:220px;', $css);
+        $this->assertStringContainsString('#files th.number,#files td:first-child{width:64px;', $css);
         $this->assertStringContainsString('pre.prettyprint{display:block;inline-size:100%;max-inline-size:100%;', $css);
+        $this->assertStringContainsString('#tabs:not(.debug-js) pre.prettyprint{display:none}', $css);
         $this->assertStringContainsString('contain:inline-size;', $css);
         $this->assertStringContainsString('pre.prettyprint .code-line{display:inline-flex;min-width:100%;width:auto;', $css);
         $this->assertStringEndsWith('</style>', $css);
@@ -85,6 +93,8 @@ class DebugTest extends AbstractUnit
 
         $this->assertStringStartsWith('<script>', $js);
         $this->assertStringContainsString('DOMContentLoaded', $js);
+        $this->assertStringContainsString('classList.add("debug-js")', $js);
+        $this->assertStringContainsString('a[href^="#"]', $js);
         $this->assertStringContainsString('Show full file', $js);
         $this->assertStringEndsWith('</script>', $js);
     }
@@ -98,6 +108,9 @@ class DebugTest extends AbstractUnit
             'https://github.com/phalcon-kit/docs/tree/main/docs/api/classes/PhalconKit/Support/Debug.md',
             $html
         );
+        $this->assertStringContainsString('<thead><tr><th class="key">Key</th><th>Value</th></tr></thead>', $html);
+        $this->assertStringContainsString('<thead><tr><th class="number">#</th><th>Path</th></tr></thead>', $html);
+        $this->assertStringContainsString('<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>', $html);
         $this->assertStringContainsString('PhalconKit\\Support\\Debug', $html);
     }
 }
