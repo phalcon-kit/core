@@ -504,6 +504,42 @@ class ModelTest extends AbstractUnit
         $this->assertSame('protected-role', $array['rolelist'][0]['key']);
     }
 
+    public function testEagerLoadingSkipsEmptyRelationKeys(): void
+    {
+        $this->prepareTests();
+
+        $owner = new User();
+        $owner->setEmail('owner@test.tld');
+        $this->assertTrue($owner->save());
+        $this->assertEmpty($owner->getMessages(), json_encode($owner->getMessages()));
+
+        $child = new User();
+        $child->setEmail('child@test.tld');
+        $this->assertTrue($child->save());
+        $this->assertEmpty($child->getMessages(), json_encode($child->getMessages()));
+
+        $orphan = new User();
+        $orphan->setEmail('orphan@test.tld');
+        $this->assertTrue($orphan->save());
+        $this->assertEmpty($orphan->getMessages(), json_encode($orphan->getMessages()));
+
+        $child->setCreatedBy($owner->getId());
+        $this->assertTrue($child->save());
+        $this->assertEmpty($child->getMessages(), json_encode($child->getMessages()));
+
+        $users = User::findWith(['CreatedByEntity'], ['order' => 'id ASC']);
+
+        $this->assertCount(3, $users);
+        foreach ($users as $user) {
+            $this->assertTrue($user->hasLoadedRelatedAlias('CreatedByEntity'));
+        }
+
+        $this->assertNull($users[0]->getLoadedRelatedAlias('CreatedByEntity'));
+        $this->assertInstanceOf(User::class, $users[1]->getLoadedRelatedAlias('CreatedByEntity'));
+        $this->assertSame($owner->getId(), $users[1]->getLoadedRelatedAlias('CreatedByEntity')->getId());
+        $this->assertNull($users[2]->getLoadedRelatedAlias('CreatedByEntity'));
+    }
+
     public function roleFindAssert(string $string)
     {
         $role = Role::findFirst(['key = :key:', 'bind' => ['key' => $string]]);

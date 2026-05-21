@@ -97,7 +97,10 @@ final class EagerLoad
         $bindValues = [];
         foreach ($parentSubject as $record) {
             assert($record instanceof EntityInterface);
-            $bindValues[$record->readAttribute($relField)] = true;
+            $relationKey = $this->getRelationKey($record, $relField);
+            if ($relationKey !== null) {
+                $bindValues[$relationKey] = true;
+            }
             // @todo support multiples fields with eager loading
 //            $relFieldAr = is_array($relField)? $relField : [$relField];
 //            foreach ($relFieldAr as $relField) {
@@ -110,11 +113,19 @@ final class EagerLoad
 
         $subjectCount = count($parentSubject);
         $isManyToManyForMany = false;
+        $isThrough = $relation->isThrough();
+        $isSingle = $this->isSingleRelation($relation, $isThrough);
+
+        if ($bindValues === []) {
+            $this->assignMissingRelations($parentSubject, $alias, $isSingle);
+            $this->subject = [];
+            return $this;
+        }
 
         $builder = new QueryBuilder();
         $builder->from($relReferencedModel);
 
-        if ($isThrough = $relation->isThrough()) {
+        if ($isThrough) {
             $relIrModel = $relation->getIntermediateModel();
             $relIrField = $relation->getIntermediateFields();
             $relIrReferencedField = $relation->getIntermediateReferencedFields();
@@ -163,11 +174,25 @@ final class EagerLoad
                 $bindValues = [];
                 $modelReferencedModelValues = [];
                 foreach ($relIrValues as $row) {
-                    $bindValues[$row->readAttribute($relIrReferencedField)] = true;
-                    $modelReferencedModelValues[$row->readAttribute($relIrField)][$row->readAttribute($relIrReferencedField)] = true;
+                    assert($row instanceof EntityInterface);
+
+                    $modelKey = $this->getRelationKey($row, $relIrField);
+                    $referencedKey = $this->getRelationKey($row, $relIrReferencedField);
+                    if ($modelKey === null || $referencedKey === null) {
+                        continue;
+                    }
+
+                    $bindValues[$referencedKey] = true;
+                    $modelReferencedModelValues[$modelKey][$referencedKey] = true;
                 }
                 unset($relIrValues);
                 unset($row);
+
+                if ($bindValues === []) {
+                    $this->assignMissingRelations($parentSubject, $alias, false);
+                    $this->subject = [];
+                    return $this;
+                }
 
                 $builder->inWhere(
                     "[{$relReferencedModel}].[{$relReferencedField}]",
@@ -191,15 +216,20 @@ final class EagerLoad
 
         if ($isManyToManyForMany) {
             foreach ($builder->getQuery()->execute() as $record) {
-                $records[$record->readAttribute($relReferencedField)] = $record;
+                assert($record instanceof EntityInterface);
+
+                $referencedKey = $this->getRelationKey($record, $relReferencedField);
+                if ($referencedKey !== null) {
+                    $records[$referencedKey] = $record;
+                }
             }
             unset($record);
 
             foreach ($parentSubject as $record) {
                 assert($record instanceof EntityInterface);
-                $referencedFieldValue = $record->readAttribute($relField);
+                $referencedFieldValue = $this->getRelationKey($record, $relField);
 
-                if (isset($modelReferencedModelValues[$referencedFieldValue])) {
+                if ($referencedFieldValue !== null && isset($modelReferencedModelValues[$referencedFieldValue])) {
                     $referencedModels = [];
 
                     foreach ($modelReferencedModelValues[$referencedFieldValue] as $idx => $_) {
@@ -220,11 +250,6 @@ final class EagerLoad
         }
         else {
             // We expect a single object or a set of it
-            $isSingle = !$isThrough && (
-                $relation->getType() === Relation::HAS_ONE ||
-                $relation->getType() === Relation::BELONGS_TO
-            );
-
             if ($subjectCount === 1) {
                 // Keep all records in memory
                 foreach ($builder->getQuery()->execute() as $record) {
@@ -249,20 +274,25 @@ final class EagerLoad
                 // Keep all records in memory
                 foreach ($builder->getQuery()->execute() as $record) {
                     $records[] = $record;
+                    assert($record instanceof EntityInterface);
+                    $referencedKey = $this->getRelationKey($record, $relReferencedField);
+                    if ($referencedKey === null) {
+                        continue;
+                    }
 
                     if ($isSingle) {
-                        $indexedRecords[$record->readAttribute($relReferencedField)] = $record;
+                        $indexedRecords[$referencedKey] = $record;
                     }
                     else {
-                        $indexedRecords[$record->readAttribute($relReferencedField)][] = $record;
+                        $indexedRecords[$referencedKey][] = $record;
                     }
                 }
 
                 foreach ($parentSubject as $record) {
                     assert($record instanceof EntityInterface);
-                    $referencedFieldValue = $record->readAttribute($relField);
+                    $referencedFieldValue = $this->getRelationKey($record, $relField);
 
-                    if (isset($indexedRecords[$referencedFieldValue])) {
+                    if ($referencedFieldValue !== null && isset($indexedRecords[$referencedFieldValue])) {
                         $this->assignRelation($record, $alias, $indexedRecords[$referencedFieldValue]);
                     }
                     else {
@@ -276,6 +306,39 @@ final class EagerLoad
         $this->subject = $records;
 
         return $this;
+    }
+
+    /**
+     * @param array<int, ModelInterface> $records
+     */
+    private function assignMissingRelations(array $records, string $alias, bool $isSingle): void
+    {
+        foreach ($records as $record) {
+            $this->assignRelation($record, $alias, $isSingle ? null : []);
+        }
+    }
+
+    private function getRelationKey(EntityInterface $record, string $field): int|string|null
+    {
+        $value = $record->readAttribute($field);
+        if (
+            $value === null ||
+            $value === false ||
+            $value === '' ||
+            (is_string($value) && strcasecmp(trim($value), 'NULL') === 0)
+        ) {
+            return null;
+        }
+
+        return is_int($value) || is_string($value) ? $value : (string)$value;
+    }
+
+    private function isSingleRelation(RelationInterface $relation, bool $isThrough): bool
+    {
+        return !$isThrough && (
+            $relation->getType() === Relation::HAS_ONE ||
+            $relation->getType() === Relation::BELONGS_TO
+        );
     }
 
     private function assignRelation(ModelInterface $record, string $alias, mixed $value): void

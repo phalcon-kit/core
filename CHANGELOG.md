@@ -233,6 +233,8 @@ tag has been cut yet.
   non-TestCase warnings by `composer phpunit`.
 - Fixed eager loading for non-through relations so intermediate relationship
   metadata is only read for through relations.
+- Fixed eager loading when parent or intermediate relation keys are null or
+  empty so missing relations are assigned without deprecated null array offsets.
 - Fixed Redis provider setup so failed connection, auth, or database selection
   responses cannot produce an unusable shared Redis service.
 - Fixed nullable model blame fields so generated models and optional
