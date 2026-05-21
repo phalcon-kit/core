@@ -148,6 +148,8 @@ tag has been cut yet.
 - Added a fallback path for the PHPUnit coverage wrapper so
   `composer test:coverage` works with Xdebug even when the optional
   `phpunit-coverage` helper is not installed.
+- Added more unit coverage for provider registration paths, JWT helper
+  round-trips, and REST query state initialization/merge edge cases.
 
 ### Changed
 

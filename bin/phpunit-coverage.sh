@@ -8,4 +8,8 @@
 # file that was distributed with this source code.
 #
 
-phpunit-coverage phpunit "$@"
+if command -v phpunit-coverage >/dev/null 2>&1; then
+    phpunit-coverage phpunit "$@"
+else
+    XDEBUG_MODE="${XDEBUG_MODE:-coverage}" phpunit "$@"
+fi
