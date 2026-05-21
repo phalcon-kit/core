@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc;
 
+use PhalconKit\Bootstrap\Config;
+use PhalconKit\Mvc\Router;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use Phalcon\Mvc\Router\RouteInterface;
 
@@ -138,5 +140,115 @@ class RouterTest extends AbstractUnit
                 $this->assertIsArray($this->router->getParams(), $message);
             }
         }
+    }
+
+    public function testToArrayIncludesMatchedRouteMetadata(): void
+    {
+        $router = new Router(false, new Config());
+        $router->setDI($this->di);
+        $router->add('/records', [
+            'module' => 'api',
+            'controller' => 'records',
+            'action' => 'index',
+        ])->setName('records-index');
+
+        $router->handle('/records');
+        $routerToArray = $router->toArray();
+
+        $this->assertSame('api', $routerToArray['module']);
+        $this->assertSame('records', $routerToArray['controller']);
+        $this->assertSame('index', $routerToArray['action']);
+        $this->assertSame('records-index', $routerToArray['matched']['name']);
+        $this->assertSame('/records', $routerToArray['matched']['pattern']);
+        $this->assertSame([
+            'module' => 'api',
+            'controller' => 'records',
+            'action' => 'index',
+        ], $routerToArray['matched']['paths']);
+    }
+
+    public function testHostnamesRoutesMountsConfiguredHostnamesAndLocales(): void
+    {
+        $router = new Router(false, new Config([
+            'locale' => [
+                'allowed' => ['en', 'fr'],
+            ],
+        ]));
+
+        $router->hostnamesRoutes([
+            'api.example.test' => [
+                'module' => 'api',
+                'controller' => 'records',
+            ],
+        ], [
+            'action' => 'index',
+        ]);
+
+        $route = $router->getRouteByName('api-example-test');
+        $this->assertInstanceOf(RouteInterface::class, $route);
+        $this->assertSame('api.example.test', $route->getHostname());
+        $this->assertSame('api', $route->getPaths()['module']);
+        $this->assertSame('records', $route->getPaths()['controller']);
+        $this->assertSame('index', $route->getPaths()['action']);
+        $this->assertInstanceOf(RouteInterface::class, $router->getRouteByName('locale-api-example-test'));
+        $this->assertInstanceOf(RouteInterface::class, $router->getRouteByName('en-api-example-test-controller'));
+        $this->assertInstanceOf(RouteInterface::class, $router->getRouteByName('fr-api-example-test-controller-action'));
+    }
+
+    public function testHostnamesRoutesRejectsMissingModuleName(): void
+    {
+        $router = new Router(false, new Config());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Router hostname config parameter "module" must be a string under "bad.example.test"');
+
+        $router->hostnamesRoutes([
+            'bad.example.test' => [
+                'module' => 123,
+            ],
+        ]);
+    }
+
+    public function testModulesRoutesMountsApplicationModules(): void
+    {
+        $router = new Router(false, new Config([
+            'locale' => [
+                'allowed' => ['en'],
+            ],
+        ]));
+        $application = new \Phalcon\Mvc\Application();
+        $application->registerModules([
+            'api' => [
+                'className' => 'App\\Modules\\Api\\Module',
+            ],
+        ]);
+
+        $router->modulesRoutes($application, [
+            'controller' => 'index',
+            'action' => 'index',
+        ]);
+
+        $route = $router->getRouteByName('api');
+        $this->assertInstanceOf(RouteInterface::class, $route);
+        $this->assertSame('App\\Modules\\Api\\Controllers', $route->getPaths()['namespace']);
+        $this->assertSame('api', $route->getPaths()['module']);
+        $this->assertSame('index', $route->getPaths()['controller']);
+        $this->assertSame('index', $route->getPaths()['action']);
+        $this->assertInstanceOf(RouteInterface::class, $router->getRouteByName('locale-api-controller'));
+        $this->assertInstanceOf(RouteInterface::class, $router->getRouteByName('en-api-controller-action'));
+    }
+
+    public function testModulesRoutesRejectsMissingClassName(): void
+    {
+        $router = new Router(false, new Config());
+        $application = new \Phalcon\Mvc\Application();
+        $application->registerModules([
+            'api' => [],
+        ]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Module parameter "className" must be a string under "api"');
+
+        $router->modulesRoutes($application);
     }
 }
