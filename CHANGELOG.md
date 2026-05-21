@@ -42,7 +42,8 @@ tag has been cut yet.
   updates, private vulnerability reporting guidance, OpenSSF Scorecard, and
   zizmor workflow scanning.
 - Added a manual Code Scanning triage workflow that summarizes open alerts by
-  tool, category, and rule and can delete one exact stale analysis category.
+  tool, category, and rule, can upload an empty SARIF replacement for one exact
+  stale category, and can delete old analyses for one exact category.
 - Added project-level `AGENTS.md`, `AI.md`, `.aiignore`, and public repo hygiene
   guidance.
 - Added reusable PhalconKit AI skill bundles for app development and core
@@ -134,8 +135,8 @@ tag has been cut yet.
   different Psalm results.
 - Fixed stale GitHub Code Scanning results by restoring Psalm SARIF upload from
   the PHP security workflow with a stable category and error-only report output.
-- Fixed OpenSSF Scorecard Code Scanning refresh by publishing Scorecard SARIF
-  results after relevant workflow findings were remediated.
+- Fixed noisy OpenSSF Scorecard Code Scanning output by keeping Scorecard
+  published as JSON/API results instead of repository alerts.
 - Fixed Composer audit handling so unlocked or lock-file-less installs do not
   fail the wrong workflow path.
 - Fixed Node.js action deprecation exposure by moving workflow actions toward
@@ -171,10 +172,10 @@ tag has been cut yet.
   analysis, OpenSSF Scorecard, and workflow static analysis.
 - Restored Psalm SARIF publishing to GitHub Code Scanning for the current PHP
   8.5 security workflow without publishing informational Psalm notes as alerts.
-- Restored OpenSSF Scorecard SARIF publishing so remediated Scorecard findings
-  can refresh in GitHub Code Scanning.
-- Pinned GitHub Actions workflow dependencies to commit SHAs to satisfy the
-  OpenSSF Scorecard pinned-dependencies check.
+- Kept Scorecard and zizmor out of GitHub Code Scanning so the Security tab
+  stays focused on actionable code-analysis alerts.
+- Added Dependabot cooldowns and replaced the Redis CI service `latest` tag
+  with an explicit version tag.
 - Tightened public repository hygiene around ignored AI/tooling files and
   generated/local artifacts.
 

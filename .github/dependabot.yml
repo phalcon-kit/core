@@ -14,6 +14,8 @@ updates:
     schedule:
       interval: "daily"
       time: "06:00"
+    cooldown:
+      default-days: 7
     groups:
       composer-security:
         applies-to: "security-updates"
@@ -63,6 +65,8 @@ updates:
       interval: "weekly"
       day: "sunday"
       time: "05:00"
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns:

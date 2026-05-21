@@ -4,15 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Summarize alerts or delete analyses for one exact stale category.
+        description: Summarize alerts, upload empty SARIF, or delete stale analyses for one exact category.
         required: true
         default: summarize
         type: choice
         options:
           - summarize
+          - upload-empty-sarif-category
           - delete-analysis-category
       tool_name:
-        description: Tool name for delete-analysis-category, for example Psalm or Scorecard.
+        description: Tool name for cleanup operations, for example Psalm or Scorecard.
         required: false
         default: ''
       category:
@@ -60,6 +61,20 @@ jobs:
               -H "Authorization: Bearer ${GH_TOKEN}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               "https://api.github.com/repos/${REPOSITORY}/$1"
+          }
+
+          api_post_file() {
+            local endpoint="$1"
+            local payload="$2"
+
+            curl -fsSL \
+              -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              -H "Content-Type: application/json" \
+              --data @"$payload" \
+              "https://api.github.com/repos/${REPOSITORY}/${endpoint}"
           }
 
           fetch_pages() {
@@ -172,14 +187,62 @@ jobs:
             exit 0
           fi
 
-          if [ "$OPERATION" != "delete-analysis-category" ]; then
+          if [ "$OPERATION" != "delete-analysis-category" ] && [ "$OPERATION" != "upload-empty-sarif-category" ]; then
             echo "Unsupported operation: ${OPERATION}" >&2
             exit 1
           fi
 
           if [ -z "$TOOL_NAME" ] || [ -z "$CATEGORY" ]; then
-            echo "tool_name and category are required for delete-analysis-category." >&2
+            echo "tool_name and category are required for cleanup operations." >&2
             exit 1
+          fi
+
+          if [ "$OPERATION" = "upload-empty-sarif-category" ]; then
+            empty_sarif="$(mktemp)"
+            payload_file="$(mktemp)"
+
+            jq -n --arg tool "$TOOL_NAME" --arg category "$CATEGORY" '{
+              version: "2.1.0",
+              "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+              runs: [
+                {
+                  tool: {
+                    driver: {
+                      name: $tool,
+                      rules: []
+                    }
+                  },
+                  automationDetails: {
+                    id: $category
+                  },
+                  results: []
+                }
+              ]
+            }' > "$empty_sarif"
+
+            sarif_payload="$(gzip -c "$empty_sarif" | base64 -w0)"
+
+            jq -n \
+              --arg commit_sha "$GITHUB_SHA" \
+              --arg ref "$GITHUB_REF" \
+              --arg sarif "$sarif_payload" '{
+                commit_sha: $commit_sha,
+                ref: $ref,
+                sarif: $sarif
+              }' > "$payload_file"
+
+            echo "## Empty SARIF Upload" >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo "- Tool: \`${TOOL_NAME}\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Category: \`${CATEGORY}\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Commit: \`${GITHUB_SHA}\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Ref: \`${GITHUB_REF}\`" >> "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            api_post_file "code-scanning/sarifs" "$payload_file" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
 
           echo "## Delete Analysis Category" >> "$GITHUB_STEP_SUMMARY"
