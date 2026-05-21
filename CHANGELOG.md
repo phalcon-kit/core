@@ -147,6 +147,8 @@ tag has been cut yet.
   non-matching tool/category pairs instead of creating unrelated empty analyses.
 - Added bulk Code Scanning cleanup for every analysis category currently
   producing open alerts, with dry-run output before deletion.
+- Made Code Scanning analysis deletion idempotent so already-deleted analyses
+  from GitHub's eventually consistent API do not fail cleanup runs.
 - Fixed noisy OpenSSF Scorecard Code Scanning output by keeping Scorecard
   published as JSON/API results instead of repository alerts.
 - Fixed Composer audit handling so unlocked or lock-file-less installs do not

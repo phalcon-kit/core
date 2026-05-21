@@ -55,13 +55,37 @@ jobs:
               "https://api.github.com/repos/${REPOSITORY}/$1"
           }
 
-          api_delete() {
-            curl -fsSL \
+          api_delete_analysis() {
+            local analysis_id="$1"
+            local response_file status
+
+            response_file="$(mktemp)"
+            status="$(
+              curl -sS \
+              -o "$response_file" \
+              -w "%{http_code}" \
               -X DELETE \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${GH_TOKEN}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              "https://api.github.com/repos/${REPOSITORY}/$1"
+              "https://api.github.com/repos/${REPOSITORY}/code-scanning/analyses/${analysis_id}?confirm_delete=true"
+            )"
+
+            if [ "$status" = "204" ]; then
+              rm -f "$response_file"
+              return 0
+            fi
+
+            if [ "$status" = "404" ]; then
+              echo "Analysis ${analysis_id} was already deleted."
+              rm -f "$response_file"
+              return 0
+            fi
+
+            echo "Failed to delete analysis ${analysis_id}: HTTP ${status}" >&2
+            cat "$response_file" >&2
+            rm -f "$response_file"
+            return 1
           }
 
           api_post_file() {
@@ -285,30 +309,30 @@ jobs:
 
             while IFS="$tab" read -r tool category open_alerts; do
               deleted_for_category=0
+              analysis_ids_file="$(mktemp)"
 
-              while true; do
-                fetch_pages "code-scanning/analyses?" "$analyses_file"
-                analysis_id="$(
-                  jq -r --arg tool "$tool" --arg category "$category" '
-                    [
-                      .[]
-                      | select((.tool.name // "") == $tool)
-                      | select((.category // .analysis_key // "") == $category)
-                      | select((.deletable // false) == true)
-                      | .id
-                    ][0] // ""
-                  ' "$analyses_file"
-                )"
+              jq -r --arg tool "$tool" --arg category "$category" '
+                [
+                  .[]
+                  | select((.tool.name // "") == $tool)
+                  | select((.category // .analysis_key // "") == $category)
+                  | select((.deletable // false) == true)
+                  | .id
+                ]
+                | unique
+                | .[]
+              ' "$analyses_file" > "$analysis_ids_file"
 
+              while read -r analysis_id; do
                 if [ -z "$analysis_id" ]; then
-                  break
+                  continue
                 fi
 
                 echo "Deleting analysis ${analysis_id} for ${tool} / ${category}."
-                api_delete "code-scanning/analyses/${analysis_id}?confirm_delete=true" >/dev/null
+                api_delete_analysis "$analysis_id"
                 deleted_for_category=$((deleted_for_category + 1))
                 total_deleted=$((total_deleted + 1))
-              done
+              done < "$analysis_ids_file"
 
               echo "- Deleted \`${deleted_for_category}\` analyses for \`${tool}\` / \`${category}\`." >> "$GITHUB_STEP_SUMMARY"
             done < "$open_categories_file"
@@ -449,28 +473,28 @@ jobs:
           fi
 
           deleted=0
+          analysis_ids_file="$(mktemp)"
 
-          while true; do
-            fetch_pages "code-scanning/analyses?" "$analyses_file"
-            analysis_id="$(
-              jq -r --arg tool "$TOOL_NAME" --arg category "$CATEGORY" '
-                [
-                  .[]
-                  | select((.tool.name // "") == $tool)
-                  | select((.category // .analysis_key // "") == $category)
-                  | select((.deletable // false) == true)
-                  | .id
-                ][0] // ""
-              ' "$analyses_file"
-            )"
+          jq -r --arg tool "$TOOL_NAME" --arg category "$CATEGORY" '
+            [
+              .[]
+              | select((.tool.name // "") == $tool)
+              | select((.category // .analysis_key // "") == $category)
+              | select((.deletable // false) == true)
+              | .id
+            ]
+            | unique
+            | .[]
+          ' "$analyses_file" > "$analysis_ids_file"
 
+          while read -r analysis_id; do
             if [ -z "$analysis_id" ]; then
-              break
+              continue
             fi
 
             echo "Deleting analysis ${analysis_id} for ${TOOL_NAME} / ${CATEGORY}."
-            api_delete "code-scanning/analyses/${analysis_id}?confirm_delete=true" >/dev/null
+            api_delete_analysis "$analysis_id"
             deleted=$((deleted + 1))
-          done
+          done < "$analysis_ids_file"
 
           echo "Deleted \`${deleted}\` analyses." >> "$GITHUB_STEP_SUMMARY"
