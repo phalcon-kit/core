@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Summarize alerts, upload empty SARIF, or delete stale analyses for one exact category.
+        description: Summarize alerts, upload empty SARIF, or delete stale/open-alert analyses.
         required: true
         default: summarize
         type: choice
@@ -12,6 +12,7 @@ on:
           - summarize
           - upload-empty-sarif-category
           - delete-analysis-category
+          - delete-open-alert-categories
       tool_name:
         description: Tool name for cleanup operations, for example Psalm or Scorecard.
         required: false
@@ -187,9 +188,134 @@ jobs:
             exit 0
           fi
 
-          if [ "$OPERATION" != "delete-analysis-category" ] && [ "$OPERATION" != "upload-empty-sarif-category" ]; then
+          if [ "$OPERATION" != "delete-analysis-category" ] && [ "$OPERATION" != "upload-empty-sarif-category" ] && [ "$OPERATION" != "delete-open-alert-categories" ]; then
             echo "Unsupported operation: ${OPERATION}" >&2
             exit 1
+          fi
+
+          if [ "$OPERATION" = "delete-open-alert-categories" ]; then
+            open_categories_file="$(mktemp)"
+            tab="$(printf '\t')"
+
+            jq -r '
+              [
+                .[] | {
+                  tool: (.tool.name // "unknown"),
+                  category: (
+                    .most_recent_instance.category
+                    // .most_recent_instance.analysis_key
+                    // "uncategorized"
+                  )
+                }
+              ]
+              | sort_by(.tool, .category)
+              | group_by([.tool, .category])
+              | map({
+                  tool: .[0].tool,
+                  category: .[0].category,
+                  open_alerts: length
+                })
+              | sort_by(-.open_alerts, .tool, .category)
+              | .[]
+              | [.tool, .category, .open_alerts]
+              | @tsv
+            ' "$alerts_file" > "$open_categories_file"
+
+            {
+              echo "## Delete Open Alert Categories"
+              echo
+              echo "- Dry run: \`${DRY_RUN}\`"
+              echo
+              echo "This targets only tool/category pairs that currently have open alerts."
+              echo
+              echo '```text'
+              printf 'tool\tcategory\topen_alerts\tmatching_analyses\tdeletable_analyses\tresults\n'
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            while IFS="$tab" read -r tool category open_alerts; do
+              matching_analyses="$(
+                jq -r --arg tool "$tool" --arg category "$category" '
+                  [
+                    .[]
+                    | select((.tool.name // "") == $tool)
+                    | select((.category // .analysis_key // "") == $category)
+                  ]
+                  | length
+                ' "$analyses_file"
+              )"
+              deletable_analyses="$(
+                jq -r --arg tool "$tool" --arg category "$category" '
+                  [
+                    .[]
+                    | select((.tool.name // "") == $tool)
+                    | select((.category // .analysis_key // "") == $category)
+                    | select((.deletable // false) == true)
+                  ]
+                  | length
+                ' "$analyses_file"
+              )"
+              results_count="$(
+                jq -r --arg tool "$tool" --arg category "$category" '
+                  [
+                    .[]
+                    | select((.tool.name // "") == $tool)
+                    | select((.category // .analysis_key // "") == $category)
+                    | (.results_count // 0)
+                  ]
+                  | add // 0
+                ' "$analyses_file"
+              )"
+
+              printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+                "$tool" \
+                "$category" \
+                "$open_alerts" \
+                "$matching_analyses" \
+                "$deletable_analyses" \
+                "$results_count" >> "$GITHUB_STEP_SUMMARY"
+            done < "$open_categories_file"
+
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+            if [ "$DRY_RUN" = "true" ]; then
+              exit 0
+            fi
+
+            total_deleted=0
+
+            while IFS="$tab" read -r tool category open_alerts; do
+              deleted_for_category=0
+
+              while true; do
+                fetch_pages "code-scanning/analyses?" "$analyses_file"
+                analysis_id="$(
+                  jq -r --arg tool "$tool" --arg category "$category" '
+                    [
+                      .[]
+                      | select((.tool.name // "") == $tool)
+                      | select((.category // .analysis_key // "") == $category)
+                      | select((.deletable // false) == true)
+                      | .id
+                    ][0] // ""
+                  ' "$analyses_file"
+                )"
+
+                if [ -z "$analysis_id" ]; then
+                  break
+                fi
+
+                echo "Deleting analysis ${analysis_id} for ${tool} / ${category}."
+                api_delete "code-scanning/analyses/${analysis_id}?confirm_delete=true" >/dev/null
+                deleted_for_category=$((deleted_for_category + 1))
+                total_deleted=$((total_deleted + 1))
+              done
+
+              echo "- Deleted \`${deleted_for_category}\` analyses for \`${tool}\` / \`${category}\`." >> "$GITHUB_STEP_SUMMARY"
+            done < "$open_categories_file"
+
+            echo >> "$GITHUB_STEP_SUMMARY"
+            echo "Deleted \`${total_deleted}\` analyses across open-alert categories." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
 
           if [ -z "$TOOL_NAME" ] || [ -z "$CATEGORY" ]; then
