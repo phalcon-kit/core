@@ -36,7 +36,14 @@ use PhalconKit\Ws\WebSocket;
 use Docopt;
 
 /**
- * Phalcon Kit's Bootstrap for the MVC Application & CLI Console mode
+ * Coordinates PhalconKit runtime setup for MVC, CLI, and WebSocket entrypoints.
+ *
+ * The bootstrap owns the default startup sequence: select the runtime mode,
+ * create and expose the PhalconKit DI container, register configuration,
+ * register service providers, initialize core services, register modules, and
+ * finally register the router. Applications may subclass this class to override
+ * individual steps, but should preserve this ordering unless they fully own the
+ * corresponding service wiring.
  */
 class Bootstrap
 {
@@ -46,18 +53,56 @@ class Bootstrap
     public const string MODE_WS = 'ws';
     public const string MODE_MVC = 'mvc';
     
+    /**
+     * Active application container.
+     *
+     * Bootstrap always stores a PhalconKit DI implementation so framework and
+     * app code can rely on `getTyped()` and `getConfig()` while services are
+     * being registered.
+     */
     public DiInterface $di;
     
+    /**
+     * Runtime mode handled by this bootstrap instance.
+     *
+     * Supported values are `mvc`, `cli`, and `ws`. A custom mode can be stored
+     * by subclasses, but the default `run()` and module-registration logic only
+     * know the three built-in modes.
+     */
     public string $mode;
     
+    /**
+     * Optional argument bag exposed for custom CLI bootstraps.
+     *
+     * The default `getArgs()` implementation parses the current
+     * `$_SERVER['argv']` value with Docopt. Subclasses that need pre-parsed
+     * arguments can use this property as their own storage convention.
+     */
     public ?array $args = null;
     
+    /**
+     * Registered framework configuration, available after `registerConfig()`.
+     */
     public ?ConfigInterface $config = null;
     
+    /**
+     * Registered MVC or CLI router, available after `registerRouter()`.
+     */
     public ?RouterInterface $router = null;
     
+    /**
+     * Last MVC response produced by `handleApplication()`.
+     *
+     * CLI and WebSocket modes do not populate this property.
+     */
     public ?ResponseInterface $response = null;
     
+    /**
+     * Docopt command specification used by the default CLI argument parser.
+     *
+     * Applications with custom CLI commands may override this string in a
+     * bootstrap subclass before calling `getArgs()`.
+     */
     public string $cliDoc = <<<DOC
 Phalcon Kit CLI
 
@@ -88,7 +133,16 @@ Tasks:
 DOC;
     
     /**
-     * @throws Exception
+     * Builds a ready-to-run bootstrap and executes the core registration steps.
+     *
+     * Passing `null` lets PhalconKit detect CLI versus MVC mode. WebSocket
+     * entrypoints should pass `Bootstrap::MODE_WS` explicitly.
+     *
+     * @param string|null $mode Runtime mode to initialize, or `null` to auto-detect.
+     *
+     * @throws Exception When configured service providers are invalid.
+     * @throws ConfigurationException When configuration cannot be resolved.
+     * @throws \Exception When the selected mode cannot register modules.
      */
     public function __construct(?string $mode = null)
     {
@@ -104,14 +158,27 @@ DOC;
     }
     
     /**
-     * Initialisation
+     * Application hook executed before config and service registration.
+     *
+     * Override this method in an application bootstrap for very early setup that
+     * does not require configured services. Services from `config.providers`
+     * are not registered yet, so provider-level customization usually belongs
+     * in application config instead.
      */
     public function initialize(): void
     {
     }
     
     /**
-     * Set the default DI
+     * Sets the active DI container and exposes it as the global Phalcon default.
+     *
+     * When no container is provided, the bootstrap creates a PhalconKit default
+     * container for the current mode. Custom containers must implement
+     * `PhalconKit\Di\DiInterface`; native Phalcon containers do not expose the
+     * typed helper methods used by bootstrap and service providers.
+     *
+     * The bootstrap instance is registered as the shared `bootstrap` service so
+     * injectable classes can inspect runtime state when they need to.
      */
     public function setDI(?DiInterface $di = null): void
     {
@@ -124,6 +191,12 @@ DOC;
         PhalconDi::setDefault($this->di);
     }
     
+    /**
+     * Sets the runtime mode for this bootstrap.
+     *
+     * Passing `null` auto-detects CLI mode from the PHP runtime and otherwise
+     * falls back to MVC. WebSocket mode must be selected explicitly.
+     */
     public function setMode(?string $mode = null): void
     {
         $this->mode = $mode ?? (
@@ -133,13 +206,19 @@ DOC;
         );
     }
     
+    /**
+     * Returns the selected runtime mode.
+     */
     public function getMode(): string
     {
         return $this->mode;
     }
     
     /**
-     * Get the default DI
+     * Returns the active PhalconKit DI container.
+     *
+     * Consumers can use the returned container for native Phalcon DI access and
+     * the PhalconKit-specific `getTyped()` and `getConfig()` helpers.
      */
     public function getDI(): DiInterface
     {
@@ -147,7 +226,11 @@ DOC;
     }
     
     /**
-     * Set the Config
+     * Stores the resolved framework configuration.
+     *
+     * This method is primarily used by `registerConfig()` after the config
+     * provider has created the `config` service. Application code normally
+     * changes configuration through config files instead of calling this setter.
      */
     public function setConfig(ConfigInterface $config): void
     {
@@ -155,7 +238,10 @@ DOC;
     }
     
     /**
-     * Get the Config
+     * Returns the registered framework configuration.
+     *
+     * @throws ConfigurationException When `registerConfig()` has not provided a
+     *     valid config instance.
      */
     public function getConfig(): ConfigInterface
     {
@@ -167,7 +253,10 @@ DOC;
     }
     
     /**
-     * Set the MVC or CLI Router
+     * Stores the resolved MVC or CLI router.
+     *
+     * This is normally called by `registerRouter()` after the router service has
+     * been registered in DI.
      */
     public function setRouter(RouterInterface $router): void
     {
@@ -175,7 +264,7 @@ DOC;
     }
     
     /**
-     * Get the MVC or CLI Router
+     * Returns the registered MVC or CLI router, when one has been initialized.
      */
     public function getRouter(): ?RouterInterface
     {
@@ -183,7 +272,12 @@ DOC;
     }
     
     /**
-     * Register Config
+     * Registers and stores the framework configuration service.
+     *
+     * If a `config` service already exists in DI, it is reused. Otherwise the
+     * built-in config service provider is registered first. This method must run
+     * before provider registration because `config.providers` drives the rest of
+     * the bootstrap service graph.
      */
     public function registerConfig(): void
     {
@@ -195,8 +289,20 @@ DOC;
     }
     
     /**
-     * Register Service Providers
-     * @throws Exception
+     * Registers configured application and framework service providers.
+     *
+     * Provider values must be class-string names. Each provider is constructed
+     * with the active PhalconKit DI container and must implement
+     * `ServiceProviderInterface`; its `register()` method is then called
+     * directly. This avoids relying on native Phalcon provider registration,
+     * which cannot express PhalconKit's typed DI boundary.
+     *
+     * @param array<string, string>|null $providers Provider map. When `null`,
+     *     `config.providers` is used.
+     *
+     * @throws Exception When a provider value is not a class-string, the class
+     *     cannot be found, or the instance does not implement the provider
+     *     contract.
      */
     public function registerServices(?array $providers = null): void
     {
@@ -221,7 +327,11 @@ DOC;
     }
     
     /**
-     * Register Router
+     * Registers and stores the router service for the current runtime.
+     *
+     * Existing DI router services are reused. Otherwise the built-in router
+     * provider is registered, then the service is resolved through `getTyped()`
+     * so invalid replacements fail with a clear service-contract error.
      */
     public function registerRouter(): void
     {
@@ -233,7 +343,12 @@ DOC;
     }
     
     /**
-     * Boot Service Providers
+     * Resolves early services that need to be initialized before modules run.
+     *
+     * At the moment this eagerly initializes the `debug` service. The
+     * `ServiceProviderInterface::boot()` hook remains available to provider
+     * implementations, but the default bootstrap does not iterate provider
+     * instances after registration.
      */
     public function bootServices(): void
     {
@@ -241,8 +356,22 @@ DOC;
     }
     
     /**
-     * Register modules
-     * @throws \Exception
+     * Registers configured modules on the selected application object.
+     *
+     * When no application is provided, the method resolves the mode-specific
+     * console, WebSocket, or MVC application service from DI. Module definitions
+     * default to `config.modules`, and the default module defaults to
+     * `config.router.defaults.module`.
+     *
+     * @param AbstractApplication|null $application Application instance to
+     *     mutate, or `null` to resolve the mode-specific service from DI.
+     * @param array<string, array<string, mixed>>|null $modules Module
+     *     definitions, or `null` to use config.
+     * @param string|null $defaultModule Default module name, or `null` to use
+     *     config.
+     *
+     * @throws \Exception When the bootstrap mode cannot be mapped to an
+     *     application service.
      */
     public function registerModules(
         ?AbstractApplication $application = null,
@@ -269,8 +398,14 @@ DOC;
     }
 
     /**
-     * Handle cli or mvc application
-     * @throws \Exception
+     * Dispatches the selected runtime and returns the produced content.
+     *
+     * The `beforeRun` event is fired before dispatch and `afterRun` is fired
+     * with the produced content afterward. MVC mode returns response content,
+     * CLI mode returns captured command output, and WebSocket mode returns
+     * `null` after handing control to the server runtime.
+     *
+     * @throws \Exception When the bootstrap mode cannot be handled.
      */
     public function run(): ?string
     {
@@ -294,7 +429,10 @@ DOC;
     }
     
     /**
-     * Handle Console (For CLI only)
+     * Handles a CLI console request and returns captured output.
+     *
+     * Console exceptions are rendered through the CLI exception handler so CLI
+     * users receive formatted output instead of raw PHP exception text.
      */
     public function handleConsole(Console $console): ?string
     {
@@ -312,7 +450,10 @@ DOC;
     }
 
     /**
-     * Handle Swoole (For WebSocket only)
+     * Handles a WebSocket/Swoole server request.
+     *
+     * WebSocket handling is long-running and does not produce an HTTP response
+     * body for bootstrap callers, so this method always returns `null`.
      */
     public function handleWebSocket(WebSocket $webSocket): ?string
     {
@@ -321,8 +462,13 @@ DOC;
     }
     
     /**
-     * Handle Application (For MVC only)
-     * @throws \Exception
+     * Handles an MVC HTTP request and stores the resulting response.
+     *
+     * The request URI is read from `$_SERVER['REQUEST_URI']`, defaulting to `/`
+     * when unavailable. The returned string is the response body content, or
+     * `null` if the application did not return a response object.
+     *
+     * @throws \Exception When the Phalcon application cannot handle the request.
      */
     public function handleApplication(Application $application): ?string
     {
@@ -331,7 +477,13 @@ DOC;
     }
     
     /**
-     * Get & format args from the $this->args property
+     * Parses CLI arguments into PhalconKit's camelCase argument format.
+     *
+     * The parser uses `cliDoc` as its Docopt specification and reads the
+     * current process arguments from `$_SERVER['argv']`. Non-CLI runtimes return
+     * an empty array so shared code can call this method safely.
+     *
+     * @return array<string, mixed>
      */
     public function getArgs(): array
     {
@@ -358,7 +510,7 @@ DOC;
     }
     
     /**
-     * Return true if the bootstrap mode is set to 'cli'
+     * Returns true when this bootstrap is running in CLI mode.
      */
     public function isCli(): bool
     {
@@ -366,7 +518,7 @@ DOC;
     }
     
     /**
-     * Return true if the bootstrap mode is set to 'ws'
+     * Returns true when this bootstrap is running in WebSocket mode.
      */
     public function isWs(): bool
     {
@@ -374,7 +526,7 @@ DOC;
     }
     
     /**
-     * Return true if the bootstrap mode is set to 'mvc'
+     * Returns true when this bootstrap is running in MVC mode.
      */
     public function isMvc(): bool
     {
