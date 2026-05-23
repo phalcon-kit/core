@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit;
 
 use Phalcon\Application\AbstractApplication;
+use Phalcon\Di\Di as NativeDi;
 use Phalcon\Mvc\RouterInterface as MvcRouterInterface;
 use PhalconKit\Bootstrap;
 use PhalconKit\Config\ConfigInterface;
@@ -192,6 +193,16 @@ class BootstrapTest extends AbstractUnit
         $this->expectExceptionMessage('Bootstrap config has not been registered.');
 
         $bootstrap->getConfig();
+    }
+
+    public function testSetDiRejectsNativePhalconContainer(): void
+    {
+        $bootstrap = new LightweightBootstrap(Bootstrap::MODE_MVC, new Di());
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('must be of type ?PhalconKit\Di\DiInterface');
+
+        \call_user_func([$bootstrap, 'setDI'], new NativeDi());
     }
 
     public function testRegisterServicesRejectsNonStringProvider(): void

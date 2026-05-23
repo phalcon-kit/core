@@ -124,7 +124,7 @@ controllers, tasks, models, or other services.
 namespace App\Provider\Report;
 
 use App\Service\ReportExporter;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 final class ServiceProvider extends AbstractServiceProvider
@@ -136,13 +136,37 @@ final class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             return new ReportExporter(
-                $di->get('db'),
-                $di->get('logger')
+                $di->getTyped('db', \Phalcon\Db\Adapter\AdapterInterface::class),
+                $di->getTyped('logger', \Phalcon\Logger\LoggerInterface::class)
             );
         });
     }
 }
 ```
+
+### PhalconKit DI Boundary
+
+Applications that use `PhalconKit\Bootstrap` normally do not need to change
+anything: bootstrap creates a PhalconKit DI container before registering config,
+providers, modules, and services.
+
+Custom bootstraps and tests that pass their own container into
+`Bootstrap::setDI()` must pass `PhalconKit\Di\DiInterface`, such as
+`PhalconKit\Di\Di`, `PhalconKit\Di\FactoryDefault`, or
+`PhalconKit\Di\FactoryDefault\Cli`. Native `Phalcon\Di\Di` is no longer the
+provider/bootstrap boundary because it does not expose PhalconKit's typed
+helpers.
+
+Use the typed helpers when the service contract is known:
+
+```php
+$config = $di->getConfig();
+$view = $di->getTyped('view', \Phalcon\Mvc\ViewInterface::class);
+```
+
+Native Phalcon DI signatures may still appear where PhalconKit extends native
+Phalcon interfaces or classes. App-owned providers should use
+`PhalconKit\Di\DiInterface`.
 
 Register it in app config:
 

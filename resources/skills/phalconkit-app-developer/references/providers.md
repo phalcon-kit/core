@@ -137,8 +137,7 @@ service. For example, a custom response provider should still register
 ```php
 namespace App\Provider\Response;
 
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Http\Response;
 use PhalconKit\Provider\AbstractServiceProvider;
 
@@ -149,8 +148,7 @@ final class ServiceProvider extends AbstractServiceProvider
     public function register(DiInterface $di): void
     {
         $di->setShared($this->getName(), function () use ($di) {
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
 
             $response = new Response();
             $response->setDI($di);
@@ -192,8 +190,7 @@ components, and tasks can keep using `$this->identity` or
 ```php
 namespace App\Provider\Identity;
 
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -203,8 +200,7 @@ class ServiceProvider extends AbstractServiceProvider
     public function register(DiInterface $di): void
     {
         $di->setShared($this->getName(), function (?array $options = null) use ($di) {
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
 
             $options ??= $config->pathToArray('identity') ?? [];
 
@@ -364,8 +360,7 @@ namespace App\Provider\Firebase;
 
 use Kreait\Firebase\Factory;
 use LogicException;
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -375,8 +370,7 @@ class ServiceProvider extends AbstractServiceProvider
     public function register(DiInterface $di): void
     {
         $di->setShared($this->getName(), function (?array $options = null) use ($di) {
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
 
             $options ??= $config->pathToArray('firebase') ?? [];
 

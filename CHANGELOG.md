@@ -219,6 +219,9 @@ tag has been cut yet.
   registration.
 - Updated bundled provider guidance to steer app providers toward PhalconKit DI
   and typed service helpers.
+- Added migration guidance clarifying that normal `PhalconKit\Bootstrap`
+  consumers get the new PhalconKit DI container automatically, while custom
+  bootstraps/tests must pass `PhalconKit\Di\DiInterface`.
 
 ### Fixed
 
