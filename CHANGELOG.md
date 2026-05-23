@@ -213,8 +213,11 @@ tag has been cut yet.
   optional adapter and URI keys without PHP warnings.
 - Fixed metadata and session providers so lean config consumers get safe
   adapter defaults instead of undefined adapter warnings.
-- Fixed the Facebook OAuth2 provider so `redirectUri` is optional when building
-  the absolute callback URI from the current request.
+- Fixed OAuth2 providers so Google can be constructed from lean config and
+  Facebook treats `redirectUri` as optional when building the absolute callback
+  URI from the current request.
+- Fixed HTTP locale detection so unsupported `Accept-Language` values fall back
+  through the configured allowed locales instead of being returned directly.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
   reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation

@@ -248,23 +248,24 @@ class LocaleTest extends AbstractUnit
     
     public function testGetFromHttp(): void
     {
+        $this->locale->setAllowed(['en', 'fr_CA']);
+
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'fr_CA';
         $this->assertEquals('fr_CA', $this->locale->getFromHttp());
         
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = '';
         $this->assertEquals('en', $this->locale->getFromHttp());
         
-        // @todo fix this
-//        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = '';
-//        $this->assertEquals('fr', $this->locale->getFromHttp('fr'));
+        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = '';
+        $this->assertEquals('fr_CA', $this->locale->getFromHttp('fr_CA'));
     }
 
-    public function testGetFromHttpUsesAcceptedHeaderWhenBestLanguageLookupFails(): void
+    public function testGetFromHttpFallsBackWhenAcceptedHeaderIsNotAllowed(): void
     {
         $this->locale->setAllowed(['en', 'fr']);
         $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'de_DE';
 
-        $this->assertSame('de_DE', $this->locale->getFromHttp('fr'));
+        $this->assertSame('fr', $this->locale->getFromHttp('fr'));
     }
     
     public function testLookup(): void

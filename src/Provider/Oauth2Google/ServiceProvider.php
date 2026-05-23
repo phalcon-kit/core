@@ -15,7 +15,7 @@ namespace PhalconKit\Provider\Oauth2Google;
 
 use League\OAuth2\Client\Provider\Google;
 use Phalcon\Di\DiInterface;
-use PhalconKit\Bootstrap\Config;
+use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 /**
@@ -32,10 +32,10 @@ class ServiceProvider extends AbstractServiceProvider
         $di->setShared($this->getName(), function () use ($di) {
     
             $config = $di->get('config');
-            assert($config instanceof Config);
+            assert($config instanceof ConfigInterface);
 
             $oauthConfig = $config->pathToArray('oauth2') ?? [];
-            $oauthGoogleConfig = $oauthConfig['google'];
+            $oauthGoogleConfig = $oauthConfig['google'] ?? [];
             
             return new Google($oauthGoogleConfig);
         });

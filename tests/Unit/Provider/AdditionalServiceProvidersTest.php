@@ -753,6 +753,20 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertStringContainsString('hd=example.test', $authorizationUrl);
     }
 
+    public function testOauth2GoogleProviderAllowsMissingConfigWithoutWarnings(): void
+    {
+        $di = $this->createBareDi([
+            'oauth2' => [],
+        ]);
+        (new Oauth2GoogleProvider($di))->register($di);
+
+        $this->withoutPhpWarnings(function () use ($di): void {
+            $provider = $di->get('oauth2Google');
+
+            $this->assertInstanceOf(Google::class, $provider);
+        });
+    }
+
     public function testOauth2FacebookProviderBuildsAbsoluteRedirectUriFromRequest(): void
     {
         $di = $this->createDi([
