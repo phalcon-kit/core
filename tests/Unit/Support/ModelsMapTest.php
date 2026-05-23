@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Support;
 
-use Phalcon\Di\Di;
-use PhalconKit\Di\Injectable;
-use PhalconKit\Models\User;
+use Phalcon\Di\Di as NativeDi;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Di\Di;
+use PhalconKit\Di\Injectable;
+use PhalconKit\Exception\ServiceException;
+use PhalconKit\Models\User;
 use PhalconKit\Support\ModelsMap;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -156,5 +158,33 @@ class ModelsMapTest extends AbstractUnit
 
         $this->assertArrayHasKey(User::class, $this->modelsMap->getModelsMap());
         $this->assertSame('App\\Models\\User', $this->modelsMap->getUserClass());
+    }
+
+    public function testModelsMapRejectsNativeOnlyDi(): void
+    {
+        $di = new NativeDi();
+        $di->set('config', new Config());
+        $this->modelsMap->setDI($di);
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Could not resolve DI service "config" for models map because the provided DI must implement "PhalconKit\Di\DiInterface"'
+        );
+
+        $this->modelsMap->setModelsMap();
+    }
+
+    public function testModelsMapRejectsInvalidConfigService(): void
+    {
+        $di = new Di();
+        $di->set('config', new \stdClass());
+        $this->modelsMap->setDI($di);
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "config" to be an instance of "PhalconKit\Bootstrap\Config"; got "stdClass".'
+        );
+
+        $this->modelsMap->setModelsMap();
     }
 }

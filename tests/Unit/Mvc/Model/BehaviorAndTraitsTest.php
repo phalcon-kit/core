@@ -24,6 +24,7 @@ use Phalcon\Messages\Message;
 use Phalcon\Mvc\Model\Relation;
 use Phalcon\Support\Collection;
 use PhalconKit\Acl\Acl as AclService;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Manager as IdentityManager;
 use PhalconKit\Locale;
@@ -50,6 +51,7 @@ use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\IntermediateDeleteModelDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\IntermediateModelDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\LocaleTraitDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\ModelBehaviorDouble;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\NativeModelsManagerModelDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\NativeRelationshipModelDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\RelatedDeleteModelDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\ThrowingSaveModelDouble;
@@ -509,6 +511,20 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertFalse($model->hasBehavior('custom'));
     }
 
+    public function testModelBehaviorTraitRejectsNativeOnlyModelsManager(): void
+    {
+        $nativeManager = $this->createStub(\Phalcon\Mvc\Model\ManagerInterface::class);
+        $model = new NativeModelsManagerModelDouble();
+        $model->nativeModelsManager = $nativeManager;
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected model manager for model behavior helpers to be an instance of "PhalconKit\Mvc\Model\ManagerInterface"'
+        );
+
+        $model->setBehavior('custom', new Action());
+    }
+
     public function testCacheTraitBranches(): void
     {
         $model = new ModelBehaviorDouble();
@@ -536,6 +552,32 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
         $this->assertCount(1, $active->addedBehaviors);
         $active->addedBehaviors[0]->notify('afterSave', $active);
+    }
+
+    public function testCacheTraitRejectsInvalidModelsService(): void
+    {
+        $this->di->setShared('models', new \stdClass());
+        $model = new ModelBehaviorDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "models" to be an instance of "PhalconKit\Support\Models"; got "stdClass".'
+        );
+
+        $model->initializeCache();
+    }
+
+    public function testCacheTraitRejectsInvalidModelsCacheService(): void
+    {
+        $this->di->setShared('modelsCache', new \stdClass());
+        $model = new ModelBehaviorDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "modelsCache" to be an instance of "Phalcon\Cache\Cache"; got "stdClass".'
+        );
+
+        $model->addFlushCacheBehavior([]);
     }
 
     public function testBlameableAndTimestampTraitInitializers(): void
@@ -637,6 +679,32 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertNull($model->deletedAt);
     }
 
+    public function testBlameableTraitRejectsInvalidModelsService(): void
+    {
+        $this->di->setShared('models', new \stdClass());
+        $model = new ModelBehaviorDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "models" to be an instance of "PhalconKit\Support\Models"; got "stdClass".'
+        );
+
+        $model->initializeBlameable();
+    }
+
+    public function testBlameableUserRelationshipRejectsInvalidModelsService(): void
+    {
+        $this->di->setShared('models', new \stdClass());
+        $model = new ModelBehaviorDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "models" to be an instance of "PhalconKit\Support\Models"; got "stdClass".'
+        );
+
+        $model->addUserRelationship('userId');
+    }
+
     public function testIdentityTraitAccessors(): void
     {
         $user = new User();
@@ -679,6 +747,19 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame(55, $model->getCurrentUserId());
         $this->assertSame(66, $model->getCurrentUserId(true));
         $this->assertSame(55, $model->getCurrentUserIdCallback()());
+    }
+
+    public function testIdentityTraitRejectsInvalidIdentityService(): void
+    {
+        $this->di->setShared('identity', new \stdClass());
+        $model = new ModelBehaviorDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "identity" to be an instance of "PhalconKit\Identity\ManagerInterface"; got "stdClass".'
+        );
+
+        $model->getIdentityService();
     }
 
     public function testPositionSecuritySnapshotSlugSoftDeleteUuidTraits(): void
@@ -750,6 +831,45 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $binaryGenerated->getUuidBehavior()->notify('beforeValidationOnCreate', $binaryGenerated);
         $this->assertIsString($binaryGenerated->uuid);
         $this->assertSame(16, strlen($binaryGenerated->uuid));
+    }
+
+    public function testSecurityBehaviorRejectsInvalidAclService(): void
+    {
+        Security::setAcl(null);
+        $this->di->set('acl', new \stdClass());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "acl" to be an instance of "PhalconKit\Acl\AclInterface"; got "stdClass".'
+        );
+
+        Security::getAcl();
+    }
+
+    public function testSecurityBehaviorRejectsInvalidIdentityService(): void
+    {
+        Security::setRoles(null);
+        $this->di->set('identity', new \stdClass());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "identity" to be an instance of "PhalconKit\Identity\ManagerInterface"; got "stdClass".'
+        );
+
+        Security::getRoles();
+    }
+
+    public function testUuidTraitRejectsInvalidSecurityService(): void
+    {
+        $this->di->setShared('security', new \stdClass());
+        $model = new ModelBehaviorDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "security" to be an instance of "PhalconKit\Encryption\Security"; got "stdClass".'
+        );
+
+        $model->initializeUuid();
     }
 
     public function testRestoreTraitPaths(): void
@@ -834,6 +954,36 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame($write, $model->selectReadConnection());
     }
 
+    public function testReplicationTraitRejectsInvalidConfigService(): void
+    {
+        $this->di->set('config', new \stdClass());
+        $model = new ModelBehaviorDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "config" to be an instance of "Phalcon\Config\ConfigInterface"; got "stdClass".'
+        );
+
+        $model->initializeReplication();
+    }
+
+    public function testReplicationTraitRejectsInvalidConnectionService(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->setReadConnectionService('read-connection');
+        $model->setWriteConnectionService('write-connection');
+        $this->di->setShared('read-connection', $this->createStub(AdapterInterface::class));
+        $this->di->setShared('write-connection', new \stdClass());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "write-connection" to be an instance of "Phalcon\Db\Adapter\AdapterInterface"; got "stdClass".'
+        );
+
+        $model::setReplicationReadyAt(null);
+        $model->selectReadConnection();
+    }
+
     public function testLocaleTraitMagicMethods(): void
     {
         $model = new LocaleTraitDouble();
@@ -861,6 +1011,32 @@ class BehaviorAndTraitsTest extends AbstractUnit
         } catch (\Throwable) {
             $this->assertTrue(true);
         }
+    }
+
+    public function testLocaleTraitRejectsInvalidLocaleService(): void
+    {
+        $this->di->setShared('locale', new \stdClass());
+        $model = new LocaleTraitDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "locale" to be an instance of "PhalconKit\Locale"; got "stdClass".'
+        );
+
+        $model->__get('name');
+    }
+
+    public function testLocaleTraitRejectsInvalidTranslateService(): void
+    {
+        $this->di->setShared('translate', new \stdClass());
+        $model = new LocaleTraitDouble();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "translate" to be an instance of "Phalcon\Translate\Adapter\AbstractAdapter"; got "stdClass".'
+        );
+
+        $model->_('unit.key');
     }
 
     public function testModelMagicMethodsHandleLocaleAndRelations(): void

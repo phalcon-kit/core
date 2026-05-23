@@ -263,6 +263,21 @@ tag has been cut yet.
 - Fixed model hash helpers so missing or invalid config/security services fail
   through the shared model typed-service resolver with `ServiceException`
   instead of relying on PHP assertions.
+- Fixed model identity helpers so missing or invalid identity services fail
+  through the shared model typed-service resolver with `ServiceException`,
+  and accept the PhalconKit identity manager contract instead of only the
+  concrete manager class.
+- Fixed model UUID helpers so missing or invalid security services fail through
+  the shared model typed-service resolver with `ServiceException` instead of
+  relying on PHP assertions.
+- Fixed model locale, cache, blameable, replication, count, and lifecycle
+  helpers so DI service failures are reported through typed PhalconKit service
+  resolution instead of assertions, return-type errors, or raw service output.
+- Fixed model behavior helpers so a native-only models manager fails with
+  `ServiceException` instead of relying on repeated PHP assertions.
+- Fixed model security behavior and model mapping config lookups so bad ACL,
+  identity, config, or native-only DI containers fail through typed PhalconKit
+  service resolution instead of raw default-DI lookups or assertions.
 - Fixed slug generation so unavailable ICU transliterators fail with
   `ServiceException` and locale state is restored even when transliteration
   fails.
