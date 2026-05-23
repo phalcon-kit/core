@@ -376,7 +376,41 @@ trait Query
     public function count(?array $find = null): ResultsetInterface|int|false
     {
         $find ??= $this->prepareFind();
-        return $this->loadModel()::count($this->getCalculationFind($find));
+        $find = $this->getCalculationFind($find);
+        $find = $this->prepareCountFind($find);
+
+        return $this->loadModel()::count($find);
+    }
+
+    /**
+     * Prepare count-specific options without overriding an explicit count column.
+     */
+    protected function prepareCountFind(array $find): array
+    {
+        if (!empty($find['joins']) && !array_key_exists('column', $find)) {
+            $column = $this->getJoinedCountColumn($find);
+            if ($column !== null) {
+                $find['column'] = $column;
+            }
+        }
+
+        return $find;
+    }
+
+    /**
+     * Joined count queries default to the root model identity for single-column primary keys.
+     */
+    protected function getJoinedCountColumn(array $find): ?string
+    {
+        $primaryKeyAttributes = $this->getPrimaryKeyAttributes();
+        if (count($primaryKeyAttributes) !== 1) {
+            return null;
+        }
+
+        $primaryKey = reset($primaryKeyAttributes);
+        return is_string($primaryKey) && $primaryKey !== ''
+            ? 'DISTINCT ' . $this->appendModelName($primaryKey)
+            : null;
     }
     
     /**

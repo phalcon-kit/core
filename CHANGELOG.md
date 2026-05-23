@@ -230,6 +230,8 @@ tag has been cut yet.
   routes can omit unrelated route keys without PHP warnings or repeat forwards.
 - Fixed REST calculation query cleanup so valid falsy conditions such as `0`
   are preserved instead of broadening aggregate queries.
+- Fixed REST count queries with joins so single-column primary keys default to
+  distinct root-row counts instead of duplicated joined rows.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
   reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation

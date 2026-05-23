@@ -1875,6 +1875,45 @@ class QueryStateTest extends AbstractUnit
         ], QueryModelDouble::$calls['minimum']);
     }
 
+    public function testCountUsesDistinctPrimaryKeyWhenJoinsWouldDuplicateRows(): void
+    {
+        QueryModelDouble::reset();
+        QueryModelDouble::$aggregateResults = [
+            'count' => 7,
+        ];
+
+        $controller = $this->newStaticQueryController();
+        $controller->unitModel = new QueryModelDouble();
+
+        $this->assertSame(7, $controller->count([
+            'conditions' => 'active = 1',
+            'joins' => [
+                [QueryModelDouble::class, '[FooModel].[id] = [Related].[fooId]', 'Related', 'left'],
+            ],
+        ]));
+        $this->assertSame(
+            'DISTINCT [FooModel].[id]',
+            QueryModelDouble::$calls['count']['column']
+        );
+
+        $this->assertSame(7, $controller->count([
+            'joins' => [
+                [QueryModelDouble::class, '[FooModel].[id] = [Related].[fooId]', 'Related', 'left'],
+            ],
+            'column' => '[FooModel].[status]',
+        ]));
+        $this->assertSame('[FooModel].[status]', QueryModelDouble::$calls['count']['column']);
+
+        $controller->unitPrimaryKeyAttributes = ['tenantId', 'id'];
+
+        $this->assertSame(7, $controller->count([
+            'joins' => [
+                [QueryModelDouble::class, '[FooModel].[id] = [Related].[fooId]', 'Related', 'left'],
+            ],
+        ]));
+        $this->assertArrayNotHasKey('column', QueryModelDouble::$calls['count']);
+    }
+
     public function testJoinAndDynamicJoinBranches(): void
     {
         $controller = $this->newQueryController();
@@ -2317,6 +2356,8 @@ class QueryStateTest extends AbstractUnit
             /** @var array<string, mixed> */
             public array $unitParams = [];
             public ?ModelInterface $unitModel = null;
+            /** @var array<int, string> */
+            public array $unitPrimaryKeyAttributes = ['id'];
 
             public function initialize(): void
             {
@@ -2356,7 +2397,7 @@ class QueryStateTest extends AbstractUnit
 
             public function getPrimaryKeyAttributes(?string $modelName = null): array
             {
-                return ['id'];
+                return $this->unitPrimaryKeyAttributes;
             }
 
             public function loadModel(?string $modelName = null): ModelInterface
