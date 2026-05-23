@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Support;
 
+use PhalconKit\Exception\ServiceException;
+use PhalconKit\Models\Backup;
+use PhalconKit\Models\User;
 use PhalconKit\Support\Models;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -82,5 +85,51 @@ class ModelsTest extends AbstractUnit
         $this->models->unsetInstance(\PhalconKit\Models\Backup::class);
         unset($instances[\PhalconKit\Models\Backup::class]);
         $this->assertSame($instances, $this->models->getInstances());
+    }
+    
+    public function testGetInstanceRejectsMissingMappedClass(): void
+    {
+        $models = new Models([
+            Backup::class => 'App\\Missing\\Backup',
+        ]);
+        
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Mapped model class "App\\Missing\\Backup" for "PhalconKit\Models\Backup" '
+            . 'does not resolve to a loadable class.'
+        );
+        
+        $models->getBackup();
+    }
+    
+    public function testGetInstanceRejectsMappedClassThatIsNotAModel(): void
+    {
+        $models = new Models([
+            Backup::class => \stdClass::class,
+        ]);
+        
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected mapped model class "stdClass" for "PhalconKit\Models\Backup" '
+            . 'to create an instance of "PhalconKit\Mvc\Model"; got "stdClass".'
+        );
+        
+        $models->getBackup();
+    }
+    
+    public function testTypedGetterRejectsMappedModelWithWrongContract(): void
+    {
+        $models = new Models([
+            User::class => Backup::class,
+        ]);
+        
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected mapped model instance for "PhalconKit\Models\User" '
+            . 'to implement "PhalconKit\Models\Interfaces\UserInterface"; '
+            . 'got "PhalconKit\Models\Backup".'
+        );
+        
+        $models->getUser();
     }
 }

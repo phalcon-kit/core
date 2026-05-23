@@ -278,6 +278,9 @@ tag has been cut yet.
 - Fixed model security behavior and model mapping config lookups so bad ACL,
   identity, config, or native-only DI containers fail through typed PhalconKit
   service resolution instead of raw default-DI lookups or assertions.
+- Fixed mapped model instance resolution so invalid configured model classes
+  fail with `ServiceException` instead of PHP assertions or late return-type
+  errors.
 - Fixed slug generation so unavailable ICU transliterators fail with
   `ServiceException` and locale state is restored even when transliteration
   fails.

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Support;
 
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Model;
 use PhalconKit\Di\Injectable;
 use PhalconKit\Models\Backup;
@@ -87,19 +88,44 @@ use PhalconKit\Models\Type;
 use PhalconKit\Models\Interfaces\TypeInterface;
 
 /**
- * Allow to get mapped classes without using magic methods
+ * Resolves configured PhalconKit model instances without magic methods.
+ *
+ * Applications can replace core model classes through the `models` config map.
+ * This service turns those configured class names into cached model instances
+ * while validating the contracts expected by each typed getter. Invalid app
+ * mappings are reported as `ServiceException` failures so production runtimes
+ * behave consistently even when PHP assertions are disabled.
+ *
+ * The service intentionally constructs models directly instead of resolving
+ * them from the DI container because Phalcon models normally receive their
+ * runtime services through the model manager and default DI integration.
  */
 class Models extends Injectable
 {
     use ModelsMap;
     
     /**
-     * Store an array of instances
+     * Cached model instances keyed by the original core model class name.
+     *
+     * The cache key remains the core class requested by the framework, not the
+     * mapped replacement class. This lets callers swap implementations through
+     * config while preserving stable lookup and `unsetInstance()` semantics.
+     *
+     * @var array<string, Model>
      */
     public array $instances = [];
     
     /**
-     * 
+     * Build the model resolver with an optional explicit model class map.
+     *
+     * Passing null loads the `models` map from the bootstrap config service via
+     * `ModelsMap::setModelsMap()`. Tests and service providers can pass an
+     * explicit array to bypass the config lookup and validate local mappings.
+     *
+     * @param array<string, string>|null $mapping Core model class names mapped
+     *     to replacement model class names, or null to load from config.
+     * @throws ServiceException When the config-backed model map cannot be
+     *     loaded from the DI container.
      */
     public function __construct(?array $mapping = null)
     {
@@ -107,7 +133,10 @@ class Models extends Injectable
     }
     
     /**
-     * Get an array of mapped models
+     * Return every model instance that has already been resolved.
+     *
+     * @return array<string, Model> Cached instances keyed by the original core
+     *     model class name requested by the framework.
      */
     public function getInstances(): array
     {
@@ -115,7 +144,14 @@ class Models extends Injectable
     }
     
     /**
-     * Set the instance for a class
+     * Store a resolved model instance for a core model class.
+     *
+     * This method is public so tests or advanced applications can pre-seed the
+     * cache with custom instances. The supplied instance is not revalidated
+     * against a typed getter contract until that getter is called.
+     *
+     * @param string $class Original core model class used as the cache key.
+     * @param Model $instance Model instance to reuse for future lookups.
      */
     public function setInstance(string $class, Model $instance): void
     {
@@ -123,7 +159,12 @@ class Models extends Injectable
     }
     
     /**
-     * Remove an existing class
+     * Remove a cached model instance for a core model class.
+     *
+     * The configured class map is left intact. The next lookup for the same
+     * class will instantiate the currently configured mapped model again.
+     *
+     * @param string $map Original core model class used as the cache key.
      */
     public function unsetInstance(string $map): void
     {
@@ -131,17 +172,52 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of a specified class implementing Model interface
+     * Return a cached instance of the configured model class for a core class.
      *
-     * @param string $class The fully qualified class name
-     * @return Model An instance of the specified class
+     * The requested class is first translated through the model map. The mapped
+     * class must exist, be instantiable with its default constructor, and extend
+     * `PhalconKit\Mvc\Model`; otherwise a stable framework exception is thrown
+     * before a native PHP error or disabled assertion can leak to callers.
+     *
+     * @param string $class Original core model class name.
+     * @return Model Instance of the configured mapped model class.
+     * @throws ServiceException When the mapped class cannot be loaded,
+     *     instantiated, or does not extend the PhalconKit base model.
      */
     public function getInstance(string $class): Model
     {
         if (!isset($this->instances[$class])) {
             $map = $this->getClassMap($class);
-            $instance = new $map();
-            assert($instance instanceof Model);
+            
+            if (!class_exists($map)) {
+                throw new ServiceException(sprintf(
+                    'Mapped model class "%s" for "%s" does not resolve to a loadable class.',
+                    $map,
+                    $class
+                ));
+            }
+            
+            try {
+                $instance = new $map();
+            }
+            catch (\Throwable $e) {
+                throw new ServiceException(sprintf(
+                    'Could not instantiate mapped model class "%s" for "%s".',
+                    $map,
+                    $class
+                ), previous: $e);
+            }
+            
+            if (!$instance instanceof Model) {
+                throw new ServiceException(sprintf(
+                    'Expected mapped model class "%s" for "%s" to create an instance of "%s"; got "%s".',
+                    $map,
+                    $class,
+                    Model::class,
+                    get_debug_type($instance)
+                ));
+            }
+            
             $this->setInstance($class, $instance);
         }
         
@@ -149,13 +225,42 @@ class Models extends Injectable
     }
     
     /**
+     * Return a mapped model instance that implements a specific framework contract.
+     *
+     * Typed getters call this helper after resolving the mapped model. This
+     * keeps every public getter concise while ensuring a wrong-but-valid model
+     * class, such as mapping `User::class` to `Backup::class`, fails with a
+     * precise `ServiceException` instead of a late PHP return-type error.
+     *
+     * @template T of object
+     * @param string $class Original core model class name.
+     * @param class-string<T> $expectedType Required model interface or class.
+     * @return T Model instance implementing the requested contract.
+     * @throws ServiceException When the configured model does not implement
+     *     the contract required by the typed getter.
+     */
+    private function getTypedInstance(string $class, string $expectedType): object
+    {
+        $instance = $this->getInstance($class);
+        
+        if (!$instance instanceof $expectedType) {
+            throw new ServiceException(sprintf(
+                'Expected mapped model instance for "%s" to implement "%s"; got "%s".',
+                $class,
+                $expectedType,
+                get_debug_type($instance)
+            ));
+        }
+        
+        return $instance;
+    }
+    
+    /**
      * Return an instance of \PhalconKit\Models\Interfaces\BackupInterface
      */
     public function getBackup(): BackupInterface
     {
-        $instance = $this->getInstance(Backup::class);
-        assert($instance instanceof BackupInterface);
-        return $instance;
+        return $this->getTypedInstance(Backup::class, BackupInterface::class);
     }
     
     /**
@@ -163,9 +268,7 @@ class Models extends Injectable
      */
     public function getAudit(): AuditInterface
     {
-        $instance = $this->getInstance(Audit::class);
-        assert($instance instanceof AuditInterface);
-        return $instance;
+        return $this->getTypedInstance(Audit::class, AuditInterface::class);
     }
     
     /**
@@ -173,9 +276,7 @@ class Models extends Injectable
      */
     public function getAuditDetail(): AuditDetailInterface
     {
-        $instance = $this->getInstance(AuditDetail::class);
-        assert($instance instanceof AuditDetailInterface);
-        return $instance;
+        return $this->getTypedInstance(AuditDetail::class, AuditDetailInterface::class);
     }
     
     /**
@@ -183,9 +284,7 @@ class Models extends Injectable
      */
     public function getLog(): LogInterface
     {
-        $instance = $this->getInstance(Log::class);
-        assert($instance instanceof LogInterface);
-        return $instance;
+        return $this->getTypedInstance(Log::class, LogInterface::class);
     }
     
     /**
@@ -193,9 +292,7 @@ class Models extends Injectable
      */
     public function getEmail(): EmailInterface
     {
-        $instance = $this->getInstance(Email::class);
-        assert($instance instanceof EmailInterface);
-        return $instance;
+        return $this->getTypedInstance(Email::class, EmailInterface::class);
     }
     
     /**
@@ -203,9 +300,7 @@ class Models extends Injectable
      */
     public function getJob(): JobInterface
     {
-        $instance = $this->getInstance(Job::class);
-        assert($instance instanceof JobInterface);
-        return $instance;
+        return $this->getTypedInstance(Job::class, JobInterface::class);
     }
     
     /**
@@ -213,9 +308,7 @@ class Models extends Injectable
      */
     public function getFile(): FileInterface
     {
-        $instance = $this->getInstance(File::class);
-        assert($instance instanceof FileInterface);
-        return $instance;
+        return $this->getTypedInstance(File::class, FileInterface::class);
     }
     
     /**
@@ -223,9 +316,7 @@ class Models extends Injectable
      */
     public function getSession(): SessionInterface
     {
-        $instance = $this->getInstance(Session::class);
-        assert($instance instanceof SessionInterface);
-        return $instance;
+        return $this->getTypedInstance(Session::class, SessionInterface::class);
     }
     
     /**
@@ -233,9 +324,7 @@ class Models extends Injectable
      */
     public function getFlag(): FlagInterface
     {
-        $instance = $this->getInstance(Flag::class);
-        assert($instance instanceof FlagInterface);
-        return $instance;
+        return $this->getTypedInstance(Flag::class, FlagInterface::class);
     }
     
     /**
@@ -243,9 +332,7 @@ class Models extends Injectable
      */
     public function getSetting(): SettingInterface
     {
-        $instance = $this->getInstance(Setting::class);
-        assert($instance instanceof SettingInterface);
-        return $instance;
+        return $this->getTypedInstance(Setting::class, SettingInterface::class);
     }
     
     /**
@@ -253,9 +340,7 @@ class Models extends Injectable
      */
     public function getLang(): LangInterface
     {
-        $instance = $this->getInstance(Lang::class);
-        assert($instance instanceof LangInterface);
-        return $instance;
+        return $this->getTypedInstance(Lang::class, LangInterface::class);
     }
     
     /**
@@ -263,9 +348,7 @@ class Models extends Injectable
      */
     public function getTranslate(): TranslateInterface
     {
-        $instance = $this->getInstance(Translate::class);
-        assert($instance instanceof TranslateInterface);
-        return $instance;
+        return $this->getTypedInstance(Translate::class, TranslateInterface::class);
     }
     
     /**
@@ -273,9 +356,7 @@ class Models extends Injectable
      */
     public function getWorkspace(): WorkspaceInterface
     {
-        $instance = $this->getInstance(Workspace::class);
-        assert($instance instanceof WorkspaceInterface);
-        return $instance;
+        return $this->getTypedInstance(Workspace::class, WorkspaceInterface::class);
     }
     
     /**
@@ -283,9 +364,7 @@ class Models extends Injectable
      */
     public function getWorkspaceLang(): WorkspaceLangInterface
     {
-        $instance = $this->getInstance(WorkspaceLang::class);
-        assert($instance instanceof WorkspaceLangInterface);
-        return $instance;
+        return $this->getTypedInstance(WorkspaceLang::class, WorkspaceLangInterface::class);
     }
     
     /**
@@ -293,9 +372,7 @@ class Models extends Injectable
      */
     public function getPage(): PageInterface
     {
-        $instance = $this->getInstance(Page::class);
-        assert($instance instanceof PageInterface);
-        return $instance;
+        return $this->getTypedInstance(Page::class, PageInterface::class);
     }
     
     /**
@@ -303,9 +380,7 @@ class Models extends Injectable
      */
     public function getPost(): PostInterface
     {
-        $instance = $this->getInstance(Post::class);
-        assert($instance instanceof PostInterface);
-        return $instance;
+        return $this->getTypedInstance(Post::class, PostInterface::class);
     }
     
     /**
@@ -313,9 +388,7 @@ class Models extends Injectable
      */
     public function getTemplate(): TemplateInterface
     {
-        $instance = $this->getInstance(Template::class);
-        assert($instance instanceof TemplateInterface);
-        return $instance;
+        return $this->getTypedInstance(Template::class, TemplateInterface::class);
     }
     
     /**
@@ -323,9 +396,7 @@ class Models extends Injectable
      */
     public function getTable(): TableInterface
     {
-        $instance = $this->getInstance(Table::class);
-        assert($instance instanceof TableInterface);
-        return $instance;
+        return $this->getTypedInstance(Table::class, TableInterface::class);
     }
     
     /**
@@ -333,9 +404,7 @@ class Models extends Injectable
      */
     public function getProfile(): ProfileInterface
     {
-        $instance = $this->getInstance(Profile::class);
-        assert($instance instanceof ProfileInterface);
-        return $instance;
+        return $this->getTypedInstance(Profile::class, ProfileInterface::class);
     }
     
     /**
@@ -343,9 +412,7 @@ class Models extends Injectable
      */
     public function getOauth2(): Oauth2Interface
     {
-        $instance = $this->getInstance(Oauth2::class);
-        assert($instance instanceof Oauth2Interface);
-        return $instance;
+        return $this->getTypedInstance(Oauth2::class, Oauth2Interface::class);
     }
     
     /**
@@ -353,9 +420,7 @@ class Models extends Injectable
      */
     public function getUser(): UserInterface
     {
-        $instance = $this->getInstance(User::class);
-        assert($instance instanceof UserInterface);
-        return $instance;
+        return $this->getTypedInstance(User::class, UserInterface::class);
     }
     
     /**
@@ -363,9 +428,7 @@ class Models extends Injectable
      */
     public function getUserType(): UserTypeInterface
     {
-        $instance = $this->getInstance(UserType::class);
-        assert($instance instanceof UserTypeInterface);
-        return $instance;
+        return $this->getTypedInstance(UserType::class, UserTypeInterface::class);
     }
     
     /**
@@ -373,9 +436,7 @@ class Models extends Injectable
      */
     public function getUserGroup(): UserGroupInterface
     {
-        $instance = $this->getInstance(UserGroup::class);
-        assert($instance instanceof UserGroupInterface);
-        return $instance;
+        return $this->getTypedInstance(UserGroup::class, UserGroupInterface::class);
     }
     
     /**
@@ -383,9 +444,7 @@ class Models extends Injectable
      */
     public function getUserRole(): UserRoleInterface
     {
-        $instance = $this->getInstance(UserRole::class);
-        assert($instance instanceof UserRoleInterface);
-        return $instance;
+        return $this->getTypedInstance(UserRole::class, UserRoleInterface::class);
     }
     
     /**
@@ -393,9 +452,7 @@ class Models extends Injectable
      */
     public function getUserFeature(): UserFeatureInterface
     {
-        $instance = $this->getInstance(UserFeature::class);
-        assert($instance instanceof UserFeatureInterface);
-        return $instance;
+        return $this->getTypedInstance(UserFeature::class, UserFeatureInterface::class);
     }
     
     /**
@@ -403,9 +460,7 @@ class Models extends Injectable
      */
     public function getRole(): RoleInterface
     {
-        $instance = $this->getInstance(Role::class);
-        assert($instance instanceof RoleInterface);
-        return $instance;
+        return $this->getTypedInstance(Role::class, RoleInterface::class);
     }
     
     /**
@@ -413,9 +468,7 @@ class Models extends Injectable
      */
     public function getRoleRole(): RoleRoleInterface
     {
-        $instance = $this->getInstance(RoleRole::class);
-        assert($instance instanceof RoleRoleInterface);
-        return $instance;
+        return $this->getTypedInstance(RoleRole::class, RoleRoleInterface::class);
     }
     
     /**
@@ -423,9 +476,7 @@ class Models extends Injectable
      */
     public function getRoleFeature(): RoleFeatureInterface
     {
-        $instance = $this->getInstance(RoleFeature::class);
-        assert($instance instanceof RoleFeatureInterface);
-        return $instance;
+        return $this->getTypedInstance(RoleFeature::class, RoleFeatureInterface::class);
     }
     
     /**
@@ -433,9 +484,7 @@ class Models extends Injectable
      */
     public function getGroup(): GroupInterface
     {
-        $instance = $this->getInstance(Group::class);
-        assert($instance instanceof GroupInterface);
-        return $instance;
+        return $this->getTypedInstance(Group::class, GroupInterface::class);
     }
     
     /**
@@ -443,9 +492,7 @@ class Models extends Injectable
      */
     public function getGroupRole(): GroupRoleInterface
     {
-        $instance = $this->getInstance(GroupRole::class);
-        assert($instance instanceof GroupRoleInterface);
-        return $instance;
+        return $this->getTypedInstance(GroupRole::class, GroupRoleInterface::class);
     }
     
     /**
@@ -453,9 +500,7 @@ class Models extends Injectable
      */
     public function getGroupType(): GroupTypeInterface
     {
-        $instance = $this->getInstance(GroupType::class);
-        assert($instance instanceof GroupTypeInterface);
-        return $instance;
+        return $this->getTypedInstance(GroupType::class, GroupTypeInterface::class);
     }
     
     /**
@@ -463,9 +508,7 @@ class Models extends Injectable
      */
     public function getGroupFeature(): GroupFeatureInterface
     {
-        $instance = $this->getInstance(GroupFeature::class);
-        assert($instance instanceof GroupFeatureInterface);
-        return $instance;
+        return $this->getTypedInstance(GroupFeature::class, GroupFeatureInterface::class);
     }
     
     /**
@@ -473,9 +516,7 @@ class Models extends Injectable
      */
     public function getType(): TypeInterface
     {
-        $instance = $this->getInstance(Type::class);
-        assert($instance instanceof TypeInterface);
-        return $instance;
+        return $this->getTypedInstance(Type::class, TypeInterface::class);
     }
     
     /**
@@ -483,8 +524,6 @@ class Models extends Injectable
      */
     public function getFeature(): FeatureInterface
     {
-        $instance = $this->getInstance(Feature::class);
-        assert($instance instanceof FeatureInterface);
-        return $instance;
+        return $this->getTypedInstance(Feature::class, FeatureInterface::class);
     }
 }
