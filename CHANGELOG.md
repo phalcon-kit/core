@@ -162,6 +162,8 @@ tag has been cut yet.
   exception categories.
 - Added typed PhalconKit DI containers with `getTyped()` and `getConfig()`
   helpers for framework code that needs explicit service contracts.
+- Added a shared `ServiceResolver` for static helpers and native Phalcon
+  extension points that need typed PhalconKit DI service resolution.
 
 ### Changed
 
@@ -243,6 +245,10 @@ tag has been cut yet.
   of PHP assertions.
 - Fixed logger formatter and adapter validation so invalid logger config fails
   with `ConfigurationException` instead of PHP assertions.
+- Fixed tag helper service resolution so missing or invalid `assets` and
+  `escaper` services fail through the shared resolver with `ServiceException`
+  instead of assertion, type-error, or native DI failures, and so
+  `escapeParam()` handles a null attribute without passing it to the escaper.
 - Fixed metadata and session providers so lean config consumers get safe
   adapter defaults instead of undefined adapter warnings.
 - Fixed session provider adapter validation so custom session adapters fail

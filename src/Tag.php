@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit;
 
-use AssertionError;
 use Phalcon\Assets\Exception;
-use Phalcon\Di\Di;
 use Phalcon\Tag as PhalconTag;
-use Phalcon\Html\Escaper;
 use Phalcon\Html\Escaper\EscaperInterface;
 use PhalconKit\Assets\Manager;
+use PhalconKit\Di\ServiceResolver;
+use PhalconKit\Exception\ServiceException;
+use PhalconKit\Html\Escaper\EscaperInterface as PhalconKitEscaperInterface;
 
 /**
  * This file is part of the Phalcon Kit.
@@ -57,10 +57,31 @@ class Tag extends PhalconTag
      * Retrieves the instance of the Assets Manager.
      *
      * @return Manager The instance of the Assets Manager
+     * @throws ServiceException When the tag DI cannot resolve a compatible
+     *     assets manager.
      */
     public static function getAssetsManager(): Manager
     {
-        return self::$assetsManager ??= self::getDI()->get('assets');
+        if (self::$assetsManager instanceof Manager) {
+            return self::$assetsManager;
+        }
+
+        try {
+            $di = self::getDI();
+        }
+        catch (\Throwable $e) {
+            throw new ServiceException(sprintf(
+                'Could not resolve DI service "%s" for PhalconKit tag helpers because no tag DI is available.',
+                'assets'
+            ), previous: $e);
+        }
+
+        return self::$assetsManager = ServiceResolver::fromContainer(
+            $di,
+            'assets',
+            Manager::class,
+            context: 'PhalconKit tag helpers'
+        );
     }
     
     /**
@@ -79,30 +100,30 @@ class Tag extends PhalconTag
      * @param array $params The parameters used to retrieve the escaper instance.
      *                      The params should be an associative array with optional keys to configure the escaper.
      * @return EscaperInterface|null The configured escaper instance, or null if no escaper is found.
-     * @throws AssertionError If the retrieved escaper instance is not an instance of Escaper.
      * @see PhalconTag::getEscaper()
      */
     #[\Override]
     public static function getEscaper(array $params): ?EscaperInterface
     {
-        @$escaper = PhalconTag::getEscaper($params);
-        assert($escaper instanceof Escaper);
-        return $escaper;
+        return @PhalconTag::getEscaper($params);
     }
     
     /**
      * Retrieves the escaper service.
      *
      * @return EscaperInterface The instance of the escaper service.
-     * @throws AssertionError If the retrieved escaper instance is not an instance of Escaper.
+     * @throws ServiceException When the default DI cannot resolve a native
+     *     Phalcon escaper service.
      * @see PhalconTag::getEscaperService()
      */
     #[\Override]
     public static function getEscaperService(): EscaperInterface
     {
-        $escaper = Di::getDefault()->get('escaper');
-        assert($escaper instanceof Escaper);
-        return $escaper;
+        return ServiceResolver::fromDefault(
+            'escaper',
+            EscaperInterface::class,
+            context: 'PhalconKit tag helpers'
+        );
     }
     
     /**
@@ -154,14 +175,20 @@ class Tag extends PhalconTag
      */
     public static function escapeParam(mixed $value = null, ?string $attr = null, string $glue = ' '): array
     {
-        $escaper = self::getEscaperService();
-        assert($escaper instanceof \PhalconKit\Html\Escaper);
+        $escaper = ServiceResolver::fromDefault(
+            'escaper',
+            PhalconKitEscaperInterface::class,
+            context: 'PhalconKit tag helpers'
+        );
         
         if (!isset($value)) {
             return [$value, $attr];
         }
         
-        $attr = $escaper->attributes($attr);
+        if ($attr !== null) {
+            $attr = $escaper->attributes($attr);
+        }
+
         switch ($attr) {
             case 'css':
             case 'style':
