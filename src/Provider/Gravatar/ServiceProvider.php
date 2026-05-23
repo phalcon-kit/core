@@ -24,7 +24,8 @@ class ServiceProvider extends AbstractServiceProvider
     #[\Override]
     public function register(DiInterface $di): void
     {
-        // @todo implement based on https://github.com/phalcon/incubator-avatar/blob/master/src/Gravatar.php
+        // Intentionally empty until the package defines a maintained Gravatar
+        // client, dependency, configuration shape, and privacy stance.
 //        $di->setShared($this->getName(), function (?array $options = null) use ($di) {
 //    
 //            $options ??= $di->getConfig()->pathToArray('gravatar', []);

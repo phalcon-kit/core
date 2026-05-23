@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Interfaces;
 
-// @todo __isset etc...
+// `__isset()` and `__unset()` are intentionally not part of the locale model
+// contract until translated property presence semantics are defined.
 interface LocaleInterface
 {
     public function _(string $translateKey, array $placeholders = []): string;

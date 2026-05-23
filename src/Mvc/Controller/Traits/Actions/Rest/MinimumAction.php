@@ -26,9 +26,7 @@ trait MinimumAction
     use AbstractRestResponse;
     
     /**
-     * Minimum value of a column
-     * Alias for minimumAction
-     * @link minimumAction()
+     * Legacy short alias for `minimumAction()`.
      */
     public function minAction(): ResponseInterface
     {
@@ -36,7 +34,11 @@ trait MinimumAction
     }
     
     /**
-     * Minimum value of a column
+     * Return the minimum value for the configured aggregate column.
+     *
+     * The response variable is named `minimum`. Query preparation is delegated
+     * to the shared query trait so REST filters and policy constraints are
+     * applied consistently.
      */
     public function minimumAction(): ResponseInterface
     {

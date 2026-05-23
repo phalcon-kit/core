@@ -62,13 +62,6 @@ class ImplodeMbSprintfTest extends AbstractUnit
         $this->assertEquals('苹果', implode_mb_sprintf($array));
     }
     
-    // @todo
-//    public function testImplodeMbSprintfDifferentEncodings(): void
-//    {
-//        $array = [mb_convert_encoding('苹果', 'ISO-8859-1', 'UTF-8'), 'apple'];
-//        $this->assertEquals('苹果 apple', implode_mb_sprintf($array, ' ', '%s', 'ISO-8859-1'));
-//    }
-    
     public function testImplodeMbSprintfNumericFormats(): void
     {
         $array = ['123', '456', '789'];

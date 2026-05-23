@@ -14,12 +14,18 @@ declare(strict_types=1);
 namespace PhalconKit\Support;
 
 /**
- * This class allows to get the installed version of the core
+ * Exposes the installed PhalconKit core version through Phalcon's version API.
+ *
+ * Keeping this wrapper aligned with `\Phalcon\Support\Version` lets consumers
+ * use the same version-format helpers they already know from Phalcon while
+ * reporting the framework package version.
  */
 class Version extends \Phalcon\Support\Version
 {
     /**
-     * Area where the version number is set. The format is as follows:
+     * Return the internal version tuple consumed by Phalcon's formatter.
+     *
+     * The tuple format is:
      * ABBCCDE
      *
      * A - Major version
@@ -28,7 +34,8 @@ class Version extends \Phalcon\Support\Version
      * D - Special release: 1 = Alpha, 2 = Beta, 3 = RC, 4 = Stable
      * E - Special release version i.e. RC1, Beta2 etc.
      *
-     * @return array{int, int, int, int, int}
+     * @return array{int, int, int, int, int} Major, medium, minor, stability,
+     *     and stability-version tuple.
      */
     #[\Override]
     protected function getVersion(): array

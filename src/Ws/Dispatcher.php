@@ -15,6 +15,12 @@ namespace PhalconKit\Ws;
 
 use PhalconKit\Dispatcher\DispatcherTrait;
 
+/**
+ * WebSocket task dispatcher.
+ *
+ * WebSocket requests use CLI-style task dispatching, with the shared
+ * PhalconKit dispatcher helpers layered on top for namespace/action handling.
+ */
 class Dispatcher extends \PhalconKit\Cli\Dispatcher implements DispatcherInterface
 {
     use DispatcherTrait;

@@ -14,13 +14,15 @@ declare(strict_types=1);
 namespace PhalconKit\Http;
 
 /**
- * Represents an HTTP request.
- * {@inheritDoc}
+ * HTTP request implementation with PhalconKit request helpers.
+ *
+ * The class preserves Phalcon's request API and adds CORS/preflight helpers plus
+ * a diagnostic array export used by framework tooling.
  */
 class Request extends \Phalcon\Http\Request implements RequestInterface
 {
     /**
-     * Return true if the request is a Cross-Origin Resource Sharing (CORS) request
+     * Return true when an Origin header targets a different origin.
      *
      * @return bool True if the request is a CORS request, false otherwise
      */
@@ -31,7 +33,7 @@ class Request extends \Phalcon\Http\Request implements RequestInterface
     }
     
     /**
-     * Return true if the request is a preflight request
+     * Return true when the request is a browser CORS preflight request.
      *
      * A preflight request is a CORS (Cross-Origin Resource Sharing) request that is sent by a browser
      * prior to the actual request to determine the permissions to make the actual request.
@@ -53,7 +55,7 @@ class Request extends \Phalcon\Http\Request implements RequestInterface
     }
     
     /**
-     * Checks if the request is from the same origin.
+     * Check whether the Origin header matches the current scheme and host.
      *
      * @return bool Returns true if the request is from the same origin, false otherwise.
      */
@@ -65,7 +67,7 @@ class Request extends \Phalcon\Http\Request implements RequestInterface
     }
     
     /**
-     * Converts the request object to an array.
+     * Export a diagnostic snapshot of request input and derived request flags.
      *
      * @return array An associative array containing various properties of the request object:
      * 

@@ -30,7 +30,8 @@ use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractModelsManager;
  * is static because CLI retention tasks call model classes directly when
  * building delete/obfuscation queries.
  *
- * @todo this should be moved into models manager
+ * Long term, this may belong in a lifecycle-aware model manager. Keeping it as
+ * a trait avoids changing the static API used by existing CLI retention tasks.
  */
 trait LifeCycle
 {

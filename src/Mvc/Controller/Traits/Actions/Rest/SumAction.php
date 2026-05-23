@@ -25,9 +25,11 @@ trait SumAction
     use AbstractRestResponse;
     
     /**
-     * Calculates the sum of a column.
+     * Return the sum for the configured aggregate column.
      *
-     * @return ResponseInterface The REST response with a status of true.
+     * The response variable is named `sum`. Query preparation is delegated to
+     * the shared query trait so filters, permissions, joins, and request state
+     * match the other REST aggregate actions.
      */
     public function sumAction(): ResponseInterface
     {

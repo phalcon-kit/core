@@ -16,15 +16,20 @@ namespace PhalconKit\Autoload;
 use Phalcon\Autoload\Exception as AutoloadException;
 
 /**
- * Class Loader
+ * Phalcon autoloader optimized for framework bootstrap usage.
  *
- * This class extends the \Phalcon\Autoload\Loader class and disable file checking callback for better performance.
- *
- * @throws AutoloadException When native Phalcon loader initialization fails.
+ * PhalconKit disables the native file-existence callback after construction so
+ * autoloading does not perform redundant file checks in production. Namespace
+ * registration remains native Phalcon behavior; only the file checking
+ * callback is changed.
  */
 class Loader extends \Phalcon\Autoload\Loader
 {
     /**
+     * Create the loader and disable native file checking.
+     *
+     * @param bool $isDebug Forwarded to the native Phalcon loader constructor.
+     *
      * @throws AutoloadException When native Phalcon loader initialization fails.
      */
     public function __construct(bool $isDebug = false)

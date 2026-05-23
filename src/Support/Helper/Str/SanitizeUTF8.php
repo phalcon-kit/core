@@ -14,17 +14,15 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Helper\Str;
 
 /**
- * Sanitize and convert to UTF-8
+ * Normalize input text to UTF-8 and remove invalid characters.
  */
 class SanitizeUTF8
 {
     /**
-     * Invokes the function to sanitize a given string by detecting its encoding,
-     * converting it to UTF-8, and removing invalid UTF-8 characters.
+     * Detect common encodings, convert safely to UTF-8, and strip invalid text.
      *
-     * @param string $string The input string to be sanitized.
-     * @param string $invalidUtf8Regex A regular expression pattern to identify invalid UTF-8 characters. Default: '[^\\x20-\\x7E\\xA0-\\xFF]'.
-     * @return string The sanitized string in UTF-8 encoding, with invalid characters removed.
+     * @param string $invalidUtf8Regex Multibyte regex used to remove invalid
+     *     characters after conversion.
      */
     public function __invoke(string $string, string $invalidUtf8Regex = '[^\x20-\x7E\xA0-\xFF]'): string
     {

@@ -42,7 +42,8 @@ trait Impersonation
         $validation->add('userId', new Numericality(['message' => 'not-numeric']));
         $messages = $validation->validate($params);
         
-        // must be an admin or a dev @todo improve using config permissions
+        // Legacy default: only admin/dev roles can impersonate users. A
+        // config-driven permission contract remains a public API design topic.
         if (!count($messages) && $this->hasRole(['admin', 'dev'])) {
             $sessionIdentity = $this->getSessionIdentity();
             

@@ -26,9 +26,7 @@ trait MaximumAction
     use AbstractRestResponse;
     
     /**
-     * Maximum value of a column
-     * Alias for maximumAction
-     * @link maximumAction()
+     * Legacy short alias for `maximumAction()`.
      */
     public function maxAction(): ResponseInterface
     {
@@ -36,7 +34,11 @@ trait MaximumAction
     }
     
     /**
-     * Maximum value of a column
+     * Return the maximum value for the configured aggregate column.
+     *
+     * The response variable is named `maximum`. Query preparation is delegated
+     * to the shared query trait so REST filters and policy constraints are
+     * applied consistently.
      */
     public function maximumAction(): ResponseInterface
     {

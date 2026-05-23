@@ -16,11 +16,19 @@ namespace PhalconKit\Bootstrap;
 use PhalconKit\Config\ConfigInterface;
 
 /**
- * Phalcon Kit Router
- * {@inheritDoc}
+ * Bootstrap router with PhalconKit's default frontend routes.
+ *
+ * This router extends the framework router with application-facing defaults for
+ * the bundled frontend module. It registers simple controller/action routes and
+ * optional locale-prefixed variants based on the configured allowed locales.
  */
 class Router extends \PhalconKit\Mvc\Router
 {
+    /**
+     * Default route paths used when no explicit router config overrides them.
+     *
+     * @var array<string, string>
+     */
     public array $defaults = [
         'namespace' => \PhalconKit\Modules\Frontend\Controller::class,
         'module' => 'frontend',
@@ -28,19 +36,38 @@ class Router extends \PhalconKit\Mvc\Router
         'action' => 'index',
     ];
     
+    /**
+     * Default not-found route target used by the bootstrap router.
+     *
+     * @var array<string, string>
+     */
     public array $notFound = [
         'controller' => 'error',
         'action' => 'notFound',
     ];
     
     /**
-     * Router constructor.
+     * Create the bootstrap router.
+     *
+     * @param bool $defaultRoutes Whether framework default routes should be
+     *     registered immediately.
+     * @param ConfigInterface|null $config Optional config service. When omitted
+     *     the parent router resolves it from the default DI.
      */
     public function __construct(bool $defaultRoutes = true, ?ConfigInterface $config = null)
     {
         parent::__construct($defaultRoutes, $config);
     }
     
+    /**
+     * Register unprefixed and locale-prefixed frontend routes.
+     *
+     * Routes are named consistently (`default`, `default-controller`,
+     * `default-controller-action`, and locale variants) so applications can
+     * override or generate URLs against known route names.
+     *
+     * @return void
+     */
     public function baseRoutes(): void
     {
         $this->add('/', [

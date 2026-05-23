@@ -13,6 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit\Ws;
 
+/**
+ * Contract for WebSocket task dispatchers.
+ *
+ * This combines Phalcon's native CLI dispatcher surface with PhalconKit's
+ * shared dispatcher helpers so WebSocket tasks can be resolved and inspected
+ * through the same contract as CLI tasks.
+ */
 interface DispatcherInterface extends \Phalcon\Cli\DispatcherInterface, \PhalconKit\Dispatcher\DispatcherInterface
 {
 }

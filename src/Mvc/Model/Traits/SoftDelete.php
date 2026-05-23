@@ -107,7 +107,8 @@ trait SoftDelete
      * - notRestored
      * - afterRestore
      *
-     * @todo add a check from orm.events setup state
+     * The native ORM events flag is read from INI here because the trait can be
+     * used without access to the original model setup options.
      */
     public function restore(?string $field = null, ?int $notDeletedValue = null): bool
     {

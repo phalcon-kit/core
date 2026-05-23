@@ -20,23 +20,37 @@ use Phalcon\Acl\Role;
 use PhalconKit\Support\Options\Options;
 
 /**
- * Class Acl
+ * Builds native Phalcon ACL instances from PhalconKit permission config.
  *
- * This class represents an Access Control List (ACL) and is used
- * to configure and manage access permissions for different components.
+ * The input permission structure is the same shape used by REST controllers:
+ * roles can reference reusable feature blocks, components map to allowed
+ * accesses, and role inheritance can be applied through a configurable key.
+ * The builder returns a native in-memory ACL so downstream code can use normal
+ * Phalcon ACL checks after PhalconKit has expanded the app config.
  */
 class Acl extends AbstractInjectionAware implements AclInterface
 {
     use Options;
     
     /**
-     * Retrieves the ACL (Access Control List) based on the provided components and permissions.
+     * Build an in-memory ACL for one or more configured component sections.
      *
-     * @param array $componentsName An array of component names to include in the ACL. Defaults to ['components'].
-     * @param array|null $permissions The permissions array to use for building the ACL. Defaults to null.
-     * @param string $inherit The type of role inheritance to use. Defaults to 'inherit'.
+     * `componentsName` lets callers build ACLs from alternate permission
+     * sections, for example `components`, `models`, or app-specific groups.
+     * When `permissions` is null, the method reads the `permissions` option
+     * stored on this ACL service. Feature entries referenced by roles are merged
+     * before components are registered.
      *
-     * @return Memory The ACL (Access Control List) object.
+     * Integer component keys are treated as shorthand component names with `*`
+     * access. A component named `*` is ignored because Phalcon's native ACL
+     * still needs concrete component registrations.
+     *
+     * @param array<int, string> $componentsName Permission sections to inspect.
+     * @param array<string, mixed>|null $permissions Permission tree to compile.
+     * @param string $inherit Role-inheritance key inside the permission tree.
+     *
+     * @return Memory Native Phalcon in-memory ACL populated with roles,
+     *     components, accesses, and inheritance.
      */
     #[\Override]
     public function get(array $componentsName = ['components'], ?array $permissions = null, string $inherit = 'inherit'): Memory

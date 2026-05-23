@@ -22,13 +22,36 @@ use PhalconKit\Di\InjectableTrait;
 use PhalconKit\Mvc\Model\Interfaces\RelationshipInterface;
 
 /**
- * This class extends the TransformerAbstract class and implements the InjectionAwareInterface.
- * It also uses the InjectableTrait.
+ * Base transformer for Fractal resources backed by Phalcon models.
+ *
+ * The transformer is DI-aware so concrete API transformers can resolve shared
+ * services without introducing their own container plumbing. It also provides
+ * helpers for exposing relationships only when they were already loaded by the
+ * model layer, which avoids accidental lazy-loading and keeps response costs
+ * predictable for REST endpoints.
+ *
+ * Concrete transformers should call `includeCollectionIfLoaded()` and
+ * `includeItemIfLoaded()` from Fractal include methods when an include should
+ * reflect the model's loaded relationship state instead of forcing a query.
  */
 class Transformer extends TransformerAbstract implements InjectionAwareInterface
 {
     use InjectableTrait;
 
+    /**
+     * Build a Fractal collection resource for a loaded relationship alias.
+     *
+     * If the alias is not available, or if the loaded value is not iterable, an
+     * empty collection is returned. This keeps collection includes stable for
+     * clients while still avoiding implicit database reads.
+     *
+     * @param ModelInterface $entity Model that may expose loaded relationship
+     *     aliases through PhalconKit relationship helpers.
+     * @param string $alias Relationship alias requested by the transformer.
+     * @param Transformer $transformer Transformer used for each related item.
+     *
+     * @return Collection Fractal collection resource for the loaded relation.
+     */
     protected function includeCollectionIfLoaded(
         ModelInterface $entity,
         string $alias,
@@ -42,6 +65,21 @@ class Transformer extends TransformerAbstract implements InjectionAwareInterface
         );
     }
 
+    /**
+     * Build a Fractal item resource for a loaded relationship alias.
+     *
+     * Missing aliases, null values, and iterable values return null because
+     * Fractal item includes are meant for one related model. Use
+     * `includeCollectionIfLoaded()` when the relation may contain many records.
+     *
+     * @param ModelInterface $entity Model that may expose loaded relationship
+     *     aliases through PhalconKit relationship helpers.
+     * @param string $alias Relationship alias requested by the transformer.
+     * @param Transformer $transformer Transformer used for the related model.
+     *
+     * @return Item|null Fractal item resource when a single related model is
+     *     available, or null when the include should be omitted.
+     */
     protected function includeItemIfLoaded(
         ModelInterface $entity,
         string $alias,
@@ -59,12 +97,30 @@ class Transformer extends TransformerAbstract implements InjectionAwareInterface
         return $this->item($related, $transformer);
     }
 
+    /**
+     * Determine whether a relationship alias was already populated on a model.
+     *
+     * PhalconKit tracks both loaded aliases and dirty aliases. Both are treated
+     * as explicitly available values because they represent state already known
+     * to the model rather than a relation that must be queried.
+     */
     protected function isRelationAliasLoaded(ModelInterface $entity, string $alias): bool
     {
         return $entity instanceof RelationshipInterface
             && ($entity->hasDirtyRelatedAlias($alias) || $entity->hasLoadedRelatedAlias($alias));
     }
 
+    /**
+     * Return the loaded or dirty value for a relationship alias.
+     *
+     * Loaded aliases take priority over dirty aliases so eager-loaded data wins
+     * when both stores contain a value. Null is returned for models that do not
+     * implement PhalconKit's relationship contract or for aliases that have not
+     * been populated.
+     *
+     * @return mixed Relationship value, commonly a model, iterable resultset, or
+     *     null when no explicit relation value exists.
+     */
     protected function getLoadedRelationAlias(ModelInterface $entity, string $alias): mixed
     {
         if (!$entity instanceof RelationshipInterface) {

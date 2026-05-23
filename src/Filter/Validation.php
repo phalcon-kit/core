@@ -14,7 +14,12 @@ declare(strict_types=1);
 namespace PhalconKit\Filter;
 
 /**
- * {@inheritDoc}
+ * PhalconKit validation service type.
+ *
+ * The implementation currently delegates to Phalcon's validator stack without
+ * changing behavior. Keeping the wrapper in the framework namespace gives
+ * applications a stable DI type to extend or replace when validation policy
+ * needs to become application-specific.
  */
 class Validation extends \Phalcon\Filter\Validation
 {

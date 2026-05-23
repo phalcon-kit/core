@@ -29,11 +29,9 @@ trait FindAction
     use AbstractRestResponse;
     
     /**
-     * Find and expose the resultset.
-     * @link findAction()
+     * Legacy alias for `findAction()`.
      *
-     * @deprecated use {@link findAction()}
-     * @return ResponseInterface The HTTP response that indicates the success of retrieving all records.
+     * @deprecated since PhalconKit 1.0, use findAction() instead.
      */
     public function getAllAction(): ResponseInterface
     {
@@ -41,11 +39,9 @@ trait FindAction
     }
     
     /**
-     * Find with relationships and expose the resultset.
-     * @link findWithAction()
+     * Legacy alias for `findWithAction()`.
      *
-     * @deprecated use {@link findWithAction()}
-     * @return ResponseInterface The HTTP response that contains the resultset with the relationships.
+     * @deprecated since PhalconKit 1.0, use findWithAction() instead.
      */
     public function getAllWithAction(): ResponseInterface
     {
@@ -53,11 +49,12 @@ trait FindAction
     }
     
     /**
-     * Find and expose the resultset.
+     * Find and expose records matching the prepared REST query.
      *
-     * This method finds the resultset and exposes it for further processing.
-     *
-     * @return ResponseInterface The HTTP response that indicates the success of finding and exposing the resultset.
+     * The `data` response variable receives the exposed result list. Query
+     * preparation is delegated to the shared query trait, so filters, fields,
+     * permissions, identity constraints, ordering, limits, and joins stay
+     * consistent across REST list endpoints.
      */
     public function findAction(): ResponseInterface
     {
@@ -66,11 +63,11 @@ trait FindAction
     }
     
     /**
-     * Find with relationships and expose the resultset.
+     * Find records with eager-loaded relationships and expose the result list.
      *
-     * This method finds the resultset with relationships and exposes it for further processing.
-     *
-     * @return ResponseInterface The HTTP response that indicates the success of finding and exposing the resultset.
+     * Relationships are resolved by the controller/model eager-loading
+     * contract. The exposed response shape remains the same as `findAction()`,
+     * with related data included where configured.
      */
     public function findWithAction(): ResponseInterface
     {

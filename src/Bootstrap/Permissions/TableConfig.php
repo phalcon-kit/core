@@ -19,8 +19,21 @@ use PhalconKit\Mvc\Controller\Behavior\Skip\SkipSoftDeleteCondition;
 use PhalconKit\Modules\Api\Controllers\TableController;
 use PhalconKit\Models\Table;
 
+/**
+ * Default permission fragment for table metadata resources.
+ *
+ * Users can read table metadata while administrators can manage table records.
+ * The management behavior skips identity and soft-delete filters because table
+ * metadata is framework-owned administration data.
+ */
 class TableConfig extends Config
 {
+    /**
+     * Merge the table permission fragment with caller-provided config.
+     *
+     * @param array<string, mixed> $data Permission overrides or extensions.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
+     */
     public function __construct(array $data = [], bool $insensitive = true)
     {
         $data = $this->internalMergeAppend([

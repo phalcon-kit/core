@@ -29,11 +29,9 @@ use PhalconKit\Support\Models;
  * Session and audit models are blacklisted during initialization to avoid
  * flushing global model caches for high-volume infrastructure records.
  *
- * @todo improve model cache trait
- * - set cache keys
- * - improve to delete only necessary keys
- * - improve whiteList system
- * - precache system
+ * Known limitation: cache invalidation is coarse-grained. Granular cache keys,
+ * whitelist rules, and pre-warming need an explicit cache policy contract
+ * before this trait can safely delete only selected entries.
  */
 trait Cache
 {

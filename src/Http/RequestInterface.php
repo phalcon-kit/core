@@ -14,19 +14,22 @@ declare(strict_types=1);
 namespace PhalconKit\Http;
 
 /**
- * {@inheritDoc}
+ * HTTP request contract extended with PhalconKit request helpers.
+ *
+ * The extra helpers expose CORS, preflight, same-origin checks, and a diagnostic
+ * array snapshot used by framework controllers and debugging tools.
  */
 interface RequestInterface extends \Phalcon\Http\RequestInterface
 {
     /**
-     * Return true if the request is a Cross-Origin Resource Sharing (CORS) request
+     * Return true when an Origin header targets a different origin.
      *
      * @return bool True if the request is a CORS request, false otherwise
      */
     public function isCors(): bool;
     
     /**
-     * Return true if the request is a preflight request
+     * Return true when the request is a browser CORS preflight request.
      *
      * A preflight request is a CORS (Cross-Origin Resource Sharing) request that is sent by a browser
      * prior to the actual request to determine the permissions to make the actual request.
@@ -42,14 +45,14 @@ interface RequestInterface extends \Phalcon\Http\RequestInterface
     public function isPreflight(): bool;
     
     /**
-     * Checks if the request is from the same origin.
+     * Check whether the Origin header matches the current scheme and host.
      *
      * @return bool Returns true if the request is from the same origin, false otherwise.
      */
     public function isSameOrigin(): bool;
     
     /**
-     * Converts the request object to an array.
+     * Export a diagnostic snapshot of request input and derived request flags.
      *
      * @return array An associative array containing various properties of the request object:
      * 

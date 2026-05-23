@@ -281,17 +281,17 @@ trait Relationship
                 throw new LogicException('Invalid relation alias `' . $alias . '` on model `' . $modelClass . '`', 400);
             }
 
-            // alias is not whitelisted, skip silently
+            // Alias is not whitelisted. Keep permissive legacy behavior unless
+            // a future strict assignment mode explicitly opts into exceptions.
             if (!is_null($whiteList) && (!isset($whiteList[$alias]) && !in_array($alias, $whiteList))) {
-                // @todo add logic exception on strict mode
                 continue;
             }
 
             $relation = $modelsManager->getRelationByAlias($modelClass, $alias);
 
-            // no relationship defined for this alias, skip silently
+            // Unknown relationship aliases are skipped for backward
+            // compatibility. Strict-mode exceptions need an opt-in contract.
             if (!$relation) {
-                // @todo add logic exception on strict mode
                 continue;
             }
 
@@ -342,8 +342,8 @@ trait Relationship
                         if (is_int($traversedKey)) {
                             $entity = null;
 
-                            // Using bool as behaviour to delete missing relationship or keep them
-                            // @TODO find a better way
+                            // Legacy payloads use boolean sentinels to choose
+                            // whether missing related records are kept.
                             // if [alias => [true, ...]
                             if ($traversedData === 'false') {
                                 $traversedData = false;
@@ -653,7 +653,8 @@ trait Relationship
                             // remove it
                             unset($related[$lowerCaseAlias][$key]);
                             
-                            // @todo see if we have to remove from object too
+                            // Keep the assignment array in sync after the edge
+                            // record has been persisted.
                             if (is_array($assign)) {
                                 unset($assign[$key]);
                             }
@@ -939,14 +940,13 @@ trait Relationship
         // not found, using the relationship fields instead
         if (!$entity) {
             if ($type === Relation::HAS_ONE || $type === Relation::BELONGS_TO) {
-                // Set value to compare
+                // Sparse single-relation payloads can omit the foreign key when
+                // it is already available on the parent record.
                 if (!empty($readFields)) {
                     foreach ($readFields as $key => $field) {
                         if (empty($data[$fields[$key]])) {
-                            // @todo maybe remove this if
                             $value = $this->readAttribute($field);
                             if (!empty($value)) {
-                                // @todo maybe remove this if
                                 $data [$fields[$key]] = $value;
                             }
                         }

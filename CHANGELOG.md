@@ -166,6 +166,9 @@ tag has been cut yet.
 - Added a shared `ServiceResolver`, including a reusable PhalconKit container
   boundary check, for static helpers and native Phalcon extension points that
   need typed PhalconKit DI service resolution.
+- Added a reviewed inline follow-up inventory to the maintainer discussion
+  guide, covering identity, providers, relationships, eager loading,
+  dispatcher hooks, lifecycle helpers, and test fixture decisions.
 
 ### Changed
 
@@ -194,6 +197,12 @@ tag has been cut yet.
 - Updated `Url::get()` compatibility for the Phalcon 5.13 `replaceArgs`
   signature.
 - Updated `EnvTest`, `ConfigTest`, database handling, and `.env` loading logic.
+- Replaced vague inline follow-up markers in source and tests with clearer
+  current-behavior comments or durable maintainer discussion entries.
+- Expanded production-facing PHPDoc across bootstrap config fragments, module
+  wiring, REST actions, ACL/router/option contracts, helper wrappers, and
+  WebSocket scaffolding so framework extension points are clearer for
+  downstream consumers.
 - Updated TypeScript scaffolding support for Phalcon 5.13 schema and column type
   changes, including `Column::TYPE_TINYINTEGER`.
 - Hardened the REST query compiler, dynamic joins, filter semantics, permission

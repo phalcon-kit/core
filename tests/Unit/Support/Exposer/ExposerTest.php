@@ -134,7 +134,8 @@ class ExposerTest extends AbstractUnit
         $actual = Exposer::expose($builder);
         $this->assertEquals($expected, $actual);
         
-        // @todo
+        // Apply transformation rules after proving the unmodified builder
+        // output.
         unset($expected['test_removed']);
         unset($expected['test_removed_two']);
         $expected['test_replace_value'] = 'test_value_after';

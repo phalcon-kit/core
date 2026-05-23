@@ -16,6 +16,12 @@ namespace PhalconKit\Ws;
 use PhalconKit\Di\InjectableProperties;
 
 /**
+ * Base class for WebSocket tasks.
+ *
+ * Tasks get typed access to the WebSocket console, router, and dispatcher
+ * through PhalconKit injectable properties. Concrete tasks should implement
+ * action methods such as `listenAction()`.
+ *
  * @property WebSocket $webSocket
  * @property Router $router
  * @property Dispatcher $dispatcher

@@ -14,19 +14,35 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Helper\Arr;
 
 /**
- * This class provides methods to parse an array into a flatten array with key path separated by a delimiter.
+ * Flatten nested arrays into dot-path keyed rule maps.
+ *
+ * Integer keys with string values are treated as shorthand enabled fields. This
+ * shape is used by exposure and controller field policies where nested config
+ * needs to become a flat lookup table.
  */
 class FlattenKeys
 {
+    /**
+     * Invoke the helper and always return an array.
+     *
+     * @param array<string|int, mixed> $collection Nested policy/config values.
+     * @return array<array-key, mixed>
+     */
     public function __invoke(array $collection = [], string $delimiter = '.', bool $lowerKey = true): array
     {
         return self::process($collection, $delimiter, $lowerKey) ?? [];
     }
     
     /**
-     * Here to parse the columns parameter into some kind of flatten array with
-     * the key path separated by dot "my.path" and the value true, false or a callback function
-     * including the ExposeBuilder object
+     * Flatten a nested rule map into delimiter-separated keys.
+     *
+     * @param array<string|int, mixed> $collection Nested policy/config values.
+     * @param string $delimiter Key delimiter, normally `.`.
+     * @param bool $lowerKey Whether string keys should be normalized to lower
+     *     case.
+     * @param string|null $context Current recursion path.
+     *
+     * @return array<array-key, mixed>|null
      */
     public static function process(array $collection = [], string $delimiter = '.', bool $lowerKey = false, ?string $context = null): ?array
     {

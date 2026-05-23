@@ -21,6 +21,14 @@ use PhalconKit\Di\ServiceResolver;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Support\Utils;
 
+/**
+ * Base MVC module definition used by PhalconKit web modules.
+ *
+ * The module wires controller/model/transformer namespaces and configures the
+ * dispatcher, router, view, and URL services for one module. Concrete modules
+ * only need to provide the public `$name` value unless they need custom
+ * namespaces or service registration behavior.
+ */
 abstract class Module implements ModuleDefinitionInterface
 {
     public const string NAME_FRONTEND = 'frontend';
@@ -43,7 +51,7 @@ abstract class Module implements ModuleDefinitionInterface
     public ?Url $url = null;
     
     /**
-     * Registers an autoloader related to the frontend module
+     * Register controller/model/transformer namespaces for the MVC module.
      *
      * When the container defines a loader service, it must be compatible with
      * Phalcon's autoloader. Otherwise the module creates a local loader for the
@@ -66,7 +74,7 @@ abstract class Module implements ModuleDefinitionInterface
     }
     
     /**
-     * Registers services related to the module
+     * Resolve and configure dispatcher, router, view, and URL services.
      *
      * Registered replacements for module services are resolved through the
      * shared service resolver so invalid DI wiring fails before dispatcher,
@@ -115,6 +123,12 @@ abstract class Module implements ModuleDefinitionInterface
         $this->setServices($container);
     }
     
+    /**
+     * Resolve module-owned services from DI or create local defaults.
+     *
+     * @param DiInterface|null $container Optional DI container used by Phalcon
+     *     module registration.
+     */
     public function getServices(?DiInterface $container = null): void
     {
         $this->loader ??= $container !== null
@@ -173,6 +187,9 @@ abstract class Module implements ModuleDefinitionInterface
             : new Url();
     }
     
+    /**
+     * Store resolved module services back into the active DI container.
+     */
     public function setServices(DiInterface $container): void
     {
         $container->set('config', $this->config);
@@ -183,6 +200,11 @@ abstract class Module implements ModuleDefinitionInterface
         $container->set('url', $this->url);
     }
     
+    /**
+     * Return namespace-to-directory mappings registered by the module loader.
+     *
+     * @return array<string, string>
+     */
     public function getNamespaces(): array
     {
         // Caller namespace
@@ -202,21 +224,35 @@ abstract class Module implements ModuleDefinitionInterface
         return $namespaces;
     }
     
+    /**
+     * Return the default controller namespace for dispatcher routing.
+     */
     public function getDefaultNamespace(): string
     {
         return $this->getNamespace() . '\\Controllers';
     }
     
+    /**
+     * Return the view directory list for this module.
+     *
+     * @return array<int, string>
+     */
     public function getViewsDir(): array
     {
         return [$this->getDirname() . '/Views/'];
     }
     
+    /**
+     * Return the filesystem directory that contains this module class.
+     */
     public function getDirname(): string
     {
         return Utils::getDirname($this);
     }
     
+    /**
+     * Return the PHP namespace for this module class.
+     */
     public function getNamespace(): string
     {
         return Utils::getNamespace($this);

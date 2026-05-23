@@ -206,7 +206,9 @@ trait Replication
             self::setReplicationReadyAt(self::nowMs() + $lag);
         };
         
-        // @todo change to behavior or check if this is added multiple times
+        // Direct listener attachment preserves existing behavior. A reusable
+        // behavior object or idempotency guard would need a public lifecycle
+        // contract for models that call this more than once.
         $eventsManager = $this->getEventsManager();
         if (!$eventsManager instanceof ManagerInterface) {
             throw new ServiceException(sprintf(

@@ -16,10 +16,14 @@ namespace PhalconKit\Html;
 use Phalcon\Html\TagFactory as PhalconTagFactory;
 
 /**
- * Class TagFactory
+ * Framework HTML tag factory.
  *
- * The TagFactory class is responsible for generating HTML tags.
- * It extends the \Phalcon\Html\TagFactory class.
+ * This class intentionally keeps Phalcon's tag-factory behavior while giving
+ * applications a PhalconKit-scoped type to register in the DI container. It is
+ * the extension point to use when an application wants to replace or decorate
+ * the default HTML helpers without changing every consumer that asks for the
+ * `tag`/tag-factory service.
+ *
  * @see PhalconTagFactory
  */
 class TagFactory extends PhalconTagFactory

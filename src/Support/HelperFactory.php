@@ -22,9 +22,13 @@ use PhalconKit\Support\Helper\Str\SanitizeUTF8;
 use PhalconKit\Support\Helper\Str\Slugify;
 
 /**
- * HelperFactory Class
+ * Helper factory with PhalconKit-specific array/string helpers.
  *
- * This class extends the Phalcon\Support\HelperFactory class and provides additional helper services.
+ * The factory preserves native Phalcon helper services and adds helpers used by
+ * framework exposure, scaffolding, slug, and text-normalization code. The
+ * `@method` annotations document the magic helper surface exposed through both
+ * this factory and `PhalconKit\Support\Helper`.
+ *
  * @method string basename(string $uri, string $suffix = null)
  * @method array  blacklist(array $collection, array $blackList)
  * @method string camelize(string $text, string $delimiters = null, bool $lowerFirst = false)
@@ -83,9 +87,9 @@ use PhalconKit\Support\Helper\Str\Slugify;
  * @method array  whitelist(array $collection, array $whiteList)
  * 
  * # New methods
- * @method string recursiveMap(array $collection = [], callable $callback = null)
- * @method string flattenKeys(array $collection = [], string $delimiter = '.', bool $lowerKey = true)
- * @method string recursiveStrReplace(array $collection, array $replaces)
+ * @method array recursiveMap(array $collection = [], callable $callback = null)
+ * @method array flattenKeys(array $collection = [], string $delimiter = '.', bool $lowerKey = true)
+ * @method array recursiveStrReplace(array $collection, array $replaces)
  * @method string slugify(string $string, array $replace = [], string $delimiter = '-')
  * @method string sanitizeUTF8(string $string, string $invalidUtf8Regex)
  * @method string removeNonPrintable(string $string, string $nonPrintableRegex = '[[:cntrl:]\r\n]', string $replacement = '')
@@ -94,9 +98,9 @@ use PhalconKit\Support\Helper\Str\Slugify;
 class HelperFactory extends \Phalcon\Support\HelperFactory
 {
     /**
-     * Returns the available adapters
+     * Return native Phalcon helpers plus PhalconKit helper services.
      *
-     * @return string[]
+     * @return array<string, class-string>
      */
     #[\Override]
     protected function getServices(): array

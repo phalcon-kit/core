@@ -219,7 +219,8 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
                 return ['messages' => $user->getMessages()];
             }
             
-            // @todo send confirmation email
+            // Notification delivery is app-specific until the identity manager
+            // has a mailer/event contract for password-reset confirmations.
         }
         
         // reset token request
@@ -233,7 +234,8 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
                 return ['messages' => $user->getMessages()];
             }
             
-            // @todo send reset email
+            // Notification delivery is app-specific until the identity manager
+            // has a mailer/event contract for reset-token messages.
         }
         
         // everything went fine

@@ -16,16 +16,23 @@ namespace PhalconKit\Fractal\Serializer;
 use League\Fractal\Serializer\ArraySerializer;
 
 /**
- * Class RawArraySerializer
+ * Fractal serializer that returns payload arrays without a resource envelope.
  *
- * This class is responsible for serializing data in the form of arrays.
- * It extends the ArraySerializer class and provides methods for serializing
- * collections, items, and null values.
+ * League Fractal's default array serializers may wrap data under resource keys.
+ * This serializer is used when PhalconKit endpoints need the transformed data
+ * itself as the response body. The resource key is accepted for Fractal
+ * compatibility, but it is intentionally ignored.
  */
 class RawArraySerializer extends ArraySerializer
 {
     /**
-     * {@inheritDoc}
+     * Return collection data exactly as transformed by Fractal.
+     *
+     * @param string|null $resourceKey Fractal resource key, ignored by this raw
+     *     serializer.
+     * @param array<int|string, mixed> $data Transformed collection payload.
+     *
+     * @return array<int|string, mixed> Unwrapped collection payload.
      */
     #[\Override]
     public function collection(?string $resourceKey, array $data): array
@@ -34,7 +41,13 @@ class RawArraySerializer extends ArraySerializer
     }
     
     /**
-     * {@inheritDoc}
+     * Return item data exactly as transformed by Fractal.
+     *
+     * @param string|null $resourceKey Fractal resource key, ignored by this raw
+     *     serializer.
+     * @param array<array-key, mixed> $data Transformed item payload.
+     *
+     * @return array<array-key, mixed> Unwrapped item payload.
      */
     #[\Override]
     public function item(?string $resourceKey, array $data): array
@@ -43,7 +56,12 @@ class RawArraySerializer extends ArraySerializer
     }
     
     /**
-     * {@inheritDoc}
+     * Serialize null resources as an empty array.
+     *
+     * This keeps API responses shape-stable for callers that expect JSON
+     * objects or arrays instead of literal null bodies.
+     *
+     * @return array<never, never>
      */
     #[\Override]
     public function null(): ?array

@@ -30,9 +30,12 @@ trait RestoreAction
     use AbstractRestResponse;
     
     /**
-     * Restores a soft-deleted entity.
+     * Restore the first soft-deleted entity matching the prepared REST query.
      *
-     * @return ResponseInterface The response indicating the status of the restoration.
+     * The action returns 404 when no entity matches. The configured model must
+     * implement `SoftDeleteInterface`; on completion the response exposes the
+     * attempted entity, the restore result, and model messages.
+     *
      * @throws LogicException When the configured model does not support soft
      *     deletes.
      */

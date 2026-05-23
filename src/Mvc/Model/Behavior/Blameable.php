@@ -199,7 +199,9 @@ class Blameable extends Behavior
         $audit->setEvent($event);
 
         $audit->setBefore($snapshot ? json_encode($this->normalizeArray($snapshot, $columnMap, $columnTypes)) : null);
-        $audit->setAfter(json_encode($this->normalizeArray($model->toArray(), $columnMap, $columnTypes))); // @todo fix because toArray returns relations
+        // `toArray()` can include assigned relations; normalize against metadata
+        // so audit snapshots stay focused on mapped scalar columns.
+        $audit->setAfter(json_encode($this->normalizeArray($model->toArray(), $columnMap, $columnTypes)));
 
         $audit->setParentId(self::$parentId);
 

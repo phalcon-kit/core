@@ -19,8 +19,21 @@ use PhalconKit\Mvc\Controller\Behavior\Skip\SkipSoftDeleteCondition;
 use PhalconKit\Modules\Api\Controllers\RecordController;
 use PhalconKit\Models\Record;
 
+/**
+ * Default permission fragment for generic record resources.
+ *
+ * The fragment grants regular users read access and administrators management
+ * access. Administrative behavior skips identity and soft-delete filters so
+ * metadata/record maintenance views can inspect the full dataset.
+ */
 class RecordConfig extends Config
 {
+    /**
+     * Merge the record permission fragment with caller-provided config.
+     *
+     * @param array<string, mixed> $data Permission overrides or extensions.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
+     */
     public function __construct(array $data = [], bool $insensitive = true)
     {
         $data = $this->internalMergeAppend([

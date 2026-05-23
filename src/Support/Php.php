@@ -14,16 +14,23 @@ declare(strict_types=1);
 namespace PhalconKit\Support;
 
 /**
- * Class Php
+ * Small PHP runtime helpers used during bootstrap.
  *
- * Provides utility methods for working with PHP settings and environment.
+ * These helpers centralize runtime concerns that must be configured before the
+ * application handles a request, such as SAPI checks, proxy HTTPS detection,
+ * debugging INI flags, locale, encoding, memory limit, and execution timeout.
  */
 class Php
 {
     /**
-     * Check if the script is running in a command-line interface (CLI) environment.
+     * Determine whether a SAPI value represents a command-line runtime.
      *
-     * @return bool Returns true if the script is running in a CLI environment, false otherwise.
+     * `phpdbg` is treated as CLI so test runners and debuggers follow the same
+     * bootstrap path as normal console commands.
+     *
+     * @param string $sapi PHP SAPI name. Defaults to the current process SAPI.
+     *
+     * @return bool True for CLI-like SAPIs, false for web SAPIs.
      */
     public static function isCli(string $sapi = PHP_SAPI): bool
     {
@@ -31,8 +38,12 @@ class Php
     }
     
     /**
-     * Trust the forwarded protocol from the reverse proxy server.
-     * If trusted and HTTP_X_FORWARDED_PROTO is https force $_SERVER['https'] to 'on'
+     * Promote trusted proxy HTTPS information into `$_SERVER['HTTPS']`.
+     *
+     * Applications behind a reverse proxy can call this during bootstrap after
+     * deciding that `HTTP_X_FORWARDED_PROTO` is trustworthy. When the forwarded
+     * protocol starts with `https`, Phalcon and PHP helpers that inspect
+     * `$_SERVER['HTTPS']` will see the request as secure.
      *
      * @return void
      */
@@ -46,9 +57,14 @@ class Php
     }
     
     /**
-     * Enable or disable debug mode
+     * Enable or disable PHP error display for the current process.
      *
-     * @param bool|null $debug Set to true to enable debug mode, false to disable it. If null, debug mode remains unchanged.
+     * Passing true enables full error reporting and display. Passing false or
+     * null disables display while keeping `error_reporting(-1)`, which preserves
+     * reporting for logs without exposing errors in responses.
+     *
+     * @param bool|null $debug Whether response-visible debug output should be
+     *     enabled.
      *
      * @return void
      */
@@ -68,9 +84,21 @@ class Php
     }
     
     /**
-     * Set the configuration options for the application.
+     * Apply process-wide PHP defaults used by PhalconKit applications.
      *
-     * @param array $config The configuration options for the application.
+     * Missing values are filled with conservative framework defaults. This
+     * method changes global PHP runtime state, so applications should call it
+     * once during bootstrap before handling requests or starting long-running
+     * workers.
+     *
+     * @param array{
+     *     timezone?: non-empty-string,
+     *     encoding?: non-empty-string,
+     *     locale?: non-empty-string,
+     *     memoryLimit?: non-empty-string,
+     *     timeoutLimit?: int|string
+     * } $config Runtime options to apply.
+     *
      * @return void
      */
     public static function set(array $config = []): void

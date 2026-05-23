@@ -19,8 +19,12 @@ use PhalconKit\Filter\Sanitize\Json;
 use PhalconKit\Filter\Sanitize\Md5;
 
 /**
- * Filter class extends the \Phalcon\Filter\Filter class and provides additional methods for filtering data.
- * {@inheritDoc}
+ * Phalcon filter service with PhalconKit sanitizers registered by default.
+ *
+ * The service keeps Phalcon's native filter behavior and adds named sanitizers
+ * for md5 hashes, JSON strings, and IP address normalization. Consumers can use
+ * the declared magic methods through Phalcon's filter API or request the named
+ * filters directly.
  *
  * @method string md5(string $input)
  * @method string json(string $input)
@@ -37,6 +41,13 @@ class Filter extends \Phalcon\Filter\Filter
     
     public const string FILTER_IPV6 = 'ipv6';
     
+    /**
+     * Register PhalconKit sanitizers after Phalcon initializes its mapper.
+     *
+     * @param array<string, string> $mapper Existing Phalcon filter mapper.
+     *
+     * @return void
+     */
     #[\Override]
     protected function init(array $mapper): void
     {

@@ -392,7 +392,8 @@ final class Loader
                     throw new RuntimeException(sprintf('Unknown relation type `%s`', $relType));
                 }
                 
-                // @todo allow composite keys
+                // Composite relation keys need dedicated bind generation and
+                // assignment logic before eager loading can support them.
 //                if (is_array($relation->getFields()) ||
 //                    is_array($relation->getReferencedFields())
 //                ) {
@@ -421,7 +422,9 @@ final class Loader
     public function execute(): self
     {
         foreach ($this->buildTree() as $eagerLoad) {
-            // @todo option to enable or disable soft delete etc.
+            // Loader options are intentionally not threaded through yet because
+            // soft-delete visibility and relation constraints need a public
+            // eager-loading option contract.
 //            $eagerLoad->load($this->options); 
             $eagerLoad->load();
         }

@@ -193,8 +193,8 @@ class ModelTest extends AbstractUnit
         $this->userRoleFindAssert(1, 2);
         $this->userRoleFindAssert(1, 5, 1);
         
-        // reactivate a previously deleted relationship using roleId only without altering other relationships
-        // this should not be possible @todo maybe delete?
+        // Reactivating a previously deleted relationship by roleId alone would
+        // need an explicit relationship-assignment contract.
 //        $user->assign([
 //            'userrolelist' => [
 //                true,

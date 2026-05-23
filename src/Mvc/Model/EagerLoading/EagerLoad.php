@@ -82,7 +82,8 @@ final class EagerLoad
         $relReferencedModel = $relation->getReferencedModel();
         $relReferencedField = $relation->getReferencedFields();
 
-        // @todo support multiples fields with eager loading
+        // Known limitation: eager loading currently supports scalar relation
+        // fields only. Composite keys need a separate loading strategy.
         if (is_array($relField)) {
             throw new RuntimeException('Relation field must be a string, multiple fields are not supported yet.');
         }
@@ -102,7 +103,8 @@ final class EagerLoad
             if ($relationKey !== null) {
                 $bindValues[$relationKey] = true;
             }
-            // @todo support multiples fields with eager loading
+            // Composite local fields need tuple-aware binding before this can
+            // collect multiple values safely.
 //            $relFieldAr = is_array($relField)? $relField : [$relField];
 //            foreach ($relFieldAr as $relField) {
 //                $bindValues[$record->readAttribute($relField)] = true;
@@ -151,11 +153,15 @@ final class EagerLoad
                             $relReferencedField
                         )
                     )
-                    ->where('[' . $relIrModel . '].[deleted] <> 1') // @todo do this correctly
+                    // Current through-relation loading assumes the intermediate
+                    // model uses PhalconKit's standard soft-delete flag.
+                    ->where('[' . $relIrModel . '].[deleted] <> 1')
                     ->inWhere("[{$relIrModel}].[{$relIrField}]", $bindValues)
                 ;
 
-                // @todo see if we should enable this grouping by default or even add a configuration for this
+                // Grouping by the intermediate referenced field may be useful,
+                // but should be an explicit option because it can affect
+                // ordering and duplicate rows.
 //                $builder->groupBy("[{$relIrModel}].[{$relIrReferencedField}]");
             }
             else {
@@ -166,7 +172,9 @@ final class EagerLoad
                 $relIrValues = new QueryBuilder();
                 $relIrValues = $relIrValues
                     ->from($relIrModel)
-                    ->where('[' . $relIrModel . '].[deleted] <> 1') // @todo do this correctly
+                    // Current through-relation loading assumes the intermediate
+                    // model uses PhalconKit's standard soft-delete flag.
+                    ->where('[' . $relIrModel . '].[deleted] <> 1')
                     ->inWhere("[{$relIrModel}].[{$relIrField}]", $bindValues)
                     ->getQuery()
                     ->execute()

@@ -36,7 +36,13 @@ use PhalconKit\Support\Env;
 use PhalconKit\Support\Version;
 
 /**
- * Global Phalcon Kit Configuration
+ * Default framework configuration used by PhalconKit bootstraps.
+ *
+ * The config is intentionally comprehensive: it defines core paths, provider
+ * classes, modules, model mappings, default REST permissions, session/cache
+ * behavior, security settings, and integration defaults. Applications can
+ * merge their own config over this class, but should preserve the expected
+ * top-level keys because providers and modules read them by path.
  *
  * @property PhalconConfig $phalcon
  * @property PhalconConfig $core
@@ -71,6 +77,13 @@ use PhalconKit\Support\Version;
  */
 class Config extends \PhalconKit\Config\Config
 {
+    /**
+     * Define path/environment constants expected by legacy and generated code.
+     *
+     * Existing constants are never overwritten. Values are read from Env first
+     * and then fall back to conservative defaults relative to the current
+     * project root.
+     */
     public function defineConst(): void
     {
         defined('ROOT_PATH') || define('ROOT_PATH', Env::get('ROOT_PATH', (getcwd() ?: '.') . '/'));
@@ -94,8 +107,15 @@ class Config extends \PhalconKit\Config\Config
     }
     
     /**
-     * Config Constructor
-     * {@inheritDoc}
+     * Merge default framework config with application-provided overrides.
+     *
+     * The constructor calls `defineConst()` before building config so path
+     * constants are available while default provider/module/model arrays are
+     * prepared. `$data` is appended using the config merge strategy, allowing
+     * applications to override or extend framework defaults.
+     *
+     * @param array<string, mixed> $data Application overrides.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
      */
     public function __construct(array $data = [], bool $insensitive = false)
     {

@@ -15,8 +15,25 @@ namespace PhalconKit\Bootstrap;
 
 use PhalconKit\Exception\ConfigurationException;
 
+/**
+ * Config adapter shape expected by Phalcon DevTools.
+ *
+ * PhalconKit's normal database config supports named drivers and adapter class
+ * names. DevTools expects a flatter database array with a short adapter name,
+ * so this config extracts the selected driver and normalizes it for DevTools
+ * commands.
+ */
 class Devtools extends Config
 {
+    /**
+     * Build a DevTools-compatible database config from PhalconKit config data.
+     *
+     * @param array<string, mixed> $data Application config overrides.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
+     *
+     * @throws ConfigurationException When the selected database driver does not
+     *     define a valid adapter class.
+     */
     public function __construct(array $data = [], bool $insensitive = true)
     {
         parent::__construct($data, $insensitive);

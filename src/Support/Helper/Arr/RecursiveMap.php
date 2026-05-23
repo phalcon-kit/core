@@ -14,27 +14,28 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Helper\Arr;
 
 /**
- * Class RecursiveMap
- *
- * This class provides a way to recursively process the elements of an array using a callback function.
+ * Apply a callback to every scalar value in a nested array.
  */
 class RecursiveMap
 {
+    /**
+     * Invoke the helper for a nested array.
+     *
+     * @param array<string|int, mixed> $collection
+     * @return array<string|int, mixed>
+     */
     public function __invoke(array $collection, callable $callback): array
     {
         return self::process($collection, $callback);
     }
     
     /**
-     * Applies a callback function to each element of the given array recursively and returns a new array.
+     * Apply a callback to each non-array value and preserve array structure.
      *
-     * @param array $collection The array to be processed.
+     * @param array<string|int, mixed> $collection The array to process.
+     * @param callable $callback Callback receiving each scalar/non-array value.
      *
-     * @param callable $callback The callback function to be applied to each array element.
-     *                           The callback function should accept one argument, which is the current array element,
-     *                           and can return a modified value for that element.
-     *
-     * @return array The processed array with the callback function applied to each element.
+     * @return array<string|int, mixed>
      */
     public static function process(array $collection, callable $callback): array
     {

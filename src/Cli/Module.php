@@ -21,6 +21,14 @@ use PhalconKit\Di\ServiceResolver;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Support\Utils;
 
+/**
+ * Default CLI module definition.
+ *
+ * The module wires CLI task namespaces, dispatcher defaults, router defaults,
+ * and core model namespaces for the built-in command runtime. Applications can
+ * subclass or replace this module when they need different task namespaces or
+ * service defaults, but should keep the same dispatcher/router contracts.
+ */
 class Module implements ModuleDefinitionInterface
 {
     public const string NAME_CLI = 'cli';
@@ -36,7 +44,7 @@ class Module implements ModuleDefinitionInterface
     public ?Router $router = null;
     
     /**
-     * Registers an autoloader related to the frontend module
+     * Register task/model namespaces for the CLI module.
      *
      * When a loader service is registered, it must be a Phalcon autoloader.
      * Otherwise the module creates a local loader so lightweight CLI modules do
@@ -59,7 +67,7 @@ class Module implements ModuleDefinitionInterface
     }
     
     /**
-     * Registers services related to the module
+     * Resolve and configure dispatcher/router services for CLI execution.
      *
      * Registered replacements for `dispatcher` and `router` are resolved
      * through the shared service resolver so invalid module wiring fails before
@@ -91,6 +99,11 @@ class Module implements ModuleDefinitionInterface
         $this->setServices($container);
     }
     
+    /**
+     * Return namespace-to-directory mappings registered by the module loader.
+     *
+     * @return array<string, string>
+     */
     public function getNamespaces(): array
     {
         $namespaces = [];
@@ -110,6 +123,12 @@ class Module implements ModuleDefinitionInterface
         return $namespaces;
     }
     
+    /**
+     * Resolve module-owned services from DI or create local defaults.
+     *
+     * @param DiInterface|null $container Optional DI container used by Phalcon
+     *     module registration.
+     */
     public function getServices(?DiInterface $container = null): void
     {
         $this->loader = $container !== null
@@ -150,6 +169,9 @@ class Module implements ModuleDefinitionInterface
             : new Dispatcher();
     }
     
+    /**
+     * Store resolved module services back into the active DI container.
+     */
     public function setServices(DiInterface $container): void
     {
         $container->set('config', $this->config);
@@ -158,16 +180,25 @@ class Module implements ModuleDefinitionInterface
         $container->set('router', $this->router);
     }
     
+    /**
+     * Return the default task namespace for dispatcher routing.
+     */
     public function getDefaultNamespace(): string
     {
         return $this->getNamespace() . '\\Tasks';
     }
     
+    /**
+     * Return the filesystem directory that contains this module class.
+     */
     public function getDirname(): string
     {
         return Utils::getDirname($this);
     }
     
+    /**
+     * Return the PHP namespace for this module class.
+     */
     public function getNamespace(): string
     {
         return Utils::getNamespace($this);

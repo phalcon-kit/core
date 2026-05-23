@@ -415,7 +415,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
             'exceptionOnFailedSave' => false,
             'ignoreUnknownColumns' => false,
             'lateStateBinding' => false,
-            'notNullValidations' => false, // changed from default @todo see if we can
+            'notNullValidations' => false, // changed from default; keep for generated-model compatibility
             'phqlLiterals' => true,
             'prefetchRecords' => 0,
             'updateSnapshotOnSave' => true,

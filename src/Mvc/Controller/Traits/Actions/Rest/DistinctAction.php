@@ -25,12 +25,17 @@ trait DistinctAction
     use AbstractRestResponse;
     
     /**
-     * Distinct values of a column
-     * Will use the getFind query
+     * Placeholder for a future distinct-values endpoint.
+     *
+     * Distinct values need a supported response shape, allowed-field rules, and
+     * permission semantics before this trait can expose production behavior.
+     * Until then the action returns the standard REST error response.
      */
     public function distinctAction(): ResponseInterface
     {
-        // @todo
+        // Placeholder endpoint: return a clear REST error until distinct
+        // response shape, field validation, and permission semantics are
+        // promoted to a supported controller contract.
         return $this->setRestErrorResponse();
     }
 }

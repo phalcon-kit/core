@@ -14,7 +14,12 @@ declare(strict_types=1);
 namespace PhalconKit\Assets;
 
 /**
- * {@inheritDoc}
+ * PhalconKit asset manager wrapper.
+ *
+ * The class intentionally keeps native `Phalcon\Assets\Manager` behavior while
+ * giving applications a stable PhalconKit service type to decorate, replace,
+ * or type-check through DI. Provider code registers this class under the
+ * `assets` service name.
  */
 class Manager extends \Phalcon\Assets\Manager
 {

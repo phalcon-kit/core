@@ -27,9 +27,9 @@ trait FindFirstAction
     use AbstractRestResponse;
     
     /**
-     * Retrieving a single record
-     * @link findFirstAction()
-     * @deprecated use {@link findFirstAction()}
+     * Legacy alias for `findFirstAction()`.
+     *
+     * @deprecated since PhalconKit 1.0, use findFirstAction() instead.
      */
     public function getAction(): ResponseInterface
     {
@@ -37,9 +37,9 @@ trait FindFirstAction
     }
     
     /**
-     * Retrieving a single record
-     * @link findFirstWithAction()
-     * @deprecated use {@link findFirstWithAction()}
+     * Legacy alias for `findFirstWithAction()`.
+     *
+     * @deprecated since PhalconKit 1.0, use findFirstWithAction() instead.
      */
     public function getWithAction(): ResponseInterface
     {
@@ -47,7 +47,10 @@ trait FindFirstAction
     }
     
     /**
-     * Retrieving a single record
+     * Find, expose, and return the first record matching the prepared query.
+     *
+     * The action returns 404 when no entity matches. On success, `data` holds
+     * the exposed model payload.
      */
     public function findFirstAction(): ResponseInterface
     {
@@ -62,7 +65,10 @@ trait FindFirstAction
     }
     
     /**
-     * Retrieving a single record
+     * Find the first matching record with configured eager-loaded relations.
+     *
+     * The action returns 404 when no entity matches. On success, `data` holds
+     * the exposed model payload, including related data where configured.
      */
     public function findFirstWithAction(): ResponseInterface
     {

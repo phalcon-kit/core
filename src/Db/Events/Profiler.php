@@ -18,12 +18,17 @@ use Phalcon\Events\EventInterface;
 use PhalconKit\Di\Injectable;
 
 /**
- * Class Profiler
+ * Database event listener that feeds executed queries into the profiler.
+ *
+ * Attach this class to a database connection events manager to start a profile
+ * before each query and stop it afterwards. Profiling is controlled by
+ * `app.profiler`, falling back to `profiler.enable`, so applications can keep
+ * the listener registered while disabling collection in production.
  */
 class Profiler extends Injectable
 {
     /**
-     * Check if the profiler is currently enabled or not from the config
+     * Determine whether query profiling is enabled by configuration.
      */
     public function isEnabled(): bool
     {
@@ -37,10 +42,14 @@ class Profiler extends Injectable
     }
     
     /**
-     * Start the current profile if profiler is enabled
+     * Start profiling the SQL statement about to be executed.
      *
-     * @param EventInterface $event
-     * @param AbstractAdapter $connection
+     * Stopped events are ignored so listeners earlier in the chain can cancel
+     * profiling together with the query.
+     *
+     * @param EventInterface $event Database `beforeQuery` event.
+     * @param AbstractAdapter $connection Connection that is about to execute
+     *     the statement.
      */
     public function beforeQuery(EventInterface $event, AbstractAdapter $connection): void
     {
@@ -56,12 +65,12 @@ class Profiler extends Injectable
     }
     
     /**
-     * Stop the current profile
+     * Stop the active query profile after execution.
      *
      * @scrutinizer ignore-unused
      *
-     * @param EventInterface $event
-     * @param AbstractAdapter $connection
+     * @param EventInterface $event Database `afterQuery` event.
+     * @param AbstractAdapter $connection Connection that executed the statement.
      */
     public function afterQuery(EventInterface $event, AbstractAdapter $connection): void
     {

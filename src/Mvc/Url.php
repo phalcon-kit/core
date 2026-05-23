@@ -14,20 +14,24 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc;
 
 /**
- * {@inheritDoc}
+ * URL service that normalizes generated local paths.
+ *
+ * PhalconKit keeps Phalcon's URL generation behavior, then normalizes local
+ * paths to absolute paths by resolving duplicate separators and `.`/`..`
+ * segments. Fully-qualified and protocol-relative URLs are preserved.
  */
 class Url extends \Phalcon\Mvc\Url
 {
     /**
-     * {@inheritdoc}
+     * Generate a URL and normalize local results to absolute paths.
      *
-     * @param array|string|null $uri
-     * @param mixed $args
-     * @param bool|null $local
-     * @param mixed $baseUri
-     * @param bool $replaceArgs
+     * @param array|string|null $uri Phalcon route name/path input.
+     * @param mixed $args Route or query arguments passed to Phalcon.
+     * @param bool|null $local Whether Phalcon should treat the URL as local.
+     * @param mixed $baseUri Optional base URI override.
+     * @param bool $replaceArgs Whether route placeholders should be replaced.
      *
-     * @return string
+     * @return string Generated URL with local paths normalized.
      */
     #[\Override]
     public function get($uri = null, $args = null, ?bool $local = null, $baseUri = null, bool $replaceArgs = false): string
@@ -36,11 +40,9 @@ class Url extends \Phalcon\Mvc\Url
     }
     
     /**
-     * Returns the absolute path from the given path.
+     * Normalize a local path into an absolute path.
      *
-     * @param string $path The path to convert to an absolute path.
      *
-     * @return string The absolute path.
      */
     public static function getAbsolutePath(string $path): string
     {

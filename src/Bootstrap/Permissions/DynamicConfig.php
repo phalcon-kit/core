@@ -16,8 +16,22 @@ namespace PhalconKit\Bootstrap\Permissions;
 use PhalconKit\Config\Config;
 use PhalconKit\Mvc\Model\Dynamic;
 
+/**
+ * Default permission fragment for dynamic-model access.
+ *
+ * Dynamic models can target runtime-selected tables, so the default config
+ * keeps the surface small: users can read dynamic records and administrators
+ * can manage them. Applications should merge stricter feature/role rules when
+ * dynamic access is exposed to end users.
+ */
 class DynamicConfig extends Config
 {
+    /**
+     * Merge the dynamic-model permission fragment with caller-provided config.
+     *
+     * @param array<string, mixed> $data Permission overrides or extensions.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
+     */
     public function __construct(array $data = [], bool $insensitive = true)
     {
         $data = $this->internalMergeAppend([

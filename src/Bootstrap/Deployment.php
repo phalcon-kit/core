@@ -23,7 +23,12 @@ use PhalconKit\Models\UserRole;
 use PhalconKit\Models\Workspace;
 
 /**
- * Phalcon Kit Deployment Configuration
+ * Default database deployment/scaffolding configuration.
+ *
+ * This config drives maintenance tasks that prepare a fresh PhalconKit
+ * database: tables to drop, tables to truncate, storage engines, and seed
+ * records for core lookup/user tables. Applications can merge additional data
+ * into the constructor without editing the framework defaults.
  *
  * @property PhalconConfig $drop
  * @property PhalconConfig $truncate
@@ -32,6 +37,13 @@ use PhalconKit\Models\Workspace;
  */
 class Deployment extends \PhalconKit\Config\Config
 {
+    /**
+     * Merge default deployment instructions with application overrides.
+     *
+     * @param array<string, mixed> $data Deployment overrides or additional seed
+     *     records.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
+     */
     public function __construct(array $data = [], bool $insensitive = true)
     {
         $data = $this->internalMergeAppend([

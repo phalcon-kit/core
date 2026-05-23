@@ -25,7 +25,12 @@ trait CountAction
     use AbstractRestResponse;
     
     /**
-     * Count request
+     * Return the count for the current REST query.
+     *
+     * The response variable is named `count`. When the underlying query uses a
+     * group clause, native Phalcon may return grouped count rows instead of a
+     * scalar total; callers should treat this action as a thin REST wrapper
+     * around the controller query contract.
      */
     public function countAction(): ResponseInterface
     {

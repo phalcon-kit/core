@@ -90,7 +90,8 @@ class ClamavTest extends AbstractUnit
         $clamav->endSession();
     }
     
-    // @todo dynamically download EICAR test file and delete after
+    // Positive EICAR coverage needs a fixture/download strategy that is safe
+    // for local development, CI scanners, and package archives.
 //    public function testPositive(): void
 //    {
 //        $clamav = $this->getClamav();

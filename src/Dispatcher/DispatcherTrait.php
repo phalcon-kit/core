@@ -16,6 +16,13 @@ namespace PhalconKit\Dispatcher;
 use Phalcon\Mvc\Dispatcher as MvcDispatcher;
 use Phalcon\Cli\Dispatcher as CliDispatcher;
 
+/**
+ * Shared dispatcher behavior for MVC and CLI dispatchers.
+ *
+ * The trait normalizes two framework concerns across dispatcher types:
+ * preserving only positional action arguments when invoking handlers, and
+ * preventing event-driven forwards from cycling back to the current target.
+ */
 trait DispatcherTrait
 {
     abstract public function getNamespaceName(): ?string;
@@ -37,12 +44,17 @@ trait DispatcherTrait
     abstract public function getActiveMethod(): string;
     
     /**
-     * {@inheritDoc}
-     * The string typed keys are not passed to the action method arguments
-     * Only the int keys will be passed
+     * Invoke a controller or task action with positional parameters only.
      *
-     * @param mixed $handler
-     * @return mixed
+     * Phalcon stores dispatch params as an array that may contain named metadata.
+     * Only integer-keyed entries are passed to action method arguments so route
+     * metadata cannot accidentally shift the method signature.
+     *
+     * @param mixed $handler Controller or task instance selected by Phalcon.
+     * @param string $actionMethod Method name to call on the handler.
+     * @param array<int|string, mixed> $params Dispatch parameters.
+     *
+     * @return mixed Action return value.
      */
     public function callActionMethod(mixed $handler, string $actionMethod, array $params = []): mixed
     {
@@ -53,8 +65,16 @@ trait DispatcherTrait
     }
     
     /**
-     * Extending forwarding event to prevent cyclic routing when forwarding under dispatcher events
-     * {@inheritDoc}
+     * Forward to another target, optionally skipping cyclic forwards.
+     *
+     * Null forward parts are stripped before delegating to Phalcon. When
+     * `$preventCycle` is true, forwarding only happens if at least one target
+     * part differs from the current dispatch state.
+     *
+     * @param array<string, mixed> $forward Forward target parts.
+     * @param bool $preventCycle Whether identical forwards should be ignored.
+     *
+     * @return void
      */
     public function forward(array $forward, bool $preventCycle = false): void
     {
@@ -70,8 +90,9 @@ trait DispatcherTrait
     }
     
     /**
-     * Check whether the forward attribute can be forwarded
-     * we do additional checks to prevent dispatcher cycling
+     * Determine whether a forward target differs from the current dispatch.
+     *
+     * @param array<array-key, mixed> $forward Forward target parts.
      */
     public function canForward(array $forward): bool
     {
@@ -89,10 +110,11 @@ trait DispatcherTrait
     }
     
     /**
-     * Check whether the handler is changed or not
-     * depending on the dispatcher
-     * MVC: controller
-     * CLI: task
+     * Determine whether the dispatcher-specific handler target changes.
+     *
+     * MVC dispatchers compare controllers; CLI dispatchers compare tasks.
+     *
+     * @param array<string, mixed> $forward Forward target parts.
      */
     private function canForwardHandler(array $forward): bool
     {
@@ -108,7 +130,7 @@ trait DispatcherTrait
     }
     
     /**
-     * Check whether the controller is changed
+     * Determine whether an MVC forward points to a different controller.
      */
     private function canForwardController(?string $controller = null): bool
     {
@@ -120,7 +142,7 @@ trait DispatcherTrait
     }
     
     /**
-     * Check whether the task is changed
+     * Determine whether a CLI forward points to a different task.
      */
     private function canForwardTask(?string $task = null): bool
     {
@@ -131,6 +153,15 @@ trait DispatcherTrait
         return false;
     }
     
+    /**
+     * Remove null parts from a forward target before delegating to Phalcon.
+     *
+     * @param array<string, mixed> $forward Forward target parts.
+     * @param array<int, string>|null $parts Forward keys to inspect. Defaults
+     *     to the common MVC and CLI target keys.
+     *
+     * @return array<string, mixed> Forward target with null parts removed.
+     */
     public function unsetForwardNullParts(array $forward, ?array $parts = null): array
     {
         $parts ??= [
@@ -151,6 +182,12 @@ trait DispatcherTrait
         return $forward;
     }
     
+    /**
+     * Export the active dispatcher state for diagnostics and debug responses.
+     *
+     * @return array<string, mixed> Current namespace, module, handler, action,
+     *     parameters, and dispatcher-specific previous route state.
+     */
     public function toArray(): array
     {
         $ret = [

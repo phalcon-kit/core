@@ -85,8 +85,8 @@ class TranslateTest extends AbstractUnit
             'nesting.interpolation' => 'value:interpolated',
             'nesting.collision' => 'value',
             'nesting.collision2' => 'value',
-//            'nesting.with.nesting' => 'value', // todo make this one work
-//            'nesting.with.sub.nesting' => 'value', // todo make this one work
+//            'nesting.with.nesting' => 'value',
+//            'nesting.with.sub.nesting' => 'value',
         ];
         $placeholders = [
             'value' => 'interpolated'

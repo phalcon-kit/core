@@ -20,7 +20,11 @@ use PhalconKit\Mvc\Model;
 use PhalconKit\Support\Utils;
 
 /**
- * @todo, fix phalcon models meta data instead of just resetting it
+ * Runtime model whose source and metadata can change per instance.
+ *
+ * Dynamic models currently invalidate known APCu metadata entries during
+ * initialization because the native metadata manager does not expose a stable
+ * per-model reset API for this use case.
  */
 class Dynamic extends Model
 {
@@ -34,10 +38,9 @@ class Dynamic extends Model
         $this->setReadConnectionService('dbd');
         $this->setWriteConnectionService('dbd');
         
-        // force delete cache for dynamic models
-        // @todo find a better way to handle dynamic models using
-        // meta data strategy or by overriding models meta data caching adapter etc.
-        // ->reset didn't work for unknown reason
+        // Force-delete cache entries for dynamic models. A custom metadata
+        // strategy or adapter wrapper would be cleaner, but would need to keep
+        // native Phalcon metadata behavior compatible for normal models.
         $modelsMetaData = $this->requireDynamicMetaData($this->getModelsMetaData());
         $adapter = $modelsMetaData->getAdapter();
         if ($adapter instanceof Apcu) {

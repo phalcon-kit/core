@@ -18,15 +18,23 @@ use Phalcon\Db\ColumnInterface;
 use Phalcon\Db\Dialect;
 
 /**
- * Class MySQL
- * 
- * Mysql class extends \Phalcon\Db\Dialect\Mysql to provide additional functionalities for MySQL database dialect.
- * - Regexp: " %s REGEXP $s"
- * - Distance: " ST_Distance_Sphere(%s, %s) "
- * - point: " point(%s, %s) "
+ * MySQL dialect with PhalconKit query helpers.
+ *
+ * The dialect registers custom PHQL functions that are commonly used by the
+ * framework query builders:
+ *
+ * - `regexp(left, right)` renders `left REGEXP right`
+ * - `ST_Distance_Sphere(left, right)` renders MySQL spherical distance SQL
+ * - `point(left, right)` renders a MySQL point expression
+ *
+ * It also keeps a compatibility fallback for binary column definitions affected
+ * by upstream Phalcon behavior.
  */
 class Mysql extends \Phalcon\Db\Dialect\Mysql
 {
+    /**
+     * Register PhalconKit custom SQL functions on construction.
+     */
     public function __construct()
     {
         $this->registerRegexpFunction();
@@ -35,7 +43,7 @@ class Mysql extends \Phalcon\Db\Dialect\Mysql
     }
     
     /**
-     * Register a custom REGEXP function for the database dialect.
+     * Register the PHQL `regexp()` helper for MySQL `REGEXP` comparisons.
      *
      * @return void
      */
@@ -52,9 +60,10 @@ class Mysql extends \Phalcon\Db\Dialect\Mysql
     }
     
     /**
-     * Register a custom distance sphere function to be used in SQL queries.
+     * Register the PHQL `ST_Distance_Sphere()` helper for geospatial queries.
      *
-     * This method registers the "ST_Distance_Sphere" function, which calculates the spherical distance between two points.
+     * The SQL function expects two point expressions and returns the spherical
+     * distance in meters on supported MySQL/MariaDB versions.
      *
      * @return void
      */
@@ -71,7 +80,7 @@ class Mysql extends \Phalcon\Db\Dialect\Mysql
     }
     
     /**
-     * Register a point function for SQL dialect.
+     * Register the PHQL `point()` helper for MySQL point expressions.
      *
      * @return void
      */
@@ -88,13 +97,15 @@ class Mysql extends \Phalcon\Db\Dialect\Mysql
     }
     
     /**
-     * Get the SQL column definition for a given column.
+     * Return a SQL column definition with a binary-type compatibility fallback.
      *
-     * This is a temporary fix in regard to this github issue:
-     * - https://github.com/phalcon/cphalcon/issues/16532
-     * 
-     * @param ColumnInterface $column The column to get the definition for.
-     * @return string The SQL column definition.
+     * Phalcon can throw while rendering binary and varbinary columns in versions
+     * affected by upstream issue https://github.com/phalcon/cphalcon/issues/16532.
+     * For every other column type the native implementation remains authoritative.
+     *
+     * @param ColumnInterface $column Column metadata to render.
+     *
+     * @return string SQL fragment for the column type and size.
      */
     #[\Override]
     public function getColumnDefinition(ColumnInterface $column): string

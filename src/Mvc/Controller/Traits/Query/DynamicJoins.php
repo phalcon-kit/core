@@ -228,8 +228,10 @@ trait DynamicJoins
                             $joinType = 'left';
                         }
 
-                        // @todo we could potentially extract some "filters" conditions that are used and scoped for this relationship with no external fields
-                        // @todo so we could append them to the dynamic join conditions and gain performance
+                        // Potential optimization: relationship-scoped filters
+                        // could be hoisted into the join condition when they do
+                        // not reference external fields. Keep the current query
+                        // shape until alias and permission semantics are proven.
 
                         $join = [
                             // model class to use

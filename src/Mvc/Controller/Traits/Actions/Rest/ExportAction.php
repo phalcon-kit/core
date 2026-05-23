@@ -28,14 +28,12 @@ trait ExportAction
     use AbstractQuery;
     
     /**
-     * Export the data and end the script execution.
+     * Export records matching the prepared REST query.
      *
-     * This method retrieves the data by calling the `find` method and then
-     * exposes it using the `exportExpose` method. If the data is successfully
-     * exported using the `export` method, the script execution is ended by
-     * calling `exit` with a status code of 0.
+     * The action finds the result set, applies the export exposure rules, and
+     * delegates response generation to the export trait. Content negotiation and
+     * supported export formats are owned by `export()`.
      *
-     * @return ResponseInterface
      * @throws HttpException When the requested export content type is not
      *     supported.
      * @throws \League\Csv\Exception When CSV generation fails.

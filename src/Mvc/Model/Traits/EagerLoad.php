@@ -112,7 +112,9 @@ trait EagerLoad
      * The method provides a mechanism to resolve calls like "findFirstWithBy..."/"firstWithBy..."
      * and "findWithBy..."/"withBy..." to their corresponding mapped operations.
      *
-     * @todo see if we should refactor this to use the native phalcon behavior "missingMethods()"
+     * The static magic method keeps the existing PhalconKit `findWithBy*`
+     * surface. Moving this to native `missingMethods()` remains a compatibility
+     * decision because it would change where dynamic calls are intercepted.
      *
      * @param string $method The name of the static method being called.
      * @param array $arguments An array of arguments passed to the static method.

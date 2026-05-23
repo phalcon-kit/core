@@ -28,7 +28,10 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $escaper = $di->getTyped('escaper', EscaperInterface::class);
         
-        // @todo set tag factory as tag service and use service instead
+        // The assets manager expects a native-style TagFactory. The public
+        // `tag` service still exposes PhalconKit's static helper facade, so
+        // unifying both services is a compatibility discussion rather than a
+        // provider-local swap.
 //        $tag = $di->get('tag');
         $tag = new TagFactory($escaper);
         

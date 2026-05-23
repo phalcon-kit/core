@@ -72,7 +72,7 @@ class EventsAwareTraitTest extends AbstractUnit
                 'event' => $event,
                 'subject' => $subject,
                 'data' => $data,
-                'afterCancel' => false,
+                'listenerAfterStopRan' => false,
             ];
             return 'first-return';
         }, 0);
@@ -83,20 +83,20 @@ class EventsAwareTraitTest extends AbstractUnit
         }, 1);
         
         $manager->attach($this->events->getEventsPrefix() . ':' . $task, function () use (&$bag) {
-            $bag['afterCancel'] = true;
+            $bag['listenerAfterStopRan'] = true;
             return 'third-return';
         }, 2);
         
         $this->events->setEventsManager($manager);
         $result = $this->events->fire($task, $data, true);
         
-        $this->assertEquals('second-return', $result); // @todo why only second is returned and not third even if we do not stop event?
+        $this->assertEquals('second-return', $result);
         $this->assertInstanceOf(Event::class, $bag['event']);
         $this->assertInstanceOf(EventInterface::class, $bag['event']);
         $this->assertInstanceOf($this->events::class, $bag['subject']);
         $this->assertEquals($data, $bag['event']->getData());
         $this->assertEquals($data, $bag['data']);
-//        $this->assertFalse($bag['afterCancel']); // @todo why
+        $this->assertFalse($bag['listenerAfterStopRan']);
     }
 
     public function testFireReturnsListenerResultForNonCancelableEvent(): void

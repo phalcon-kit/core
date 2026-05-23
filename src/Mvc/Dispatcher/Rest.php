@@ -18,7 +18,10 @@ use Phalcon\Mvc\Dispatcher;
 use PhalconKit\Di\Injectable;
 
 /**
- * @todo
+ * Pass-through dispatcher listener reserved for REST dispatch customization.
+ *
+ * The class is intentionally inert until REST-specific dispatch behavior is
+ * promoted to a supported framework contract.
  */
 class Rest extends Injectable
 {

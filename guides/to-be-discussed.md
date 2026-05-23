@@ -92,6 +92,149 @@ Discussion triggers:
 - Security review accepts the logout, replay, token revocation, and state
   validation tradeoffs for the stateless path.
 
+## Reviewed Inline Follow-Ups
+
+Status: Reviewed; selected items remain open.
+
+Area: framework internals, public API design, test coverage
+
+Context:
+
+- On 2026-05-23, every inline follow-up marker outside `vendor/` and generated
+  API docs was reviewed.
+- Vague source/test comments were replaced with current-behavior comments or
+  removed when they were stale.
+- The items below are the ones that still have real design value. They should
+  not change public behavior until the desired API shape, migration risk, and
+  test coverage are clear.
+
+Current stance:
+
+- Keep source comments focused on known limitations and current behavior; do
+  not use inline comments as a second backlog.
+- Do not implement these as drive-by fixes. Most touch public framework
+  contracts or long-standing compatibility behavior.
+- Prefer opt-in behavior, compatibility notes, and regression tests before
+  changing existing defaults.
+
+Keep for discussion:
+
+- Identity password reset notifications:
+  `src/Identity/Manager.php`.
+  Decide whether reset-token and reset-completed messages belong in events, a
+  notifier service, or app-owned callbacks. Any design must preserve the current
+  anti-user-enumeration response behavior.
+- Impersonation authorization:
+  `src/Identity/Traits/Impersonation.php`.
+  Replace the hard-coded `admin`/`dev` role gate only after a config-backed
+  impersonation permission contract exists, including audit/session behavior for
+  "login as" flows.
+- Tag factory and legacy tag service split:
+  `src/Provider/Assets/ServiceProvider.php`,
+  `tests/Unit/Html/TagFactoryTest.php`.
+  The assets manager needs a native-style `TagFactory`, while the public `tag`
+  service exposes PhalconKit's static helper facade. A cleanup would likely need
+  separate service names or a compatibility bridge.
+- Gravatar provider:
+  `src/Provider/Gravatar/ServiceProvider.php`.
+  Either implement a maintained client with dependency/config/privacy decisions
+  or remove the empty provider from the default provider surface.
+- Model setup defaults:
+  `src/Mvc/Model.php`.
+  Revisit `notNullValidations => false` only after generated-model validation,
+  database-nullability assumptions, and application migration risk are tested.
+- Dynamic model metadata:
+  `src/Mvc/Model/Dynamic.php`.
+  Replace APCu metadata key deletion with a metadata strategy or adapter wrapper
+  only if it handles dynamic sources without changing normal model caching.
+- Relationship assignment:
+  `src/Mvc/Model/Traits/Relationship.php`,
+  `tests/Unit/Mvc/Model/ModelTest.php`.
+  Consider an opt-in strict mode for unknown aliases, a clearer replacement for
+  boolean keep-missing sentinels, and explicit rules for sparse payloads that
+  reactivate or update existing relation rows.
+- Controller behavior merging:
+  `src/Mvc/Controller/Traits/Behavior.php`.
+  Define whether controller behaviors should collect multiple event responses
+  and how feature/role permission merges should de-duplicate overlapping
+  entries.
+- `findIn*` model helpers:
+  `src/Mvc/Model/Traits/FindIn.php`.
+  Expand beyond `findInById()` only after field validation, bind-type
+  inference, and method naming rules are defined.
+- Soft delete event state:
+  `src/Mvc/Model/Traits/SoftDelete.php`.
+  Decide whether model setup options should expose ORM event state instead of
+  reading the native INI flag inside the trait.
+- Static eager-loading magic:
+  `src/Mvc/Model/Traits/EagerLoad.php`.
+  Keep `__callStatic()` for compatibility unless moving to Phalcon
+  `missingMethods()` is proven to intercept the same public method names.
+- Model cache invalidation:
+  `src/Mvc/Model/Traits/Cache.php`.
+  Design cache keys, whitelist rules, and pre-warming before replacing the
+  current coarse flush behavior.
+- Read/write replication listeners:
+  `src/Mvc/Model/Traits/Replication.php`.
+  Decide whether repeated initialization needs an idempotency guard or a
+  behavior object before changing listener attachment.
+- Lifecycle query ownership:
+  `src/Mvc/Model/Traits/LifeCycle.php`.
+  Moving lifecycle helpers into a model manager would be cleaner, but requires a
+  migration plan for static CLI retention task calls.
+- Dynamic join filtering:
+  `src/Mvc/Controller/Traits/Query/DynamicJoins.php`,
+  `src/Mvc/Controller/Traits/Query/Conditions/FilterSemantics.php`.
+  Filter hoisting and join-existence validation could improve performance or
+  safety, but they need tests for aliases, permission-scoped joins, and
+  user-supplied filter fields.
+- Distinct REST action:
+  `src/Mvc/Controller/Traits/Actions/Rest/DistinctAction.php`.
+  Implement only after response shape, allowed fields, joins, permissions,
+  pagination, and transformer behavior are specified.
+- Audit snapshots:
+  `src/Mvc/Model/Behavior/Blameable.php`.
+  Ensure snapshots include only scalar mapped columns even when assigned
+  relations are present on the model.
+- Eager loading limitations:
+  `src/Mvc/Model/EagerLoading/Loader.php`,
+  `src/Mvc/Model/EagerLoading/EagerLoad.php`.
+  Composite relation keys, multiple local/reference fields, through-relation
+  soft-delete visibility, optional grouping, and loader options need a coherent
+  API instead of isolated condition edits.
+- Locale model magic:
+  `src/Mvc/Model/Interfaces/LocaleInterface.php`.
+  Add `__isset()`/`__unset()` only after translated-property presence semantics
+  are defined.
+- Dispatcher listeners:
+  `src/Mvc/Dispatcher/Module.php`, `src/Mvc/Dispatcher/Rest.php`.
+  Standardize module namespace rewriting and decide whether the pass-through
+  REST dispatcher listener should gain supported behavior or be removed.
+- Translation keys containing the delimiter inside nested arrays:
+  `tests/Unit/Translate/TranslateTest.php`,
+  `src/Translate/Adapter/NestedNativeArray.php`.
+  Supporting this would require a longest-match lookup strategy that preserves
+  the existing flat-key precedence.
+- Environment loader invalid types:
+  `tests/Unit/Support/EnvTest.php`, `src/Support/Env.php`.
+  Current behavior normalizes invalid types to `Mutable`; stricter exceptions
+  would be a behavior change and should be explicit.
+- ClamAV positive scan fixture:
+  `tests/Unit/Provider/ClamavTest.php`.
+  Add EICAR coverage only with a CI-safe fixture/download strategy that does
+  not trigger repository, package, or local antivirus scanners unexpectedly.
+
+Closed or clarified during review:
+
+- Blank comments in flash, exposer, and dispatcher code were removed or
+  replaced with explicit current-behavior comments.
+- JSON escaping of `null` remains `null` as a string because the helper is used
+  for `JSON.parse(decodeURIComponent(...))` payloads.
+- Event cancellation behavior is now asserted directly instead of questioned in
+  a comment.
+- The disabled multibyte sprintf encoding test was removed because the example
+  used Chinese text with an encoding that cannot represent it.
+
 ## Entry Template
 
 - Status:

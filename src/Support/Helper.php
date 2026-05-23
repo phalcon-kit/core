@@ -16,9 +16,12 @@ namespace PhalconKit\Support;
 use Phalcon\Di\Di;
 
 /**
- * Class Helper
+ * Static facade for native Phalcon and PhalconKit helper services.
  *
- * This class is responsible for providing helper methods and functions.
+ * Calls are forwarded to the configured `helper` DI service when one exists,
+ * otherwise a new `HelperFactory` is created. The facade keeps lightweight
+ * helper calls available in static contexts such as config construction and
+ * legacy helper usage.
  *
  * Native methods
  * @method static string basename(string $uri, string $suffix = null)
@@ -79,9 +82,9 @@ use Phalcon\Di\Di;
  * @method static array  whitelist(array $collection, array $whiteList)
  * 
  * New methods
- * @method static string recursiveMap(array $collection = [], callable $callback = null)
- * @method static string flattenKeys(array $collection = [], string $delimiter = '.', bool $lowerKey = true)
- * @method static string recursiveStrReplace(array $collection, array $replaces)
+ * @method static array recursiveMap(array $collection = [], callable $callback = null)
+ * @method static array flattenKeys(array $collection = [], string $delimiter = '.', bool $lowerKey = true)
+ * @method static array recursiveStrReplace(array $collection, array $replaces)
  * @method static string slugify(string $string, array $replace = [], string $delimiter = '-')
  * @method static string sanitizeUTF8(string $string, string $invalidUtf8Regex)
  * @method static string removeNonPrintable(string $string, string $nonPrintableRegex = '[[:cntrl:]\r\n]', string $replacement = '')
@@ -90,19 +93,16 @@ use Phalcon\Di\Di;
 class Helper
 {
     /**
-     * @var ?HelperFactory
+     * Helper factory used by the static facade.
      */
     public static ?HelperFactory $helperFactory = null;
-    
+
     /**
-     * Returns the instance of the HelperFactory class.
+     * Return the helper factory used by static helper calls.
      *
-     * This method is responsible for providing the HelperFactory instance.
-     * If the instance is already set, it returns the existing instance.
-     * If the instance is not set, it tries to retrieve it from the dependency injection container.
-     * If the instance is not found in the container, it creates a new instance of HelperFactory.
-     *
-     * @return HelperFactory The instance of the HelperFactory class.
+     * The default DI `helper` service is preferred so applications can override
+     * or extend helper registration globally. When no DI service is available,
+     * the facade falls back to a local `HelperFactory`.
      */
     public static function getHelperFactory(): HelperFactory
     {
@@ -110,14 +110,10 @@ class Helper
     }
     
     /**
-     * Magic method __callStatic
+     * Forward static helper calls to the active helper factory.
      *
-     * This method is a magic method that allows calling static methods dynamically.
-     *
-     * @param string $name The name of the static method to call.
-     * @param array $arguments Arguments to pass to the static method.
-     * 
-     * @return mixed The result of the static method call.
+     * @param string $name Helper service name.
+     * @param array<int, mixed> $arguments Helper arguments.
      */
     public static function __callStatic(string $name, array $arguments): mixed
     {

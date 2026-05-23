@@ -19,8 +19,21 @@ use PhalconKit\Mvc\Controller\Behavior\Skip\SkipSoftDeleteCondition;
 use PhalconKit\Modules\Api\Controllers\TemplateController;
 use PhalconKit\Models\Template;
 
+/**
+ * Default permission fragment for template resources.
+ *
+ * Users can read templates and administrators can manage them. Administrative
+ * template management skips identity and soft-delete query guards so framework
+ * maintenance screens can work with all template rows.
+ */
 class TemplateConfig extends Config
 {
+    /**
+     * Merge the template permission fragment with caller-provided config.
+     *
+     * @param array<string, mixed> $data Permission overrides or extensions.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
+     */
     public function __construct(array $data = [], bool $insensitive = true)
     {
         $data = $this->internalMergeAppend([

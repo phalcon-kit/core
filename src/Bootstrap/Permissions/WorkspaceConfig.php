@@ -19,8 +19,22 @@ use PhalconKit\Mvc\Controller\Behavior\Skip\SkipSoftDeleteCondition;
 use PhalconKit\Modules\Api\Controllers\WorkspaceController;
 use PhalconKit\Models\Workspace;
 
+/**
+ * Default permission fragment for workspace resources.
+ *
+ * Users can read workspaces and administrators can manage them. The
+ * administrative behavior skips identity and soft-delete filters because
+ * workspace maintenance commonly needs to see records outside the active
+ * user's normal row-level scope.
+ */
 class WorkspaceConfig extends Config
 {
+    /**
+     * Merge the workspace permission fragment with caller-provided config.
+     *
+     * @param array<string, mixed> $data Permission overrides or extensions.
+     * @param bool $insensitive Whether config keys should be case-insensitive.
+     */
     public function __construct(array $data = [], bool $insensitive = true)
     {
         $data = $this->internalMergeAppend([

@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace PhalconKit\Http;
 
 /**
- * Represents an HTTP response.
- * {@inheritDoc}
+ * HTTP response implementation used by PhalconKit services.
+ *
+ * This wrapper delegates to Phalcon's response object while providing a
+ * framework-scoped type for DI definitions, controller return values, and
+ * service contracts.
  */
 class Response extends \Phalcon\Http\Response implements ResponseInterface
 {

@@ -14,24 +14,33 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Options;
 
 /**
- * The Options trait provides a set of methods for managing options in a class.
+ * Reusable implementation for mutable service/object options.
+ *
+ * Classes using the trait get a simple lifecycle: constructor options are
+ * captured as defaults, current options can be replaced or changed by key, and
+ * `resetOptions()` restores the captured defaults. Override `initialize()` for
+ * post-option setup that should run once during construction.
  */
 trait Options
 {
     /**
-     * @var mixed[] $defaultOptions Default options for something.
+     * Options captured during initialization and used by resetOptions().
+     *
+     * @var array<string, mixed>
      */
     protected array $defaultOptions = [];
-    
+
     /**
-     * @var mixed[] $options Options for something.
+     * Current mutable option values.
+     *
+     * @var array<string, mixed>
      */
     protected array $options = [];
-    
+
     /**
-     * Constructs a new instance of the class.
+     * Construct the object and initialize its options.
      *
-     * @param mixed[]|null $options An optional array of options to initialize the instance with. Default is null.
+     * @param array<string, mixed>|null $options Defaults to capture and apply.
      */
     public function __construct(?array $options = null)
     {
@@ -39,11 +48,9 @@ trait Options
     }
     
     /**
-     * Initializes the options for the object.
+     * Capture defaults, apply the current options, and run initialize().
      *
-     * @param mixed[]|null $options The options to be initialized. If null, an empty array will be used.
-     *
-     * @return void
+     * @param array<string, mixed>|null $options Defaults to capture and apply.
      */
     public function initializeOptions(?array $options = null): void
     {
@@ -54,24 +61,21 @@ trait Options
     }
     
     /**
-     * Initializes the object.
+     * Optional hook called after options are initialized.
      *
-     * This method is responsible for performing any necessary setup or initialization tasks for the object.
-     * It does not accept any parameters and does not return a value.
-     *
-     * @return void
+     * Override this in classes that need to derive internal state from options
+     * during construction.
      */
     public function initialize(): void
     {
     }
     
     /**
-     * Sets the options for the object.
+     * Replace or merge the current option set.
      *
-     * @param mixed[] $options The array of options to be set.
-     * @param bool $merge Whether to merge the existing options with the new options. Defaults to false.
-     *
-     * @return void
+     * @param array<string, mixed> $options Options to apply.
+     * @param bool $merge Whether to merge into existing options instead of
+     *     replacing them.
      */
     public function setOptions(array $options, bool $merge = false): void
     {
@@ -79,9 +83,9 @@ trait Options
     }
     
     /**
-     * Retrieves all options.
+     * Return the current option set.
      *
-     * @return mixed[] An array containing all the options.
+     * @return array<string, mixed>
      */
     public function getOptions(): array
     {
@@ -89,13 +93,10 @@ trait Options
     }
     
     /**
-     * Sets the value of the option specified by the given key.
+     * Store or replace one option value.
      *
-     * @param string $key The key of the option.
-     * @param mixed $value The value to be set for the option.
-     * @param bool $merge Whether to merge the new value with an existing value if the option already exists.
-     *
-     * @return void
+     * @param bool $merge Whether to merge the key/value pair into the existing
+     *     option array.
      */
     public function setOption(string $key, mixed $value = null, bool $merge = false): void
     {
@@ -107,12 +108,9 @@ trait Options
     }
     
     /**
-     * Retrieves the value of the option specified by the given key.
+     * Return one option value or a default when it is missing.
      *
-     * @param string $key The key of the option.
-     * @param mixed $default The default value to be returned if the option does not exist.
-     * 
-     * @return mixed The value of the option specified by the key, or the default value if the option does not exist.
+     * @param mixed $default Default returned when the option is not set.
      */
     public function getOption(string $key, mixed $default = null): mixed
     {
@@ -120,11 +118,7 @@ trait Options
     }
     
     /**
-     * Checks if the option specified by the given key exists.
-     *
-     * @param string $key The key of the option.
-     *
-     * @return bool Returns true if the option exists, false otherwise.
+     * Return true when an option is present.
      */
     public function hasOption(string $key): bool
     {
@@ -132,12 +126,7 @@ trait Options
     }
     
     /**
-     * Remove an option by key
-     *
-     * Removes the option with the given key from the options array.
-     *
-     * @param string $key The key of the option to be removed
-     * @return void
+     * Remove one option value when it exists.
      */
     public function removeOption(string $key): void
     {
@@ -147,10 +136,7 @@ trait Options
     }
     
     /**
-     * Reset all options to their default values
-     * - Uses the defaultOptions property to set the options
-     * 
-     * @return void
+     * Restore current options to the initialized defaults.
      */
     public function resetOptions(): void
     {
@@ -158,12 +144,7 @@ trait Options
     }
     
     /**
-     * Clear all options
-     *
-     * This method clears all the options stored in the class.
-     * After calling this method, the options array will be empty.
-     *
-     * @return void
+     * Remove all current option values.
      */
     public function clearOptions(): void
     {

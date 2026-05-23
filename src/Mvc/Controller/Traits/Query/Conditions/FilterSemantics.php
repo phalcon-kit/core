@@ -459,11 +459,8 @@ trait FilterSemantics
             return false;
         }
 
-        // @todo see if we should check if the join exists, not sure if we should
-//        $joinName = substr($field, 0, strrpos($field, '.'));
-//        if (!$this->getJoins()->has($joinName)) {
-//            return false;
-//        }
+        // This validates allowed filter names only. Checking join existence here
+        // would couple filter semantics to join registration order.
 
         // might have a defined relationship
         $filteredField = preg_replace('/\[[^\]]*\](?=\.)/', '', $field);

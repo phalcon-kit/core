@@ -47,7 +47,6 @@ class EscaperTest extends AbstractUnit
     /**
      * Test the JSON method on the Escaper class when providing null as input.
      * The method should return 'null' when null is passed as input.
-     * @todo check if we should return nothing instead
      */
     public function testJsonWithNullType(): void
     {

@@ -30,7 +30,9 @@ trait Behavior
         $eventsManager = $this->getOrCreateEventsManager();
         $eventsManager->enablePriorities(true);
         
-        // @todo see if we can implement receiving an array of responses globally: V2
+        // Native response collection changes the shape returned by event
+        // dispatching, so keep it disabled until a V2 controller contract
+        // explicitly supports multiple behavior responses.
         // $eventsManager->collectResponses(true);
         
         // retrieve events based on the config roles and features
@@ -47,7 +49,9 @@ trait Behavior
             if (isset($rolePermission['features'])) {
                 foreach ($rolePermission['features'] as $feature) {
                     $rolePermission = array_merge_recursive($rolePermission, $featureList[$feature] ?? []);
-                    // @todo remove duplicates
+                    // Recursive merges can duplicate feature entries; keep the
+                    // current behavior until permission merge semantics are
+                    // defined centrally.
                 }
             }
             

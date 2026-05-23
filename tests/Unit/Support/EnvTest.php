@@ -167,7 +167,7 @@ class EnvTest extends AbstractUnit
             ['Immutable', 'Immutable'],
             ['UNSAFE-MUTABLE', 'UnsafeMutable'],
             ['UNSAFE-IMMUTABLE', 'UnsafeImmutable'],
-            ['non-existing', 'Mutable'], // @todo should throw an exception instead
+            ['non-existing', 'Mutable'], // invalid types currently normalize to the safe mutable loader
         ];
         
         // test default

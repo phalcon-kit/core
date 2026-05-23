@@ -17,11 +17,11 @@ use Phalcon\Db\Column;
 use Phalcon\Mvc\Model\ResultsetInterface;
 
 /**
- * @todo
- * - findIn
- * - FindInBy...
- * - findFirstIn
- * - findFirstInBy...
+ * Provides small `IN (...)` helpers for models with an integer `id` column.
+ *
+ * The current trait intentionally exposes only `findInById()`. More generic
+ * `findIn*` variants need field validation, bind-type inference, and clear
+ * naming rules before they become public model API.
  */
 trait FindIn
 {
