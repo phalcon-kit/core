@@ -118,6 +118,23 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertInstanceOf(AnnotationsMemory::class, $di->get('annotations'));
     }
 
+    public function testAnnotationsProviderDefaultsToMemoryAdapterWithoutWarnings(): void
+    {
+        $di = $this->createBareDi([
+            'annotations' => [
+                'driver' => 'memory',
+                'drivers' => [
+                    'memory' => [],
+                ],
+            ],
+        ]);
+        (new AnnotationsProvider($di))->register($di);
+
+        $this->withoutPhpWarnings(function () use ($di): void {
+            $this->assertInstanceOf(AnnotationsMemory::class, $di->get('annotations'));
+        });
+    }
+
     public function testAssetsProviderUsesEscaperService(): void
     {
         $di = $this->createDi();
@@ -399,6 +416,30 @@ class AdditionalServiceProvidersTest extends AbstractUnit
 
         $this->assertInstanceOf(Debug::class, $debug);
         $this->assertSame('/debug-assets/', $uri->getValue($debug));
+    }
+
+    public function testDebugProviderAllowsEnabledDebugWithoutConfiguredUri(): void
+    {
+        $di = $this->createBareDi([
+            'app' => [
+                'debug' => true,
+            ],
+            'debug' => [
+                'enable' => true,
+            ],
+        ]);
+        $this->bootstrap->mode = Bootstrap::MODE_MVC;
+        $di->set('bootstrap', $this->bootstrap);
+        (new DebugProvider($di))->register($di);
+
+        try {
+            $this->withoutPhpWarnings(function () use ($di): void {
+                $this->assertInstanceOf(Debug::class, $di->get('debug'));
+            });
+        }
+        finally {
+            restore_exception_handler();
+        }
     }
 
     public function testDispatcherProviderRegistersMvcDispatcherWithDefaultNamespace(): void
@@ -768,10 +809,30 @@ class AdditionalServiceProvidersTest extends AbstractUnit
 
     public function testRedisProviderRegistersSharedRedisInstance(): void
     {
+        if (!class_exists(Redis::class)) {
+            $this->markTestSkipped('Redis extension is not available.');
+        }
+
+        $probe = new Redis();
+        try {
+            $connected = $probe->connect('127.0.0.1', 6379, 0.01);
+        }
+        catch (\RedisException $exception) {
+            $this->markTestSkipped('Redis service is not available: ' . $exception->getMessage());
+        }
+
+        if (!$connected) {
+            $this->markTestSkipped('Redis service is not available.');
+        }
+
+        if ($probe->isConnected()) {
+            $probe->close();
+        }
+
         $di = $this->createDi([
             'redis' => [
                 'host' => '127.0.0.1',
-                'port' => 0,
+                'port' => 6379,
                 'timeout' => 0.01,
                 'persistentId' => null,
                 'retryInterval' => 0,
@@ -1113,6 +1174,37 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $di->set('config', new Config($config));
 
         return $di;
+    }
+
+    private function createBareDi(array $config = []): Di
+    {
+        $di = new Di();
+        $di->set('config', new \PhalconKit\Config\Config($config));
+
+        return $di;
+    }
+
+    private function withoutPhpWarnings(\Closure $callback): void
+    {
+        $handlerActive = true;
+        set_error_handler(
+            static function (int $code, string $message, string $file, int $line) use (&$handlerActive): never {
+                $handlerActive = false;
+                restore_error_handler();
+
+                throw new \ErrorException($message, 0, $code, $file, $line);
+            },
+            E_WARNING
+        );
+
+        try {
+            $callback();
+        }
+        finally {
+            if ($handlerActive) {
+                restore_error_handler();
+            }
+        }
     }
 
     private function createFakePdoAdapterClass(): string

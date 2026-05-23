@@ -52,8 +52,9 @@ class ServiceProvider extends AbstractServiceProvider
                 $debug->setShowBackTrace($debugConfig['showBackTrace'] ?? true);
                 $debug->setShowFileFragment($debugConfig['showFileFragment'] ?? true);
                 
-                if (is_string($debugConfig['uri'])) {
-                    $debug->setUri($debugConfig['uri']);
+                $uri = $debugConfig['uri'] ?? null;
+                if (is_string($uri)) {
+                    $debug->setUri($uri);
                 }
             }
             

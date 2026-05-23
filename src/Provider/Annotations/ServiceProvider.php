@@ -39,7 +39,11 @@ class ServiceProvider extends AbstractServiceProvider
             $options = array_merge($defaultOptions, $driverOptions);
     
             // adapter
-            $adapter = $driverOptions['adapter'] ?: Memory::class;
+            $adapter = $driverOptions['adapter'] ?? Memory::class;
+            if (!is_string($adapter) || $adapter === '') {
+                $adapter = Memory::class;
+            }
+
             return new $adapter($options);
         });
     }

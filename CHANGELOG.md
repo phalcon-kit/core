@@ -209,6 +209,10 @@ tag has been cut yet.
 
 ### Fixed
 
+- Fixed annotations and debug providers so lean config consumers can omit
+  optional adapter and URI keys without PHP warnings.
+- Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
+  reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation
   aliases as non-public properties or access aliases directly.
 - Fixed REST query compiler collection normalization so associative bind maps
