@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Session;
 
+use InvalidArgumentException;
 use Phalcon\Di\DiInterface;
 use Phalcon\Session\Manager;
 use Phalcon\Session\Adapter\Redis;
@@ -67,16 +68,19 @@ class ServiceProvider extends AbstractServiceProvider
                 $options['savePath'] ??= sys_get_temp_dir();
             }
 
-            if (in_array($adapter, [Noop::class, Stream::class])) {
+            if (in_array($adapter, [Noop::class, Stream::class], true)) {
                 $adapterInstance = new $adapter($options);
-                assert($adapterInstance instanceof \SessionHandlerInterface);
                 $session->setAdapter($adapterInstance);
             }
             else {
                 $serializerFactory = new SerializerFactory();
                 $adapterFactory = new AdapterFactory($serializerFactory);
                 $adapterInstance = new $adapter($adapterFactory, $options);
-                assert($adapterInstance instanceof \SessionHandlerInterface);
+                if (!$adapterInstance instanceof \SessionHandlerInterface) {
+                    throw new InvalidArgumentException(
+                        'Session adapter must implement ' . \SessionHandlerInterface::class
+                    );
+                }
                 $session->setAdapter($adapterInstance);
                 
                 // ini_set save_handler and save_path for redis

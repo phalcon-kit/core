@@ -118,6 +118,8 @@ tag has been cut yet.
 - Clarified that legacy REST bridge traits shown in migration examples are
   app-owned compatibility code unless promoted into a small, opt-in, tested
   core compatibility namespace.
+- Added a maintainer discussion log for open API design questions that should
+  not change public behavior without a concrete use case.
 - Added a phased testing roadmap for growing coverage from pure support units
   through behavior, provider, REST, model, relationship, eager-loading, and
   scaffolding tests.
@@ -213,6 +215,8 @@ tag has been cut yet.
   optional adapter and URI keys without PHP warnings.
 - Fixed metadata and session providers so lean config consumers get safe
   adapter defaults instead of undefined adapter warnings.
+- Fixed session provider adapter validation so custom session adapters fail
+  clearly when they do not implement `SessionHandlerInterface`.
 - Fixed OAuth2 providers so Google can be constructed from lean config and
   Facebook treats `redirectUri` as optional when building the absolute callback
   URI from the current request.

@@ -1162,6 +1162,28 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         }
     }
 
+    public function testSessionProviderRejectsFactoryBackedAdapterWithoutSessionHandlerInterface(): void
+    {
+        $di = $this->createDi([
+            'session' => [
+                'driver' => 'unit',
+                'drivers' => [
+                    'unit' => [
+                        'adapter' => $this->createFakeMetadataAdapterClass(),
+                    ],
+                ],
+                'default' => [],
+                'ini' => [],
+            ],
+        ]);
+        (new SessionProvider($di))->register($di);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Session adapter must implement SessionHandlerInterface');
+
+        $di->get('session');
+    }
+
     public function testSessionProviderConfiguresRedisSessionIniForRedisAdapter(): void
     {
         $originalSaveHandler = ini_get('session.save_handler');
