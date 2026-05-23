@@ -19,6 +19,8 @@ use Phalcon\Encryption\Security\JWT\Token\Parser;
 use Phalcon\Encryption\Security\JWT\Token\Token;
 use Phalcon\Encryption\Security\JWT\Validator;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Exception\ConfigurationException;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Provider\Jwt\Jwt;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -61,6 +63,16 @@ class JwtTest extends AbstractUnit
         $this->assertSame($jwt->signer, $signer);
     }
 
+    public function testSignerRejectsInvalidSignerClass(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Invalid JWT signer "stdClass": expected a class-string of');
+
+        new Jwt([
+            'signer' => \stdClass::class,
+        ]);
+    }
+
     public function testBuildParseAndValidateTokenRoundTrip(): void
     {
         $jwt = new Jwt($this->defaultJwtOptions());
@@ -96,6 +108,26 @@ class JwtTest extends AbstractUnit
         $this->assertSame('override-subject', $claims['sub']);
         $this->assertSame('override-issuer', $claims['iss']);
         $this->assertSame(['override-audience'], $claims['aud']);
+    }
+
+    public function testBuildTokenRejectsMissingBuilder(): void
+    {
+        $jwt = new Jwt($this->defaultJwtOptions());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Cannot build JWT token without a builder.');
+
+        $jwt->buildToken();
+    }
+
+    public function testValidatorRejectsMissingToken(): void
+    {
+        $jwt = new Jwt($this->defaultJwtOptions());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Cannot initialize JWT validator without a token.');
+
+        $jwt->validator();
     }
 
     /**

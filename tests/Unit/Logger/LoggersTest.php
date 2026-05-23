@@ -18,6 +18,7 @@ use Phalcon\Logger\Adapter\Stream;
 use Phalcon\Logger\Adapter\Syslog;
 use Phalcon\Logger\Formatter\Line;
 use Phalcon\Logger\Logger;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Logger\Loggers;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -64,10 +65,22 @@ class LoggersTest extends AbstractUnit
 
     public function testGetFormatterRejectsUnknownFormatter(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Logger formatter `missing` is not defined.');
 
         $this->createLoggers()->getFormatter('missing');
+    }
+
+    public function testGetFormatterRejectsInvalidFormatterClass(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Logger formatter "line" must implement');
+
+        $this->createLoggers([
+            'formatters' => [
+                'line' => \stdClass::class,
+            ],
+        ])->getFormatter('line');
     }
 
     public function testGetAdaptersReturnsConfiguredAdapters(): void
@@ -102,10 +115,22 @@ class LoggersTest extends AbstractUnit
 
     public function testGetAdaptersRejectsUnknownDriver(): void
     {
-        $this->expectException(\Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Logger driver adapter `missing` is not defined.');
 
         $this->createLoggers()->getAdapters('missing');
+    }
+
+    public function testGetAdaptersRejectsInvalidAdapterClass(): void
+    {
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Logger driver adapter "noop" must implement');
+
+        $this->createLoggers([
+            'drivers' => [
+                'noop' => \stdClass::class,
+            ],
+        ])->getAdapters('noop');
     }
 
     public function testLoadCreatesAndCachesLogger(): void

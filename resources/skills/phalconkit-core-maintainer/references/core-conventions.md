@@ -81,7 +81,10 @@ Provider rules:
 - Use `$di->setShared($this->getName(), function () use ($di) { ... })` for
   shared services.
 - Pull options from `config` with `pathToArray()`.
-- Assert expected dependency types after retrieving services from DI.
+- Use PhalconKit DI typed helpers such as `$di->getConfig()` and
+  `$di->getTyped()` when retrieving framework services.
+- Fail invalid config or service contracts with explicit framework exceptions,
+  not PHP assertions.
 - Register provider classes through `Bootstrap\Config` under `providers`.
 
 If replacing or fixing a provider, check `src/Di/InjectableProperties.php`,
@@ -96,6 +99,26 @@ Keep the app-facing provider catalog in
 `resources/skills/phalconkit-app-developer/references/providers.md` aligned
 with the default provider map, service names, config sections, and notable
 implementation gaps such as placeholder providers.
+
+## Public API Documentation
+
+PhalconKit is a framework package used directly by downstream applications.
+New or changed public/protected framework-facing classes, methods, interfaces,
+traits, providers, config contracts, and exceptions need useful PHPDoc or
+docblocks.
+
+Document what a downstream user or maintainer needs to use the API correctly:
+
+- purpose and expected lifecycle;
+- important parameters and array/config shapes;
+- return value and mutability expectations;
+- thrown framework exceptions and failure modes;
+- DI services, config keys, and side effects;
+- extension points or compatibility constraints with native Phalcon.
+
+Private helpers should still be readable, but do not add verbose comments to
+self-explanatory implementation details. Use a short comment only when it
+clarifies a non-obvious invariant or framework boundary.
 
 ## Modules And Routing
 

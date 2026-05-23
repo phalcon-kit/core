@@ -22,6 +22,7 @@ use Phalcon\Logger\Formatter\FormatterInterface;
 use Phalcon\Logger\Formatter\Line;
 use Phalcon\Logger\Logger;
 use Phalcon\Logger\LoggerInterface;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Support\Options\Options;
 
 class Loggers
@@ -41,7 +42,7 @@ class Loggers
      * @param string|null $formatter The name of the formatter to retrieve. Defaults to 'line'.
      * @param array $options The options for the formatter.
      * @return FormatterInterface The retrieved formatter.
-     * @throws \Exception If the specified formatter is not defined.
+     * @throws ConfigurationException If the specified formatter is not defined.
      */
     public function getFormatter(?string $formatter = null, array $options = []): FormatterInterface
     {
@@ -50,12 +51,11 @@ class Loggers
         
         // Formatter must be defined
         if (!isset($formatters[$formatter])) {
-            throw new \Exception('Logger formatter `' . $formatter . '` is not defined.');
+            throw new ConfigurationException('Logger formatter `' . $formatter . '` is not defined.');
         }
         
         // Formatter Instance
-        $formatter = new $formatters[$formatter]();
-        assert($formatter instanceof FormatterInterface);
+        $formatter = $this->createFormatter($formatter, $formatters[$formatter]);
         
         // Date Format
         if ($formatter instanceof AbstractFormatter) {
@@ -81,7 +81,7 @@ class Loggers
      * @param array $options The options to configure the adapters. Defaults to an empty array.
      * @param FormatterInterface|null $formatter The formatter to attach to the adapters. Defaults to null.
      * @return array The array of logger adapters.
-     * @throws \Exception If a logger driver adapter is not defined.
+     * @throws ConfigurationException If a logger driver adapter is not defined.
      */
     public function getAdapters(string|array|null $loggerDrivers = null, array $options = [], FormatterInterface|null $formatter = null): array
     {
@@ -93,29 +93,10 @@ class Loggers
         $loggerDrivers = is_array($loggerDrivers) ? $loggerDrivers : explode(',', $loggerDrivers ?? 'noop');
         foreach ($loggerDrivers as $loggerDriver) {
             if (!isset($drivers[$loggerDriver])) {
-                throw new \Exception('Logger driver adapter `' . $loggerDriver . '` is not defined.');
+                throw new ConfigurationException('Logger driver adapter `' . $loggerDriver . '` is not defined.');
             }
             
-            $adapterClass = $drivers[$loggerDriver];
-            
-            // Stream
-            if ($adapterClass === Stream::class) {
-                $adapter = new Stream($options['path'] . $options['filename'], $options['options'] ?? []);
-            }
-            
-            // Syslog
-            if ($adapterClass === Syslog::class) {
-                $adapter = new Syslog($loggerDriver, $options['options'] ?? []);
-            }
-            
-            // Noop
-            if ($adapterClass === Noop::class) {
-                $adapter = new Noop();
-            }
-            
-            // Others
-            $adapter ??= new $drivers[$loggerDriver]($options['options'] ?? []);
-            assert($adapter instanceof AdapterInterface);
+            $adapter = $this->createAdapter($loggerDriver, $drivers[$loggerDriver], $options);
             
             // Attach Formatter
             $adapter->setFormatter($formatter);
@@ -187,5 +168,51 @@ class Loggers
     public function set(string $name, LoggerInterface $logger): void
     {
         $this->loggers[$name] = $logger;
+    }
+
+    private function createFormatter(string $formatter, string $formatterClass): FormatterInterface
+    {
+        if (!is_a($formatterClass, FormatterInterface::class, true)) {
+            throw new ConfigurationException(sprintf(
+                'Logger formatter "%s" must implement "%s"; got "%s".',
+                $formatter,
+                FormatterInterface::class,
+                $formatterClass
+            ));
+        }
+
+        /**
+         * @var class-string<FormatterInterface> $formatterClass
+         * @psalm-suppress UnsafeInstantiation Logger formatters are configured as zero-argument services.
+         */
+        return new $formatterClass();
+    }
+
+    private function createAdapter(string $loggerDriver, string $adapterClass, array $options): AdapterInterface
+    {
+        if (!is_a($adapterClass, AdapterInterface::class, true)) {
+            throw new ConfigurationException(sprintf(
+                'Logger driver adapter "%s" must implement "%s"; got "%s".',
+                $loggerDriver,
+                AdapterInterface::class,
+                $adapterClass
+            ));
+        }
+
+        return match ($adapterClass) {
+            Stream::class => new Stream($options['path'] . $options['filename'], $options['options'] ?? []),
+            Syslog::class => new Syslog($loggerDriver, $options['options'] ?? []),
+            Noop::class => new Noop(),
+            default => $this->createCustomAdapter($adapterClass, $options),
+        };
+    }
+
+    private function createCustomAdapter(string $adapterClass, array $options): AdapterInterface
+    {
+        /**
+         * @var class-string<AdapterInterface> $adapterClass
+         * @psalm-suppress UnsafeInstantiation Custom logger adapters are configured to accept an options array.
+         */
+        return new $adapterClass($options['options'] ?? []);
     }
 }

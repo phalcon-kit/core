@@ -222,6 +222,8 @@ tag has been cut yet.
 - Added migration guidance clarifying that normal `PhalconKit\Bootstrap`
   consumers get the new PhalconKit DI container automatically, while custom
   bootstraps/tests must pass `PhalconKit\Di\DiInterface`.
+- Updated maintainer guidance to require useful PHPDoc/docblocks for new or
+  changed public/protected framework-facing APIs.
 
 ### Fixed
 
@@ -231,6 +233,11 @@ tag has been cut yet.
   `ConfigurationException` instead of relying on PHP assertions.
 - Fixed the ClamAV provider extension check to validate the loaded `sockets`
   extension explicitly instead of relying on an assertion.
+- Fixed JWT helper validation so invalid signer configuration, missing
+  builders, and missing tokens fail with explicit framework exceptions instead
+  of PHP assertions.
+- Fixed logger formatter and adapter validation so invalid logger config fails
+  with `ConfigurationException` instead of PHP assertions.
 - Fixed metadata and session providers so lean config consumers get safe
   adapter defaults instead of undefined adapter warnings.
 - Fixed session provider adapter validation so custom session adapters fail

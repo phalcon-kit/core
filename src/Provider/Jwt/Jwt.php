@@ -20,6 +20,8 @@ use Phalcon\Encryption\Security\JWT\Token\Parser;
 use Phalcon\Encryption\Security\JWT\Signer\AbstractSigner;
 use Phalcon\Encryption\Security\JWT\Token\Token;
 use Phalcon\Encryption\Security\JWT\Validator;
+use PhalconKit\Exception\ConfigurationException;
+use PhalconKit\Exception\ServiceException;
 
 /**
  * Issue, parse and validate JSON Web Tokens (JWT) as described in RFC 7519.
@@ -55,9 +57,7 @@ class Jwt
     {
         $signer ??= $this->options['signer'] ?? Hmac::class;
         $algo ??= $this->options['algo'] ?? 'sha512';
-        $signerInstance = new $signer($algo);
-        assert($signerInstance instanceof AbstractSigner);
-        $this->signer = $signerInstance;
+        $this->signer = $this->createSigner($signer, $algo);
         return $this->signer;
     }
     
@@ -97,8 +97,7 @@ class Jwt
      */
     public function validator(?Token $token = null, int $timeShift = 0): Validator
     {
-        $token ??= $this->token;
-        assert($token instanceof Token);
+        $token = $this->requireToken($token ?? $this->token);
         $this->validator = new Validator($token, $timeShift);
         return $this->validator;
     }
@@ -109,8 +108,7 @@ class Jwt
      */
     public function buildToken(?Builder $builder = null): Token
     {
-        $builder ??= $this->builder;
-        assert($builder instanceof Builder);
+        $builder = $this->requireBuilder($builder ?? $this->builder);
         $this->token = $builder->getToken();
         return $this->token;
     }
@@ -174,5 +172,44 @@ class Jwt
         $options['subject'] ??= $this->options['subject'] ?? '';
         
         return $options;
+    }
+
+    private function createSigner(string $signer, string $algo): AbstractSigner
+    {
+        if (!is_a($signer, AbstractSigner::class, true)) {
+            throw new ConfigurationException(sprintf(
+                'Invalid JWT signer "%s": expected a class-string of "%s".',
+                $signer,
+                AbstractSigner::class
+            ));
+        }
+
+        /**
+         * @var class-string<AbstractSigner> $signer
+         * @psalm-suppress UnsafeInstantiation Phalcon JWT signers accept the algorithm in the constructor.
+         */
+        return new $signer($algo);
+    }
+
+    private function requireToken(?Token $token): Token
+    {
+        if (!$token instanceof Token) {
+            throw new ServiceException(
+                'Cannot initialize JWT validator without a token. Call parseToken() or buildToken() first, or pass a Token instance.'
+            );
+        }
+
+        return $token;
+    }
+
+    private function requireBuilder(?Builder $builder): Builder
+    {
+        if (!$builder instanceof Builder) {
+            throw new ServiceException(
+                'Cannot build JWT token without a builder. Call builder() first, or pass a Builder instance.'
+            );
+        }
+
+        return $builder;
     }
 }

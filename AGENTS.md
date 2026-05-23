@@ -25,6 +25,12 @@ unless the task explicitly asks for regenerated docs.
 - Prefer focused edits over broad formatting or cleanup.
 - Add or update tests when runtime behavior changes. Documentation-only changes
   normally do not need PHP tests.
+- When adding or changing public/protected framework-facing classes, methods,
+  interfaces, traits, providers, config contracts, or exceptions, add useful
+  PHPDoc/docblocks. Document the purpose, important parameters, return value,
+  thrown exceptions, DI/config expectations, side effects, and extension notes
+  a downstream user would need. Private helpers can stay lightly documented
+  when their intent is obvious.
 - Update `CHANGELOG.md` under the current unreleased version section when a
   change affects public behavior, compatibility, security posture, tooling, or
   maintainer workflow.
