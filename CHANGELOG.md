@@ -218,6 +218,10 @@ tag has been cut yet.
   URI from the current request.
 - Fixed HTTP locale detection so unsupported `Accept-Language` values fall back
   through the configured allowed locales instead of being returned directly.
+- Fixed Argon password hashing so lean security config can omit
+  `security.argon2` cost values without PHP warnings.
+- Fixed bootstrap router base route registration so lean locale config can omit
+  `locale.allowed` without PHP warnings.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
   reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation

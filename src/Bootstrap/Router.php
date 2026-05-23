@@ -57,9 +57,10 @@ class Router extends \PhalconKit\Mvc\Router
         ])->setName('default-controller-action');
         
         $localeConfig = $this->getConfig()->pathToArray('locale') ?? [];
+        $allowedLocales = $localeConfig['allowed'] ?? [];
         
-        if (!empty($localeConfig['allowed'])) {
-            $localeRegex = '{locale:(' . implode('|', $localeConfig['allowed']) . ')}';
+        if (!empty($allowedLocales)) {
+            $localeRegex = '{locale:(' . implode('|', $allowedLocales) . ')}';
             
             $this->add('/' . $localeRegex, [
                 'locale' => 1,
@@ -78,7 +79,7 @@ class Router extends \PhalconKit\Mvc\Router
             ])->setName('locale-controller-action');
         }
         
-        foreach ($localeConfig['allowed'] as $locale) {
+        foreach ($allowedLocales as $locale) {
             $localeRegex = $locale;
             
             $this->add('/' . $localeRegex, [

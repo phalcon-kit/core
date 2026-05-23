@@ -41,9 +41,9 @@ class Security extends PhalconSecurity
             PhalconSecurity::CRYPT_ARGON2ID
         ])) {
             $defaultOptions = $this->getConfig()->pathToArray('security.argon2') ?? [];
-            $options['memory_cost'] ??= $defaultOptions['memoryCost'];
-            $options['time_cost'] ??= $defaultOptions['timeCost'];
-            $options['threads'] ??= $defaultOptions['threads'];
+            $options['memory_cost'] ??= $defaultOptions['memoryCost'] ?? PASSWORD_ARGON2_DEFAULT_MEMORY_COST;
+            $options['time_cost'] ??= $defaultOptions['timeCost'] ?? PASSWORD_ARGON2_DEFAULT_TIME_COST;
+            $options['threads'] ??= $defaultOptions['threads'] ?? PASSWORD_ARGON2_DEFAULT_THREADS;
         }
         
         return parent::hash($password, $options);

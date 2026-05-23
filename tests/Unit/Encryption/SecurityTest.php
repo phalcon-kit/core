@@ -76,6 +76,24 @@ class SecurityTest extends AbstractUnit
         $this->assertStringStartsWith('$argon2i$', $this->security->hash('test'));
         $this->assertStringStartsWith('$argon2i$', $this->security->hash('test', $options));
     }
+
+    public function testArgonHashAllowsMissingArgonConfigWithoutWarnings(): void
+    {
+        $this->di->set('config', new \PhalconKit\Config\Config([
+            'security' => [],
+        ]));
+
+        $security = new \PhalconKit\Encryption\Security();
+        $security->setDI($this->di);
+        $security->setDefaultHash(Security::CRYPT_ARGON2ID);
+
+        $this->withoutPhpWarnings(function () use ($security): void {
+            $hash = $security->hash('test');
+
+            $this->assertStringStartsWith('$argon2id$', $hash);
+            $this->assertTrue(password_verify('test', $hash));
+        });
+    }
     
     /**
      * Test the `hash` method with a simple string and default options
@@ -147,5 +165,28 @@ class SecurityTest extends AbstractUnit
         $newHash = $security->hash($testString);
 
         $this->assertNotEquals($hash, $newHash);
+    }
+
+    private function withoutPhpWarnings(\Closure $callback): void
+    {
+        $handlerActive = true;
+        set_error_handler(
+            static function (int $code, string $message, string $file, int $line) use (&$handlerActive): never {
+                $handlerActive = false;
+                restore_error_handler();
+
+                throw new \ErrorException($message, 0, $code, $file, $line);
+            },
+            E_WARNING
+        );
+
+        try {
+            $callback();
+        }
+        finally {
+            if ($handlerActive) {
+                restore_error_handler();
+            }
+        }
     }
 }

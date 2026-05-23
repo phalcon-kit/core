@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Mvc;
 
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Bootstrap\Router as BootstrapRouter;
 use PhalconKit\Mvc\Router;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use Phalcon\Mvc\Router\RouteInterface;
@@ -167,6 +168,18 @@ class RouterTest extends AbstractUnit
         ], $routerToArray['matched']['paths']);
     }
 
+    public function testBootstrapBaseRoutesAllowsMissingLocaleConfigWithoutWarnings(): void
+    {
+        $router = new BootstrapRouter(false, new \PhalconKit\Config\Config([]));
+
+        $this->withoutPhpWarnings(function () use ($router): void {
+            $router->baseRoutes();
+        });
+
+        $this->assertInstanceOf(RouteInterface::class, $router->getRouteByName('default'));
+        $this->assertFalse($router->getRouteByName('locale'));
+    }
+
     public function testHostnamesRoutesMountsConfiguredHostnamesAndLocales(): void
     {
         $router = new Router(false, new Config([
@@ -250,5 +263,28 @@ class RouterTest extends AbstractUnit
         $this->expectExceptionMessage('Module parameter "className" must be a string under "api"');
 
         $router->modulesRoutes($application);
+    }
+
+    private function withoutPhpWarnings(\Closure $callback): void
+    {
+        $handlerActive = true;
+        set_error_handler(
+            static function (int $code, string $message, string $file, int $line) use (&$handlerActive): never {
+                $handlerActive = false;
+                restore_error_handler();
+
+                throw new \ErrorException($message, 0, $code, $file, $line);
+            },
+            E_WARNING
+        );
+
+        try {
+            $callback();
+        }
+        finally {
+            if ($handlerActive) {
+                restore_error_handler();
+            }
+        }
     }
 }
