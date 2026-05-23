@@ -260,6 +260,9 @@ tag has been cut yet.
   fail with `ServiceException` instead of relying on PHP assertions.
 - Fixed PhalconKit dispatcher forwarding so a `module` value in the forward
   route updates the dispatcher module before delegating to native Phalcon.
+- Fixed model hash helpers so missing or invalid config/security services fail
+  through the shared model typed-service resolver with `ServiceException`
+  instead of relying on PHP assertions.
 - Fixed slug generation so unavailable ICU transliterators fail with
   `ServiceException` and locale state is restored even when transliteration
   fails.

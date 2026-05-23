@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Model\Traits;
 
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Encryption\Security as SecurityService;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractInjectable;
 
 trait Hash
@@ -29,14 +30,13 @@ trait Hash
      * @param string|null $workFactor (optional) The work factor to determine the hashing cost
      *
      * @return string The salted hash value of the input string
+     * @throws ServiceException When the config or security service cannot be
+     *     resolved through the PhalconKit DI contract.
      */
     public function hash(string $string, ?string $salt = null, ?string $workFactor = null): string
     {
-        $config = $this->getDI()->get('config');
-        assert($config instanceof ConfigInterface);
-        
-        $security = $this->getDI()->get('security');
-        assert($security instanceof SecurityService);
+        $config = $this->getTypedService('config', ConfigInterface::class, 'model hash helpers');
+        $security = $this->getTypedService('security', SecurityService::class, 'model hash helpers');
         
         // Get salt & workFactor
         $salt ??= $config->path('security.salt') ?? '';
@@ -54,6 +54,8 @@ trait Hash
      * @param int $maxPassLength The maximum length of the password.
      *
      * @return bool Returns true if the hash is valid for the string, false otherwise.
+     * @throws ServiceException When the config or security service cannot be
+     *     resolved through the PhalconKit DI contract.
      */
     public function checkHash(?string $hash = null, ?string $string = null, int $maxPassLength = 0): bool
     {
@@ -67,11 +69,8 @@ trait Hash
             return false;
         }
         
-        $config = $this->getDI()->get('config');
-        assert($config instanceof ConfigInterface);
-        
-        $security = $this->getDI()->get('security');
-        assert($security instanceof SecurityService);
+        $config = $this->getTypedService('config', ConfigInterface::class, 'model hash helpers');
+        $security = $this->getTypedService('security', SecurityService::class, 'model hash helpers');
         
         // Get salt
         $salt = $config->path('security.salt') ?? '';
