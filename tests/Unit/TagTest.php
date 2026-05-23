@@ -24,17 +24,32 @@ use PhalconKit\Tag;
 
 class TagTest extends AbstractUnit
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        PhalconDi::setDefault($this->di);
+        Tag::setDI($this->di);
+        Tag::setAssetsManager(null);
+    }
+
     protected function tearDown(): void
     {
         Tag::setAssetsManager(null);
+        if ($this->di instanceof Di) {
+            PhalconDi::setDefault($this->di);
+            Tag::setDI($this->di);
+        }
+
         parent::tearDown();
     }
 
     public function testGetAssetsManagerReturnsConfiguredManager(): void
     {
-        Tag::setAssetsManager(null);
+        $manager = new Manager(new TagFactory(new Escaper()));
+        Tag::setAssetsManager($manager);
 
-        $this->assertInstanceOf(Manager::class, Tag::getAssetsManager());
+        $this->assertSame($manager, Tag::getAssetsManager());
     }
 
     public function testGetAssetsManagerUsesTagDiContainer(): void
