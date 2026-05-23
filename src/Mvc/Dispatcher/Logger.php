@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Dispatcher;
 
 use Phalcon\Events\Event;
-use Phalcon\Logger\Exception;
+use Phalcon\Logger\Exception as LoggerException;
 use PhalconKit\Di\Injectable;
 use PhalconKit\Dispatcher\DispatcherInterface;
 
@@ -32,7 +32,7 @@ class Logger extends Injectable
     /**
      * This action is executed before execute any action in the application
      * Keeping a log of the dispatch event
-     * @throws Exception
+     * @throws LoggerException When Phalcon cannot write the dispatch log entry.
      */
     public function beforeDispatchLoop(Event $event, DispatcherInterface $dispatcher): void
     {

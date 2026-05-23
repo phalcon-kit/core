@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Cli\Tasks;
 
-use Phalcon\Dispatcher\Exception;
+use Phalcon\Dispatcher\Exception as DispatcherException;
 use PhalconKit\Modules\Cli\Task;
 
 class HelpTask extends Task
@@ -36,7 +36,7 @@ DOC;
      * This method executes the build action by forwarding the request to the build task's help action.
      *
      * @return void
-     * @throws Exception if there is an error during the forwarding process
+     * @throws DispatcherException if there is an error during the forwarding process
      */
     public function buildAction(): void
     {
@@ -49,7 +49,7 @@ DOC;
      * This method executes the cron action by forwarding the request to the cron task's help action.
      *
      * @return void
-     * @throws Exception if there is an error during the forwarding process
+     * @throws DispatcherException if there is an error during the forwarding process
      */
     public function cronAction(): void
     {
@@ -62,7 +62,7 @@ DOC;
      * This method executes the cache action by forwarding the request to the cache task's help action.
      *
      * @return void
-     * @throws Exception if there is an error during the forwarding process
+     * @throws DispatcherException if there is an error during the forwarding process
      */
     public function cacheAction(): void
     {

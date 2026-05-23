@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Encryption\Security;
 
-use Phalcon\Encryption\Security\Exception;
+use Phalcon\Encryption\Security\Exception as SecurityException;
 use Phalcon\Encryption\Security\Random as PhalconRandom;
 
 class Random extends PhalconRandom
@@ -21,7 +21,7 @@ class Random extends PhalconRandom
     /**
      * @see \Phalcon\Encryption\Security\Random::uuid()
      * @return string
-     * @throws Exception
+     * @throws SecurityException When native Phalcon UUID generation fails.
      */
     public function uuidv4(): string
     {

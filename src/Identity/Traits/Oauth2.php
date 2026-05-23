@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Identity\Traits;
 
 use Phalcon\Db\Column;
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Validation\Validator\PresenceOf;
 use Phalcon\Messages\Message;
 use PhalconKit\Filter\Validation;
@@ -41,7 +41,7 @@ trait Oauth2
      *   - 'loggedInAs': Indicates the user that is currently logged in
      *   - 'messages': An array of validation messages
      *
-     * @throws \Exception
+     * @throws FilterException When OAuth provider fields cannot be sanitized.
      */
     public function oauth2(string $provider, string $providerUuid, string $accessToken, ?string $refreshToken = null, ?array $meta = []): array
     {

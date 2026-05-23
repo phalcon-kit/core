@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Exception;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
@@ -30,7 +29,6 @@ trait MinimumAction
      * Minimum value of a column
      * Alias for minimumAction
      * @link minimumAction()
-     * @throws Exception
      */
     public function minAction(): ResponseInterface
     {
@@ -39,7 +37,6 @@ trait MinimumAction
     
     /**
      * Minimum value of a column
-     * @throws Exception
      */
     public function minimumAction(): ResponseInterface
     {

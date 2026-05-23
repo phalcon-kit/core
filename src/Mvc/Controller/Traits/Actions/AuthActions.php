@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Filter;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
@@ -120,7 +120,7 @@ trait AuthActions
      * Retrieves login parameters including email and password with applied filters.
      *
      * @return array Returns an array of login parameters with specified filters applied.
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function getLoginParams(): array
     {
@@ -134,7 +134,7 @@ trait AuthActions
      * Retrieves login parameters for the "login as" functionality.
      *
      * @return array The filtered parameters, including the user's ID.
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function getLoginAsParams(): array
     {
@@ -147,7 +147,7 @@ trait AuthActions
      * Retrieves the parameters required for resetting a password with applied filters.
      *
      * @return array Returns an array of reset password parameters with specified filters applied.
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function getResetPasswordParams(): array
     {

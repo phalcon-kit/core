@@ -34,7 +34,6 @@ trait FindAction
      *
      * @deprecated use {@link findAction()}
      * @return ResponseInterface The HTTP response that indicates the success of retrieving all records.
-     * @throws \Exception
      */
     public function getAllAction(): ResponseInterface
     {
@@ -47,7 +46,6 @@ trait FindAction
      *
      * @deprecated use {@link findWithAction()}
      * @return ResponseInterface The HTTP response that contains the resultset with the relationships.
-     * @throws \Exception
      */
     public function getAllWithAction(): ResponseInterface
     {
@@ -60,7 +58,6 @@ trait FindAction
      * This method finds the resultset and exposes it for further processing.
      *
      * @return ResponseInterface The HTTP response that indicates the success of finding and exposing the resultset.
-     * @throws \Exception
      */
     public function findAction(): ResponseInterface
     {
@@ -74,7 +71,6 @@ trait FindAction
      * This method finds the resultset with relationships and exposes it for further processing.
      *
      * @return ResponseInterface The HTTP response that indicates the success of finding and exposing the resultset.
-     * @throws \Exception
      */
     public function findWithAction(): ResponseInterface
     {

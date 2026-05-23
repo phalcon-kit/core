@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Model;
 
 use Phalcon\Cache\Adapter\Apcu;
 use Phalcon\Mvc\Model\MetaData;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model;
 use PhalconKit\Support\Utils;
 
@@ -37,8 +38,7 @@ class Dynamic extends Model
         // @todo find a better way to handle dynamic models using
         // meta data strategy or by overriding models meta data caching adapter etc.
         // ->reset didn't work for unknown reason
-        $modelsMetaData = $this->getModelsMetaData();
-        assert($modelsMetaData instanceof MetaData);
+        $modelsMetaData = $this->requireDynamicMetaData($this->getModelsMetaData());
         $adapter = $modelsMetaData->getAdapter();
         if ($adapter instanceof Apcu) {
             $lowerClassName = strtolower(Utils::getName($this));
@@ -55,6 +55,35 @@ class Dynamic extends Model
     public function setDynamicSource(string $table): void
     {
         $this->setSource($table);
+    }
+
+    /**
+     * Require native Phalcon metadata for dynamic model cache invalidation.
+     *
+     * Dynamic models clear APCu metadata entries by reaching into the native
+     * metadata adapter. If an application replaces the metadata service with an
+     * incompatible implementation, this helper fails early with a PhalconKit
+     * logic exception instead of relying on disabled assertions or late method
+     * errors.
+     *
+     * @param mixed $modelsMetaData Metadata service returned by Phalcon.
+     *
+     * @return MetaData
+     *
+     * @throws LogicException When the metadata service is incompatible with
+     *     dynamic model cache invalidation.
+     */
+    protected function requireDynamicMetaData(mixed $modelsMetaData): MetaData
+    {
+        if ($modelsMetaData instanceof MetaData) {
+            return $modelsMetaData;
+        }
+
+        throw new LogicException(sprintf(
+            'Dynamic models require "%s" metadata; got "%s".',
+            MetaData::class,
+            get_debug_type($modelsMetaData)
+        ));
     }
     
     /**

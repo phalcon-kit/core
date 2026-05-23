@@ -21,6 +21,7 @@ use PhalconKit\Models\Audit;
 use PhalconKit\Models\AuditDetail;
 use PhalconKit\Models\Interfaces\AuditDetailInterface;
 use PhalconKit\Models\Interfaces\AuditInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model;
 use PhalconKit\Mvc\Model\Behavior\Traits\SkippableTrait;
 use PhalconKit\Support\Helper;
@@ -131,7 +132,8 @@ class Blameable extends Behavior
      *
      * Returning null short-circuits the event handling cleanly.
      *
-     * @throws \Exception
+     * @throws LogicException When the behavior is attached to an incompatible
+     *     model instance.
      */
     #[\Override]
     public function notify(string $type, ModelInterface $model): ?bool
@@ -149,7 +151,7 @@ class Blameable extends Behavior
             return null;
         }
 
-        assert($model instanceof Model);
+        $model = $this->requireBlameableModel($model);
 
         return match ($type) {
             'afterCreate', 'afterUpdate' => $this->createAudit($type, $model),
@@ -165,7 +167,8 @@ class Blameable extends Behavior
      * - Conditionally creates per-column audit details
      * - Uses snapshot + changed fields to minimize noise
      *
-     * @throws \Exception
+     * @throws LogicException When configured audit classes do not implement the
+     *     required audit contracts.
      */
     public function createAudit(string $type, Model $model): bool
     {
@@ -187,7 +190,7 @@ class Blameable extends Behavior
         $auditClass = $this->auditClass;
         $audit = new $auditClass();
 
-        assert($audit instanceof AuditInterface);
+        $audit = $this->requireAuditRecord($audit);
 
         // Populate core audit metadata
         $audit->setModel($model::class);
@@ -232,8 +235,7 @@ class Blameable extends Behavior
                     continue;
                 }
 
-                $detail = new $detailClass();
-                assert($detail instanceof AuditDetailInterface);
+                $detail = $this->requireAuditDetailRecord(new $detailClass());
 
                 $detail->setColumn($column);
                 $detail->setBefore($before);
@@ -271,6 +273,86 @@ class Blameable extends Behavior
             : null;
 
         return $saved;
+    }
+
+    /**
+     * Require the event model to be a PhalconKit model.
+     *
+     * The audit behavior depends on PhalconKit model helpers such as metadata,
+     * snapshots, attribute reads, and source resolution. This helper keeps the
+     * event handler readable while producing a deterministic framework
+     * exception if the behavior is attached to an incompatible native model.
+     *
+     * @param ModelInterface $model Model passed by Phalcon's behavior event.
+     *
+     * @return Model
+     *
+     * @throws LogicException When the model does not use PhalconKit's model
+     *     base class.
+     */
+    protected function requireBlameableModel(ModelInterface $model): Model
+    {
+        if ($model instanceof Model) {
+            return $model;
+        }
+
+        throw new LogicException(sprintf(
+            'Blameable behavior requires an instance of "%s"; got "%s".',
+            Model::class,
+            get_debug_type($model)
+        ));
+    }
+
+    /**
+     * Require the configured audit class to implement the audit contract.
+     *
+     * Applications can override the audit model class through behavior options.
+     * This guard reports an invalid override at the framework boundary instead
+     * of failing later while populating audit metadata.
+     *
+     * @param mixed $audit Audit record created from the configured class.
+     *
+     * @return AuditInterface&Model
+     *
+     * @throws LogicException When the configured audit class is incompatible.
+     */
+    protected function requireAuditRecord(mixed $audit): AuditInterface&Model
+    {
+        if ($audit instanceof AuditInterface && $audit instanceof Model) {
+            return $audit;
+        }
+
+        throw new LogicException(sprintf(
+            'Blameable audit class must implement "%s" and extend "%s"; got "%s".',
+            AuditInterface::class,
+            Model::class,
+            get_debug_type($audit)
+        ));
+    }
+
+    /**
+     * Require the configured audit-detail class to implement the detail contract.
+     *
+     * @param mixed $detail Audit-detail record created from the configured
+     *     class.
+     *
+     * @return AuditDetailInterface&Model
+     *
+     * @throws LogicException When the configured audit-detail class is
+     *     incompatible.
+     */
+    protected function requireAuditDetailRecord(mixed $detail): AuditDetailInterface&Model
+    {
+        if ($detail instanceof AuditDetailInterface && $detail instanceof Model) {
+            return $detail;
+        }
+
+        throw new LogicException(sprintf(
+            'Blameable audit detail class must implement "%s" and extend "%s"; got "%s".',
+            AuditDetailInterface::class,
+            Model::class,
+            get_debug_type($detail)
+        ));
     }
 
     /**

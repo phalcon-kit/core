@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Exception;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
@@ -28,7 +27,6 @@ trait DistinctAction
     /**
      * Distinct values of a column
      * Will use the getFind query
-     * @throws Exception
      */
     public function distinctAction(): ResponseInterface
     {

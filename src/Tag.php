@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit;
 
-use Phalcon\Assets\Exception;
+use Phalcon\Assets\Exception as AssetsException;
 use Phalcon\Tag as PhalconTag;
 use Phalcon\Html\Escaper\EscaperInterface;
 use PhalconKit\Assets\Manager;
@@ -670,7 +670,7 @@ class Tag extends PhalconTag
      *
      * @param string|null $collection (optional) The name of the collection. If not specified, all collections will be included.
      * @return string|null The CSS markup for the specified collection or all collections. Returns null if no CSS is found.
-     * @throws Exception
+     * @throws AssetsException When Phalcon cannot render CSS assets.
      */
     public static function getCss(?string $collection = null): ?string
     {
@@ -698,7 +698,7 @@ class Tag extends PhalconTag
      *
      * @param string|null $collection Optional. The name of the asset collection. If not provided, JavaScript code from all asset collections will be retrieved.
      * @return string|null The generated JavaScript code, or null if no JavaScript code is found for the specified collection(s).
-     * @throws Exception
+     * @throws AssetsException When Phalcon cannot render JavaScript assets.
      */
     public static function getJs(?string $collection = null): ?string
     {
@@ -713,7 +713,7 @@ class Tag extends PhalconTag
      * @param string|null $collection The name of the collection to retrieve the JavaScript from. If null, all collections will be included.
      *
      * @return void
-     * @throws Exception
+     * @throws AssetsException When Phalcon cannot render JavaScript assets.
      */
     public static function js(?string $collection = null): void
     {

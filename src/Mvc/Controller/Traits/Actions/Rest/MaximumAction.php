@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Exception;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
@@ -30,7 +29,6 @@ trait MaximumAction
      * Maximum value of a column
      * Alias for maximumAction
      * @link maximumAction()
-     * @throws Exception
      */
     public function maxAction(): ResponseInterface
     {
@@ -39,7 +37,6 @@ trait MaximumAction
     
     /**
      * Maximum value of a column
-     * @throws Exception
      */
     public function maximumAction(): ResponseInterface
     {

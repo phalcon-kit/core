@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 
@@ -36,7 +36,7 @@ trait Params
      * @param mixed|null $default
      * @param array|null $params
      * @return mixed
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function getParam(string $key, array|string|null $filters = null, mixed $default = null, ?array $params = null): mixed
     {
@@ -76,7 +76,7 @@ trait Params
      * @param bool $deep Whether to apply deep sanitization.
      *
      * @return array<array-key, mixed>
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function getParams(?array $fields = null, bool $cached = true, bool $deep = true): array
     {
@@ -110,7 +110,7 @@ trait Params
      * @param bool $deep Whether to apply filters recursively.
      *
      * @return array<array-key, mixed>
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function getAllParams(?array $filters = null, bool $cached = true, bool $deep = true): array
     {
@@ -155,7 +155,7 @@ trait Params
      * @param bool $deep
      *
      * @return array<string, mixed>
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function applyFilters(array $params, array $filters, bool $deep = true): array
     {
@@ -176,7 +176,7 @@ trait Params
      * @param mixed $value
      * @param array|string $filters
      * @return mixed
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     private function deepSanitize(mixed $value, array|string $filters): mixed
     {

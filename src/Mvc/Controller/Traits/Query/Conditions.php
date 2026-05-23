@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Support\Collection;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractConditions;
 use PhalconKit\Mvc\Controller\Traits\Query\Conditions\FilterConditions;
 use PhalconKit\Mvc\Controller\Traits\Query\Conditions\IdentityConditions;
@@ -43,7 +45,9 @@ trait Conditions
      * - Search Conditions
      *
      * @return void
-     * @throws \Exception
+     * @throws FilterException When request parameter filtering fails.
+     * @throws HttpException When filter conditions contain invalid fields or
+     *     operators.
      */
     public function initializeConditions(): void
     {

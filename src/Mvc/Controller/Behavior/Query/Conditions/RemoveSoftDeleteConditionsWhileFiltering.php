@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Behavior\Query\Conditions;
 
 use Phalcon\Events\Event;
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use PhalconKit\Mvc\Controller\Restful;
 
 class RemoveSoftDeleteConditionsWhileFiltering
@@ -26,7 +26,7 @@ class RemoveSoftDeleteConditionsWhileFiltering
      * @param Event $event The event instance triggering the method.
      * @param Restful $controller The controller instance on which conditions are being initialized.
      * @return void
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function afterInitializeConditions(Event $event, Restful $controller): void
     {

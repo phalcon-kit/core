@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Messages\Message;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractExpose;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
@@ -62,7 +63,9 @@ trait Save
      * - Never updates
      * - Fails if identity is present in payload
      *
-     * @throws Exception
+     * @throws FilterException When request payload filtering fails.
+     * @throws LogicException When persistence intent resolution returns an
+     *     inconsistent framework state.
      */
     public function create(): array
     {
@@ -74,7 +77,9 @@ trait Save
      * - Never creates
      * - Fails if identity is missing or does not resolve
      *
-     * @throws Exception
+     * @throws FilterException When request payload filtering fails.
+     * @throws LogicException When persistence intent resolution returns an
+     *     inconsistent framework state.
      */
     public function update(): array
     {
@@ -97,7 +102,9 @@ trait Save
      * - 'create'  => force create (no identity allowed)
      * - 'update'  => force update (identity must resolve)
      *
-     * @throws Exception
+     * @throws FilterException When request payload filtering fails.
+     * @throws LogicException When persistence intent resolution returns an
+     *     inconsistent framework state.
      */
     public function save(?string $forceMode = null): array
     {
@@ -187,6 +194,9 @@ trait Save
      * - resolvePersistenceIntent(): mode + model selection (create/update)
      * - assignModelFromPayload(): assignment + beforeAssign event
      * - persistAssignedModel(): save + events + eager loading + expose
+     *
+     * @throws LogicException When intent resolution returns no model or an
+     *     unsupported persistence mode after reporting no failure.
      */
     protected function saveOne(array $data, ?string $forceMode): array
     {
@@ -196,12 +206,41 @@ trait Save
             return $failure;
         }
 
-        assert($model instanceof ModelInterface);
-        assert($mode === 'create' || $mode === 'update');
+        [$mode, $model] = $this->requireResolvedPersistenceIntent($mode, $model);
 
         $this->assignModelFromPayload($model, $data);
 
         return $this->persistAssignedModel($model, $mode);
+    }
+
+    /**
+     * Require a successful persistence-intent tuple.
+     *
+     * `resolvePersistenceIntent()` returns either a REST failure payload or the
+     * internal tuple needed by the rest of the save pipeline. This helper keeps
+     * the orchestration path readable and documents the invariant explicitly:
+     * once no failure was returned, a model instance and one of the two
+     * supported persistence modes must be present.
+     *
+     * @param string|null $mode Resolved persistence mode.
+     * @param ModelInterface|null $model Resolved target model.
+     *
+     * @return array{0: 'create'|'update', 1: ModelInterface}
+     *
+     * @throws LogicException When intent resolution returns no model or an
+     *     unsupported persistence mode after reporting no failure.
+     */
+    protected function requireResolvedPersistenceIntent(?string $mode, ?ModelInterface $model): array
+    {
+        if (!$model instanceof ModelInterface) {
+            throw new LogicException('Persistence intent resolved without a model instance.');
+        }
+
+        if ($mode !== 'create' && $mode !== 'update') {
+            throw new LogicException(sprintf('Unsupported persistence mode "%s".', (string)$mode));
+        }
+
+        return [$mode, $model];
     }
 
     /* ==========================================================

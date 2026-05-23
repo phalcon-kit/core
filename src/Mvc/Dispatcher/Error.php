@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Dispatcher;
 
-use Exception;
+use Exception as NativeException;
 use Phalcon\Dispatcher\Exception as DispatchException;
 use Phalcon\Events\Event;
 use PhalconKit\Di\Injectable;
@@ -37,9 +37,10 @@ class Error extends Injectable
     
     /**
      * Forward to 404 or 500 error controller
-     * @throws Exception
+     * @throws DispatchException When forwarding to the configured error route
+     *     fails.
      */
-    public function beforeException(Event $event, Dispatcher $dispatcher, Exception $exception): bool
+    public function beforeException(Event $event, Dispatcher $dispatcher, NativeException $exception): bool
     {
         switch ($exception->getCode()) {
             case DispatchException::EXCEPTION_HANDLER_NOT_FOUND:

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Identity\Traits;
 
-use Phalcon\Encryption\Security\Exception;
+use Phalcon\Encryption\Security\Exception as SecurityException;
 use Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException;
 use PhalconKit\Di\AbstractInjectable;
 use Phalcon\Filter\Filter;
@@ -31,7 +31,8 @@ trait Jwt
      *
      * @param bool $refresh Indicates whether to refresh the claim by generating a new key and invalidating previous tokens.
      * @return array Contains the generated JWT, refresh token, and a flag indicating if the claim was refreshed.
-     * @throws Exception|ValidatorException
+     * @throws SecurityException When token key generation fails.
+     * @throws ValidatorException When JWT validation fails.
      */
     public function getJwt(bool $refresh = false): array
     {

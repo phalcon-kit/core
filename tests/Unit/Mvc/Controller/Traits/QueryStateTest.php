@@ -19,6 +19,9 @@ use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Support\Collection;
 use PhalconKit\Exception\HttpException;
+use PhalconKit\Exception\LogicException as PhalconKitLogicException;
+use PhalconKit\Exception\ServiceException;
+use PhalconKit\Mvc\Model\Interfaces\EagerLoadInterface;
 use PhalconKit\Mvc\Controller\Restful;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\QueryModelDouble;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -1590,6 +1593,11 @@ class QueryStateTest extends AbstractUnit
             'saved' => false,
             'messages' => ['validation failed'],
         ], $failed);
+
+        $this->expectException(PhalconKitLogicException::class);
+        $this->expectExceptionMessage('Persistence intent resolved without a model instance.');
+
+        $controller->exposeRequireResolvedPersistenceIntent('create', null);
     }
 
     public function testTopLevelQueryHelpersPrepareCalculationAndEvents(): void
@@ -1874,6 +1882,17 @@ class QueryStateTest extends AbstractUnit
             'conditions' => '(active = 1)',
             'group' => 'status',
         ], QueryModelDouble::$calls['minimum']);
+    }
+
+    public function testWithQueriesRequireEagerLoadModelContract(): void
+    {
+        $controller = $this->newStaticQueryController();
+        $controller->unitModel = $this->createStub(ModelInterface::class);
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('must implement "' . EagerLoadInterface::class . '"');
+
+        $controller->findWith();
     }
 
     public function testCountUsesDistinctPrimaryKeyWhenJoinsWouldDuplicateRows(): void
@@ -2661,6 +2680,11 @@ class QueryStateTest extends AbstractUnit
             public function exposePersistAssignedModel(ModelInterface $model, string $mode): array
             {
                 return $this->persistAssignedModel($model, $mode);
+            }
+
+            public function exposeRequireResolvedPersistenceIntent(?string $mode, ?ModelInterface $model): array
+            {
+                return $this->requireResolvedPersistenceIntent($mode, $model);
             }
 
             public function exposeFindModelByIdentityPayload(array $payload): ?ModelInterface

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Exception;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
@@ -29,7 +28,6 @@ trait SumAction
      * Calculates the sum of a column.
      *
      * @return ResponseInterface The REST response with a status of true.
-     * @throws Exception
      */
     public function sumAction(): ResponseInterface
     {

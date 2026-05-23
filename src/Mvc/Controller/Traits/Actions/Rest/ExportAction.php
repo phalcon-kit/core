@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Exception;
 use Phalcon\Http\ResponseInterface;
-use Phalcon\Mvc\Model\Resultset;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractExport;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractExpose;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
@@ -37,12 +36,13 @@ trait ExportAction
      * calling `exit` with a status code of 0.
      *
      * @return ResponseInterface
-     * @throws Exception
+     * @throws HttpException When the requested export content type is not
+     *     supported.
+     * @throws \League\Csv\Exception When CSV generation fails.
      */
     public function exportAction(): ResponseInterface
     {
         $resultset = $this->find();
-        assert($resultset instanceof Resultset);
         $data = $this->exportExpose($resultset);
         return $this->export($data);
     }

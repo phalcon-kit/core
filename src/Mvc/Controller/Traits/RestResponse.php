@@ -37,7 +37,6 @@ trait RestResponse
      * @param ?string $status The status message (default: 'Bad Request')
      * @param mixed $response The response body (default: null)
      * @return ResponseInterface The REST response object
-     * @throws \Exception
      */
     public function setRestErrorResponse(int $code = 400, ?string $status = null, mixed $response = null): ResponseInterface
     {
@@ -54,7 +53,6 @@ trait RestResponse
      * @param int $depth
      *
      * @return ResponseInterface
-     * @throws \Exception
      */
     public function setRestResponse(mixed $response = null, ?int $code = null, ?string $status = null, int $jsonOptions = 0, int $depth = 512): ResponseInterface
     {
@@ -200,7 +198,6 @@ trait RestResponse
      * @param Dispatcher $dispatcher The Dispatcher instance.
      *
      * @return void
-     * @throws \Exception
      */
     public function afterExecuteRoute(Dispatcher $dispatcher): void
     {

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Phalcon\Filter\Exception;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractExpose;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
@@ -31,7 +30,6 @@ trait FindFirstAction
      * Retrieving a single record
      * @link findFirstAction()
      * @deprecated use {@link findFirstAction()}
-     * @throws \Exception
      */
     public function getAction(): ResponseInterface
     {
@@ -42,7 +40,6 @@ trait FindFirstAction
      * Retrieving a single record
      * @link findFirstWithAction()
      * @deprecated use {@link findFirstWithAction()}
-     * @throws \Exception
      */
     public function getWithAction(): ResponseInterface
     {
@@ -51,7 +48,6 @@ trait FindFirstAction
     
     /**
      * Retrieving a single record
-     * @throws \Exception
      */
     public function findFirstAction(): ResponseInterface
     {
@@ -67,7 +63,6 @@ trait FindFirstAction
     
     /**
      * Retrieving a single record
-     * @throws \Exception
      */
     public function findFirstWithAction(): ResponseInterface
     {

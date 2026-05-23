@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
-use Exception;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model;
 use PhalconKit\Mvc\Model\Behavior\Position as PositionBehavior;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEventsManager;
@@ -36,7 +36,6 @@ trait Position
      * @param array|null $options The options for the position behavior.
      *                            If not provided, the default position behavior options will be used.
      *
-     * @throws Exception
      */
     public function initializePosition(?array $options = null): void
     {
@@ -61,12 +60,19 @@ trait Position
      * Retrieves the position behavior attached to the current object.
      *
      * @return PositionBehavior The position behavior object.
-     * @throws Exception if the position behavior is not found.
+     * @throws LogicException if the position behavior is not found.
      */
     public function getPositionBehavior(): PositionBehavior
     {
         $behavior = $this->getBehavior('position');
-        assert($behavior instanceof PositionBehavior);
+        if (!$behavior instanceof PositionBehavior) {
+            throw new LogicException(sprintf(
+                'Expected position behavior to be an instance of "%s"; got "%s".',
+                PositionBehavior::class,
+                get_debug_type($behavior)
+            ));
+        }
+
         return $behavior;
     }
     
@@ -78,25 +84,50 @@ trait Position
      * @param string|null $positionField The field on which the position is stored. If not provided, the default behavior's field will be used.
      *
      * @return bool Returns true if the reorder operation was successful, false otherwise.
-     * @throws Exception
+     * @throws LogicException When the trait is used on an incompatible model.
      */
     public function reorder(?int $position = null, ?string $positionField = null): bool
     {
-        assert($this instanceof Model);
+        $model = $this->requirePositionModel();
         
         $positionField ??= $this->getPositionBehavior()->getField();
         
-        if ($this->fireEventCancel('beforeReorder') === false) {
+        if ($model->fireEventCancel('beforeReorder') === false) {
             return false;
         }
         
-        $this->assign([$positionField => $position], [$positionField]);
-        $saved = $this->save() && (!$this->hasSnapshotData() || $this->hasUpdated($positionField));
+        $model->assign([$positionField => $position], [$positionField]);
+        $saved = $model->save() && (!$model->hasSnapshotData() || $model->hasUpdated($positionField));
         
         if ($saved) {
-            $this->fireEvent('afterReorder');
+            $model->fireEvent('afterReorder');
         }
         
         return $saved;
+    }
+
+    /**
+     * Require the trait host to be a PhalconKit model.
+     *
+     * Position reordering depends on model events, assignment, snapshots, and
+     * persistence APIs. This helper keeps `reorder()` readable while producing
+     * a deterministic PhalconKit exception if the trait is composed into an
+     * incompatible class.
+     *
+     * @return Model
+     *
+     * @throws LogicException When the trait host is not a PhalconKit model.
+     */
+    protected function requirePositionModel(): Model
+    {
+        if ($this instanceof Model) {
+            return $this;
+        }
+
+        throw new LogicException(sprintf(
+            'Position behavior requires the trait host to be an instance of "%s"; got "%s".',
+            Model::class,
+            get_debug_type($this)
+        ));
     }
 }

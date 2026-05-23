@@ -13,11 +13,12 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Mvc\Model\Row;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Support\Collection;
 use Phalcon\Mvc\Model\ResultsetInterface;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
 use PhalconKit\Mvc\Controller\Traits\Query\Bind;
@@ -73,8 +74,8 @@ trait Query
     /**
      * Initializes the query builder with default values for various properties.
      *
-     * @throws Exception
-     * @throws \Exception
+     * @throws FilterException When request parameter filtering fails during
+     *     query initialization.
      */
     public function initializeQuery(): void
     {
@@ -303,13 +304,14 @@ trait Query
      *                         will be used. Defaults to `null`.
      *
      * @return array The result of the find operation with loaded relationships.
+     * @throws ServiceException When the configured model does not support
+     *     PhalconKit eager-loading helpers.
      */
     public function findWith(?array $with = null, ?array $find = null): array
     {
         $find ??= $this->prepareFind();
         $with ??= $this->getWith()?->toArray() ?? [];
-        $model = $this->loadModel();
-        assert($model instanceof EagerLoadInterface);
+        $model = $this->requireEagerLoadModel($this->loadModel(), 'findWith');
         return $model::findWith($with, $find);
     }
     
@@ -342,14 +344,48 @@ trait Query
      *                         will be used. Defaults to `null`.
      *
      * @return ?ModelInterface The result of the find operation for the first record.
+     * @throws ServiceException When the configured model does not support
+     *     PhalconKit eager-loading helpers.
      */
     public function findFirstWith(?array $with = null, ?array $find = null): ?ModelInterface
     {
         $find ??= $this->prepareFind();
         $with ??= $this->getWith()?->toArray() ?? [];
-        $model = $this->loadModel();
-        assert($model instanceof EagerLoadInterface);
+        $model = $this->requireEagerLoadModel($this->loadModel(), 'findFirstWith');
         return $model::findFirstWith($with, $find);
+    }
+
+    /**
+     * Require a loaded model that supports PhalconKit eager-loading helpers.
+     *
+     * Controller query helpers can load any Phalcon model, but `findWith()` and
+     * `findFirstWith()` need the PhalconKit eager-loading contract. Keeping this
+     * check in one helper keeps the public query methods readable while still
+     * producing a stable service-resolution exception instead of a late static
+     * method error when a controller is wired to the wrong model class.
+     *
+     * @param ModelInterface $model Loaded model instance used for static query
+     *     dispatch.
+     * @param string $method Query helper that requires eager loading.
+     *
+     * @return EagerLoadInterface The same model narrowed to the eager-loading
+     *     contract.
+     *
+     * @throws ServiceException When the configured model does not support
+     *     PhalconKit eager-loading helpers.
+     */
+    protected function requireEagerLoadModel(ModelInterface $model, string $method): EagerLoadInterface
+    {
+        if ($model instanceof EagerLoadInterface) {
+            return $model;
+        }
+
+        throw new ServiceException(sprintf(
+            'Configured model "%s" must implement "%s" to use %s().',
+            $model::class,
+            EagerLoadInterface::class,
+            $method
+        ));
     }
     
     /**
@@ -371,7 +407,6 @@ trait Query
      * @param array|null $find An array of find criteria to filter the results. If null, the default criteria will be applied.
      *
      * @return ResultsetInterface|int|false The total count of items that match the specified criteria.
-     * @throws \Exception
      */
     public function count(?array $find = null): ResultsetInterface|int|false
     {

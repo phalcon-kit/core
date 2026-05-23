@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Exception;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
@@ -27,7 +26,6 @@ trait AverageAction
     
     /**
      * Average column
-     * @throws Exception
      */
     public function averageAction(): ResponseInterface
     {

@@ -13,8 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Http\ResponseInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractRestResponse;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractSave;
@@ -48,7 +49,9 @@ trait SaveAction
      * - Supports single or batch payloads
      * - Backward compatible entry point
      *
-     * @throws Exception
+     * @throws FilterException When request payload filtering fails.
+     * @throws LogicException When persistence intent resolution returns an
+     *     inconsistent framework state.
      */
     public function saveAction(): ResponseInterface
     {
@@ -64,7 +67,9 @@ trait SaveAction
      * - Single entity success → 201 Created
      * - Batch semantics unchanged (200 / 207 / 422)
      *
-     * @throws Exception
+     * @throws FilterException When request payload filtering fails.
+     * @throws LogicException When persistence intent resolution returns an
+     *     inconsistent framework state.
      */
     public function createAction(): ResponseInterface
     {
@@ -84,7 +89,9 @@ trait SaveAction
      * - Forces update semantics
      * - Success → 200 OK
      *
-     * @throws Exception
+     * @throws FilterException When request payload filtering fails.
+     * @throws LogicException When persistence intent resolution returns an
+     *     inconsistent framework state.
      */
     public function updateAction(): ResponseInterface
     {
@@ -118,7 +125,6 @@ trait SaveAction
      * - 422 Unprocessable → all entities failed
      *
      * @param array $ret Result returned by save(), create(), or update()
-     * @throws \Exception
      */
     protected function respondFromSaveResult(array $ret): ResponseInterface
     {

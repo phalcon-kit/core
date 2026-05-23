@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Phalcon\Dispatcher\Exception;
+use Phalcon\Dispatcher\Exception as DispatcherException;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Filter;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
@@ -27,9 +28,8 @@ trait IndexAction
     use AbstractRestResponse;
     
     /**
-     * @throws Exception
-     * @throws \Phalcon\Filter\Exception
-     * @throws \Exception
+     * @throws DispatcherException When request forwarding fails.
+     * @throws FilterException When request parameter filtering fails.
      */
     public function indexAction(): ResponseInterface
     {
@@ -39,8 +39,8 @@ trait IndexAction
     }
     
     /**
-     * @throws Exception
-     * @throws \Phalcon\Filter\Exception
+     * @throws DispatcherException When request forwarding fails.
+     * @throws FilterException When request parameter filtering fails.
      */
     protected function restForwarding(): bool
     {

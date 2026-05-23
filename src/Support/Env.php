@@ -200,7 +200,8 @@ class Env
      * The type is then transformed into a camel case string and the first letter is capitalized.
      *
      * @return string The type of the instance.
-     * @throws \Exception
+     * @throws ConfigurationException When the configured environment loader
+     *     type is unsupported.
      */
     public static function getType(): string
     {

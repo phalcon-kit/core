@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
-use Exception;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractExpose;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
@@ -34,7 +33,6 @@ trait NewAction
     /**
      * Prepare a new unsaved model
      * This is useful if you want the default values
-     * @throws Exception
      */
     public function newAction(): ResponseInterface
     {

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Identity\Traits;
 
 use Phalcon\Db\Column;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Models\Interfaces\UserInterface;
 use PhalconKit\Mvc\Model\Behavior\Security as SecurityBehavior;
 
@@ -69,7 +70,7 @@ trait User
             ]);
             
             if ($user) {
-                assert($user instanceof UserInterface);
+                $user = $this->requireIdentityUser($user);
             }
             
             SecurityBehavior::staticStop();
@@ -80,6 +81,35 @@ trait User
             : $this->setUser($user);
         
         return $user ?: null;
+    }
+
+    /**
+     * Require the configured user model query to return the identity contract.
+     *
+     * The identity manager can resolve the user model from application
+     * configuration, so the query result is a framework integration boundary.
+     * This helper keeps `getUser()` focused on session/user selection while
+     * failing clearly if the configured model does not implement the expected
+     * PhalconKit user interface.
+     *
+     * @param mixed $user User record returned by the configured model.
+     *
+     * @return UserInterface
+     *
+     * @throws ServiceException When the configured user model does not return
+     *     the PhalconKit identity user contract.
+     */
+    protected function requireIdentityUser(mixed $user): UserInterface
+    {
+        if ($user instanceof UserInterface) {
+            return $user;
+        }
+
+        throw new ServiceException(sprintf(
+            'Configured identity user model must return an instance of "%s"; got "%s".',
+            UserInterface::class,
+            get_debug_type($user)
+        ));
     }
     
     /**

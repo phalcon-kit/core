@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Dispatcher;
 
-use Phalcon\Dispatcher\Exception;
 use Phalcon\Dispatcher\AbstractDispatcher;
+use Phalcon\Dispatcher\Exception as DispatcherException;
 use Phalcon\Events\Event;
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Di\ServiceResolver;
@@ -46,7 +46,8 @@ class Maintenance extends Injectable
      *
      * @return void
      *
-     * @throws Exception If an error happened during the dispatch forwarding to the maintenance route
+     * @throws DispatcherException If an error happened during the dispatch
+     *     forwarding to the maintenance route.
      * @throws ServiceException When the DI container or config service cannot
      *     be resolved through the PhalconKit DI contract.
      */

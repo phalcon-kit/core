@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Cli\Tasks;
 
-use Phalcon\Config\Exception;
+use Phalcon\Config\Exception as ConfigException;
 use PhalconKit\Bootstrap\Deployment;
 use PhalconKit\Modules\Cli\Task;
 use PhalconKit\Modules\Cli\Tasks\Traits\DatabaseTrait;
@@ -44,7 +44,7 @@ Options:
 DOC;
     
     /**
-     * @throws Exception
+     * @throws ConfigException When deployment configuration cannot be read.
      */
     public function initialize(): void
     {

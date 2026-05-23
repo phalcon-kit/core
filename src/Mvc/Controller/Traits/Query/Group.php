@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Filter;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
@@ -39,7 +39,7 @@ trait Group
      * are appropriately trimmed and adjusted.
      *
      * @return void This method does not return a value but updates the group's state internally.
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function initializeGroup(): void
     {

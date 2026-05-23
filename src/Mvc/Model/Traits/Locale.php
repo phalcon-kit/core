@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
-use Phalcon\Mvc\Model\Exception;
+use Phalcon\Mvc\Model\Exception as ModelException;
 use Phalcon\Translate\Adapter\AbstractAdapter;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Locale as LocaleService;
@@ -65,8 +65,8 @@ trait Locale
      * @param array<array-key, mixed> $arguments Arguments forwarded to the
      *     localized method or parent handler.
      * @return mixed Localized method result, or the parent magic-call result.
-     * @throws Exception When the parent Phalcon model magic handler rejects the
-     *     missing method.
+     * @throws ModelException When the parent Phalcon model magic handler
+     *     rejects the missing method.
      * @throws ServiceException When the locale service cannot be resolved
      *     through the PhalconKit DI contract.
      */

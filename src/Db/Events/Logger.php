@@ -15,7 +15,7 @@ namespace PhalconKit\Db\Events;
 
 use Phalcon\Db\Adapter\AbstractAdapter;
 use Phalcon\Events\EventInterface;
-use Phalcon\Logger\Exception;
+use Phalcon\Logger\Exception as LoggerException;
 use PhalconKit\Di\Injectable;
 
 /**
@@ -31,7 +31,7 @@ class Logger extends Injectable
      * @param EventInterface $event The event object.
      * @param AbstractAdapter $connection The database connection object.
      * @return void
-     * @throws Exception|\Exception If an error occurs while logging.
+     * @throws LoggerException If Phalcon cannot write the query log entry.
      */
     public function beforeQuery(EventInterface $event, AbstractAdapter $connection): void
     {

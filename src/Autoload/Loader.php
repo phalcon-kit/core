@@ -13,19 +13,19 @@ declare(strict_types=1);
 
 namespace PhalconKit\Autoload;
 
-use Phalcon\Autoload\Exception;
+use Phalcon\Autoload\Exception as AutoloadException;
 
 /**
  * Class Loader
  *
  * This class extends the \Phalcon\Autoload\Loader class and disable file checking callback for better performance.
  *
- * @throws Exception Throws an exception if initialization fails.
+ * @throws AutoloadException When native Phalcon loader initialization fails.
  */
 class Loader extends \Phalcon\Autoload\Loader
 {
     /**
-     * @throws Exception
+     * @throws AutoloadException When native Phalcon loader initialization fails.
      */
     public function __construct(bool $isDebug = false)
     {

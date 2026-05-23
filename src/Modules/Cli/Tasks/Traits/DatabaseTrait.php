@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Cli\Tasks\Traits;
 
-use Phalcon\Config\Exception;
+use Phalcon\Config\Exception as ConfigException;
 use Phalcon\Mvc\Model;
 use PhalconKit\Exception\CliException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
@@ -244,7 +244,7 @@ trait DatabaseTrait
     }
     
     /**
-     * @throws Exception
+     * @throws ConfigException When permission configuration cannot be merged.
      */
     public function addModelsPermissions(?array $tables = null): void
     {

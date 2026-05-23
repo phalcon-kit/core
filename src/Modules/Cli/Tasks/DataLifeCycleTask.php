@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Modules\Cli\Tasks;
 
 use Phalcon\Mvc\Model\Resultset;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Modules\Cli\Task;
 use PhalconKit\Mvc\Model;
 use PhalconKit\Support\Utils;
@@ -133,7 +134,7 @@ DOC;
             
             // load an instance of the model class
             $model = $this->modelsManager->load($modelClass);
-            assert($model instanceof Model);
+            $model = $this->requireLifeCycleModel($model, $modelClass);
             $source = $model->getSource();
             
             // whitelisted tables
@@ -153,7 +154,7 @@ DOC;
             
             // find all record matching the defined retention policy
             $records = $model::findLifeCycle($policy['query'] ?? null);
-            assert($records instanceof Resultset);
+            $records = $this->requireLifeCycleResultset($records, $modelClass);
             
             $callable = $policy['callable'] ?? function (Model $record, string $source, array &$response): void {
                 $deleted = $record->delete();
@@ -174,6 +175,67 @@ DOC;
         }
         
         return $response;
+    }
+
+    /**
+     * Require a lifecycle model loaded by the models manager.
+     *
+     * Lifecycle tasks need the concrete PhalconKit model implementation because
+     * they disable soft-delete behavior and call lifecycle helpers on the model
+     * class. Keeping this validation outside the main loop keeps the task flow
+     * readable and gives applications a deterministic PhalconKit exception when
+     * a configured model class resolves to the wrong type.
+     *
+     * @param mixed $model Model instance returned by the models manager.
+     * @param class-string $modelClass Configured lifecycle model class.
+     *
+     * @return Model
+     *
+     * @throws LogicException When the configured model does not resolve to a
+     *     PhalconKit model instance.
+     */
+    protected function requireLifeCycleModel(mixed $model, string $modelClass): Model
+    {
+        if ($model instanceof Model) {
+            return $model;
+        }
+
+        throw new LogicException(sprintf(
+            'Data lifecycle model "%s" must resolve to an instance of "%s"; got "%s".',
+            $modelClass,
+            Model::class,
+            get_debug_type($model)
+        ));
+    }
+
+    /**
+     * Require the lifecycle query to return a Phalcon resultset.
+     *
+     * `findLifeCycle()` is expected to return records that can be iterated and
+     * passed to the configured lifecycle callback. This guard avoids silently
+     * continuing with malformed model lifecycle implementations when assertions
+     * are disabled.
+     *
+     * @param mixed $records Records returned by `findLifeCycle()`.
+     * @param class-string $modelClass Model class being processed.
+     *
+     * @return Resultset
+     *
+     * @throws LogicException When the lifecycle query does not return a
+     *     Phalcon resultset.
+     */
+    protected function requireLifeCycleResultset(mixed $records, string $modelClass): Resultset
+    {
+        if ($records instanceof Resultset) {
+            return $records;
+        }
+
+        throw new LogicException(sprintf(
+            'Data lifecycle model "%s" must return a "%s" result set from findLifeCycle(); got "%s".',
+            $modelClass,
+            Resultset::class,
+            get_debug_type($records)
+        ));
     }
     
     /**

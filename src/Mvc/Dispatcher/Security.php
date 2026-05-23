@@ -16,7 +16,7 @@ namespace PhalconKit\Mvc\Dispatcher;
 use Phalcon\Cli\Dispatcher as CliDispatcher;
 use Phalcon\Dispatcher\AbstractDispatcher;
 use Phalcon\Events\Event;
-use Phalcon\Dispatcher\Exception;
+use Phalcon\Dispatcher\Exception as DispatcherException;
 use Phalcon\Mvc\Dispatcher as MvcDispatcher;
 use PhalconKit\Di\Injectable;
 
@@ -27,7 +27,7 @@ class Security extends Injectable
 {
     /**
      * This action is executed before execute any action in the application
-     * @throws Exception
+     * @throws DispatcherException When dispatcher state cannot be inspected.
      */
     public function beforeDispatchLoop(Event $event, AbstractDispatcher $dispatcher): bool
     {
@@ -36,7 +36,7 @@ class Security extends Injectable
     
     /**
      * Check if the current identity is allowed from the dispatcher
-     * @throws Exception
+     * @throws DispatcherException When dispatcher state cannot be inspected.
      */
     public function checkAcl(Event $event, ?AbstractDispatcher $dispatcher = null): bool
     {

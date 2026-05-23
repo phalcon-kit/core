@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Identity;
 
-use Phalcon\Encryption\Security\Exception;
+use Phalcon\Encryption\Security\Exception as SecurityException;
 use PhalconKit\Di\Injectable;
 use PhalconKit\Exception\LogicException;
 use PhalconKit\Filter\Validation;
@@ -164,7 +164,7 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
      *               - 'saved': A boolean indicating whether the save operation was successful.
      *               - 'sent': A boolean indicating whether the reset token email was sent successfully.
      *               - 'messages': A collection of validation or processing messages.
-     * @throws Exception
+     * @throws SecurityException When token generation fails.
      */
     public function reset(?array $params = null): array
     {

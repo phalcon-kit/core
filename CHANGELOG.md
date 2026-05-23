@@ -236,6 +236,10 @@ tag has been cut yet.
 - Normalized framework-thrown configuration, service, HTTP, logic, argument,
   and runtime failures to PhalconKit-scoped exceptions while preserving native
   PHP exception categories for compatibility.
+- Cleaned ambiguous broad `@throws Exception` annotations from REST actions,
+  query helpers, dispatcher plugins, CLI tasks, identity helpers, tag helpers,
+  and vendor extension points so public PHPDoc names the concrete PhalconKit or
+  native Phalcon exception boundary.
 
 ### Fixed
 
@@ -285,6 +289,10 @@ tag has been cut yet.
 - Fixed mapped model instance resolution so invalid configured model classes
   fail with `ServiceException` instead of PHP assertions or late return-type
   errors.
+- Fixed controller, identity, lifecycle, dynamic model, position behavior, and
+  blameable audit contract checks so they fail through local `require*()`
+  helpers with scoped PhalconKit exceptions instead of relying on PHP
+  assertions or late method-call errors.
 - Fixed slug generation so unavailable ICU transliterators fail with
   `ServiceException` and locale state is restored even when transliteration
   fails.
