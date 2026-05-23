@@ -1630,6 +1630,15 @@ class QueryStateTest extends AbstractUnit
         ], $calculation);
 
         $calculation = $controller->exposeGetCalculationFind([
+            'conditions' => '0',
+            'limit' => 10,
+            'offset' => 20,
+        ]);
+        $this->assertSame([
+            'conditions' => '0',
+        ], $calculation);
+
+        $calculation = $controller->exposeGetCalculationFind([
             'limit' => 10,
             'offset' => 20,
         ], false);

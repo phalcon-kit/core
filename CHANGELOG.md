@@ -228,6 +228,8 @@ tag has been cut yet.
   `$models` and `$policies` before `parent::initialize()` keep those mappings.
 - Fixed dispatcher security forwarding so lean forbidden and unauthorized
   routes can omit unrelated route keys without PHP warnings or repeat forwards.
+- Fixed REST calculation query cleanup so valid falsy conditions such as `0`
+  are preserved instead of broadening aggregate queries.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
   reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation

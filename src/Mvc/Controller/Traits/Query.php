@@ -451,7 +451,10 @@ trait Query
             $find['group'] = implode(', ', $find['group']);
         }
 
-        return array_filter($find);
+        return array_filter(
+            $find,
+            static fn(mixed $value): bool => $value !== null && $value !== '' && $value !== []
+        );
     }
     
     /**
