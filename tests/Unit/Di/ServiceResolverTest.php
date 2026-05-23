@@ -43,6 +43,27 @@ class ServiceResolverTest extends AbstractUnit
         parent::tearDown();
     }
 
+    public function testRequirePhalconKitContainerReturnsTypedContainer(): void
+    {
+        $di = new Di();
+
+        $this->assertSame(
+            $di,
+            ServiceResolver::requirePhalconKitContainer($di, 'create a test component', 'the test DI')
+        );
+    }
+
+    public function testRequirePhalconKitContainerRejectsNativeContainer(): void
+    {
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Could not create a test component because the test DI must implement "%s"; got "Phalcon\Di\Di".',
+            DiInterface::class
+        ));
+
+        ServiceResolver::requirePhalconKitContainer(new PhalconDi(), 'create a test component', 'the test DI');
+    }
+
     public function testFromContainerReturnsTypedService(): void
     {
         $di = new Di();
@@ -74,6 +95,60 @@ class ServiceResolverTest extends AbstractUnit
         $this->expectExceptionMessage('Could not resolve DI service "missing" for static helpers.');
 
         ServiceResolver::fromContainer($di, 'missing', \stdClass::class, context: 'static helpers');
+    }
+
+    public function testFromContainerOrDefaultReturnsRegisteredService(): void
+    {
+        $di = new Di();
+        $service = new \stdClass();
+        $fallback = new \stdClass();
+        $di->set('service', $service);
+
+        $this->assertSame(
+            $service,
+            ServiceResolver::fromContainerOrDefault(
+                $di,
+                'service',
+                \stdClass::class,
+                static fn () => $fallback,
+                context: 'optional services'
+            )
+        );
+    }
+
+    public function testFromContainerOrDefaultReturnsTypedDefaultWhenServiceIsMissing(): void
+    {
+        $di = new Di();
+        $fallback = new \stdClass();
+
+        $this->assertSame(
+            $fallback,
+            ServiceResolver::fromContainerOrDefault(
+                $di,
+                'service',
+                \stdClass::class,
+                static fn () => $fallback,
+                context: 'optional services'
+            )
+        );
+    }
+
+    public function testFromContainerOrDefaultRejectsInvalidDefaultFactoryOutput(): void
+    {
+        $di = new Di();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected default DI service "service" for optional services to be an instance of "DateTimeImmutable"; got "stdClass".'
+        );
+
+        ServiceResolver::fromContainerOrDefault(
+            $di,
+            'service',
+            \DateTimeImmutable::class,
+            static fn () => new \stdClass(),
+            context: 'optional services'
+        );
     }
 
     public function testFromContainerDelegatesTypeValidationToPhalconKitDi(): void

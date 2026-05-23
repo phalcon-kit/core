@@ -162,8 +162,9 @@ tag has been cut yet.
   exception categories.
 - Added typed PhalconKit DI containers with `getTyped()` and `getConfig()`
   helpers for framework code that needs explicit service contracts.
-- Added a shared `ServiceResolver` for static helpers and native Phalcon
-  extension points that need typed PhalconKit DI service resolution.
+- Added a shared `ServiceResolver`, including a reusable PhalconKit container
+  boundary check, for static helpers and native Phalcon extension points that
+  need typed PhalconKit DI service resolution.
 
 ### Changed
 
@@ -249,6 +250,19 @@ tag has been cut yet.
   `escaper` services fail through the shared resolver with `ServiceException`
   instead of assertion, type-error, or native DI failures, and so
   `escapeParam()` handles a null attribute without passing it to the escaper.
+- Fixed MVC, CLI, and WebSocket module service wiring so registered module
+  service replacements are resolved through typed PhalconKit DI checks instead
+  of PHP assertions.
+- Fixed HMVC application request dispatching so native DI containers and
+  missing or invalid dispatcher services fail with `ServiceException` instead
+  of relying on PHP assertions or late method-call errors.
+- Fixed the maintenance dispatcher plugin so missing or invalid config services
+  fail with `ServiceException` instead of relying on PHP assertions.
+- Fixed PhalconKit dispatcher forwarding so a `module` value in the forward
+  route updates the dispatcher module before delegating to native Phalcon.
+- Fixed slug generation so unavailable ICU transliterators fail with
+  `ServiceException` and locale state is restored even when transliteration
+  fails.
 - Fixed metadata and session providers so lean config consumers get safe
   adapter defaults instead of undefined adapter warnings.
 - Fixed session provider adapter validation so custom session adapters fail

@@ -83,10 +83,15 @@ class DispatcherTest extends AbstractUnit
     {
         $this->dispatcher->forward(['action' => 'notFound'], false);
         $this->assertSame('notFound', $this->dispatcher->getActionName());
+        $this->assertSame('', $this->dispatcher->getModuleName());
         
         $this->dispatcher->forward(['action' => 'notFound'], true);
         $this->assertSame('notFound', $this->dispatcher->getActionName());
         
+        $this->dispatcher->forward(['module' => 'admin', 'action' => 'maintenance'], true);
+        $this->assertSame('admin', $this->dispatcher->getModuleName());
+        $this->assertSame('maintenance', $this->dispatcher->getActionName());
+
         $this->dispatcher->forward(['action' => 'non-existing-action'], true);
         $this->assertSame('non-existing-action', $this->dispatcher->getActionName());
         

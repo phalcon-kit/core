@@ -15,6 +15,8 @@ namespace PhalconKit\Tests\Unit\Cli;
 
 use PhalconKit\Bootstrap;
 use PhalconKit\Cli\Module;
+use PhalconKit\Di\Di;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class ModuleTest extends AbstractUnit
@@ -111,5 +113,18 @@ class ModuleTest extends AbstractUnit
         $this->assertSame($this->di->get('dispatcher'), $this->module->dispatcher);
         $this->assertSame($this->di->get('loader'), $this->module->loader);
         $this->assertSame($this->di->get('router'), $this->module->router);
+    }
+
+    public function testGetServicesRejectsWrongRegisteredServiceType(): void
+    {
+        $di = new Di();
+        $di->set('dispatcher', new \stdClass());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "dispatcher" to be an instance of "PhalconKit\Cli\Dispatcher"; got "stdClass".'
+        );
+
+        $this->module->getServices($di);
     }
 }

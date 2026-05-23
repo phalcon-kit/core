@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc;
 
-use Phalcon\Di\DiInterface;
+use Phalcon\Di\DiInterface as NativeDiInterface;
 use Phalcon\Http\ResponseInterface;
 use Phalcon\Dispatcher\AbstractDispatcher;
 use PhalconKit\Cli\Dispatcher as CliDispatcher;
+use PhalconKit\Di\ServiceResolver;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
 
 /**
@@ -26,29 +28,87 @@ use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
 class Application extends \Phalcon\Mvc\Application
 {
     /**
-     * HMVC Application
-     * {@inheritdoc}
+     * Creates an HMVC application bound to a PhalconKit DI container.
+     *
+     * The constructor keeps Phalcon's native DI signature so the application
+     * remains compatible with inherited Phalcon APIs, but the provided
+     * container must implement PhalconKit's DI contract. This guarantees
+     * runtime code can use typed service lookups and fail with framework
+     * exceptions when a service is missing or misconfigured.
+     *
+     * @param NativeDiInterface $di Container used to resolve application
+     *     services.
+     * @throws ServiceException When the container does not expose PhalconKit
+     *     typed DI helpers.
      */
-    public function __construct(DiInterface $di)
+    public function __construct(NativeDiInterface $di)
     {
+        $di = ServiceResolver::requirePhalconKitContainer(
+            $di,
+            'create PhalconKit MVC application',
+            'the application DI'
+        );
+
         // Registering app itself as a service
         $di->setShared('application', $this);
         parent::__construct($di);
     }
+
+    /**
+     * Assigns the application DI container.
+     *
+     * Phalcon exposes this setter through its injection-aware base class. The
+     * override keeps that public extension point available while enforcing that
+     * replacement containers still implement PhalconKit's typed DI contract.
+     *
+     * @param NativeDiInterface $container Replacement application container.
+     * @throws ServiceException When the container does not expose PhalconKit
+     *     typed DI helpers.
+     */
+    #[\Override]
+    public function setDI(NativeDiInterface $container): void
+    {
+        $container = ServiceResolver::requirePhalconKitContainer(
+            $container,
+            'assign PhalconKit MVC application DI',
+            'the replacement DI'
+        );
+        parent::setDI($container);
+    }
     
     /**
-     * Requests a location using the specified dispatcher.
+     * Dispatches an internal HMVC location and returns its rendered content.
      *
-     * @param array $location An array containing location information, including namespace, module, controller,
-     *                        action, and params. Default is an empty array.
-     * @return string The response content of the requested location.
-     * @throws \Exception
+     * The current `dispatcher` DI service is cloned before routing state is
+     * applied, so nested HMVC requests do not mutate the application's main
+     * dispatcher. MVC dispatchers receive a controller name, CLI dispatchers
+     * receive a task name, and all dispatchers receive namespace, module,
+     * action, and params from the location array.
+     *
+     * @param array{
+     *     namespace?: string,
+     *     module?: string,
+     *     controller?: string,
+     *     task?: string,
+     *     action?: string,
+     *     params?: array<mixed>
+     * } $location Optional namespace/module/controller/task/action/params
+     *     overrides for the internal request.
+     * @return string Response content, scalar dispatcher return value, or an
+     *     empty string when the dispatcher returns null.
+     * @throws ServiceException When the dispatcher service is missing or does
+     *     not extend Phalcon's abstract dispatcher.
+     * @throws \Exception When the underlying dispatcher fails while dispatching.
      */
     public function request(array $location = []): string
     {
         // Get a unique dispatcher
-        $dispatcher = $this->getDI()->get('dispatcher');
-        assert($dispatcher instanceof AbstractDispatcher);
+        $dispatcher = ServiceResolver::fromContainer(
+            $this->getDI(),
+            'dispatcher',
+            AbstractDispatcher::class,
+            context: 'HMVC application request'
+        );
         $dispatcher = clone $dispatcher;
         
         // Route dispatcher

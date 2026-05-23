@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Support;
 
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Support\Slug;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -48,6 +49,34 @@ class SlugTest extends AbstractUnit
         $this->assertSame('after_replace', Slug::generate('Before Replace', [
             'Before' => 'After',
         ], '_'));
+    }
+
+    public function testGenerateRestoresPreviousLocale(): void
+    {
+        $previousLocale = setlocale(LC_ALL, '0');
+        $selectedLocale = setlocale(LC_ALL, 'C');
+
+        $this->assertIsString($selectedLocale);
+
+        try {
+            Slug::generate('Locale Restore');
+            $this->assertSame($selectedLocale, setlocale(LC_ALL, '0'));
+        }
+        finally {
+            if (is_string($previousLocale)) {
+                setlocale(LC_ALL, $previousLocale);
+            }
+        }
+    }
+
+    public function testInvalidTransliteratorIdentifierFailsClearly(): void
+    {
+        $method = new \ReflectionMethod(Slug::class, 'createTransliterator');
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Could not create slug transliterator "definitely invalid transliterator id".');
+
+        $method->invoke(null, 'definitely invalid transliterator id');
     }
 
     public function testCleanStringNormalizesRepeatedSeparatorsWithCustomDelimiter(): void

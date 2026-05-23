@@ -17,6 +17,8 @@ use Phalcon\Autoload\Loader;
 use Phalcon\Di\DiInterface;
 use Phalcon\Mvc\ModuleDefinitionInterface;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Di\ServiceResolver;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Support\Utils;
 
 class Module implements ModuleDefinitionInterface
@@ -35,33 +37,51 @@ class Module implements ModuleDefinitionInterface
     
     /**
      * Registers an autoloader related to the frontend module
+     *
+     * When a loader service is registered, it must be a Phalcon autoloader.
+     * Otherwise the module creates a local loader for task and model
+     * namespaces.
      */
     #[\Override]
     public function registerAutoloaders(?DiInterface $container = null): void
     {
-        $this->loader ??= $container['loader'] ?? new Loader();
+        $this->loader ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'loader',
+                Loader::class,
+                static fn () => new Loader(),
+                context: 'WebSocket module autoloader'
+            )
+            : new Loader();
         $this->loader->setNamespaces($this->getNamespaces(), true);
         $this->loader->register();
     }
     
     /**
      * Registers services related to the module
+     *
+     * Registered replacements for `dispatcher` and `router` are resolved
+     * through the shared service resolver so invalid module wiring fails before
+     * the module mutates service state.
      */
     #[\Override]
     public function registerServices(DiInterface $container): void
     {
         $this->getServices($container);
-        
-        assert($this->dispatcher instanceof DispatcherInterface);
-        assert($this->router instanceof \PhalconKit\Router\RouterInterface);
-        
+        $dispatcher = $this->dispatcher;
+        $router = $this->router;
+        if (!$dispatcher instanceof Dispatcher || !$router instanceof Router) {
+            throw new ServiceException('WebSocket module services were not initialized with compatible dispatcher and router instances.');
+        }
+
         // dispatcher settings
         $defaultNamespace = $this->getDefaultNamespace();
-        $this->dispatcher->setDefaultNamespace($defaultNamespace);
-        $this->dispatcher->setNamespaceName($defaultNamespace);
+        $dispatcher->setDefaultNamespace($defaultNamespace);
+        $dispatcher->setNamespaceName($defaultNamespace);
         
         // router settings
-        $this->router->setDefaults([
+        $router->setDefaults([
             'namespace' => $defaultNamespace,
             'module' => $this->name,
             'task' => 'main',
@@ -92,10 +112,42 @@ class Module implements ModuleDefinitionInterface
     
     public function getServices(?DiInterface $container = null): void
     {
-        $this->loader = $container['loader'] ?? new Loader();
-        $this->config ??= $container['config'] ?? new Config();
-        $this->router ??= $container['router'] ?? new Router();
-        $this->dispatcher ??= $container['dispatcher'] ?? new Dispatcher();
+        $this->loader = $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'loader',
+                Loader::class,
+                static fn () => new Loader(),
+                context: 'WebSocket module services'
+            )
+            : new Loader();
+        $this->config ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'config',
+                Config::class,
+                static fn () => new Config(),
+                context: 'WebSocket module services'
+            )
+            : new Config();
+        $this->router ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'router',
+                Router::class,
+                static fn () => new Router(),
+                context: 'WebSocket module services'
+            )
+            : new Router();
+        $this->dispatcher ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'dispatcher',
+                Dispatcher::class,
+                static fn () => new Dispatcher(),
+                context: 'WebSocket module services'
+            )
+            : new Dispatcher();
     }
     
     public function setServices(DiInterface $container): void

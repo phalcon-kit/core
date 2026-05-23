@@ -17,6 +17,8 @@ use Phalcon\Autoload\Loader;
 use Phalcon\Di\DiInterface;
 use Phalcon\Mvc\ModuleDefinitionInterface;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Di\ServiceResolver;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Support\Utils;
 
 abstract class Module implements ModuleDefinitionInterface
@@ -42,36 +44,61 @@ abstract class Module implements ModuleDefinitionInterface
     
     /**
      * Registers an autoloader related to the frontend module
+     *
+     * When the container defines a loader service, it must be compatible with
+     * Phalcon's autoloader. Otherwise the module creates a local loader for the
+     * module namespace registration.
      */
     #[\Override]
     public function registerAutoloaders(?DiInterface $container = null): void
     {
-        $this->loader ??= $container['loader'] ?? new Loader();
+        $this->loader ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'loader',
+                Loader::class,
+                static fn () => new Loader(),
+                context: 'MVC module autoloader'
+            )
+            : new Loader();
         $this->loader->setNamespaces($this->getNamespaces(), true);
         $this->loader->register();
     }
     
     /**
      * Registers services related to the module
+     *
+     * Registered replacements for module services are resolved through the
+     * shared service resolver so invalid DI wiring fails before dispatcher,
+     * router, view, or URL state is mutated.
      */
     #[\Override]
     public function registerServices(DiInterface $container): void
     {
         $this->getServices($container);
-        
-        assert($this->url instanceof Url);
-        assert($this->view instanceof View);
-        assert($this->router instanceof Router);
-        assert($this->dispatcher instanceof Dispatcher);
-        
+        $dispatcher = $this->dispatcher;
+        $router = $this->router;
+        $view = $this->view;
+        $url = $this->url;
+        if (
+            !$dispatcher instanceof Dispatcher
+            || !$router instanceof Router
+            || !$view instanceof View
+            || !$url instanceof Url
+        ) {
+            throw new ServiceException(
+                'MVC module services were not initialized with compatible dispatcher, router, view, and URL instances.'
+            );
+        }
+
         $defaultNamespace = $this->getDefaultNamespace();
-        $this->dispatcher->setDefaultNamespace($defaultNamespace);
-        $this->dispatcher->setNamespaceName($defaultNamespace);
-        $this->view->setViewsDir($this->getViewsDir());
+        $dispatcher->setDefaultNamespace($defaultNamespace);
+        $dispatcher->setNamespaceName($defaultNamespace);
+        $view->setViewsDir($this->getViewsDir());
         
         // url settings
-        $this->url->setBasePath($this->url->getBasePath() . '/' . $this->name . '/');
-        $this->router->setDefaults([
+        $url->setBasePath($url->getBasePath() . '/' . $this->name . '/');
+        $router->setDefaults([
             'namespace' => $defaultNamespace,
             'module' => $this->name,
             'controller' => 'index',
@@ -79,23 +106,71 @@ abstract class Module implements ModuleDefinitionInterface
         ]);
         
         // router settings
-        $this->router->notFound([
+        $router->notFound([
             'controller' => 'error',
             'action' => 'notFound',
         ]);
-        $this->router->removeExtraSlashes(true);
+        $router->removeExtraSlashes(true);
         
         $this->setServices($container);
     }
     
     public function getServices(?DiInterface $container = null): void
     {
-        $this->loader ??= $container['loader'] ?? new Loader();
-        $this->config ??= $container['config'] ?? new Config();
-        $this->router ??= $container['router'] ?? new Router();
-        $this->dispatcher ??= $container['dispatcher'] ?? new Dispatcher();
-        $this->view ??= $container['view'] ?? new View();
-        $this->url ??= $container['url'] ?? new Url();
+        $this->loader ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'loader',
+                Loader::class,
+                static fn () => new Loader(),
+                context: 'MVC module services'
+            )
+            : new Loader();
+        $this->config ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'config',
+                Config::class,
+                static fn () => new Config(),
+                context: 'MVC module services'
+            )
+            : new Config();
+        $this->router ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'router',
+                Router::class,
+                fn () => new Router(false, $this->config ?? new Config()),
+                context: 'MVC module services'
+            )
+            : new Router();
+        $this->dispatcher ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'dispatcher',
+                Dispatcher::class,
+                static fn () => new Dispatcher(),
+                context: 'MVC module services'
+            )
+            : new Dispatcher();
+        $this->view ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'view',
+                View::class,
+                static fn () => new View(),
+                context: 'MVC module services'
+            )
+            : new View();
+        $this->url ??= $container !== null
+            ? ServiceResolver::fromContainerOrDefault(
+                $container,
+                'url',
+                Url::class,
+                static fn () => new Url(),
+                context: 'MVC module services'
+            )
+            : new Url();
     }
     
     public function setServices(DiInterface $container): void

@@ -17,7 +17,9 @@ use Phalcon\Dispatcher\Exception;
 use Phalcon\Dispatcher\AbstractDispatcher;
 use Phalcon\Events\Event;
 use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\ServiceResolver;
 use PhalconKit\Di\Injectable;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Dispatcher;
 
 /**
@@ -33,17 +35,29 @@ class Maintenance extends Injectable
     /**
      * Executed before dispatching a request.
      *
+     * The plugin reads `app.maintenance` and `router.maintenance` from the
+     * PhalconKit config service. When maintenance mode is enabled it forwards
+     * the dispatcher to the configured maintenance route, strips null route
+     * parts through the PhalconKit dispatcher extension when available, and
+     * stops cancelable dispatch events so the original action is not executed.
+     *
      * @param Event $event The event object.
      * @param AbstractDispatcher $dispatcher The dispatcher object.
      *
      * @return void
      *
      * @throws Exception If an error happened during the dispatch forwarding to the maintenance route
+     * @throws ServiceException When the DI container or config service cannot
+     *     be resolved through the PhalconKit DI contract.
      */
     public function beforeDispatch(Event $event, AbstractDispatcher $dispatcher): void
     {
-        $config = $this->getDI()->get('config');
-        assert($config instanceof ConfigInterface);
+        $config = ServiceResolver::fromContainer(
+            $this->getDI(),
+            'config',
+            ConfigInterface::class,
+            context: 'maintenance dispatcher plugin'
+        );
         
         $maintenance = $config->path('app.maintenance', false);
         if ($maintenance) {

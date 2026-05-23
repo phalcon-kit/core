@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Mvc;
 
 use Phalcon\Autoload\Loader;
-use Phalcon\Di\Di;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Di\Di;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Dispatcher;
 use PhalconKit\Mvc\Module;
 use PhalconKit\Mvc\Router;
@@ -139,6 +140,33 @@ class ModuleTest extends AbstractUnit
             'action' => 'index',
             'params' => [],
         ], $module->router->getDefaults());
+    }
+
+    public function testGetServicesRejectsWrongRegisteredServiceType(): void
+    {
+        $module = $this->createModule();
+        $di = new Di();
+        $di->set('config', new Config());
+        $di->set('view', new \stdClass());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "view" to be an instance of "PhalconKit\Mvc\View"; got "stdClass".'
+        );
+
+        $module->getServices($di);
+    }
+
+    public function testGetServicesRejectsNativePhalconContainerWhenServiceResolutionIsRequested(): void
+    {
+        $module = $this->createModule();
+        $di = new \Phalcon\Di\Di();
+        $di->set('view', new View());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('because the provided DI must implement "PhalconKit\Di\DiInterface"');
+
+        $module->getServices($di);
     }
 
     public function testParentNamespaceAndDirnameUseModuleReflection(): void

@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc;
 
-use Phalcon\Di\FactoryDefault;
+use Phalcon\Di\FactoryDefault as NativeFactoryDefault;
 use Phalcon\Http\Response;
 use PhalconKit\Cli\Dispatcher as CliDispatcher;
+use PhalconKit\Di\FactoryDefault;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Application;
 use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -30,6 +32,24 @@ class ApplicationTest extends AbstractUnit
         $this->assertInstanceOf(\Phalcon\Mvc\Application::class, $application);
         $this->assertSame($application, $di->get('application'));
         $this->assertSame($di, $application->getDI());
+    }
+
+    public function testConstructorRequiresPhalconKitDiContainer(): void
+    {
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Could not create PhalconKit MVC application');
+
+        new Application(new NativeFactoryDefault());
+    }
+
+    public function testSetDiRequiresPhalconKitDiContainer(): void
+    {
+        $application = new Application(new FactoryDefault());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Could not assign PhalconKit MVC application DI');
+
+        $application->setDI(new NativeFactoryDefault());
     }
 
     public function testRequestDispatchesMvcLocationAndReturnsResponseContent(): void
@@ -133,5 +153,17 @@ class ApplicationTest extends AbstractUnit
         $application = new Application($di);
 
         $this->assertSame('', $application->request());
+    }
+
+    public function testRequestRejectsInvalidDispatcherService(): void
+    {
+        $di = new FactoryDefault();
+        $di->set('dispatcher', new \stdClass());
+        $application = new Application($di);
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Expected DI service "dispatcher" to be an instance of');
+
+        $application->request();
     }
 }

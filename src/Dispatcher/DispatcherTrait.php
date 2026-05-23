@@ -21,6 +21,8 @@ trait DispatcherTrait
     abstract public function getNamespaceName(): ?string;
     
     abstract public function getModuleName(): ?string;
+
+    abstract public function setModuleName(?string $moduleName = null): void;
     
     abstract public function getActionName(): string;
     
@@ -59,6 +61,10 @@ trait DispatcherTrait
         $forward = $this->unsetForwardNullParts($forward);
         
         if (!$preventCycle || $this->canForward($forward)) {
+            if (isset($forward['module'])) {
+                $this->setModuleName($forward['module']);
+            }
+
             parent::forward($forward);
         }
     }
