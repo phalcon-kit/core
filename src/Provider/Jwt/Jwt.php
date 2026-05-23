@@ -24,26 +24,60 @@ use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Exception\ServiceException;
 
 /**
- * Issue, parse and validate JSON Web Tokens (JWT) as described in RFC 7519.
+ * Helper around Phalcon's JWT builder, parser, signer, and validator services.
  *
- * Builder (Phalcon\Encryption\Security\JWT\Builder)
- * Parser (Phalcon\Encryption\Security\JWT\Token\Parser)
- * Validator (Phalcon\Encryption\Security\JWT\Validator)
+ * The helper keeps the most recently created builder/parser/validator/token on
+ * the instance so existing identity flows can build, parse, and validate a
+ * token in multiple steps. Applications normally receive this service from the
+ * `jwt` DI service configured by `Provider\Jwt\ServiceProvider`.
  */
 class Jwt
 {
+    /**
+     * Default JWT options used when a method does not receive an explicit
+     * override.
+     *
+     * Recognized keys include `signer`, `algo`, `expiration`, `notBefore`,
+     * `issuedAt`, `issuer`, `audience`, `contentType`, `passphrase`, `id`,
+     * and `subject`.
+     *
+     * @var array<string, mixed>
+     */
     public array $options;
     
+    /**
+     * Current signer used by new builders and signature validation.
+     */
     public AbstractSigner $signer;
     
+    /**
+     * Most recently initialized JWT builder, if any.
+     */
     public ?Builder $builder = null;
     
+    /**
+     * Most recently initialized JWT parser, if any.
+     */
     public ?Parser $parser = null;
     
+    /**
+     * Most recently initialized JWT validator, if any.
+     */
     public ?Validator $validator = null;
     
+    /**
+     * Most recently built or parsed token, if any.
+     */
     public ?Token $token = null;
-    
+
+    /**
+     * Create the JWT helper with default options and initialize its signer.
+     *
+     * @param array<string, mixed> $defaultOptions Defaults used by builder(),
+     *        signer(), validateToken(), and getDefaultOptions().
+     * @throws ConfigurationException When the configured signer class does not
+     *         extend Phalcon's JWT AbstractSigner.
+     */
     public function __construct(array $defaultOptions = [])
     {
         $this->options = $defaultOptions;
@@ -51,7 +85,18 @@ class Jwt
     }
     
     /**
-     * Initialize JWT Signer
+     * Initialize and store the JWT signer.
+     *
+     * The signer class name may be passed directly, or read from
+     * `$this->options['signer']`. When no signer is configured, Phalcon's HMAC
+     * signer is used with the configured `algo` or `sha512`.
+     *
+     * @param string|null $signer Signer class name; it must extend
+     *        AbstractSigner.
+     * @param string|null $algo Hash algorithm passed to the signer
+     *        constructor.
+     * @throws ConfigurationException When the signer class does not extend
+     *         AbstractSigner.
      */
     public function signer(?string $signer = null, ?string $algo = null): AbstractSigner
     {
@@ -62,7 +107,16 @@ class Jwt
     }
     
     /**
-     * Initialize JWT Builder and validate it
+     * Initialize and store a JWT builder using default and explicit options.
+     *
+     * Explicit options override constructor defaults. The resulting builder is
+     * stored on `$this->builder` so buildToken() can be called without passing
+     * the builder again.
+     *
+     * Recognized option keys are `passphrase`, `expiration`, `notBefore`,
+     * `issuedAt`, `issuer`, `audience`, `contentType`, `id`, and `subject`.
+     *
+     * @param array<string, mixed> $options Builder option overrides.
      * @throws ValidatorException
      */
     public function builder(array $options = []): Builder
@@ -84,7 +138,10 @@ class Jwt
     }
     
     /**
-     * Initialize JWT Parser
+     * Initialize and store a JWT parser.
+     *
+     * The parser is stored on `$this->parser` for consumers that inspect the
+     * helper state after parseToken().
      */
     public function parser(): Parser
     {
@@ -93,7 +150,15 @@ class Jwt
     }
     
     /**
-     * Initialize JWT Validator
+     * Initialize and store a JWT validator for a token.
+     *
+     * If no token is passed, the most recently built or parsed token is used.
+     *
+     * @param Token|null $token Token to validate, or null to use the current
+     *        helper token.
+     * @param int $timeShift Clock skew allowance passed to Phalcon's
+     *        validator.
+     * @throws ServiceException When no token is available.
      */
     public function validator(?Token $token = null, int $timeShift = 0): Validator
     {
@@ -103,7 +168,13 @@ class Jwt
     }
     
     /**
-     * Build a token and validate it
+     * Build and store a token from a builder.
+     *
+     * If no builder is passed, the most recently initialized builder is used.
+     *
+     * @param Builder|null $builder Builder to use, or null to use the current
+     *        helper builder.
+     * @throws ServiceException When no builder is available.
      * @throws ValidatorException
      */
     public function buildToken(?Builder $builder = null): Token
@@ -114,7 +185,9 @@ class Jwt
     }
     
     /**
-     * Parse a jwt token and return the Token object
+     * Parse an encoded JWT and store the resulting token.
+     *
+     * @param string $token Encoded JWT string.
      */
     public function parseToken(string $token): Token
     {
@@ -129,7 +202,21 @@ class Jwt
     }
     
     /**
-     * Validate the token
+     * Validate a token using configured claims and signer settings.
+     *
+     * If no token or signer is passed, the helper uses the current token and
+     * signer. The method returns Phalcon validator errors; an empty array means
+     * the token satisfied every enabled validation.
+     *
+     * @param Token|null $token Token to validate, or null to use the current
+     *        helper token.
+     * @param int $timeShift Clock skew allowance passed to Phalcon's
+     *        validator.
+     * @param array<string, mixed> $options Validation option overrides.
+     * @param AbstractSigner|null $signer Signer used for signature validation,
+     *        or null to use the current helper signer.
+     * @return array<int|string, mixed> Validator errors.
+     * @throws ServiceException When no token is available.
      * @throws ValidatorException|\DateMalformedStringException
      */
     public function validateToken(?Token $token = null, int $timeShift = 0, array $options = [], ?AbstractSigner $signer = null): array
@@ -156,7 +243,13 @@ class Jwt
     }
     
     /**
-     * Get default JWT Builder Options
+     * Merge explicit JWT options with constructor defaults and safe fallbacks.
+     *
+     * The returned array always contains `expiration`, `notBefore`, `issuedAt`,
+     * `issuer`, `audience`, `contentType`, `passphrase`, `id`, and `subject`.
+     *
+     * @param array<string, mixed> $options Explicit option overrides.
+     * @return array<string, mixed>
      */
     public function getDefaultOptions(array $options = []): array
     {

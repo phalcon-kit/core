@@ -25,6 +25,14 @@ use Phalcon\Logger\LoggerInterface;
 use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Support\Options\Options;
 
+/**
+ * Factory and registry for named Phalcon logger instances.
+ *
+ * The service is configured from the `logger` and `loggers` config sections.
+ * It lazily builds named loggers, caches them for repeated calls, and applies
+ * formatter/adapter options consistently across default and logger-specific
+ * configuration.
+ */
 class Loggers
 {
     use Options;
@@ -37,12 +45,19 @@ class Loggers
     public array $loggers = [];
     
     /**
-     * Gets a formatter based on the provided formatter name and options.
+     * Create a configured formatter by name.
+     *
+     * The formatter name is resolved from the configured `formatters` map. Line
+     * formatters receive the optional `format` value and all
+     * AbstractFormatter instances receive the optional `dateFormat` value.
      *
      * @param string|null $formatter The name of the formatter to retrieve. Defaults to 'line'.
-     * @param array $options The options for the formatter.
+     * @param array<string, mixed> $options Formatter options from the selected
+     *        logger config.
      * @return FormatterInterface The retrieved formatter.
-     * @throws ConfigurationException If the specified formatter is not defined.
+     * @throws ConfigurationException If the formatter name is not configured or
+     *         the configured formatter class does not implement
+     *         FormatterInterface.
      */
     public function getFormatter(?string $formatter = null, array $options = []): FormatterInterface
     {
@@ -75,13 +90,22 @@ class Loggers
     }
     
     /**
-     * Returns an array of logger adapters based on the given drivers, formatter, and options.
+     * Create configured logger adapters for one or more driver names.
+     *
+     * Driver names are resolved from the configured `drivers` map. The method
+     * accepts either an array of names or a comma-separated string such as
+     * `noop,stream`. Every adapter receives the provided formatter before it is
+     * returned.
      *
      * @param string|array|null $loggerDrivers The logger drivers to use. Defaults to null.
-     * @param array $options The options to configure the adapters. Defaults to an empty array.
+     * @param array<string, mixed> $options Adapter options from the selected
+     *        logger config. Stream adapters expect `path` and `filename`;
+     *        custom adapters receive `options`.
      * @param FormatterInterface|null $formatter The formatter to attach to the adapters. Defaults to null.
-     * @return array The array of logger adapters.
-     * @throws ConfigurationException If a logger driver adapter is not defined.
+     * @return array<string, AdapterInterface> The array of logger adapters by
+     *         driver name.
+     * @throws ConfigurationException If a driver name is not configured or the
+     *         configured adapter class does not implement AdapterInterface.
      */
     public function getAdapters(string|array|null $loggerDrivers = null, array $options = [], FormatterInterface|null $formatter = null): array
     {
@@ -109,11 +133,17 @@ class Loggers
     }
     
     /**
-     * Loads a logger with the given name.
+     * Build, cache, and return a named logger.
+     *
+     * Logger-specific options in the `loggers.<name>` config section override
+     * the `logger.default` values. Missing named logger config falls back to the
+     * default logger options, which makes ad-hoc logger names possible while
+     * preserving a consistent adapter/formatter setup.
      *
      * @param string $name The name of the logger to load.
      * @return LoggerInterface The loaded logger.
-     * @throws \Exception
+     * @throws ConfigurationException If formatter or adapter configuration is
+     *         invalid.
      */
     public function load(string $name): LoggerInterface
     {
@@ -143,11 +173,12 @@ class Loggers
     }
     
     /**
-     * Retrieves a logger with the given name.
+     * Retrieve a cached logger or lazily load it from configuration.
      *
      * @param string $name The name of the logger to retrieve.
      * @return LoggerInterface The retrieved logger.
-     * @throws \Exception If the logger cannot be loaded.
+     * @throws ConfigurationException If formatter or adapter configuration is
+     *         invalid while loading the logger.
      */
     public function get(string $name): LoggerInterface
     {
@@ -159,11 +190,10 @@ class Loggers
     }
     
     /**
-     * Sets a logger with the given name.
+     * Store or replace a named logger instance.
      *
      * @param string $name The name of the logger to set.
      * @param LoggerInterface $logger The logger to set.
-     * @return void
      */
     public function set(string $name, LoggerInterface $logger): void
     {

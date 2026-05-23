@@ -224,6 +224,7 @@ tag has been cut yet.
   bootstraps/tests must pass `PhalconKit\Di\DiInterface`.
 - Updated maintainer guidance to require useful PHPDoc/docblocks for new or
   changed public/protected framework-facing APIs.
+- Expanded framework-facing PHPDoc for the JWT helper and logger registry APIs.
 
 ### Fixed
 
