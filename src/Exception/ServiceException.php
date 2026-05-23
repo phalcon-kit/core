@@ -13,6 +13,14 @@ declare(strict_types=1);
 
 namespace PhalconKit\Exception;
 
+/**
+ * Raised when a framework service cannot be resolved or used safely.
+ *
+ * Use this exception for missing DI services, wrong service types, invalid
+ * service state, or runtime service contract violations. It extends
+ * RuntimeException because these failures usually depend on the container or
+ * current runtime state rather than a single method argument.
+ */
 class ServiceException extends \RuntimeException implements ExceptionInterface
 {
 }

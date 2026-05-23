@@ -13,6 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit\Di;
 
+/**
+ * MVC/default-service PhalconKit DI container.
+ *
+ * This container mirrors Phalcon's FactoryDefault service registration and adds
+ * PhalconKit typed lookup helpers. It is the default container for non-CLI
+ * PhalconKit bootstraps unless an application passes a custom DiInterface.
+ */
 class FactoryDefault extends \Phalcon\Di\FactoryDefault implements DiInterface
 {
     use TypedServicesTrait;

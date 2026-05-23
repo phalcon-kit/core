@@ -13,6 +13,14 @@ declare(strict_types=1);
 
 namespace PhalconKit\Exception;
 
+/**
+ * Raised when framework configuration is present but invalid.
+ *
+ * Use this exception for bad class names, unsupported config values, invalid
+ * option shapes, or incompatible configured services. It extends
+ * InvalidArgumentException so callers can distinguish configuration mistakes
+ * from runtime service failures.
+ */
 class ConfigurationException extends \InvalidArgumentException implements ExceptionInterface
 {
 }

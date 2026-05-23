@@ -13,6 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit\Di;
 
+/**
+ * Minimal PhalconKit DI container.
+ *
+ * Use this container in tests, lightweight bootstraps, or applications that do
+ * not need the default MVC/CLI services pre-registered by FactoryDefault. It
+ * keeps native Phalcon DI behavior while exposing PhalconKit typed helpers.
+ */
 class Di extends \Phalcon\Di\Di implements DiInterface
 {
     use TypedServicesTrait;
