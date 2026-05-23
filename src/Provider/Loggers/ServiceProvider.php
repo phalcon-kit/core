@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Loggers;
 
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Logger\Loggers;
 use PhalconKit\Provider\AbstractServiceProvider;
 
@@ -27,8 +26,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
             $options = $config->pathToArray('logger') ?? [];
             $options['loggers'] = $config->pathToArray('loggers') ?? [];

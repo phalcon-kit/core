@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Dispatcher;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Bootstrap;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Cli\Dispatcher as CliDispatcher;
 use PhalconKit\Ws\Dispatcher as WsDispatcher;
 use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
@@ -38,11 +37,9 @@ class ServiceProvider extends AbstractServiceProvider
             
             $eventsManager = $di->get('eventsManager');
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
-            $bootstrap = $di->get('bootstrap');
-            assert($bootstrap instanceof Bootstrap);
+            $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
             
             /**
              * Camelize

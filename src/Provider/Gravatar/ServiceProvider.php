@@ -14,8 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Gravatar;
 
 //use Phalcon\Avatar\Gravatar;
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -28,10 +27,7 @@ class ServiceProvider extends AbstractServiceProvider
         // @todo implement based on https://github.com/phalcon/incubator-avatar/blob/master/src/Gravatar.php
 //        $di->setShared($this->getName(), function (?array $options = null) use ($di) {
 //    
-//            $config = $di->get('config');
-//            assert($config instanceof ConfigInterface);
-//    
-//            $options ??= $config->pathToArray('gravatar', []);
+//            $options ??= $di->getConfig()->pathToArray('gravatar', []);
 //            
 //            return new Gravatar($options);
 //        });

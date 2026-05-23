@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Crypt;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Encryption\Crypt;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -27,8 +27,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function (?string $cipher = null, ?bool $useSigning = null) use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             $options = $config->pathToArray('crypt') ?? [];
             
             $cipher ??= $options['cipher'] ?? 'aes-256-gcm';
@@ -37,13 +36,22 @@ class ServiceProvider extends AbstractServiceProvider
             $key = $options['key'] ?? ($_ENV['APP_CRYPT_KEY'] ?? null);
             $padScheme = $options['padScheme'] ?? Crypt::PADDING_DEFAULT;
             $padFactoryClass = $options['padFactory'] ?? Crypt\PadFactory::class;
+            if (!is_string($padFactoryClass) || !class_exists($padFactoryClass)) {
+                throw new ConfigurationException('Invalid crypt pad factory: expected an existing class name.');
+            }
             
             $authData = $options['authData'] ?? '';
             $authTag = $options['authTag'] ?? '';
             $authTagLength = $options['authTagLength'] ?? 16;
             
             $padFactory = new $padFactoryClass();
-            assert($padFactory instanceof Crypt\PadFactory);
+            if (!$padFactory instanceof Crypt\PadFactory) {
+                throw new ConfigurationException(sprintf(
+                    'Invalid crypt pad factory "%s": expected an instance of "%s".',
+                    $padFactoryClass,
+                    Crypt\PadFactory::class
+                ));
+            }
             
             // -----------------------------------------------------------------
             // Validate key

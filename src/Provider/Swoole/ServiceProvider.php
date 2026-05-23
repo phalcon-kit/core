@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Swoole;
 
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Swoole\WebSocket\Server;
 
@@ -31,8 +30,7 @@ class ServiceProvider extends AbstractServiceProvider
                 throw new \LogicException('Swoole not available');
             }
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
             $swooleConfig = $config->pathToArray('swoole') ?? [];
             

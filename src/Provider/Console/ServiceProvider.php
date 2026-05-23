@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Console;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Cli\Console;
 use PhalconKit\Provider\AbstractServiceProvider;
 

@@ -13,11 +13,10 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\View;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Events\Manager;
 use PhalconKit\Mvc\View;
 use PhalconKit\Mvc\View\Error;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -29,11 +28,9 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function (?array $options = null) use ($di) {
     
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
-            $eventsManager = $di->get('eventsManager');
-            assert($eventsManager instanceof Manager);
+            $eventsManager = $di->getTyped('eventsManager', Manager::class);
             
             $options ??= $config->pathToArray('view', []);
             

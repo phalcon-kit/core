@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Request;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Http\Request;
 use PhalconKit\Provider\AbstractServiceProvider;
 

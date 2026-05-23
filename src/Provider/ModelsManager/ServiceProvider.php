@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\ModelsManager;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Events\ManagerInterface;
 use PhalconKit\Mvc\Model\Manager;
 use PhalconKit\Provider\AbstractServiceProvider;

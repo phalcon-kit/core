@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Flash;
 
 use Phalcon\Flash\Direct;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -28,7 +29,7 @@ class ServiceProvider extends AbstractServiceProvider
     ];
     
     #[\Override]
-    public function register(\Phalcon\Di\DiInterface $di): void
+    public function register(DiInterface $di): void
     {
         $cssStyle = $this->cssStyle;
         $di->setShared($this->getName(), function () use ($di, $cssStyle) {

@@ -157,6 +157,11 @@ tag has been cut yet.
 - Added focused branch coverage for sprintf helpers, logger adapters, slug
   normalization, injectable property fallback, event-manager guards, and query
   field presence helpers.
+- Added `ExceptionInterface`, `ConfigurationException`, and `ServiceException`
+  so framework exceptions can remain catchable while preserving native PHP
+  exception categories.
+- Added typed PhalconKit DI containers with `getTyped()` and `getConfig()`
+  helpers for framework code that needs explicit service contracts.
 
 ### Changed
 
@@ -208,11 +213,21 @@ tag has been cut yet.
 - Standardized path separator handling for cross-platform URL/path behavior.
 - Updated composer archive exclusions so local QA files, generated artifacts,
   tests, stubs, and AI guidance files do not ship in release archives.
+- Reworked bootstrap and service-provider registration to require PhalconKit DI
+  containers, create PhalconKit default containers, and resolve framework
+  services through typed DI helpers instead of native Phalcon provider
+  registration.
+- Updated bundled provider guidance to steer app providers toward PhalconKit DI
+  and typed service helpers.
 
 ### Fixed
 
 - Fixed annotations and debug providers so lean config consumers can omit
   optional adapter and URI keys without PHP warnings.
+- Fixed `Bootstrap::getConfig()` so missing configuration fails with a
+  `ConfigurationException` instead of relying on PHP assertions.
+- Fixed the ClamAV provider extension check to validate the loaded `sockets`
+  extension explicitly instead of relying on an assertion.
 - Fixed metadata and session providers so lean config consumers get safe
   adapter defaults instead of undefined adapter warnings.
 - Fixed session provider adapter validation so custom session adapters fail

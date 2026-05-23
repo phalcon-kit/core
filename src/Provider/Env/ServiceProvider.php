@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Env;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Env;
 

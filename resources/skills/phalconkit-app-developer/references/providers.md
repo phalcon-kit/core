@@ -15,16 +15,18 @@ Native Phalcon references:
 - Config service: https://docs.phalcon.io/5.13/config/
 - Controllers and DI access: https://docs.phalcon.io/5.13/controllers/
 
-PhalconKit providers are app-facing wrappers around native Phalcon DI service
-registration. Use native Phalcon docs for raw DI behavior, shared services,
-service providers, and config-backed service loading.
+PhalconKit providers are app-facing registrations for the PhalconKit DI
+container. Use native Phalcon docs for the underlying service mechanics, but
+write app providers against `PhalconKit\Di\DiInterface` so typed helpers and
+framework service contracts are available.
 
 ## Provider Model
 
-A PhalconKit provider is a pre-configured service registration for the Phalcon
-DI container. The provider reads the framework config, builds the service, and
-registers it under a stable DI service name. After bootstrap, controllers and
-components can use the service without manually constructing it.
+A PhalconKit provider is a pre-configured service registration for the
+PhalconKit DI container. The provider reads the framework config, builds the
+service, and registers it under a stable DI service name. After bootstrap,
+controllers and components can use the service without manually constructing
+it.
 
 The normal lifecycle is:
 
@@ -42,8 +44,7 @@ The normal lifecycle is:
 Most providers extend `PhalconKit\Provider\AbstractServiceProvider`:
 
 ```php
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 final class ServiceProvider extends AbstractServiceProvider
@@ -53,8 +54,7 @@ final class ServiceProvider extends AbstractServiceProvider
     public function register(DiInterface $di): void
     {
         $di->setShared($this->getName(), function () use ($di) {
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
 
             return new BillingClient($config->pathToArray('billing') ?? []);
         });
@@ -82,17 +82,19 @@ public function profileAction(): void
 }
 ```
 
-The universal DI access patterns are:
+The preferred DI access patterns are:
 
 ```php
 $response = $this->response;
-$response = $this->di->get('response');
+$response = $this->di->getTyped('response', \PhalconKit\Http\Response::class);
 $response = $this->getDI()->get('response');
-$response = \Phalcon\Di\Di::getDefault()->get('response');
 ```
 
-Use `$this->di->get('serviceName')` when the service is not documented as an
-injectable property or when working outside a PhalconKit injectable class.
+Use `$this->di->getTyped('serviceName', ServiceClass::class)` when the service
+is not documented as an injectable property or when working outside a
+PhalconKit injectable class. Native Phalcon signatures may still appear where
+PhalconKit extends native interfaces, but application code should prefer the
+PhalconKit DI container and typed helpers.
 
 ## Provider Config And Overrides
 

@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Bootstrap\Fixtures;
 
-use Phalcon\Di\Di;
-use Phalcon\Di\DiInterface;
 use Phalcon\Events\Manager;
 use PhalconKit\Bootstrap;
 use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\Di;
+use PhalconKit\Di\DiInterface;
 
 class LightweightBootstrap extends Bootstrap
 {

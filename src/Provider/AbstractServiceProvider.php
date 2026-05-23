@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider;
 
 use LogicException;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Di\Injectable;
 
 /**

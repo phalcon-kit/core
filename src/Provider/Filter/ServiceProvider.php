@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Filter;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Filter\Filter;
 use PhalconKit\Filter\FilterFactory;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -29,10 +29,11 @@ class ServiceProvider extends AbstractServiceProvider
         $di->set($this->getName(), function () use ($di) {
 
             $locator = (new FilterFactory())->newInstance();
-            assert($locator instanceof Filter);
+            if (!$locator instanceof Filter) {
+                throw new ServiceException('Filter factory did not create a PhalconKit filter locator.');
+            }
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             $filterServices = $config->pathToArray('filters') ?? [];
             foreach ($filterServices as $key => $filter) {
                 $locator->set($key, $filter);

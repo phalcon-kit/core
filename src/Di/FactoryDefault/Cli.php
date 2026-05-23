@@ -11,14 +11,12 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace PhalconKit;
+namespace PhalconKit\Di\FactoryDefault;
 
-use PhalconKit\Exception\ExceptionInterface;
+use PhalconKit\Di\DiInterface;
+use PhalconKit\Di\TypedServicesTrait;
 
-/**
- * PhalconKit\Exception
- * All Phalcon Kit exceptions should use or extend this exception
- */
-class Exception extends \Exception implements ExceptionInterface
+class Cli extends \Phalcon\Di\FactoryDefault\Cli implements DiInterface
 {
+    use TypedServicesTrait;
 }

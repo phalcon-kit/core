@@ -13,17 +13,16 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 
 /**
  * Interface ServiceProviderInterface
  */
-interface ServiceProviderInterface extends \Phalcon\Di\ServiceProviderInterface, \Phalcon\Di\InjectionAwareInterface
+interface ServiceProviderInterface extends \Phalcon\Di\InjectionAwareInterface
 {
     /**
      * Register application service.
      */
-    #[\Override]
     public function register(DiInterface $di): void;
     
     /**

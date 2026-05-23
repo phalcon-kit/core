@@ -14,16 +14,18 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit;
 
 use Phalcon\Application\AbstractApplication;
-use Phalcon\Di\Di;
-use Phalcon\Di\DiInterface;
 use Phalcon\Mvc\RouterInterface as MvcRouterInterface;
 use PhalconKit\Bootstrap;
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Di\Di;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Exception;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Cli\Console;
 use PhalconKit\Mvc\Router as MvcRouter;
 use PhalconKit\Cli\Router as CliRouter;
+use PhalconKit\Support\Debug;
 use PhalconKit\Support\HelperFactory;
 use PhalconKit\Tests\Unit\Bootstrap\Fixtures\BootstrapApplicationDouble;
 use PhalconKit\Tests\Unit\Bootstrap\Fixtures\BootstrapConsoleDouble;
@@ -182,6 +184,16 @@ class BootstrapTest extends AbstractUnit
         $_SERVER = $server;
     }
 
+    public function testGetConfigRejectsUnregisteredConfig(): void
+    {
+        $bootstrap = new LightweightBootstrap(Bootstrap::MODE_MVC, new Di());
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Bootstrap config has not been registered.');
+
+        $bootstrap->getConfig();
+    }
+
     public function testRegisterServicesRejectsNonStringProvider(): void
     {
         $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
@@ -238,7 +250,7 @@ class BootstrapTest extends AbstractUnit
         $di = new Di();
         $config = new Config(['providers' => []]);
         $router = new MvcRouter(false, $config);
-        $debug = new \stdClass();
+        $debug = new Debug();
         $bootstrap = new LightweightBootstrap(Bootstrap::MODE_MVC, $di);
 
         $di->set('config', $config);

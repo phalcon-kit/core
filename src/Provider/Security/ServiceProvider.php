@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Security;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Encryption\Security as PhalconSecurity;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Encryption\Security;
 use PhalconKit\Provider\AbstractServiceProvider;
 
@@ -31,8 +30,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             $securityConfig = $config->pathToArray('security') ?? [];
             
             $security = new Security();

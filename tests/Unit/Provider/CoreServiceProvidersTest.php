@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Provider;
 
-use Phalcon\Di\Di;
 use Phalcon\Encryption\Security as PhalconSecurity;
 use Phalcon\Events\Manager;
 use Phalcon\Logger\Adapter\Noop;
@@ -22,6 +21,7 @@ use Phalcon\Logger\LoggerInterface;
 use Phalcon\Mvc\Router as PhalconRouter;
 use PhalconKit\Bootstrap\Config as BootstrapConfig;
 use PhalconKit\Config\Config;
+use PhalconKit\Di\Di;
 use PhalconKit\Db\Profiler;
 use PhalconKit\Filter\Filter;
 use PhalconKit\Html\Escaper;

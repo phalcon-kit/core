@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Clamav;
 
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Socket\Raw\Factory;
 use Xenolope\Quahog\Client;
@@ -28,9 +28,10 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function (?array $options = null) use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
-            assert(extension_loaded('ext-sockets'));
+            $config = $di->getConfig();
+            if (!extension_loaded('sockets')) {
+                throw new ServiceException('ClamAV service requires the sockets extension.');
+            }
             
             $options ??= $config->pathToArray('clamav') ?? [];
             $address = $options['address'] ?? 'tcp://127.0.0.1:3310';

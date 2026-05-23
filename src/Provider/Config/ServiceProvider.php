@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Config;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Bootstrap;
 use PhalconKit\Bootstrap\Config;
 use PhalconKit\Config\ConfigInterface;
@@ -32,8 +32,7 @@ class ServiceProvider extends AbstractServiceProvider
         // Set shared service in DI
         $di->setShared($this->getName(), function () use ($di) {
     
-            $bootstrap = $di->get('bootstrap');
-            assert($bootstrap instanceof Bootstrap);
+            $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
             
             $bootstrap->config ??= new Config();
             $config = $bootstrap->getConfig();

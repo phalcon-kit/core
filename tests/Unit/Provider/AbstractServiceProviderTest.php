@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Provider;
 
-use Phalcon\Di\Di;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\Di;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Tests\Unit\AbstractUnit;
 

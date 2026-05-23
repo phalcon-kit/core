@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Cookies;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Http\Response\Cookies;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -27,8 +26,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function (?bool $useEncryption = null, ?string $signKey = null) use ($di) {
     
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             $options = $config->pathToArray('cookies', []);
     
             $useEncryption ??= $options['useEncryption'] ?? true;

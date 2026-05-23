@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Router;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Bootstrap;
 use PhalconKit\Bootstrap\Router;
 use PhalconKit\Cli\Router as CliRouter;
@@ -29,8 +29,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $bootstrap = $di->get('bootstrap');
-            assert($bootstrap instanceof Bootstrap);
+            $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
             
             $config = $bootstrap->getConfig();
             

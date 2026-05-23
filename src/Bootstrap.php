@@ -14,20 +14,23 @@ declare(strict_types=1);
 namespace PhalconKit;
 
 use Phalcon\Application\AbstractApplication;
-use Phalcon\Di\Di;
-use Phalcon\Di\DiInterface;
-use Phalcon\Di\FactoryDefault;
-use Phalcon\Di\ServiceProviderInterface;
+use Phalcon\Di\Di as PhalconDi;
 use Phalcon\Events;
 use Phalcon\Http\ResponseInterface;
-use PhalconKit\Support\Helper;
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Cli\Console;
+use PhalconKit\Di\DiInterface;
+use PhalconKit\Di\FactoryDefault;
+use PhalconKit\Di\FactoryDefault\Cli as FactoryDefaultCli;
 use PhalconKit\Events\EventsAwareTrait;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Mvc\Application;
 use PhalconKit\Provider\Config\ServiceProvider as ConfigServiceProvider;
 use PhalconKit\Provider\Router\ServiceProvider as RouterServiceProvider;
+use PhalconKit\Provider\ServiceProviderInterface;
 use PhalconKit\Router\RouterInterface;
+use PhalconKit\Support\Debug;
+use PhalconKit\Support\Helper;
 use PhalconKit\Support\Php;
 use PhalconKit\Ws\WebSocket;
 use Docopt;
@@ -113,12 +116,12 @@ DOC;
     public function setDI(?DiInterface $di = null): void
     {
         $di ??= $this->isCli()
-            ? new FactoryDefault\Cli()
+            ? new FactoryDefaultCli()
             : new FactoryDefault();
         
         $this->di = $di;
         $this->di->setShared('bootstrap', $this);
-        Di::setDefault($this->di);
+        PhalconDi::setDefault($this->di);
     }
     
     public function setMode(?string $mode = null): void
@@ -156,7 +159,10 @@ DOC;
      */
     public function getConfig(): ConfigInterface
     {
-        assert($this->config instanceof ConfigInterface);
+        if (!$this->config instanceof ConfigInterface) {
+            throw new ConfigurationException('Bootstrap config has not been registered.');
+        }
+
         return $this->config;
     }
     
@@ -185,7 +191,7 @@ DOC;
             $configService = new ConfigServiceProvider($this->di);
             $configService->register($this->di);
         }
-        $this->config ??= $this->di->get('config');
+        $this->config ??= $this->di->getConfig();
     }
     
     /**
@@ -210,9 +216,7 @@ DOC;
                 throw new Exception("Service Provider `$provider` must implement ServiceProviderInterface.", 500);
             }
             
-            if ($this->di instanceof Di) {
-                $this->di->register($instance);
-            }
+            $instance->register($this->di);
         }
     }
     
@@ -225,7 +229,7 @@ DOC;
             $configService = new RouterServiceProvider($this->di);
             $configService->register($this->di);
         }
-        $this->router ??= $this->di->get('router');
+        $this->router ??= $this->di->getTyped('router', RouterInterface::class);
     }
     
     /**
@@ -233,22 +237,27 @@ DOC;
      */
     public function bootServices(): void
     {
-        $this->di->get('debug');
+        $this->di->getTyped('debug', Debug::class);
     }
     
     /**
      * Register modules
      * @throws \Exception
      */
-    public function registerModules(?AbstractApplication $application = null, ?array $modules = null, ?string $defaultModule = null): void
-    {
+    public function registerModules(
+        ?AbstractApplication $application = null,
+        ?array $modules = null,
+        ?string $defaultModule = null
+    ): void {
         $application ??= match ($this->getMode()) {
-            self::MODE_CLI => $this->di->get('console'),
-            self::MODE_WS => $this->di->get('webSocket'),
-            self::MODE_MVC => $this->di->get('application'),
-            default => throw new \Exception('Unable to register modules in bootstrap mode: `' . $this->getMode() . '`', 400),
+            self::MODE_CLI => $this->di->getTyped('console', Console::class),
+            self::MODE_WS => $this->di->getTyped('webSocket', WebSocket::class),
+            self::MODE_MVC => $this->di->getTyped('application', Application::class),
+            default => throw new \Exception(
+                'Unable to register modules in bootstrap mode: `' . $this->getMode() . '`',
+                400
+            ),
         };
-        assert($application instanceof AbstractApplication);
         
         $config = $this->getConfig();
         
@@ -268,9 +277,11 @@ DOC;
         $this->fire('beforeRun');
 
         $content = match ($this->getMode()) {
-            self::MODE_MVC => $this->handleApplication($this->di->get('application')),
-            self::MODE_CLI => $this->handleConsole($this->di->get('console')),
-            self::MODE_WS  => $this->handleWebSocket($this->di->get('webSocket')),
+            self::MODE_MVC => $this->handleApplication(
+                $this->di->getTyped('application', Application::class)
+            ),
+            self::MODE_CLI => $this->handleConsole($this->di->getTyped('console', Console::class)),
+            self::MODE_WS  => $this->handleWebSocket($this->di->getTyped('webSocket', WebSocket::class)),
             default => throw new \Exception(
                 'Unable to handle run application in bootstrap mode: `' . $this->getMode() . '`',
                 400

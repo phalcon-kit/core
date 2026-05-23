@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Volt;
 
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Mvc\View\Engine\Volt;
 use Phalcon\Mvc\ViewInterface;
 
@@ -28,11 +27,9 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
-            $view = $di->get('view');
-            assert($view instanceof ViewInterface);
+            $view = $di->getTyped('view', ViewInterface::class);
     
             $voltConfig = $config->pathToArray('volt') ?? [];
             

@@ -14,8 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\OpenAi;
 
 use OpenAI;
-use Phalcon\Di\DiInterface;
-use PhalconKit\Bootstrap\Config;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -29,8 +28,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof Config);
+            $config = $di->getConfig();
             $openAiConfig = $config->pathToArray('openai') ?? [];
 
             $openAiFactory = OpenAI::factory()

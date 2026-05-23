@@ -15,11 +15,11 @@ namespace PhalconKit\Provider\Database;
 
 use Phalcon\Db\Adapter\Pdo\AbstractPdo;
 use Phalcon\Db\Adapter\Pdo\Mysql;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Events\ManagerInterface;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Db\Events\Logger;
 use PhalconKit\Db\Events\Profiler;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -33,8 +33,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $driverName = $this->driverName;
         $di->setShared($this->getName(), function () use ($di, $driverName) {
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
     
             // database config
             $databaseConfig = $config->pathToArray('database') ?? [];
@@ -73,22 +72,37 @@ class ServiceProvider extends AbstractServiceProvider
             // dialect
             if (!empty($driverOptions['dialectClass'])) {
                 $dialectClass = $driverOptions['dialectClass'];
-                assert(class_exists($dialectClass));
+                if (!is_string($dialectClass) || !class_exists($dialectClass)) {
+                    throw new ConfigurationException(sprintf(
+                        'Database dialect class for driver "%s" must be an existing class name.',
+                        $driverName
+                    ));
+                }
                 $driverOptions['dialectClass'] = new $dialectClass();
             }
     
             // adapter
             $adapter = $driverOptions['adapter'] ?? Mysql::class;
-            assert(class_exists($adapter));
+            if (!is_string($adapter) || !class_exists($adapter)) {
+                throw new ConfigurationException(sprintf(
+                    'Database adapter class for driver "%s" must be an existing class name.',
+                    $driverName
+                ));
+            }
             unset($driverOptions['adapter']);
 
             // connection
             $connection = new $adapter($driverOptions);
-            assert($connection instanceof AbstractPdo);
+            if (!$connection instanceof AbstractPdo) {
+                throw new ConfigurationException(sprintf(
+                    'Database adapter class "%s" must create an instance of "%s".',
+                    $adapter,
+                    AbstractPdo::class
+                ));
+            }
             
             // attach events
-            $eventsManager = $di->get('eventsManager');
-            assert($eventsManager instanceof ManagerInterface);
+            $eventsManager = $di->getTyped('eventsManager', ManagerInterface::class);
             
             if (!self::$attachedEvents) {
                 $eventsManager->detach('db', new Logger());

@@ -11,14 +11,8 @@ declare(strict_types=1);
  * file that was distributed with this source code.
  */
 
-namespace PhalconKit;
+namespace PhalconKit\Exception;
 
-use PhalconKit\Exception\ExceptionInterface;
-
-/**
- * PhalconKit\Exception
- * All Phalcon Kit exceptions should use or extend this exception
- */
-class Exception extends \Exception implements ExceptionInterface
+class ServiceException extends \RuntimeException implements ExceptionInterface
 {
 }

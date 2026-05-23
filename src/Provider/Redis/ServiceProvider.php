@@ -13,8 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Redis;
 
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Redis;
 
@@ -27,8 +26,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
 
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
 
             $redisConfig = $config->pathToArray('redis') ?? [];
             $redisOptions = $redisConfig['options'] ?? [];

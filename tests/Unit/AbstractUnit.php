@@ -15,11 +15,11 @@ namespace PhalconKit\Tests\Unit;
 
 use Phalcon\Autoload\Loader;
 use Phalcon\Db\Adapter\Pdo\Mysql;
-use Phalcon\Di\DiInterface;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\TestCase;
 use PhalconKit\Bootstrap;
 use PhalconKit\Bootstrap\Config;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Exception;
 use PhalconKit\Support\Env;
 

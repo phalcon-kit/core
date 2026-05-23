@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\LoremIpsum;
 
 use PhalconKit\Provider\AbstractServiceProvider;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use joshtronic\LoremIpsum;
 
 class ServiceProvider extends AbstractServiceProvider

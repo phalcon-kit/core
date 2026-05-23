@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Response;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Http\Response;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -27,8 +26,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
     
             $response = new Response();
             $response->setDI($di);

@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\ModelsMetadata;
 
 use Phalcon\Cache\AdapterFactory;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Mvc\Model\MetaData\Memory;
 use Phalcon\Mvc\Model\MetaData\Stream;
 use Phalcon\Storage\SerializerFactory;
 use PhalconKit\Bootstrap;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Php;
 
@@ -32,11 +31,9 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $bootstrap = $di->get('bootstrap');
-            assert($bootstrap instanceof Bootstrap);
+            $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
             $metadataConfig = $config->pathToArray('metadata') ?? [];
             

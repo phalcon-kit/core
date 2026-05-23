@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Logger;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Logger\Loggers;
 use PhalconKit\Provider\AbstractServiceProvider;
 
@@ -26,8 +26,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $loggers = $di->get('loggers');
-            assert($loggers instanceof Loggers);
+            $loggers = $di->getTyped('loggers', Loggers::class);
             
             return $loggers->get('default');
         });

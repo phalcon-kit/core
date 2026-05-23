@@ -14,14 +14,13 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Session;
 
 use InvalidArgumentException;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Session\Manager;
 use Phalcon\Session\Adapter\Redis;
 use Phalcon\Session\Adapter\Noop;
 use Phalcon\Session\Adapter\Stream;
 use Phalcon\Storage\AdapterFactory;
 use Phalcon\Storage\SerializerFactory;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -33,8 +32,7 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
             $sessionConfig = $config->pathToArray('session') ?? [];
             

@@ -14,9 +14,8 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Oauth2Facebook;
 
 use League\OAuth2\Client\Provider\Facebook;
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Session\Manager;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Http\Request;
 use PhalconKit\Provider\AbstractServiceProvider;
 
@@ -33,14 +32,11 @@ class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
     
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
     
-            $session = $di->get('session');
-            assert($session instanceof Manager);
+            $session = $di->getTyped('session', Manager::class);
     
-            $request = $di->get('request');
-            assert($request instanceof Request);
+            $request = $di->getTyped('request', Request::class);
             
             $oauthConfig = $config->pathToArray('oauth2') ?? [];
             $oauthFacebookConfig = $oauthConfig['facebook'] ?? [];

@@ -14,8 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Aws;
 
 use Aws\Sdk;
-use Phalcon\Di\DiInterface;
-use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class ServiceProvider extends AbstractServiceProvider
@@ -28,8 +27,7 @@ class ServiceProvider extends AbstractServiceProvider
         $di->setShared($this->getName(), function () use ($di) {
     
             // config
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
     
             // options
             $options = $config->pathToArray('aws') ?? [];

@@ -13,10 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Debug;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Support\Version;
 use PhalconKit\Bootstrap;
-use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Debug;
 use PhalconKit\Support\Php;
@@ -32,11 +31,9 @@ class ServiceProvider extends AbstractServiceProvider
         
         $di->setShared($this->getName(), function () use ($di, $causeCyclicError) {
             
-            $bootstrap = $di->get('bootstrap');
-            assert($bootstrap instanceof Bootstrap);
+            $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
             
-            $config = $di->get('config');
-            assert($config instanceof ConfigInterface);
+            $config = $di->getConfig();
             
             $isEnabled = $config->path('app.debug') || $config->path('debug.enable');
             

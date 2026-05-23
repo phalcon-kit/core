@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Bootstrap\Fixtures;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 class BootstrapProviderDouble extends AbstractServiceProvider

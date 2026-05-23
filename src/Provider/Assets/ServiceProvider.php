@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Assets;
 
-use Phalcon\Di\DiInterface;
+use PhalconKit\Di\DiInterface;
 use Phalcon\Html\Escaper\EscaperInterface;
 use PhalconKit\Html\TagFactory;
 use PhalconKit\Assets\Manager;
@@ -26,12 +26,10 @@ class ServiceProvider extends AbstractServiceProvider
     #[\Override]
     public function register(DiInterface $di): void
     {
-        $escaper = $di->get('escaper');
-        assert($escaper instanceof EscaperInterface);
+        $escaper = $di->getTyped('escaper', EscaperInterface::class);
         
         // @todo set tag factory as tag service and use service instead
 //        $tag = $di->get('tag');
-//        assert($tag instanceof TagFactory);
         $tag = new TagFactory($escaper);
         
         $di->setShared($this->getName(), function () use ($tag) {
