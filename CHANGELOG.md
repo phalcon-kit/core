@@ -211,6 +211,10 @@ tag has been cut yet.
 
 - Fixed annotations and debug providers so lean config consumers can omit
   optional adapter and URI keys without PHP warnings.
+- Fixed metadata and session providers so lean config consumers get safe
+  adapter defaults instead of undefined adapter warnings.
+- Fixed the Facebook OAuth2 provider so `redirectUri` is optional when building
+  the absolute callback URI from the current request.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
   reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation

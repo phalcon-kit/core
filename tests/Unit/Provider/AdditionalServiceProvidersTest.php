@@ -30,6 +30,7 @@ use Phalcon\Mvc\Model\MetaData\Memory as MetadataMemory;
 use Phalcon\Mvc\Model\MetaData\Stream as MetadataStream;
 use Phalcon\Session\Adapter\Noop as SessionNoop;
 use Phalcon\Session\Adapter\Redis as SessionRedis;
+use Phalcon\Session\Adapter\Stream as SessionStream;
 use Phalcon\Session\Manager as SessionManager;
 use PhalconKit\Acl\Acl;
 use PhalconKit\Assets\Manager as AssetsManager;
@@ -632,6 +633,25 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertInstanceOf(MetadataMemory::class, $di->get('modelsMetadata'));
     }
 
+    public function testModelsMetadataProviderDefaultsToMemoryAdapterWithoutWarnings(): void
+    {
+        $di = $this->createBareDi([
+            'metadata' => [
+                'driverCli' => 'memory',
+                'driver' => 'memory',
+                'drivers' => [
+                    'memory' => [],
+                ],
+            ],
+        ]);
+        $di->set('bootstrap', $this->bootstrap);
+        (new ModelsMetadataProvider($di))->register($di);
+
+        $this->withoutPhpWarnings(function () use ($di): void {
+            $this->assertInstanceOf(MetadataMemory::class, $di->get('modelsMetadata'));
+        });
+    }
+
     public function testModelsMetadataProviderCanUseConfiguredStreamAdapter(): void
     {
         $di = $this->createDi([
@@ -775,6 +795,50 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertInstanceOf(Facebook::class, $provider);
         $this->assertStringContainsString('client_id=facebook-client', $authorizationUrl);
         $this->assertStringContainsString('redirect_uri=http%3A%2F%2Fexample.test%3A8080%2Ffacebook%2Fcallback', $authorizationUrl);
+    }
+
+    public function testOauth2FacebookProviderAllowsMissingRedirectUriWithoutWarnings(): void
+    {
+        $di = $this->createBareDi([
+            'oauth2' => [
+                'facebook' => [
+                    'clientId' => 'facebook-client',
+                    'clientSecret' => 'facebook-secret',
+                    'graphApiVersion' => 'v18.0',
+                ],
+            ],
+        ]);
+        $di->set('session', new SessionManager());
+        $di->set('request', new class extends Request {
+            public function isSecure(): bool
+            {
+                return true;
+            }
+
+            public function getScheme(): string
+            {
+                return 'https';
+            }
+
+            public function getHttpHost(): string
+            {
+                return 'secure.example.test';
+            }
+
+            public function getPort(): int
+            {
+                return 443;
+            }
+        });
+        (new Oauth2FacebookProvider($di))->register($di);
+
+        $this->withoutPhpWarnings(function () use ($di): void {
+            $provider = $di->get('oauth2Facebook');
+            $authorizationUrl = $provider->getAuthorizationUrl();
+
+            $this->assertInstanceOf(Facebook::class, $provider);
+            $this->assertStringContainsString('redirect_uri=https%3A%2F%2Fsecure.example.test', $authorizationUrl);
+        });
     }
 
     public function testOpenAiProviderRegistersClientWithoutNetworkCall(): void
@@ -997,6 +1061,27 @@ class AdditionalServiceProvidersTest extends AbstractUnit
                 $session->destroy();
             }
             ini_set('session.name', $originalSessionName);
+        }
+    }
+
+    public function testSessionProviderDefaultsToStreamSessionWithoutWarnings(): void
+    {
+        $di = $this->createBareDi();
+        (new SessionProvider($di))->register($di);
+
+        $session = null;
+        try {
+            $this->withoutPhpWarnings(function () use ($di, &$session): void {
+                $session = $di->get('session');
+
+                $this->assertInstanceOf(SessionManager::class, $session);
+                $this->assertInstanceOf(SessionStream::class, $session->getAdapter());
+            });
+        }
+        finally {
+            if ($session instanceof SessionManager && $session->exists()) {
+                $session->destroy();
+            }
         }
     }
 

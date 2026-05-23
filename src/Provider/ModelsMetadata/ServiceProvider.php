@@ -46,9 +46,11 @@ class ServiceProvider extends AbstractServiceProvider
             $default = $metadataConfig['default'] ?? [];
             $options = array_merge($default, $driver);
             
-            assert(is_string($driver['adapter']));
-            
             $adapter = $driver['adapter'] ?? Memory::class;
+            if (!is_string($adapter) || $adapter === '') {
+                $adapter = Memory::class;
+            }
+
             if (in_array($adapter, [Memory::class, Stream::class])) {
                 return new $adapter($options);
             }

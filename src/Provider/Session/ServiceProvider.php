@@ -35,9 +35,9 @@ class ServiceProvider extends AbstractServiceProvider
             $config = $di->get('config');
             assert($config instanceof ConfigInterface);
             
-            $sessionConfig = $config->pathToArray('session');
+            $sessionConfig = $config->pathToArray('session') ?? [];
             
-            $driverName = $sessionConfig['driver'] ?? '';
+            $driverName = $sessionConfig['driver'] ?? 'stream';
             
             $defaultOptions = $sessionConfig['default'] ?? [];
             $driverOptions = $sessionConfig['drivers'][$driverName] ?? [];
@@ -58,7 +58,15 @@ class ServiceProvider extends AbstractServiceProvider
             }
             
             // Set the storage adapter
-            $adapter = $options['adapter'];
+            $adapter = $options['adapter'] ?? Stream::class;
+            if (!is_string($adapter) || $adapter === '') {
+                $adapter = Stream::class;
+            }
+
+            if (is_a($adapter, Stream::class, true)) {
+                $options['savePath'] ??= sys_get_temp_dir();
+            }
+
             if (in_array($adapter, [Noop::class, Stream::class])) {
                 $adapterInstance = new $adapter($options);
                 assert($adapterInstance instanceof \SessionHandlerInterface);
@@ -73,6 +81,8 @@ class ServiceProvider extends AbstractServiceProvider
                 
                 // ini_set save_handler and save_path for redis
                 if (is_a($adapter, Redis::class, true)) {
+                    $options['host'] ??= '127.0.0.1';
+                    $options['port'] ??= 6379;
                     ini_set('session.save_handler', 'redis');
                     ini_set('session.save_path', $options['host'] . ':' . $options['port'] . '?' . http_build_query($options));
                 }
