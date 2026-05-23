@@ -18,6 +18,7 @@ use Phalcon\Db\Column;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Support\Collection;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Restful;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\QueryModelDouble;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -164,7 +165,7 @@ class QueryStateTest extends AbstractUnit
         $controller->setLimit(-1);
         $this->assertNull($controller->getLimit());
 
-        $this->expectException(\Exception::class);
+        $this->expectException(HttpException::class);
         $this->expectExceptionMessage('must be higher or equal to -1');
 
         $controller->setLimit(-2);
@@ -175,7 +176,7 @@ class QueryStateTest extends AbstractUnit
         $controller = $this->newQueryController();
         $controller->setMaxLimit(5);
 
-        $this->expectException(\Exception::class);
+        $this->expectException(HttpException::class);
         $this->expectExceptionMessage('must be lower than the maximum limit');
 
         $controller->setLimit(6);
@@ -192,7 +193,7 @@ class QueryStateTest extends AbstractUnit
         $this->assertSame(7, $controller->getOffset());
         $this->assertSame(0, $controller->defaultOffset());
 
-        $this->expectException(\Exception::class);
+        $this->expectException(HttpException::class);
         $this->expectExceptionMessage('must be higher than or equal to 0');
 
         $controller->setOffset(-1);
@@ -237,7 +238,7 @@ class QueryStateTest extends AbstractUnit
             $controller->initializeOrder();
             $this->fail('Expected invalid root order type to throw.');
         }
-        catch (\Exception $exception) {
+        catch (HttpException $exception) {
             $this->assertStringContainsString('Invalid type for "order" parameter', $exception->getMessage());
         }
 
@@ -251,7 +252,7 @@ class QueryStateTest extends AbstractUnit
             $controller->initializeOrder();
             $this->fail('Expected invalid order element to throw.');
         }
-        catch (\Exception $exception) {
+        catch (HttpException $exception) {
             $this->assertStringContainsString('expected [field, direction] with at most 2 elements', $exception->getMessage());
         }
     }
@@ -306,7 +307,7 @@ class QueryStateTest extends AbstractUnit
             $controller->initializeOrder();
             $this->fail('Expected invalid order element type to throw.');
         }
-        catch (\Exception $exception) {
+        catch (HttpException $exception) {
             $this->assertStringContainsString('Invalid order element at index 0', $exception->getMessage());
         }
     }
@@ -2029,7 +2030,7 @@ class QueryStateTest extends AbstractUnit
                 ],
             ],
         ]);
-        $this->expectException(\Exception::class);
+        $this->expectException(HttpException::class);
         $this->expectExceptionMessage('Dynamic join alias not defined for `Author`');
         $controller->setDynamicJoins(new Collection([
             'Author.Profile' => ['ProfileModel', '1 = 1'],

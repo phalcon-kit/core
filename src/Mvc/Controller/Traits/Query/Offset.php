@@ -13,8 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Filter;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractOffset;
 
@@ -37,8 +38,8 @@ trait Offset
      * offset parameter is provided.
      *
      * @return void
-     * @throws Exception
-     * @throws \Exception
+     * @throws FilterException When Phalcon rejects the configured offset filter.
+     * @throws HttpException When the resulting offset violates controller policy.
      */
     public function initializeOffset(): void
     {
@@ -50,12 +51,12 @@ trait Offset
      *
      * @param int|null $offset The offset value to set for the query. Specify an integer representing the offset value or null if no offset is required.
      * @return void
-     * @throws \Exception If the specified offset value is less than 0.
+     * @throws HttpException If the specified offset value is less than 0.
      */
     public function setOffset(?int $offset): void
     {
         if ($offset < 0) {
-            throw new \Exception("Query offset ({$offset}) must be higher than or equal to 0", 400);
+            throw new HttpException("Query offset ({$offset}) must be higher than or equal to 0", 400);
         }
         
         $this->offset = $offset;

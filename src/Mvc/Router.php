@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc;
 
 use Phalcon\Di\Di;
 use PhalconKit\Config\ConfigInterface;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Mvc\Router\ModuleRoute;
 use PhalconKit\Router\RouterInterface;
 
@@ -83,7 +84,7 @@ class Router extends \Phalcon\Mvc\Router implements RouterInterface
         
         foreach ($hostnames as $hostname => $hostnameRoute) {
             if (!isset($hostnameRoute['module']) || !is_string($hostnameRoute['module'])) {
-                throw new \InvalidArgumentException('Router hostname config parameter "module" must be a string under "' . $hostname . '"');
+                throw new ConfigurationException('Router hostname config parameter "module" must be a string under "' . $hostname . '"');
             }
             $localeConfig = $this->getConfig()->pathToArray('locale') ?? [];
             $this->mount((new ModuleRoute(array_merge($defaults, (array)$hostnameRoute), $localeConfig['allowed'] ?? [], $hostname))->setHostname($hostname));
@@ -99,7 +100,7 @@ class Router extends \Phalcon\Mvc\Router implements RouterInterface
         $defaults ??= $this->getDefaults();
         foreach ($application->getModules() as $key => $module) {
             if (!isset($module['className'])) {
-                throw new \InvalidArgumentException('Module parameter "className" must be a string under "' . $key . '"');
+                throw new ConfigurationException('Module parameter "className" must be a string under "' . $key . '"');
             }
             $localeConfig = $this->getConfig()->pathToArray('locale') ?? [];
             $namespace = rtrim($module['className'], 'Module') . 'Controllers';

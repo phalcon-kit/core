@@ -15,6 +15,7 @@ namespace PhalconKit\Tests\Unit\Provider;
 
 use PhalconKit\Di\Di;
 use PhalconKit\Di\DiInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -22,7 +23,7 @@ class AbstractServiceProviderTest extends AbstractUnit
 {
     public function testConstructorRequiresServiceName(): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('cannot have an empty name');
 
         new class (new Di()) extends AbstractServiceProvider {

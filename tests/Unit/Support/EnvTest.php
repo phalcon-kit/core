@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Support;
 
 use Dotenv\Dotenv;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Support\Env;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -200,7 +201,7 @@ class EnvTest extends AbstractUnit
         Env::$type = 'unsupported';
 
         try {
-            $this->expectException(\Exception::class);
+            $this->expectException(ConfigurationException::class);
             $this->expectExceptionMessage('Unsupported Env::$type defined');
             Env::getType();
         } finally {

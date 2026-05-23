@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits;
 
-use Exception;
 use League\Csv\Bom;
 use League\Csv\CannotInsertRecord;
 use League\Csv\CharsetConverter;
 use League\Csv\InvalidArgument;
 use League\Csv\Writer;
 use Phalcon\Http\ResponseInterface;
+use PhalconKit\Exception\HttpException;
 use Shuchkin\SimpleXLSXGen;
 use Spatie\ArrayToXml\ArrayToXml;
 use PhalconKit\Support\Helper;
@@ -40,7 +40,7 @@ trait Export
      *
      * @param array|null $params Optional. The parameters to determine the content type. If not provided, it will use the default parameters.
      * @return string The content type. Possible values: "json", "csv", "xlsx".
-     * @throws Exception When an unsupported content type is provided.
+     * @throws HttpException When an unsupported content type is provided.
      */
     public function getContentType(?array $params = null): string
     {
@@ -68,7 +68,7 @@ trait Export
                 return 'xlsx';
         }
         
-        throw new Exception('`' . $contentType . '` is not supported.', 400);
+        throw new HttpException('`' . $contentType . '` is not supported.', 400);
     }
     
     /**
@@ -117,7 +117,7 @@ trait Export
      *
      * @return ResponseInterface Returns true if the export was successful, otherwise false.
      *
-     * @throws Exception Thrown if the specified content type is not supported.
+     * @throws HttpException Thrown if the specified content type is not supported.
      */
     public function export(array $list = [], ?string $filename = null, ?string $contentType = null, ?array $params = null): ResponseInterface
     {
@@ -130,7 +130,7 @@ trait Export
             'xml' => $this->exportXml($list, $filename),
             'csv' => $this->exportCsv($list, $filename, $params),
             'xlsx' => $this->exportExcel($list, $filename),
-            default => throw new Exception('Failed to export `' . $this->getModelName() . '` using unsupported content-type `' . $contentType . '`', 400)
+            default => throw new HttpException('Failed to export `' . $this->getModelName() . '` using unsupported content-type `' . $contentType . '`', 400)
         };
     }
     

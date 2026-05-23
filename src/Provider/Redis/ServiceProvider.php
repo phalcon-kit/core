@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Redis;
 
 use PhalconKit\Di\DiInterface;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Redis;
 
@@ -21,6 +22,20 @@ class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'redis';
 
+    /**
+     * Register the shared Redis client service.
+     *
+     * The provider reads the `redis` configuration path, applies conservative
+     * connection defaults, and returns a native `Redis` instance from the DI
+     * container. Native Redis extension failures are wrapped in
+     * `ServiceException` so callers can catch a stable PhalconKit service
+     * boundary instead of depending on extension-specific exception behavior.
+     *
+     * @param DiInterface $di The PhalconKit container that supplies the config
+     *     service and receives the shared Redis service definition.
+     *
+     * @return void
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
@@ -41,24 +56,49 @@ class ServiceProvider extends AbstractServiceProvider
 
             $redis = new Redis($redisOptions);
 
-            if (!$redis->connect(
-                $redisConfig['host'],
-                $redisConfig['port'],
-                $redisConfig['timeout'],
-                $redisConfig['persistentId'],
-                $redisConfig['retryInterval'],
-                $redisConfig['readTimeout'],
-                $redisConfig['context']
-            )) {
-                throw new \RedisException('Redis connection failed.');
+            try {
+                $connected = $redis->connect(
+                    $redisConfig['host'],
+                    $redisConfig['port'],
+                    $redisConfig['timeout'],
+                    $redisConfig['persistentId'],
+                    $redisConfig['retryInterval'],
+                    $redisConfig['readTimeout'],
+                    $redisConfig['context']
+                );
+            }
+            catch (\RedisException $e) {
+                throw new ServiceException('Redis connection failed.', previous: $e);
             }
 
-            if (!empty($redisConfig['auth']) && !$redis->auth($redisConfig['auth'])) {
-                throw new \RedisException('Redis authentication failed.');
+            if (!$connected) {
+                throw new ServiceException('Redis connection failed.');
             }
 
-            if (isset($redisConfig['database']) && !$redis->select((int)$redisConfig['database'])) {
-                throw new \RedisException('Redis database selection failed.');
+            if (!empty($redisConfig['auth'])) {
+                try {
+                    $authenticated = $redis->auth($redisConfig['auth']);
+                }
+                catch (\RedisException $e) {
+                    throw new ServiceException('Redis authentication failed.', previous: $e);
+                }
+
+                if (!$authenticated) {
+                    throw new ServiceException('Redis authentication failed.');
+                }
+            }
+
+            if (isset($redisConfig['database'])) {
+                try {
+                    $selected = $redis->select((int)$redisConfig['database']);
+                }
+                catch (\RedisException $e) {
+                    throw new ServiceException('Redis database selection failed.', previous: $e);
+                }
+
+                if (!$selected) {
+                    throw new ServiceException('Redis database selection failed.');
+                }
             }
 
             return $redis;

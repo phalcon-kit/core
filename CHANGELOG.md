@@ -157,9 +157,10 @@ tag has been cut yet.
 - Added focused branch coverage for sprintf helpers, logger adapters, slug
   normalization, injectable property fallback, event-manager guards, and query
   field presence helpers.
-- Added `ExceptionInterface`, `ConfigurationException`, and `ServiceException`
-  so framework exceptions can remain catchable while preserving native PHP
-  exception categories.
+- Added `ExceptionInterface`, `ConfigurationException`, `ServiceException`,
+  `HttpException`, `InvalidArgumentException`, `LogicException`, and
+  `RuntimeException` so framework exceptions can remain catchable while
+  preserving native PHP exception categories.
 - Added typed PhalconKit DI containers with `getTyped()` and `getConfig()`
   helpers for framework code that needs explicit service contracts.
 - Added a shared `ServiceResolver`, including a reusable PhalconKit container
@@ -232,6 +233,9 @@ tag has been cut yet.
 - Expanded framework-facing PHPDoc for the JWT helper and logger registry APIs.
 - Expanded PHPDoc for PhalconKit DI containers, typed DI helpers, and framework
   exception contracts.
+- Normalized framework-thrown configuration, service, HTTP, logic, argument,
+  and runtime failures to PhalconKit-scoped exceptions while preserving native
+  PHP exception categories for compatibility.
 
 ### Fixed
 

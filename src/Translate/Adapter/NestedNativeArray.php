@@ -15,8 +15,8 @@ namespace PhalconKit\Translate\Adapter;
 
 use JetBrains\PhpStorm\Deprecated;
 use Phalcon\Translate\Adapter\AbstractAdapter;
-use Phalcon\Translate\Exception;
 use Phalcon\Translate\InterpolatorFactory;
+use PhalconKit\Exception\RuntimeException;
 
 /**
  * NestedNativeArray class is an implementation of the Translate Adapter interface that uses
@@ -142,12 +142,13 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
      * 
      * @param string $index The translation key
      * @return string Returns the index
-     * @throws Exception Throws exception if triggerError is enabled and translation key is not found
+     * @throws RuntimeException Throws exception if triggerError is enabled and
+     *     translation key is not found.
      */
     public function notFound(string $index): string
     {
         if ($this->triggerError) {
-            throw new Exception('Cannot find translation key: ' . $index);
+            throw new RuntimeException('Cannot find translation key: ' . $index);
         }
     
         return $index;
@@ -159,7 +160,8 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
      * @param string $translateKey The translate key to query for a translated string.
      * @param array $placeholders An optional array of placeholders to replace in the translated string.
      * @return string The translated string or the not found string if the translate key is not found.
-     * @throws Exception Throws exception if triggerError is enabled and translation key is not found
+     * @throws RuntimeException Throws exception if triggerError is enabled and
+     *     translation key is not found.
      */
     #[\Override]
     public function query(string $translateKey, array $placeholders = []): string

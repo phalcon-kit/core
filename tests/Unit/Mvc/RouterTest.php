@@ -15,6 +15,7 @@ namespace PhalconKit\Tests\Unit\Mvc;
 
 use PhalconKit\Bootstrap\Config;
 use PhalconKit\Bootstrap\Router as BootstrapRouter;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Mvc\Router;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use Phalcon\Mvc\Router\RouteInterface;
@@ -212,7 +213,7 @@ class RouterTest extends AbstractUnit
     {
         $router = new Router(false, new Config());
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Router hostname config parameter "module" must be a string under "bad.example.test"');
 
         $router->hostnamesRoutes([
@@ -259,7 +260,7 @@ class RouterTest extends AbstractUnit
             'api' => [],
         ]);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Module parameter "className" must be a string under "api"');
 
         $router->modulesRoutes($application);

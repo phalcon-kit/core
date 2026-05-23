@@ -15,7 +15,7 @@ namespace PhalconKit\Config;
 
 use Phalcon\Config\ConfigInterface as PhalconConfigInterface;
 use DateTimeImmutable;
-use Exception;
+use PhalconKit\Exception\InvalidArgumentException;
 
 class Config extends \Phalcon\Config\Config implements ConfigInterface
 {
@@ -52,7 +52,8 @@ class Config extends \Phalcon\Config\Config implements ConfigInterface
      *                       Defaults to false, meaning values will be replaced during the merge.
      * @return PhalconConfigInterface Returns the updated configuration object after the merge operation.
      *                                The current instance is modified and returned.
-     * @throws \Exception If the $toMerge parameter is not of a valid data type.
+     * @throws InvalidArgumentException If the $toMerge parameter is not of a
+     *     valid data type.
      */
     #[\Override]
     public function merge(mixed $toMerge, bool $append = false): PhalconConfigInterface
@@ -66,7 +67,7 @@ class Config extends \Phalcon\Config\Config implements ConfigInterface
         $toMerge = $toMerge instanceof PhalconConfigInterface ? $toMerge->toArray() : $toMerge;
         
         if (!is_array($toMerge)) {
-            throw new \Exception('Invalid data type for merge.');
+            throw new InvalidArgumentException('Invalid data type for merge.');
         }
         
         $result = $this->internalMergeAppend($source, $toMerge);
@@ -108,7 +109,7 @@ class Config extends \Phalcon\Config\Config implements ConfigInterface
      * @param DateTimeImmutable|null $dateTime Optional. The DateTime to modify. Defaults to current DateTime if not provided.
      *
      * @return DateTimeImmutable The modified DateTime object.
-     * @throws Exception If the modification of the DateTime fails.
+     * @throws \DateMalformedStringException If the modifier cannot be parsed.
      */
     public function getDateTime(string $modifier, ?DateTimeImmutable $dateTime = null): DateTimeImmutable
     {

@@ -17,6 +17,7 @@ use Phalcon\Mvc\Model\Resultset\Simple;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\Model\Row;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractInstance;
 use PhalconKit\Support\Helper;
 
@@ -29,7 +30,7 @@ trait Events
     private static function ensureTraversableResultset(ResultsetInterface $resultset): ResultsetInterface&\Traversable
     {
         if (!$resultset instanceof \Traversable) {
-            throw new \LogicException('Phalcon model find() returned a non-traversable resultset.');
+            throw new LogicException('Phalcon model find() returned a non-traversable resultset.');
         }
 
         return $resultset;

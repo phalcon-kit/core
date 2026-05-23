@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query\Conditions;
 
+use PhalconKit\Exception\LogicException;
+
 trait ExistentialConditions
 {
     /* ==========================================================
@@ -124,7 +126,7 @@ trait ExistentialConditions
         // Merge predicate-local binds into bucket
         if ($bind !== []) {
             if (array_intersect_key($pending[$bucketKey]['bind'], $bind) !== []) {
-                throw new \LogicException(
+                throw new LogicException(
                     'Bind collision detected inside existential bucket.'
                 );
             }
@@ -133,7 +135,7 @@ trait ExistentialConditions
 
         if ($bindTypes !== []) {
             if (array_intersect_key($pending[$bucketKey]['bindTypes'], $bindTypes) !== []) {
-                throw new \LogicException(
+                throw new LogicException(
                     'BindType collision detected inside existential bucket.'
                 );
             }
@@ -178,7 +180,7 @@ trait ExistentialConditions
             }
 
             if (($bucket['logic'] ?? 'and') !== 'and') {
-                throw new \LogicException(
+                throw new LogicException(
                     'Existential bucket invariant violated: non-AND bucket encountered.'
                 );
             }
@@ -199,7 +201,7 @@ trait ExistentialConditions
             // Merge bucket binds
             if (!empty($bucket['bind'])) {
                 if (array_intersect_key($bind, $bucket['bind']) !== []) {
-                    throw new \LogicException(
+                    throw new LogicException(
                         'Bind collision detected while flushing existential bucket.'
                     );
                 }
@@ -208,7 +210,7 @@ trait ExistentialConditions
 
             if (!empty($bucket['bindTypes'])) {
                 if (array_intersect_key($bindTypes, $bucket['bindTypes']) !== []) {
-                    throw new \LogicException(
+                    throw new LogicException(
                         'BindType collision detected while flushing existential bucket.'
                     );
                 }
@@ -218,7 +220,7 @@ trait ExistentialConditions
             // Merge EXISTS join binds
             if (!empty($exists['bind'])) {
                 if (array_intersect_key($bind, $exists['bind']) !== []) {
-                    throw new \LogicException(
+                    throw new LogicException(
                         'Bind collision detected while merging EXISTS join binds.'
                     );
                 }
@@ -227,7 +229,7 @@ trait ExistentialConditions
 
             if (!empty($exists['bindTypes'])) {
                 if (array_intersect_key($bindTypes, $exists['bindTypes']) !== []) {
-                    throw new \LogicException(
+                    throw new LogicException(
                         'BindType collision detected while merging EXISTS join bindTypes.'
                     );
                 }

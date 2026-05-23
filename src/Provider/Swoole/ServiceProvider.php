@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Swoole;
 
 use PhalconKit\Di\DiInterface;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Swoole\WebSocket\Server;
 
@@ -27,7 +28,7 @@ class ServiceProvider extends AbstractServiceProvider
         $di->setShared($this->getName(), function () use ($di) {
             
             if (!defined('SWOOLE_LOG_WARNING') || !extension_loaded('swoole')) {
-                throw new \LogicException('Swoole not available');
+                throw new ServiceException('Swoole not available');
             }
             
             $config = $di->getConfig();

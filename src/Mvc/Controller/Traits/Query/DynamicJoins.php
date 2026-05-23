@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Support\Collection;
+use PhalconKit\Exception\HttpException;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractJoins;
 use PhalconKit\Support\CollectionPolicy;
@@ -99,7 +101,23 @@ trait DynamicJoins
     }
 
     /**
-     * @throws Exception
+     * Extract dynamic join definitions required by the current filter tree.
+     *
+     * Relationship filters can ask the controller to materialize joins lazily.
+     * This method walks nested filters, validates that every requested dynamic
+     * alias is configured, builds generated SQL aliases, and returns the join
+     * definitions that should be merged into the current find query.
+     *
+     * @param array|null $filters Optional filter tree. When null, the request
+     *     `filters` parameter is read from the controller.
+     *
+     * @return array Dynamic join definitions keyed by generated join alias.
+     *
+     * @throws FilterException When request parameter filtering fails.
+     * @throws HttpException When a filter references an undefined dynamic join
+     *     alias.
+     * @throws LogicException When a configured dynamic join definition is
+     *     malformed.
      */
     public function getDynamicJoinsFromFilters(?array $filters = null): array
     {
@@ -170,7 +188,7 @@ trait DynamicJoins
                     
                     // the join alias must be defined
                     if (!$dynamicJoins->has($alias)) {
-                        throw new \Exception('Dynamic join alias not defined for `' . $alias . '`');
+                        throw new HttpException('Dynamic join alias not defined for `' . $alias . '`', 400);
                     }
                     
                     // prepare the dynamic joins alias mapping
@@ -202,7 +220,7 @@ trait DynamicJoins
                         }
 
                         if (!is_string($joinCondition)) {
-                            throw new \LogicException(sprintf('Invalid dynamic join condition for `%s`.', $alias));
+                            throw new LogicException(sprintf('Invalid dynamic join condition for `%s`.', $alias));
                         }
 
                         $joinType = $dynamicJoinDefinition[3] ?? 'left';
@@ -255,7 +273,7 @@ trait DynamicJoins
     protected function normalizeDynamicJoinDefinition(string $alias, mixed $definition): array
     {
         if (!is_array($definition)) {
-            throw new \LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
+            throw new LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
         }
 
         if (!isset($definition[0], $definition[1]) && count($definition) === 1) {
@@ -270,7 +288,7 @@ trait DynamicJoins
         }
 
         if (!isset($definition[0], $definition[1])) {
-            throw new \LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
+            throw new LogicException(sprintf('Invalid dynamic join definition for `%s`.', $alias));
         }
 
         return $definition;

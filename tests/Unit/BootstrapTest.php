@@ -21,7 +21,6 @@ use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Bootstrap\Config;
 use PhalconKit\Di\Di;
 use PhalconKit\Di\DiInterface;
-use PhalconKit\Exception;
 use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Cli\Console;
 use PhalconKit\Mvc\Router as MvcRouter;
@@ -209,7 +208,7 @@ class BootstrapTest extends AbstractUnit
     {
         $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
 
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Service Provider `bad` class name must be a string.');
 
         $bootstrap->registerServices([
@@ -221,7 +220,7 @@ class BootstrapTest extends AbstractUnit
     {
         $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
 
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Service Provider `bad` class `Missing\\Provider` not found.');
 
         $bootstrap->registerServices([
@@ -233,7 +232,7 @@ class BootstrapTest extends AbstractUnit
     {
         $bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
 
-        $this->expectException(Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Service Provider `stdClass` must implement ServiceProviderInterface.');
 
         $bootstrap->registerServices([
@@ -344,7 +343,7 @@ class BootstrapTest extends AbstractUnit
     {
         $bootstrap = new LightweightBootstrap('unsupported', new Di(), new Config());
 
-        $this->expectException(\Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Unable to register modules in bootstrap mode: `unsupported`');
 
         $bootstrap->registerModules();
@@ -391,7 +390,7 @@ class BootstrapTest extends AbstractUnit
     {
         $bootstrap = new LightweightBootstrap('unsupported', new Di());
 
-        $this->expectException(\Exception::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Unable to handle run application in bootstrap mode: `unsupported`');
 
         $bootstrap->run();

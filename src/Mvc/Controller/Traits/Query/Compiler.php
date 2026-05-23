@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use LogicException;
+use PhalconKit\Exception\LogicException;
 use Phalcon\Support\Collection;
 
 /**

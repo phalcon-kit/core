@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Model\EagerLoading;
 
 use Phalcon\Mvc\Model\Query\Builder;
 use Phalcon\Mvc\Model\Query\BuilderInterface;
+use PhalconKit\Exception\LogicException;
 
 final class QueryBuilder extends Builder
 {
@@ -23,23 +24,23 @@ final class QueryBuilder extends Builder
     /**
      * @param mixed $distinct
      * @return BuilderInterface
-     * @throws \LogicException
+     * @throws LogicException
      */
     #[\Override]
     public function distinct($distinct): BuilderInterface
     {
-        throw new \LogicException(self::E_NOT_ALLOWED_METHOD_CALL);
+        throw new LogicException(self::E_NOT_ALLOWED_METHOD_CALL);
     }
     
     /**
      * @param mixed $columns
      * @return BuilderInterface
-     * @throws \LogicException
+     * @throws LogicException
      */
     #[\Override]
     public function columns($columns): BuilderInterface
     {
-        throw new \LogicException(self::E_NOT_ALLOWED_METHOD_CALL);
+        throw new LogicException(self::E_NOT_ALLOWED_METHOD_CALL);
     }
     
     /**

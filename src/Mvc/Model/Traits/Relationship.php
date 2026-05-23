@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
-use Exception;
 use Phalcon\Db\Adapter\AdapterInterface;
 use Phalcon\Db\Column;
 use Phalcon\Messages\Message;
@@ -25,6 +24,8 @@ use Phalcon\Mvc\Model\RelationInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Support\Collection\CollectionInterface;
+use PhalconKit\Exception\InvalidArgumentException;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model\Interfaces\RelationshipInterface;
 use PhalconKit\Mvc\Model\Interfaces\SoftDeleteInterface;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEntity;
@@ -235,7 +236,7 @@ trait Relationship
      * @param array|null $dataColumnMap An optional column map to transform external keys into internal model field names.
      *
      * @return ModelInterface Returns the updated ModelInterface instance.
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function assign(array $data, $whiteList = null, $dataColumnMap = null): ModelInterface
     {
@@ -259,7 +260,7 @@ trait Relationship
      * @param array|null $dataColumnMap
      *
      * @return ModelInterface
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function assignRelated(array $data, ?array $whiteList = null, ?array $dataColumnMap = null): ModelInterface
     {
@@ -277,7 +278,7 @@ trait Relationship
         
         foreach ($data as $alias => $relationData) {
             if (!is_string($alias)) {
-                throw new \LogicException('Invalid relation alias `' . $alias . '` on model `' . $modelClass . '`', 400);
+                throw new LogicException('Invalid relation alias `' . $alias . '` on model `' . $modelClass . '`', 400);
             }
 
             // alias is not whitelisted, skip silently
@@ -314,7 +315,7 @@ trait Relationship
                     $assign = $relationData;
                 }
                 else {
-                    throw new Exception('Instance of `' . get_class($relationData) . '` received on model `' . $modelClass . '` in alias `' . $alias . ', expected instance of `' . $referencedModel . '`', 400);
+                    throw new InvalidArgumentException('Instance of `' . get_class($relationData) . '` received on model `' . $modelClass . '` in alias `' . $alias . ', expected instance of `' . $referencedModel . '`', 400);
                 }
             }
 
@@ -367,7 +368,7 @@ trait Relationship
                                     $entity = $traversedData;
                                 }
                                 else {
-                                    throw new Exception('Instance of `' . get_class($traversedData) . '` received on model `' . $modelClass . '` in alias `' . $alias . ', expected instance of `' . $referencedModel . '`', 400);
+                                    throw new InvalidArgumentException('Instance of `' . get_class($traversedData) . '` received on model `' . $modelClass . '` in alias `' . $alias . ', expected instance of `' . $referencedModel . '`', 400);
                                 }
                             }
 
@@ -420,7 +421,7 @@ trait Relationship
      * @param ModelInterface[] $related
      * @param CollectionInterface $visited
      * @return bool
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     protected function preSaveRelatedRecords(AdapterInterface $connection, $related, CollectionInterface $visited): bool
     {
@@ -442,7 +443,7 @@ trait Relationship
                     // Belongs-to relation: We only support model interface
                     if (!($record instanceof ModelInterface)) {
                         $connection->rollback($nesting);
-                        throw new Exception(
+                        throw new InvalidArgumentException(
                             'Instance of `' . get_class($record) . '` received on model `' . $className . '` in alias `' . $alias .
                             ', expected instance of `' . ModelInterface::class . '` as part of the belongs-to relation',
                             400
@@ -496,7 +497,7 @@ trait Relationship
      * @param array|object[]|ModelInterface[] $related Related records to be saved, provided as arrays or objects.
      * @param CollectionInterface $visited A collection of already visited models to prevent recursion.
      * @return bool Returns true on successful processing of related records, false if an error occurs.
-     * @throws Exception Throws an exception if there are no defined relations for a given alias or if invalid data types are provided.
+     * @throws InvalidArgumentException Throws an exception if there are no defined relations for a given alias or if invalid data types are provided.
      */
     protected function postSaveRelatedRecords(AdapterInterface $connection, $related, CollectionInterface $visited): bool
     {
@@ -511,7 +512,7 @@ trait Relationship
                 if (!$relation) {
                     if (is_array($assign)) {
                         $connection->rollback($nesting);
-                        throw new Exception("There are no defined relations for the model '" . get_class($this) . "' using alias '" . $lowerCaseAlias . "'");
+                        throw new InvalidArgumentException("There are no defined relations for the model '" . get_class($this) . "' using alias '" . $lowerCaseAlias . "'");
                     }
                 }
                 assert($relation instanceof RelationInterface);
@@ -525,7 +526,7 @@ trait Relationship
                 
                 if (!is_array($assign) && !is_object($assign)) {
                     $connection->rollback($nesting);
-                    throw new Exception('Only objects/arrays can be stored as part of has-many/has-one/has-one-through/has-many-to-many relations');
+                    throw new InvalidArgumentException('Only objects/arrays can be stored as part of has-many/has-one/has-one-through/has-many-to-many relations');
                 }
                 
                 /**
@@ -688,7 +689,7 @@ trait Relationship
                 foreach ($relationFields as $relationField) {
                     if (!property_exists($this, $relationField)) {
                         $connection->rollback($nesting);
-                        throw new Exception("The column '" . $relationField . "' needs to be present in the model");
+                        throw new InvalidArgumentException("The column '" . $relationField . "' needs to be present in the model");
                     }
                 }
                 
@@ -727,7 +728,7 @@ trait Relationship
      * @return bool|null Returns `true` if all related records are saved successfully, `false` if an error occurs during saving,
      *                   and `null` if the relation is of type `Through`.
      *
-     * @throws Exception If there is an error during the save operation for a related record.
+     * @throws InvalidArgumentException If there is an error during the save operation for a related record.
      */
     public function postSaveRelatedRecordsAfter(RelationInterface $relation, array $relatedRecords, CollectionInterface $visited): ?bool
     {
@@ -781,7 +782,7 @@ trait Relationship
      *                   Returns false if any save operation failed.
      *                   Returns null if the relation is not a through relationship.
      *
-     * @throws Exception If the intermediate model or related records cannot be properly saved.
+     * @throws InvalidArgumentException If the intermediate model or related records cannot be properly saved.
      */
     public function postSaveRelatedThroughAfter(RelationInterface $relation, array $relatedRecords, CollectionInterface $visited): ?bool
     {
@@ -925,11 +926,11 @@ trait Relationship
         $dataColumnMap = $configuration['dataColumnMap'] ?? null;
         
         if (!is_array($fields)) {
-            throw new \Exception('Parameter `fields` must be an array');
+            throw new InvalidArgumentException('Parameter `fields` must be an array');
         }
         
         if (!isset($modelClass)) {
-            throw new \Exception('Parameter `modelClass` is mandatory');
+            throw new InvalidArgumentException('Parameter `modelClass` is mandatory');
         }
         
         // using primary key first
@@ -1166,7 +1167,7 @@ trait Relationship
      * @param string $alias
      * @param mixed $arguments
      * @return false|int|Model\Resultset\Simple
-     * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function getRelated(string $alias, $arguments = null)
     {
@@ -1176,7 +1177,7 @@ trait Relationship
         
         $relation = $manager->getRelationByAlias($className, $lowerAlias);
         if (!$relation) {
-            throw new Exception(
+            throw new InvalidArgumentException(
                 "There is no defined relations for the model '"
                 . $className . "' using alias '" . $alias . "'"
             );

@@ -140,9 +140,9 @@ DOC;
      *
      * @param string|null $mode Runtime mode to initialize, or `null` to auto-detect.
      *
-     * @throws Exception When configured service providers are invalid.
+     * @throws ConfigurationException When configured service providers are
+     *     invalid or the selected runtime mode cannot be handled.
      * @throws ConfigurationException When configuration cannot be resolved.
-     * @throws \Exception When the selected mode cannot register modules.
      */
     public function __construct(?string $mode = null)
     {
@@ -300,9 +300,9 @@ DOC;
      * @param array<string, string>|null $providers Provider map. When `null`,
      *     `config.providers` is used.
      *
-     * @throws Exception When a provider value is not a class-string, the class
-     *     cannot be found, or the instance does not implement the provider
-     *     contract.
+     * @throws ConfigurationException When a provider value is not a
+     *     class-string, the class cannot be found, or the instance does not
+     *     implement the provider contract.
      */
     public function registerServices(?array $providers = null): void
     {
@@ -310,16 +310,16 @@ DOC;
         
         foreach ($providers as $key => $provider) {
             if (!is_string($provider)) {
-                throw new Exception("Service Provider `$key` class name must be a string.", 400);
+                throw new ConfigurationException("Service Provider `$key` class name must be a string.", 400);
             }
             
             if (!class_exists($provider)) {
-                throw new Exception("Service Provider `$key` class `$provider` not found.", 404);
+                throw new ConfigurationException("Service Provider `$key` class `$provider` not found.", 404);
             }
             
             $instance = new $provider($this->di);
             if (!$instance instanceof ServiceProviderInterface) {
-                throw new Exception("Service Provider `$provider` must implement ServiceProviderInterface.", 500);
+                throw new ConfigurationException("Service Provider `$provider` must implement ServiceProviderInterface.", 500);
             }
             
             $instance->register($this->di);
@@ -370,8 +370,8 @@ DOC;
      * @param string|null $defaultModule Default module name, or `null` to use
      *     config.
      *
-     * @throws \Exception When the bootstrap mode cannot be mapped to an
-     *     application service.
+     * @throws ConfigurationException When the bootstrap mode cannot be mapped
+     *     to an application service.
      */
     public function registerModules(
         ?AbstractApplication $application = null,
@@ -382,7 +382,7 @@ DOC;
             self::MODE_CLI => $this->di->getTyped('console', Console::class),
             self::MODE_WS => $this->di->getTyped('webSocket', WebSocket::class),
             self::MODE_MVC => $this->di->getTyped('application', Application::class),
-            default => throw new \Exception(
+            default => throw new ConfigurationException(
                 'Unable to register modules in bootstrap mode: `' . $this->getMode() . '`',
                 400
             ),
@@ -405,7 +405,7 @@ DOC;
      * CLI mode returns captured command output, and WebSocket mode returns
      * `null` after handing control to the server runtime.
      *
-     * @throws \Exception When the bootstrap mode cannot be handled.
+     * @throws ConfigurationException When the bootstrap mode cannot be handled.
      */
     public function run(): ?string
     {
@@ -417,7 +417,7 @@ DOC;
             ),
             self::MODE_CLI => $this->handleConsole($this->di->getTyped('console', Console::class)),
             self::MODE_WS  => $this->handleWebSocket($this->di->getTyped('webSocket', WebSocket::class)),
-            default => throw new \Exception(
+            default => throw new ConfigurationException(
                 'Unable to handle run application in bootstrap mode: `' . $this->getMode() . '`',
                 400
             ),

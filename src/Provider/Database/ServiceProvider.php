@@ -42,7 +42,7 @@ class ServiceProvider extends AbstractServiceProvider
             // specified driver name
             if (isset($databaseConfig['drivers'][$driverName])) {
                 if (!is_array($databaseConfig['drivers'][$driverName])) {
-                    throw new \InvalidArgumentException('Database driver option `' . $driverName . '` must be an array');
+                    throw new ConfigurationException('Database driver option `' . $driverName . '` must be an array');
                 }
                 
                 $driverOptions = array_filter($databaseConfig['drivers'][$driverName], fn(mixed $value) => $value !== null);

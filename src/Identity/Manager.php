@@ -15,6 +15,7 @@ namespace PhalconKit\Identity;
 
 use Phalcon\Encryption\Security\Exception;
 use PhalconKit\Di\Injectable;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Traits\Acl;
 use PhalconKit\Identity\Traits\Impersonation;
@@ -275,7 +276,7 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
         $ret = [];
         foreach ($list as $entity) {
             if (!is_object($entity) || !method_exists($entity, $keyMethod)) {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'Entity %s must implement method %s()',
                     is_object($entity) ? get_class($entity) : gettype($entity),
                     $keyMethod

@@ -15,6 +15,7 @@ namespace PhalconKit\Events;
 
 use Phalcon\Di\Di;
 use Phalcon\Events\ManagerInterface;
+use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Support\Helper;
 use PhalconKit\Support\Slug;
 
@@ -101,7 +102,7 @@ trait EventsAwareTrait
         $eventsManager = $this->getEventsManager();
         
         if (!$eventsManager instanceof ManagerInterface) {
-            throw new \InvalidArgumentException("Events manager must be an instance of '" . ManagerInterface::class . "'.");
+            throw new InvalidArgumentException("Events manager must be an instance of '" . ManagerInterface::class . "'.");
         }
         
         return $eventsManager->fire($eventType, $this, $data, $cancelable);

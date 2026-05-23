@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Bootstrap;
 
+use PhalconKit\Exception\ConfigurationException;
+
 class Devtools extends Config
 {
     public function __construct(array $data = [], bool $insensitive = true)
@@ -25,7 +27,7 @@ class Devtools extends Config
         $adapterClass = $driverOptions['adapter'] ?? null;
         
         if (!isset($adapterClass) || !is_string($adapterClass)) {
-            throw new \InvalidArgumentException('A valid database adapter class must be provided.');
+            throw new ConfigurationException('A valid database adapter class must be provided.');
         }
     
         $driverOptions['adapter'] = basename(str_replace('\\', '/', $adapterClass));

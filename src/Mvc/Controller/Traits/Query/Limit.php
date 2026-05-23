@@ -13,8 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Filter;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractLimit;
 
@@ -38,8 +39,8 @@ trait Limit
      * and the result of calling the `defaultLimit` method as the third argument.
      *
      * @return void
-     * @throws Exception
-     * @throws \Exception
+     * @throws FilterException When Phalcon rejects the configured limit filter.
+     * @throws HttpException When the resulting limit violates controller policy.
      */
     public function initializeLimit(): void
     {
@@ -55,17 +56,18 @@ trait Limit
      *
      * @param int|null $limit The limit to be set.
      * @return void
-     * @throws \Exception If the provided limit is less than -1 or exceeds the maximum limit.
+     * @throws HttpException If the provided limit is less than -1 or exceeds
+     *     the maximum limit.
      */
     public function setLimit(?int $limit): void
     {
         if ($limit < -1) {
-            throw new \Exception("Requested limit ({$limit}) must be higher or equal to -1", 400);
+            throw new HttpException("Requested limit ({$limit}) must be higher or equal to -1", 400);
         }
         
         if (isset($this->maxLimit) && $this->maxLimit !== -1) {
             if ($limit > $this->maxLimit) {
-                throw new \Exception("Requested limit ({$limit}) must be lower than the maximum limit ({$this->maxLimit})", 400);
+                throw new HttpException("Requested limit ({$limit}) must be lower than the maximum limit ({$this->maxLimit})", 400);
             }
         }
         

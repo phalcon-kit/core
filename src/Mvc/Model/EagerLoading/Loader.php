@@ -20,6 +20,8 @@ use Phalcon\Mvc\Model\Resultset\Simple;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\Model\Row;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\InvalidArgumentException;
+use PhalconKit\Exception\RuntimeException;
 
 final class Loader
 {
@@ -44,7 +46,7 @@ final class Loader
      * @param array ...$arguments Optional arguments for eager loading. Each argument should be an array
      *                            specifying the relationships to eager load.
      *
-     * @throws \InvalidArgumentException If the supplied data source is invalid.
+     * @throws InvalidArgumentException If the supplied data source is invalid.
      */
     public function __construct(mixed $from, array ...$arguments)
     {
@@ -125,10 +127,10 @@ final class Loader
         }
         
         if ($error) {
-            throw new \InvalidArgumentException(self::E_INVALID_SUBJECT);
+            throw new InvalidArgumentException(self::E_INVALID_SUBJECT);
         }
         if (!isset($className) || !class_exists($className)) {
-            throw new \InvalidArgumentException(self::E_INVALID_CLASSNAME);
+            throw new InvalidArgumentException(self::E_INVALID_CLASSNAME);
         }
         
         $this->subject = $from;
@@ -203,7 +205,7 @@ final class Loader
             return self::fromArray($subject, ...$arguments);
         }
         
-        throw new \InvalidArgumentException(Loader::E_INVALID_SUBJECT);
+        throw new InvalidArgumentException(Loader::E_INVALID_SUBJECT);
     }
     
     /**
@@ -275,12 +277,12 @@ final class Loader
      *
      * @param array $arguments
      * @return array
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     private static function parseArguments(array $arguments): array
     {
         if (empty($arguments)) {
-            throw new \InvalidArgumentException('Arguments can not be empty');
+            throw new InvalidArgumentException('Arguments can not be empty');
         }
         
         $relations = [];
@@ -323,7 +325,7 @@ final class Loader
      * Resolves the relations
      *
      * @return EagerLoad[]
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     private function buildTree(): array
     {
@@ -367,7 +369,7 @@ final class Loader
                     $relation = $mM->getRelationByAlias($parentClassName, $alias);
                     
                     if (!$relation instanceof Relation) {
-                        throw new \RuntimeException(sprintf(
+                        throw new RuntimeException(sprintf(
                             'There is no defined relation for the model `%s` using alias `%s`',
                             $parentClassName,
                             $alias
@@ -387,14 +389,14 @@ final class Loader
                     $relType !== Relation::HAS_MANY &&
                     $relType !== Relation::HAS_MANY_THROUGH
                 ) {
-                    throw new \RuntimeException(sprintf('Unknown relation type `%s`', $relType));
+                    throw new RuntimeException(sprintf('Unknown relation type `%s`', $relType));
                 }
                 
                 // @todo allow composite keys
 //                if (is_array($relation->getFields()) ||
 //                    is_array($relation->getReferencedFields())
 //                ) {
-//                    throw new \RuntimeException('Relations with composite keys are not supported');
+//                    throw new RuntimeException('Relations with composite keys are not supported');
 //                }
                 
                 $parent = $parentName !== null ? $eagerLoads[$parentName] : $this;

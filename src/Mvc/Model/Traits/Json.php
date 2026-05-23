@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
+use PhalconKit\Exception\InvalidArgumentException;
+
 /**
  * Trait Json
  *
@@ -63,12 +65,12 @@ trait Json
      * @param int $depth The recursion depth to validate.
      * @return int<1,2147483647> The validated depth.
      *
-     * @throws \InvalidArgumentException If depth is outside the valid range.
+     * @throws InvalidArgumentException If depth is outside the valid range.
      */
     private function validateJsonDepth(int $depth): int
     {
         if ($depth < 1 || $depth > 2147483647) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'Invalid JSON depth: %d (must be between 1 and 2,147,483,647)',
                 $depth
             ));

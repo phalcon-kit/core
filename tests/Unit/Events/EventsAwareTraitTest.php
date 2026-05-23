@@ -18,6 +18,7 @@ use Phalcon\Events\EventInterface;
 use Phalcon\Events\Manager;
 use Phalcon\Events\ManagerInterface;
 use PhalconKit\Events\EventsAwareTrait;
+use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class EventsAwareTraitTest extends AbstractUnit
@@ -163,7 +164,7 @@ class EventsAwareTraitTest extends AbstractUnit
             }
         };
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(ManagerInterface::class);
 
         $events->fire('missingManager');

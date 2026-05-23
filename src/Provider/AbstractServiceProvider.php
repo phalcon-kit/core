@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider;
 
-use LogicException;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Di\Injectable;
+use PhalconKit\Exception\LogicException;
 
 /**
  * Base implementation for PhalconKit DI service providers.

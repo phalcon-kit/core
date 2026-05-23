@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Translate;
 
 use Phalcon\Translate\Adapter\AdapterInterface;
-use Phalcon\Translate\Exception;
 use Phalcon\Translate\InterpolatorFactory;
+use PhalconKit\Exception\RuntimeException;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Translate\Adapter\NestedNativeArray;
 
@@ -146,7 +146,7 @@ class TranslateTest extends AbstractUnit
             'content' => [],
         ]);
 
-        $this->expectException(Exception::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Cannot find translation key: missing.key');
 
         $translator->query('missing.key');

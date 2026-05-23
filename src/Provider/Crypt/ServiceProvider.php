@@ -57,7 +57,7 @@ class ServiceProvider extends AbstractServiceProvider
             // Validate key
             // -----------------------------------------------------------------
             if (empty($key) || strlen($key) < 32) {
-                throw new \RuntimeException('Invalid encryption key: must be at least 32 bytes for AES-256 ciphers.');
+                throw new ConfigurationException('Invalid encryption key: must be at least 32 bytes for AES-256 ciphers.');
             }
             
             // -----------------------------------------------------------------
@@ -65,7 +65,7 @@ class ServiceProvider extends AbstractServiceProvider
             // -----------------------------------------------------------------
             $availableCiphers = openssl_get_cipher_methods(true);
             if (!in_array(strtolower($cipher), $availableCiphers, true)) {
-                throw new \RuntimeException(sprintf(
+                throw new ConfigurationException(sprintf(
                     'Invalid cipher "%s": not supported by the current OpenSSL build.',
                     $cipher
                 ));
@@ -83,7 +83,7 @@ class ServiceProvider extends AbstractServiceProvider
             
             // AEAD handles authentication internally
             if ($isAEAD && $useSigning) {
-                throw new \RuntimeException(sprintf(
+                throw new ConfigurationException(sprintf(
                     'Invalid configuration: cipher "%s" is AEAD (auth built-in). Disable "useSigning".',
                     $cipher
                 ));
@@ -91,7 +91,7 @@ class ServiceProvider extends AbstractServiceProvider
             
             // Stream modes cannot be safely signed via Phalcon’s HMAC path
             if ($isStreamMode && $useSigning) {
-                throw new \RuntimeException(sprintf(
+                throw new ConfigurationException(sprintf(
                     'Invalid configuration: cipher "%s" does not support signing (stream mode). Disable "useSigning" or use CBC/GCM instead.',
                     $cipher
                 ));

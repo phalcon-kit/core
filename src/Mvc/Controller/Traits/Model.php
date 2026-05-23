@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits;
 
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 
@@ -188,7 +189,7 @@ trait Model
      *
      * @return string Normalized field string.
      *
-     * @throws \InvalidArgumentException When identifier or expression is unsafe.
+     * @throws InvalidArgumentException When identifier or expression is unsafe.
      */
     public function appendModelName(string $field, ?string $modelName = null): string
     {
@@ -205,7 +206,7 @@ trait Model
          * ---------------------------------------------------------------------
          */
         if (preg_match('/;|--|\/\*/', $field)) {
-            throw new \InvalidArgumentException('Unsafe field expression.');
+            throw new InvalidArgumentException('Unsafe field expression.');
         }
 
         /**
@@ -263,7 +264,7 @@ trait Model
         $segments = explode('.', $field);
 
         if (count($segments) > 2) {
-            throw new \InvalidArgumentException('Invalid identifier.');
+            throw new InvalidArgumentException('Invalid identifier.');
         }
 
         /**
@@ -271,7 +272,7 @@ trait Model
          */
         foreach ($segments as $segment) {
             if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $segment)) {
-                throw new \InvalidArgumentException('Invalid identifier segment.');
+                throw new InvalidArgumentException('Invalid identifier segment.');
             }
         }
 

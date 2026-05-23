@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query\Conditions;
 
 use Phalcon\Db\Column;
-use Phalcon\Filter\Exception;
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Filter;
 use Phalcon\Support\Collection;
+use PhalconKit\Exception\HttpException;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
@@ -40,7 +42,7 @@ trait FilterConditions
      * and ensures they are properly configured for subsequent operations.
      *
      * @return void This method does not return any value.
-     * @throws \Exception
+     * @throws HttpException
      */
     public function initializeFilterConditions(): void
     {
@@ -103,7 +105,7 @@ trait FilterConditions
      *                           - An array containing the SQL string, binding values, and binding types.
      *                           - A string representation of the SQL condition if no bindings are necessary.
      *                           - Null if no valid filters are provided.
-     * @throws \Exception If a required property like 'field' or 'operator' is missing,
+     * @throws HttpException If a required property like 'field' or 'operator' is missing,
      *                    or if an unauthorized filter field or unsupported operator is used.
      */
     public function defaultFilterCondition(
@@ -192,7 +194,7 @@ trait FilterConditions
      *
      * @return array|null ['sql'=>string,'bind'=>array,'bindTypes'=>array]
      *
-     * @throws \Exception|\LogicException
+     * @throws HttpException|LogicException
      */
     protected function compileGroup(array $filters, bool $or, int $level, array $allowedFilters, ?string $aliasContext = null): ?array
     {
@@ -250,10 +252,10 @@ trait FilterConditions
                     // Safe bind merge (defensive; should never collide if bind keys are unique).
                     // @codeCoverageIgnoreStart
                     if (array_intersect_key($bind, $nested['bind']) !== []) {
-                        throw new \LogicException('Bind collision detected while merging nested group.');
+                        throw new LogicException('Bind collision detected while merging nested group.');
                     }
                     if (array_intersect_key($bindTypes, $nested['bindTypes']) !== []) {
-                        throw new \LogicException('BindType collision detected while merging nested group.');
+                        throw new LogicException('BindType collision detected while merging nested group.');
                     }
                     // @codeCoverageIgnoreEnd
 
@@ -273,11 +275,11 @@ trait FilterConditions
             }
 
             if (empty($node['field'])) {
-                throw new \Exception('A valid filter field property is required.', 400);
+                throw new HttpException('A valid filter field property is required.', 400);
             }
 
             if (empty($node['operator'])) {
-                throw new \Exception('A valid filter operator property is required.', 400);
+                throw new HttpException('A valid filter operator property is required.', 400);
             }
 
             /* ==========================================================
@@ -299,7 +301,7 @@ trait FilterConditions
             );
 
             if (!$this->isFilterAllowed($rawField, $allowedFilters)) {
-                throw new \Exception(sprintf('Unauthorized filter field "%s".', $rawField), 403);
+                throw new HttpException(sprintf('Unauthorized filter field "%s".', $rawField), 403);
             }
 
             /* ==========================================================
@@ -307,7 +309,7 @@ trait FilterConditions
              * ======================================================== */
             $operator = $this->normalizeFilterOperator((string)$node['operator']);
             if ($operator === '') {
-                throw new \Exception(sprintf('Unsupported filter operator "%s".', (string)$node['operator']), 403);
+                throw new HttpException(sprintf('Unsupported filter operator "%s".', (string)$node['operator']), 403);
             }
 
             /* ==========================================================
@@ -315,7 +317,7 @@ trait FilterConditions
              * ======================================================== */
             if (str_starts_with($operator, 'is')) {
                 if (array_key_exists('value', $node) && $node['value'] !== '' && $node['value'] !== null) {
-                    throw new \Exception(sprintf('Operator "%s" does not accept a value.', $operator), 403);
+                    throw new HttpException(sprintf('Operator "%s" does not accept a value.', $operator), 403);
                 }
                 unset($node['value']);
             }
@@ -376,7 +378,7 @@ trait FilterConditions
 
                 // @codeCoverageIgnoreStart
                 if (!isset($inlineMap[$operator])) {
-                    throw new \LogicException("Unhandled no-value operator: {$operator}");
+                    throw new LogicException("Unhandled no-value operator: {$operator}");
                 }
                 // @codeCoverageIgnoreEnd
 
@@ -445,7 +447,7 @@ trait FilterConditions
                 // Existential coalescing is AND-only. OR/XOR flushed already above.
                 // @codeCoverageIgnoreStart
                 if (!in_array($logic, ['and', 'or', 'xor'], true)) {
-                    throw new \LogicException("Invalid logic token emitted: {$logic}");
+                    throw new LogicException("Invalid logic token emitted: {$logic}");
                 }
                 // @codeCoverageIgnoreEnd
 
@@ -454,7 +456,7 @@ trait FilterConditions
                 $isNegativeText = $this->isNegativeTextOperator($operator);
 
                 if (!array_key_exists('value', $node)) {
-                    throw new \Exception(sprintf('Operator "%s" requires a value.', $operator), 400);
+                    throw new HttpException(sprintf('Operator "%s" requires a value.', $operator), 400);
                 }
 
                 /*
@@ -519,7 +521,7 @@ trait FilterConditions
                     if (!empty($b)) {
                         // @codeCoverageIgnoreStart
                         if (array_intersect_key($bind, $b) !== []) {
-                            throw new \LogicException('Bind collision detected while merging OR/XOR existential predicate binds.');
+                            throw new LogicException('Bind collision detected while merging OR/XOR existential predicate binds.');
                         }
                         // @codeCoverageIgnoreEnd
                         $bind += $b;
@@ -527,7 +529,7 @@ trait FilterConditions
                     if (!empty($bt)) {
                         // @codeCoverageIgnoreStart
                         if (array_intersect_key($bindTypes, $bt) !== []) {
-                            throw new \LogicException('BindType collision detected while merging OR/XOR existential predicate bindTypes.');
+                            throw new LogicException('BindType collision detected while merging OR/XOR existential predicate bindTypes.');
                         }
                         // @codeCoverageIgnoreEnd
                         $bindTypes += $bt;
@@ -537,7 +539,7 @@ trait FilterConditions
                     if (!empty($exists['bind'])) {
                         // @codeCoverageIgnoreStart
                         if (array_intersect_key($bind, $exists['bind']) !== []) {
-                            throw new \LogicException('Bind collision detected while merging OR/XOR EXISTS join binds.');
+                            throw new LogicException('Bind collision detected while merging OR/XOR EXISTS join binds.');
                         }
                         // @codeCoverageIgnoreEnd
                         $bind += $exists['bind'];
@@ -545,7 +547,7 @@ trait FilterConditions
                     if (!empty($exists['bindTypes'])) {
                         // @codeCoverageIgnoreStart
                         if (array_intersect_key($bindTypes, $exists['bindTypes']) !== []) {
-                            throw new \LogicException('BindType collision detected while merging OR/XOR EXISTS join bindTypes.');
+                            throw new LogicException('BindType collision detected while merging OR/XOR EXISTS join bindTypes.');
                         }
                         // @codeCoverageIgnoreEnd
                         $bindTypes += $exists['bindTypes'];
@@ -563,7 +565,7 @@ trait FilterConditions
             $this->flushExistentialBuckets($pendingExists, $fragments, $bind, $bindTypes);
 
             if (!array_key_exists('value', $node)) {
-                throw new \Exception(sprintf('Operator "%s" requires a value.', $operator), 400);
+                throw new HttpException(sprintf('Operator "%s" requires a value.', $operator), 400);
             }
 
             [$sql, $b, $bt] = $this->compileSingleFilterCondition(
@@ -579,10 +581,10 @@ trait FilterConditions
 
                 // @codeCoverageIgnoreStart
                 if (array_intersect_key($bind, $b) !== []) {
-                    throw new \LogicException('Bind collision detected while merging self / inline condition.');
+                    throw new LogicException('Bind collision detected while merging self / inline condition.');
                 }
                 if (array_intersect_key($bindTypes, $bt) !== []) {
-                    throw new \LogicException('BindType collision detected while merging self / inline condition.');
+                    throw new LogicException('BindType collision detected while merging self / inline condition.');
                 }
                 // @codeCoverageIgnoreEnd
 
@@ -660,19 +662,19 @@ trait FilterConditions
          */
         if ($isExistential) {
             if ($this->isNegativeTextOperator($operator)) {
-                throw new \LogicException(
+                throw new LogicException(
                     "Negative text operator '{$operator}' must be normalized to positive before existential compilation."
                 );
             }
 
             if ($this->isNegativeOperator($operator)) {
-                throw new \LogicException(
+                throw new LogicException(
                     "Negative operator '{$operator}' is not allowed in existential compilation."
                 );
             }
 
             if ($this->isNoValueOperator($operator)) {
-                throw new \LogicException(
+                throw new LogicException(
                     "No-value operator '{$operator}' is not allowed in existential compilation."
                 );
             }
@@ -996,7 +998,7 @@ trait FilterConditions
      * @param bool $negated Whether to emit NOT EXISTS instead of EXISTS
      *
      * @return array{conditions: string, bind: array, bindTypes: array}
-     * @throws \Exception
+     * @throws HttpException
      */
     protected function buildExistsConditionFromField(
         string $field,
@@ -1006,7 +1008,7 @@ trait FilterConditions
         $joins = $this->getJoinsDefinitionFromField($field);
 
         if (empty($joins)) {
-            throw new \Exception(sprintf(
+            throw new HttpException(sprintf(
                 'Unable to prepare existential subquery for the foreign field "%s".',
                 $field
             ), 400);
@@ -1032,7 +1034,7 @@ trait FilterConditions
         $firstJoin = array_shift($joins);
         // @codeCoverageIgnoreStart
         if ($firstJoin === null) {
-            throw new \LogicException('Unable to prepare existential subquery without a root join.');
+            throw new LogicException('Unable to prepare existential subquery without a root join.');
         }
         // @codeCoverageIgnoreEnd
         [$rootModel, $rootOn, $rootAlias] = $firstJoin;
@@ -1112,12 +1114,12 @@ trait FilterConditions
      *
      * @return string Either "self" or "existential"
      *
-     * @throws \LogicException If scope cannot be determined deterministically
+     * @throws LogicException If scope cannot be determined deterministically
      */
     protected function getFilterScope(array $filter, ?string $aliasContext): string
     {
         if (empty($filter['field'])) {
-            throw new \LogicException('Cannot determine filter scope without field.');
+            throw new LogicException('Cannot determine filter scope without field.');
         }
 
         $rawField = (string) $filter['field'];
@@ -1276,7 +1278,7 @@ trait FilterConditions
 
         if ($logic !== '') {
             if (!in_array($logic, ['and', 'or', 'xor'], true)) {
-                throw new \Exception(sprintf('Unsupported logical operator: `%s`', $logic), 400);
+                throw new HttpException(sprintf('Unsupported logical operator: `%s`', $logic), 400);
             }
             return $logic;
         }
@@ -1355,7 +1357,7 @@ trait FilterConditions
      *  - rewrite non-negative operators
      *  - accept unknown operators
      *
-     * @throws \LogicException if operator cannot be safely converted
+     * @throws LogicException if operator cannot be safely converted
      */
     protected function toPositiveOperator(string $operator): string
     {
@@ -1406,7 +1408,7 @@ trait FilterConditions
          * Rejection
          * ======================================================== */
         if ($this->isNegativeOperator($operator)) {
-            throw new \LogicException(
+            throw new LogicException(
                 "Unable to convert negative operator '{$operator}' to a positive equivalent."
             );
         }
@@ -1464,7 +1466,7 @@ trait FilterConditions
      *
      * @return bool True if the filters satisfy the condition, false otherwise.
      *
-     * @throws Exception
+     * @throws FilterException When request parameter filtering fails.
      */
     public function hasFiltersFieldsParams(array|string|null $fields = null, bool $or = false): bool
     {

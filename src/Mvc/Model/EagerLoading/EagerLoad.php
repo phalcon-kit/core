@@ -17,6 +17,7 @@ use Phalcon\Mvc\EntityInterface;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\Relation;
 use Phalcon\Mvc\Model\RelationInterface;
+use PhalconKit\Exception\RuntimeException;
 use PhalconKit\Mvc\Model\Interfaces\RelationshipInterface as PhalconKitRelationshipInterface;
 
 /**
@@ -83,10 +84,10 @@ final class EagerLoad
 
         // @todo support multiples fields with eager loading
         if (is_array($relField)) {
-            throw new \RuntimeException('Relation field must be a string, multiple fields are not supported yet.');
+            throw new RuntimeException('Relation field must be a string, multiple fields are not supported yet.');
         }
         if (is_array($relReferencedField)) {
-            throw new \RuntimeException('Relation Referenced field must be a string, multiple fields are not supported yet.');
+            throw new RuntimeException('Relation Referenced field must be a string, multiple fields are not supported yet.');
         }
 
         // PHQL has problems with this slash
@@ -131,10 +132,10 @@ final class EagerLoad
             $relIrReferencedField = $relation->getIntermediateReferencedFields();
 
             if (is_array($relIrField)) {
-                throw new \RuntimeException('Relation Intermediate field must be a string, multiple fields are not supported yet.');
+                throw new RuntimeException('Relation Intermediate field must be a string, multiple fields are not supported yet.');
             }
             if (is_array($relIrReferencedField)) {
-                throw new \RuntimeException('Relation Intermediate Referenced field must be a string, multiple fields are not supported yet.');
+                throw new RuntimeException('Relation Intermediate Referenced field must be a string, multiple fields are not supported yet.');
             }
 
             if ($subjectCount === 1) {

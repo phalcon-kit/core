@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Session;
 
-use InvalidArgumentException;
 use PhalconKit\Di\DiInterface;
+use PhalconKit\Exception\ConfigurationException;
 use Phalcon\Session\Manager;
 use Phalcon\Session\Adapter\Redis;
 use Phalcon\Session\Adapter\Noop;
@@ -75,7 +75,7 @@ class ServiceProvider extends AbstractServiceProvider
                 $adapterFactory = new AdapterFactory($serializerFactory);
                 $adapterInstance = new $adapter($adapterFactory, $options);
                 if (!$adapterInstance instanceof \SessionHandlerInterface) {
-                    throw new InvalidArgumentException(
+                    throw new ConfigurationException(
                         'Session adapter must implement ' . \SessionHandlerInterface::class
                     );
                 }

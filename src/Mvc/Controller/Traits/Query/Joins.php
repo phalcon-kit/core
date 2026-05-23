@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
 use Phalcon\Support\Collection;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractJoins;
 use PhalconKit\Support\CollectionPolicy;
 
@@ -112,7 +113,7 @@ trait Joins
 
         foreach ($joins as $idx => $join) {
             if (!is_array($join) || !isset($join[0], $join[1], $join[2])) {
-                throw new \LogicException(sprintf('Invalid join definition at index %s.', (string)$idx));
+                throw new LogicException(sprintf('Invalid join definition at index %s.', (string)$idx));
             }
 
             $model = $join[0];
@@ -120,7 +121,7 @@ trait Joins
             $alias = $join[2];
 
             if (!is_string($on)) {
-                throw new \LogicException(sprintf('Join ON must be a SQL string at index %s.', (string)$idx));
+                throw new LogicException(sprintf('Join ON must be a SQL string at index %s.', (string)$idx));
             }
 
             // Detect whether [3] is type or payload.
@@ -144,7 +145,7 @@ trait Joins
 
             // Default join type normalization (keep your convention: "left" etc.)
             if ($type !== null && !is_string($type)) {
-                throw new \LogicException(sprintf('Join type must be a string at index %s.', (string)$idx));
+                throw new LogicException(sprintf('Join type must be a string at index %s.', (string)$idx));
             }
 
             // Merge payload into ON and collect bind data
@@ -229,7 +230,7 @@ trait Joins
 
         foreach ($blocks as $blockIndex => $block) {
             if (!is_array($block)) {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'Invalid join payload block at join index %s, block %d.',
                     $joinIndex,
                     $blockIndex
@@ -242,7 +243,7 @@ trait Joins
             $condition = $block['conditions'] ?? ($block[0] ?? '');
 
             if ($condition !== '' && !is_string($condition)) {
-                throw new \LogicException(sprintf(
+                throw new LogicException(sprintf(
                     'Join payload condition must be a string at join index %s, block %d.',
                     $joinIndex,
                     $blockIndex
@@ -260,7 +261,7 @@ trait Joins
             $b = $block['bind'] ?? ($block[1] ?? null);
             if ($b !== null) {
                 if (!is_array($b)) {
-                    throw new \LogicException(sprintf(
+                    throw new LogicException(sprintf(
                         'Join payload bind must be an array at join index %s, block %d.',
                         $joinIndex,
                         $blockIndex
@@ -275,7 +276,7 @@ trait Joins
             $bt = $block['bindTypes'] ?? ($block[2] ?? null);
             if ($bt !== null) {
                 if (!is_array($bt)) {
-                    throw new \LogicException(sprintf(
+                    throw new LogicException(sprintf(
                         'Join payload bindTypes must be an array at join index %s, block %d.',
                         $joinIndex,
                         $blockIndex

@@ -38,6 +38,8 @@ use PhalconKit\Bootstrap\Config;
 use PhalconKit\Cli\Dispatcher as CliDispatcher;
 use PhalconKit\Cli\Router as CliRouter;
 use PhalconKit\Di\Di;
+use PhalconKit\Exception\ConfigurationException;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Html\Escaper;
 use PhalconKit\Http\Request;
 use PhalconKit\Identity\Manager as IdentityManager;
@@ -207,7 +209,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new CryptProvider($di))->register($di);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Invalid encryption key');
 
         $di->get('crypt');
@@ -224,7 +226,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new CryptProvider($di))->register($di);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('AEAD');
 
         $di->get('crypt');
@@ -259,7 +261,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new CryptProvider($di))->register($di);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('stream mode');
 
         $di->get('crypt');
@@ -276,7 +278,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new CryptProvider($di))->register($di);
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Invalid cipher "not-a-real-cipher"');
 
         $di->get('crypt');
@@ -295,7 +297,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $di->set('eventsManager', new Manager());
         (new DatabaseProvider($di))->register($di);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('must be an array');
 
         $di->get('db');
@@ -954,7 +956,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new RedisProvider($di))->register($di);
 
-        $this->expectException(\RedisException::class);
+        $this->expectException(ServiceException::class);
 
         $di->get('redis');
     }
@@ -980,7 +982,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new RedisProvider($di))->register($di);
 
-        $this->expectException(\RedisException::class);
+        $this->expectException(ServiceException::class);
 
         $di->get('redis');
     }
@@ -1178,7 +1180,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new SessionProvider($di))->register($di);
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(ConfigurationException::class);
         $this->expectExceptionMessage('Session adapter must implement SessionHandlerInterface');
 
         $di->get('session');
@@ -1238,7 +1240,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
             $this->markTestSkipped('Swoole provider doubles are already installed.');
         }
 
-        $this->expectException(\LogicException::class);
+        $this->expectException(ServiceException::class);
         $this->expectExceptionMessage('Swoole not available');
 
         $di->get('swoole');

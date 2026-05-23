@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Support;
 
 use Dotenv\Dotenv;
+use PhalconKit\Exception\ConfigurationException;
 
 /**
  * This class provides utilities for managing environment variables and loading .env files.
@@ -208,7 +209,7 @@ class Env
             'immutable' => 'Immutable',
             'unsafe-mutable' => 'UnsafeMutable',
             'unsafe-immutable' => 'UnsafeImmutable',
-            default => throw new \Exception('Unsupported Env::$type defined'),
+            default => throw new ConfigurationException('Unsupported Env::$type defined'),
         };
     }
     

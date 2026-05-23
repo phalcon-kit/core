@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
-use Exception;
 use Phalcon\Support\Collection;
 use Phalcon\Filter\Filter;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractOrder;
@@ -47,7 +47,7 @@ trait Order
      * This method processes and sets the order parameter based on the "order" input received.
      *
      * @return void
-     * @throws Exception If the order parameter is invalid.
+     * @throws HttpException If the order parameter is invalid.
      */
     public function initializeOrder(): void
     {
@@ -65,7 +65,7 @@ trait Order
         
         // type check order parameter
         if (!is_array($order)) {
-            throw new Exception(sprintf('Invalid type for "order" parameter: expected null, string, or array, got %s.', gettype($order)), 400);
+            throw new HttpException(sprintf('Invalid type for "order" parameter: expected null, string, or array, got %s.', gettype($order)), 400);
         }
 
         $collection = new Collection([], false);
@@ -81,11 +81,11 @@ trait Order
                 }
                 
                 if (!is_array($item)) {
-                    throw new Exception(sprintf('Invalid order element at index %d: expected string or array, got %s.', $key, gettype($item)), 400);
+                    throw new HttpException(sprintf('Invalid order element at index %d: expected string or array, got %s.', $key, gettype($item)), 400);
                 }
                 
                 if (count($item) > 2) {
-                    throw new Exception(sprintf('Invalid order element at index %d: expected [field, direction] with at most 2 elements, got %d.', $key, count($item)), 400);
+                    throw new HttpException(sprintf('Invalid order element at index %d: expected [field, direction] with at most 2 elements, got %d.', $key, count($item)), 400);
                 }
 
                 // skip empty field name

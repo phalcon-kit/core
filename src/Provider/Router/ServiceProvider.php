@@ -17,8 +17,9 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Bootstrap;
 use PhalconKit\Bootstrap\Router;
 use PhalconKit\Cli\Router as CliRouter;
-use PhalconKit\Ws\Router as WsRouter;
+use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Provider\AbstractServiceProvider;
+use PhalconKit\Ws\Router as WsRouter;
 
 class ServiceProvider extends AbstractServiceProvider
 {
@@ -37,7 +38,10 @@ class ServiceProvider extends AbstractServiceProvider
                 Bootstrap::MODE_CLI => new CliRouter(true),
                 Bootstrap::MODE_WS => new WsRouter(true),
                 Bootstrap::MODE_MVC => new Router(true, $config),
-                default => throw new \Exception('Unable to register router in bootstrap mode: `' . $bootstrap->getMode() . '`', 400),
+                default => throw new ConfigurationException(
+                    'Unable to register router in bootstrap mode: `' . $bootstrap->getMode() . '`',
+                    400
+                ),
             };
             
             $configPath = match ($bootstrap->getMode()) {

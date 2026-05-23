@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Db\Adapter\Pdo;
 
 use Phalcon\Db\Column;
+use PhalconKit\Exception\RuntimeException;
 
 class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
 {
@@ -44,7 +45,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         } catch (\Throwable $e) {
 //            dd($statement, $placeholders, $dataTypes);
 //            dd($newStatement, $newPlaceholders, $newDataTypes, $e);
-            throw new \RuntimeException(
+            throw new RuntimeException(
                 $e->getMessage() . ' - ' .
                 $newStatement->queryString . ' - ' .
                 json_encode($newPlaceholders, JSON_THROW_ON_ERROR) . ' - ' .
