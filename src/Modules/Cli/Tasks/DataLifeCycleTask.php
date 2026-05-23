@@ -39,6 +39,13 @@ DOC;
         'models' => [],
         'policies' => [],
     ];
+
+    /**
+     * App tasks can populate these before calling parent::initialize().
+     */
+    public array $models = [];
+
+    public array $policies = [];
     
     /**
      * Initializes the configuration for data life cycle and sets up permissions for models.
@@ -50,8 +57,14 @@ DOC;
         Utils::setUnlimitedRuntime();
         
         $this->dataLifeCycleConfig = $this->config->pathToArray('dataLifeCycle') ?? [];
-        $this->dataLifeCycleConfig['models'] ??= [];
-        $this->dataLifeCycleConfig['policies'] ??= [];
+        $this->dataLifeCycleConfig['models'] = array_merge(
+            $this->dataLifeCycleConfig['models'] ?? [],
+            $this->getTaskDataLifeCycleModels()
+        );
+        $this->dataLifeCycleConfig['policies'] = array_merge(
+            $this->dataLifeCycleConfig['policies'] ?? [],
+            $this->getTaskDataLifeCyclePolicies()
+        );
         
         $this->addModelsPermissions();
     }
@@ -181,6 +194,21 @@ DOC;
     public function getDataLifeCyclePolicies(): array
     {
         return $this->dataLifeCycleConfig['policies'] ?? [];
+    }
+
+    private function getTaskDataLifeCycleModels(): array
+    {
+        // Avoid resolving the DI "models" magic property.
+        /** @var array $models */
+        $models = get_object_vars($this)['models'] ?? [];
+        return $models;
+    }
+
+    private function getTaskDataLifeCyclePolicies(): array
+    {
+        /** @var array $policies */
+        $policies = get_object_vars($this)['policies'] ?? [];
+        return $policies;
     }
     
     /**

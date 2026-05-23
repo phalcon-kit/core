@@ -61,6 +61,7 @@ class Security extends Injectable
         }
         
         $handler = $controller ?? $task ?? null;
+        $handlerRouteKey = $dispatcher instanceof CliDispatcher ? 'task' : 'controller';
         $handlerClass = $dispatcher->getHandlerClass();
 //        $handlerSuffix = $dispatcher->getHandlerSuffix();
         $action = $dispatcher->getActionName();
@@ -94,22 +95,14 @@ class Security extends Injectable
         if (!$allowed) {
             if (count($roles) > 1) {
                 $unauthorizedRoute = $this->config->pathToArray('router.unauthorized') ?? [];
-                if ($unauthorizedRoute['namespace'] === $namespace &&
-                    $unauthorizedRoute['module'] === $module &&
-                    $unauthorizedRoute['controller'] === $handler &&
-                    $unauthorizedRoute['action'] === $action
-                ) {
+                if ($this->isCurrentRoute($unauthorizedRoute, $namespace, $module, $handlerRouteKey, $handler, $action)) {
                     return true;
                 }
                 $dispatcher->forward($unauthorizedRoute);
             }
             else {
                 $forbiddenRoute = $this->config->pathToArray('router.forbidden') ?? [];
-                if ($forbiddenRoute['namespace'] === $namespace &&
-                    $forbiddenRoute['module'] === $module &&
-                    $forbiddenRoute['controller'] === $handler &&
-                    $forbiddenRoute['action'] === $action
-                ) {
+                if ($this->isCurrentRoute($forbiddenRoute, $namespace, $module, $handlerRouteKey, $handler, $action)) {
                     return true;
                 }
                 $dispatcher->forward($forbiddenRoute);
@@ -117,6 +110,40 @@ class Security extends Injectable
             return false;
         }
         
+        return true;
+    }
+
+    /**
+     * Detect dispatcher cycles for full or partial configured routes.
+     */
+    private function isCurrentRoute(
+        array $route,
+        ?string $namespace,
+        ?string $module,
+        string $handlerRouteKey,
+        ?string $handler,
+        string $action
+    ): bool {
+        if (!array_key_exists('action', $route) || $route['action'] !== $action) {
+            return false;
+        }
+
+        $currentRoute = [
+            'namespace' => $namespace,
+            'module' => $module,
+            $handlerRouteKey => $handler,
+        ];
+
+        foreach ($currentRoute as $part => $currentValue) {
+            if (!array_key_exists($part, $route)) {
+                continue;
+            }
+
+            if ($route[$part] !== $currentValue) {
+                return false;
+            }
+        }
+
         return true;
     }
 }

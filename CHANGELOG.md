@@ -222,6 +222,12 @@ tag has been cut yet.
   `security.argon2` cost values without PHP warnings.
 - Fixed bootstrap router base route registration so lean locale config can omit
   `locale.allowed` without PHP warnings.
+- Fixed model lifecycle policy lookup so model-to-policy mappings resolve
+  against `dataLifeCycle.policies` instead of the model mapping table.
+- Fixed data lifecycle task initialization so app tasks that populate lifecycle
+  `$models` and `$policies` before `parent::initialize()` keep those mappings.
+- Fixed dispatcher security forwarding so lean forbidden and unauthorized
+  routes can omit unrelated route keys without PHP warnings or repeat forwards.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
   reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation

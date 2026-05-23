@@ -170,6 +170,28 @@ class DispatcherTest extends AbstractUnit
         $result = $this->dispatcher->unsetForwardNullParts($forwardWithoutNullParts);
         $this->assertEquals($forwardWithoutNullParts, $result, "unsetForwardNullParts() does not keep parts correctly!");
     }
+
+    public function testMvcSecurityForwardsLeanForbiddenRouteWithoutWarnings(): void
+    {
+        [$security, $event, $dispatcher] = $this->createDeniedMvcSecurityFixture('index');
+
+        $this->withoutPhpWarnings(function () use ($security, $event, $dispatcher): void {
+            $this->assertFalse($security->checkAcl($event, $dispatcher));
+        });
+
+        $this->assertSame('forbidden', $dispatcher->getActionName());
+    }
+
+    public function testMvcSecurityRecognizesCurrentLeanForbiddenRouteWithoutWarnings(): void
+    {
+        [$security, $event, $dispatcher] = $this->createDeniedMvcSecurityFixture('forbidden');
+
+        $this->withoutPhpWarnings(function () use ($security, $event, $dispatcher): void {
+            $this->assertTrue($security->checkAcl($event, $dispatcher));
+        });
+
+        $this->assertSame('forbidden', $dispatcher->getActionName());
+    }
     
     public function testToArray(): void
     {
@@ -206,5 +228,79 @@ class DispatcherTest extends AbstractUnit
         $this->assertEquals('main', $cliArray['task']);
         $this->assertIsString($cliArray['taskSuffix']);
         $this->assertEquals('Task', $cliArray['taskSuffix']);
+    }
+
+    /**
+     * @return array{
+     *     0: \PhalconKit\Mvc\Dispatcher\Security,
+     *     1: \Phalcon\Events\Event,
+     *     2: \PhalconKit\Mvc\Dispatcher
+     * }
+     */
+    private function createDeniedMvcSecurityFixture(string $action): array
+    {
+        $dispatcher = new \PhalconKit\Mvc\Dispatcher();
+        $dispatcher->setNamespaceName('App\\Controllers');
+        $dispatcher->setModuleName('api');
+        $dispatcher->setControllerName('unit');
+        $dispatcher->setActionName($action);
+
+        $di = new \Phalcon\Di\Di();
+        $di->set('config', new \PhalconKit\Config\Config([
+            'permissions' => [
+                'roles' => [
+                    'guest' => [],
+                ],
+            ],
+            'router' => [
+                'forbidden' => [
+                    'action' => 'forbidden',
+                ],
+            ],
+        ]));
+        $di->set('acl', new class {
+            public function get(array $componentNames = ['components']): \Phalcon\Acl\Adapter\Memory
+            {
+                $acl = new \Phalcon\Acl\Adapter\Memory();
+                $acl->addRole(new \Phalcon\Acl\Role('guest'));
+                $acl->addComponent(new \Phalcon\Acl\Component('App\\Controllers\\UnitController'), ['index', 'forbidden']);
+
+                return $acl;
+            }
+        });
+        $di->set('identity', new class {
+            public function getAclRoles(): array
+            {
+                return ['guest'];
+            }
+        });
+
+        $security = new \PhalconKit\Mvc\Dispatcher\Security();
+        $security->setDI($di);
+
+        return [$security, new \Phalcon\Events\Event('beforeDispatchLoop', $security), $dispatcher];
+    }
+
+    private function withoutPhpWarnings(\Closure $callback): void
+    {
+        $handlerActive = true;
+        set_error_handler(
+            static function (int $code, string $message, string $file, int $line) use (&$handlerActive): never {
+                $handlerActive = false;
+                restore_error_handler();
+
+                throw new \ErrorException($message, 0, $code, $file, $line);
+            },
+            E_WARNING
+        );
+
+        try {
+            $callback();
+        }
+        finally {
+            if ($handlerActive) {
+                restore_error_handler();
+            }
+        }
     }
 }

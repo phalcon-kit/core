@@ -40,9 +40,11 @@ trait LifeCycle
     public static function getLifeCyclePolicy(): array
     {
         $config = Di::getDefault()->get('config');
-        $dataLifeCycleConfig = $config->pathToArray('dataLifeCycle');
-        $policyName = $dataLifeCycleConfig['models'][self::class] ?? null;
-        return isset($policyName) ? $dataLifeCycleConfig['models'][$policyName] ?? [] : [];
+        $dataLifeCycleConfig = $config->pathToArray('dataLifeCycle') ?? [];
+        $models = $dataLifeCycleConfig['models'] ?? [];
+        $policies = $dataLifeCycleConfig['policies'] ?? [];
+        $policyName = $models[static::class] ?? null;
+        return isset($policyName) ? $policies[$policyName] ?? [] : [];
     }
     
     public static function getLifeCyclePolicyQuery(): ?array

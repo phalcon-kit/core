@@ -1080,6 +1080,29 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertEmpty($position->getValidators());
     }
 
+    public function testLifeCyclePolicyResolvesConfiguredPolicyName(): void
+    {
+        $policy = [
+            'query' => [
+                'conditions' => 'createdAt < :createdAt:',
+                'bind' => ['createdAt' => '2026-01-01 00:00:00'],
+            ],
+        ];
+        $this->di->set('config', new \PhalconKit\Config\Config([
+            'dataLifeCycle' => [
+                'models' => [
+                    ModelBehaviorDouble::class => 'monthly',
+                ],
+                'policies' => [
+                    'monthly' => $policy,
+                ],
+            ],
+        ]));
+
+        $this->assertSame($policy, ModelBehaviorDouble::getLifeCyclePolicy());
+        $this->assertSame($policy['query'], ModelBehaviorDouble::getLifeCyclePolicyQuery());
+    }
+
     public function testNullableSqlNullStringsAreNormalizedBeforePersistence(): void
     {
         $model = new ModelBehaviorDouble();
