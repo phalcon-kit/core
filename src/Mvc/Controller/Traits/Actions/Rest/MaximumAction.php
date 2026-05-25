@@ -42,7 +42,7 @@ trait MaximumAction
      */
     public function maximumAction(): ResponseInterface
     {
-        $this->view->setVar('maximum', $this->maximum());
+        $this->setRestViewVar(self::REST_VIEW_MAXIMUM, $this->maximum());
         return $this->setRestResponse(true);
     }
 }

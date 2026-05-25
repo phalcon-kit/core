@@ -57,10 +57,10 @@ trait ReorderAction
         $entity = $this->requirePositionEntity($entity);
         $reordered = $entity->reorder($position);
         
-        $this->view->setVars([
-            'reordered' => $reordered,
-            'data' => $this->expose($entity),
-            'messages' => $entity->getMessages(),
+        $this->setRestViewVars([
+            self::REST_VIEW_REORDERED => $reordered,
+            self::REST_VIEW_DATA => $this->expose($entity),
+            self::REST_VIEW_MESSAGES => $entity->getMessages(),
         ]);
         
         return $this->setRestResponse($reordered);

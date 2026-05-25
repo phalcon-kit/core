@@ -58,7 +58,7 @@ trait FindAction
      */
     public function findAction(): ResponseInterface
     {
-        $this->view->setVar('data', $this->listExpose($this->find()));
+        $this->setRestViewVar(self::REST_VIEW_DATA, $this->listExpose($this->find()));
         return $this->setRestResponse(true);
     }
     
@@ -71,7 +71,7 @@ trait FindAction
      */
     public function findWithAction(): ResponseInterface
     {
-        $this->view->setVar('data', $this->listExpose($this->findWith()));
+        $this->setRestViewVar(self::REST_VIEW_DATA, $this->listExpose($this->findWith()));
         return $this->setRestResponse(true);
     }
 }

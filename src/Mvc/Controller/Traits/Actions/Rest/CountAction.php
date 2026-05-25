@@ -59,7 +59,7 @@ trait CountAction
     {
         $count = $this->count();
 
-        $this->view->setVar('count', $count);
+        $this->setRestViewVar(self::REST_VIEW_COUNT, $count);
         $this->setCountActionResponseFieldValues($count);
 
         return $this->setRestResponse(true);
@@ -133,15 +133,15 @@ trait CountAction
         $fields = array_fill_keys($this->getCountActionResponseFieldNames(), true);
 
         if (isset($fields[self::COUNT_RESPONSE_GROUPED_COUNT])) {
-            $this->view->setVar(self::COUNT_RESPONSE_GROUPED_COUNT, $count);
+            $this->setRestViewVar(self::COUNT_RESPONSE_GROUPED_COUNT, $count);
         }
 
         if (isset($fields[self::COUNT_RESPONSE_BUCKET_TOTAL])) {
-            $this->view->setVar(self::COUNT_RESPONSE_BUCKET_TOTAL, $this->getCountActionBucketTotal($count));
+            $this->setRestViewVar(self::COUNT_RESPONSE_BUCKET_TOTAL, $this->getCountActionBucketTotal($count));
         }
 
         if (isset($fields[self::COUNT_RESPONSE_TOTAL_COUNT])) {
-            $this->view->setVar(self::COUNT_RESPONSE_TOTAL_COUNT, $this->count($this->getCountActionTotalFind()));
+            $this->setRestViewVar(self::COUNT_RESPONSE_TOTAL_COUNT, $this->count($this->getCountActionTotalFind()));
         }
     }
 
@@ -249,7 +249,7 @@ trait CountAction
             return null;
         }
 
-        foreach (['rowcount', 'count', 'COUNT(*)', 'count(*)', 'total'] as $key) {
+        foreach (['rowcount', self::REST_VIEW_COUNT, 'COUNT(*)', 'count(*)', 'total'] as $key) {
             if (isset($row[$key])) {
                 return $this->normalizeCountActionBucketNumber($row[$key]);
             }

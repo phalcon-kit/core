@@ -60,7 +60,7 @@ trait FindFirstAction
             return $this->setRestErrorResponse(404);
         }
         
-        $this->view->setVar('data', $this->expose($result));
+        $this->setRestViewVar(self::REST_VIEW_DATA, $this->expose($result));
         return $this->setRestResponse(true);
     }
     
@@ -78,7 +78,7 @@ trait FindFirstAction
             return $this->setRestErrorResponse(404);
         }
         
-        $this->view->setVar('data', $this->expose($result));
+        $this->setRestViewVar(self::REST_VIEW_DATA, $this->expose($result));
         return $this->setRestResponse(true);
     }
 }

@@ -42,7 +42,7 @@ trait MinimumAction
      */
     public function minimumAction(): ResponseInterface
     {
-        $this->view->setVar('minimum', $this->minimum());
+        $this->setRestViewVar(self::REST_VIEW_MINIMUM, $this->minimum());
         return $this->setRestResponse(true);
     }
 }

@@ -76,7 +76,7 @@ trait SaveAction
         $ret = $this->create();
 
         // REST purity: single successful create returns 201
-        if (!isset($ret['results']) && $ret['saved'] === true) {
+        if (!isset($ret[self::REST_VIEW_RESULTS]) && $ret[self::REST_VIEW_SAVED] === true) {
             $this->response->setStatusCode(201, 'Created');
         }
 
@@ -98,7 +98,7 @@ trait SaveAction
         $ret = $this->update();
 
         // Explicit update success stays 200
-        if (!isset($ret['results']) && $ret['saved'] === true) {
+        if (!isset($ret[self::REST_VIEW_RESULTS]) && $ret[self::REST_VIEW_SAVED] === true) {
             $this->response->setStatusCode(200, 'OK');
         }
 
@@ -130,12 +130,12 @@ trait SaveAction
     {
         /* ---------- Batch handling ---------- */
 
-        if (isset($ret['results'])) {
+        if (isset($ret[self::REST_VIEW_RESULTS])) {
             $hasSuccess = false;
             $hasFailure = false;
 
-            foreach ($ret['results'] as $row) {
-                if (($row['saved'] ?? false) === true) {
+            foreach ($ret[self::REST_VIEW_RESULTS] as $row) {
+                if (($row[self::REST_VIEW_SAVED] ?? false) === true) {
                     $hasSuccess = true;
                 } else {
                     $hasFailure = true;
@@ -153,7 +153,7 @@ trait SaveAction
                 $this->response->setStatusCode(200, 'OK');
             }
 
-            $this->view->setVars($ret);
+            $this->setRestViewVars($ret);
 
             // REST success only if no failures
             return $this->setRestResponse($hasFailure === false);
@@ -161,17 +161,17 @@ trait SaveAction
 
         /* ---------- Single entity ---------- */
 
-        if ($ret['saved'] !== true) {
+        if ($ret[self::REST_VIEW_SAVED] !== true) {
             // Distinguish malformed vs domain failure
             $this->response->setStatusCode(
-                empty($ret['messages'] ?? null)
+                empty($ret[self::REST_VIEW_MESSAGES] ?? null)
                     ? 422 // domain / validation failure
                     : 400 // malformed / invalid request
             );
         }
 
-        $this->view->setVars($ret);
+        $this->setRestViewVars($ret);
 
-        return $this->setRestResponse($ret['saved'] === true);
+        return $this->setRestResponse($ret[self::REST_VIEW_SAVED] === true);
     }
 }

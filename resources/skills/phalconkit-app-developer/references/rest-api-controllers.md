@@ -158,8 +158,10 @@ abstract class AbstractController extends Controller
         $find = $this->prepareFind();
         $count = $this->count($find);
 
-        $this->view->setVar('count', is_countable($count) && $count ? count($count) : $count);
-        $this->view->setVar('data', $this->listExpose($this->find($find)));
+        $this->setRestViewVars([
+            self::REST_VIEW_COUNT => is_countable($count) && $count ? count($count) : $count,
+            self::REST_VIEW_DATA => $this->listExpose($this->find($find)),
+        ]);
 
         return $this->setRestResponse(true);
     }
@@ -169,8 +171,10 @@ abstract class AbstractController extends Controller
         $find = $this->prepareFind();
         $count = $this->count($find);
 
-        $this->view->setVar('count', is_countable($count) && $count ? count($count) : $count);
-        $this->view->setVar('data', $this->listExpose($this->findWith(null, $find)));
+        $this->setRestViewVars([
+            self::REST_VIEW_COUNT => is_countable($count) && $count ? count($count) : $count,
+            self::REST_VIEW_DATA => $this->listExpose($this->findWith(null, $find)),
+        ]);
 
         return $this->setRestResponse(true);
     }
@@ -187,6 +191,30 @@ Use this base-controller pattern intentionally:
   actions.
 - Avoid unused imports in copied examples; keep the base controller clean
   because every resource inherits it.
+
+## Response Contract
+
+`setRestResponse()` keeps the stable PhalconKit JSON envelope: `timestamp`,
+`status`, `code`, `response`, `view`, and optional `debug`. Custom actions should
+set response data through the named helpers:
+
+```php
+public function dashboardAction(): ResponseInterface
+{
+    $this->setRestViewVars([
+        self::REST_VIEW_DATA => $this->listExpose($this->find()),
+        self::REST_VIEW_COUNT => $this->count(),
+    ]);
+
+    return $this->setRestResponse(true);
+}
+```
+
+Use `REST_VIEW_DATA`, `REST_VIEW_MESSAGES`, `REST_VIEW_COUNT`,
+`REST_VIEW_SUM`, `REST_VIEW_AVERAGE`, `REST_VIEW_MINIMUM`,
+`REST_VIEW_MAXIMUM`, `REST_VIEW_SAVED`, `REST_VIEW_RESULTS`,
+`REST_VIEW_STATS`, `REST_VIEW_DELETED`, `REST_VIEW_RESTORED`, and
+`REST_VIEW_REORDERED` instead of repeating string literals in app controllers.
 
 ## Count Actions
 

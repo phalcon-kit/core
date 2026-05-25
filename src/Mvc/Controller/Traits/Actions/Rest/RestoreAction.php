@@ -50,10 +50,10 @@ trait RestoreAction
         $entity = $this->requireSoftDeleteEntity($entity);
         $restored = $entity->restore();
         
-        $this->view->setVars([
-            'restored' => $restored,
-            'data' => $this->expose($entity),
-            'messages' => $entity->getMessages(),
+        $this->setRestViewVars([
+            self::REST_VIEW_RESTORED => $restored,
+            self::REST_VIEW_DATA => $this->expose($entity),
+            self::REST_VIEW_MESSAGES => $entity->getMessages(),
         ]);
         
         return $this->setRestResponse($restored);

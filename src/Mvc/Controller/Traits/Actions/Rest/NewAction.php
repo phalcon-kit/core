@@ -46,7 +46,7 @@ trait NewAction
         $mapFields = $this->getMapFields()?->toArray();
         $entity->assign($params, $saveFields, $mapFields);
         
-        $this->view->setVar('data', $this->expose($entity));
+        $this->setRestViewVar(self::REST_VIEW_DATA, $this->expose($entity));
         return $this->setRestResponse(true);
     }
 }

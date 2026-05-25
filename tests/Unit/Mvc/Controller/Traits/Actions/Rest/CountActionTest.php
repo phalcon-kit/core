@@ -28,7 +28,7 @@ class CountActionTest extends AbstractUnit
 
         $controller->countAction();
 
-        $this->assertSame(7, $controller->view->getVar('count'));
+        $this->assertSame(7, $controller->view->getVar(CountActionControllerDouble::REST_VIEW_COUNT));
         $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT));
         $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
         $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
@@ -58,7 +58,7 @@ class CountActionTest extends AbstractUnit
 
         $controller->countAction();
 
-        $this->assertSame($groupedCount, $controller->view->getVar('count'));
+        $this->assertSame($groupedCount, $controller->view->getVar(CountActionControllerDouble::REST_VIEW_COUNT));
         $this->assertSame($groupedCount, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT));
         $this->assertSame(7, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
         $this->assertSame(5, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));

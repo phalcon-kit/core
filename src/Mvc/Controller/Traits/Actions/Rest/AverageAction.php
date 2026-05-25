@@ -33,7 +33,7 @@ trait AverageAction
      */
     public function averageAction(): ResponseInterface
     {
-        $this->view->setVar('average', $this->average());
+        $this->setRestViewVar(self::REST_VIEW_AVERAGE, $this->average());
         return $this->setRestResponse(true);
     }
 }

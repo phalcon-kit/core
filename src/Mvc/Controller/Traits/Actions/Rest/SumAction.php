@@ -33,7 +33,7 @@ trait SumAction
      */
     public function sumAction(): ResponseInterface
     {
-        $this->view->setVar('sum', $this->sum());
+        $this->setRestViewVar(self::REST_VIEW_SUM, $this->sum());
         return $this->setRestResponse(true);
     }
 }

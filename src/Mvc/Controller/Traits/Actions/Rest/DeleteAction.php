@@ -42,10 +42,10 @@ trait DeleteAction
         }
         
         $deleted = $entity->delete();
-        $this->view->setVars([
-            'deleted' => $deleted,
-            'data' => $this->expose($entity),
-            'messages' => $entity->getMessages(),
+        $this->setRestViewVars([
+            self::REST_VIEW_DELETED => $deleted,
+            self::REST_VIEW_DATA => $this->expose($entity),
+            self::REST_VIEW_MESSAGES => $entity->getMessages(),
         ]);
         
         return $this->setRestResponse($deleted);

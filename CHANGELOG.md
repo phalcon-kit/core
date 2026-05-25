@@ -22,6 +22,9 @@ release notes.
 - Added opt-in REST count response fields for grouped endpoints:
   `groupedCount` for the native grouped count result, `bucketTotal` for the sum
   of returned buckets, and `totalCount` for a separate ungrouped count query.
+- Added named REST response envelope/view-field constants and protected
+  response-view helpers so framework and application controllers can use a
+  stable response contract without changing the existing JSON payload shape.
 
 ## 2.1.0 - 2026-05-25
 

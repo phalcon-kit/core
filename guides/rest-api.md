@@ -241,8 +241,8 @@ public function dashboardAction(): ResponseInterface
         'order' => '[' . $this->getModelName() . '].[id] DESC',
     ]);
 
-    $this->view->setVar(
-        'data',
+    $this->setRestViewVar(
+        self::REST_VIEW_DATA,
         $this->transformCollection($projects, new ProjectTransformer())
     );
 
@@ -252,6 +252,49 @@ public function dashboardAction(): ResponseInterface
 
 Use transformers when response shape, field names, includes, or performance
 need tighter control than a simple expose list.
+
+## REST Response Contract
+
+REST responses keep the existing envelope:
+
+```json
+{
+  "timestamp": "2026-05-25T18:30:00-04:00",
+  "status": "OK",
+  "code": 200,
+  "response": true,
+  "view": {
+    "data": []
+  }
+}
+```
+
+Use the response constants and helpers when adding custom actions:
+
+```php
+public function dashboardAction(): ResponseInterface
+{
+    $this->setRestViewVars([
+        self::REST_VIEW_DATA => $this->listExpose($this->find()),
+        self::REST_VIEW_COUNT => $this->count(),
+    ]);
+
+    return $this->setRestResponse(true);
+}
+```
+
+The standard envelope keys are `REST_PAYLOAD_TIMESTAMP`,
+`REST_PAYLOAD_STATUS`, `REST_PAYLOAD_CODE`, `REST_PAYLOAD_RESPONSE`,
+`REST_PAYLOAD_VIEW`, and `REST_PAYLOAD_DEBUG`.
+
+The standard view keys include `REST_VIEW_DATA`, `REST_VIEW_MESSAGES`,
+`REST_VIEW_COUNT`, `REST_VIEW_SUM`, `REST_VIEW_AVERAGE`,
+`REST_VIEW_MINIMUM`, `REST_VIEW_MAXIMUM`, `REST_VIEW_SAVED`,
+`REST_VIEW_RESULTS`, `REST_VIEW_STATS`, `REST_VIEW_DELETED`,
+`REST_VIEW_RESTORED`, and `REST_VIEW_REORDERED`.
+
+The helpers do not change the payload shape. They make response contracts
+discoverable and keep string literals out of framework and app controllers.
 
 ## Advanced Conditions
 
