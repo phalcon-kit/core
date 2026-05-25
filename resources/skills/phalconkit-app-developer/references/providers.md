@@ -509,7 +509,6 @@ unless a row says otherwise. The service name is the DI key.
 | `Helper` | `helper` | `helpers` | Helper factory with optional app-defined helpers. Use `$this->helper->slugify($value)` and other registered helper methods instead of duplicating helper code. |
 | `Utils` | `utils` | none | General framework utility helper. Use `\PhalconKit\Support\Utils::getMemoryUsage()` or the DI service when an injectable needs the utility object. |
 | `LoremIpsum` | `loremIpsum` | none | Lorem ipsum generator for scaffolds/dev fixtures. Use `$this->loremIpsum->words(10)` or package methods in non-production content generation. |
-| `Gravatar` | `gravatar` | `gravatar` | Provider class is currently a placeholder: its service registration is commented out. Do not rely on `$this->gravatar` unless the app/core implements the registration. |
 
 ## Provider Replacement Checklist
 

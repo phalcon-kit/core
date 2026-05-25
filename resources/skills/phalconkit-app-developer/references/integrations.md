@@ -30,7 +30,6 @@ may need to be required by the application when used outside core development.
 | AWS SDK | `aws` | `aws` | tasks, providers, file/storage services |
 | File storage | `fileSystem` | `fileSystem` | upload controllers, import/export tasks, domain services |
 | OCR | `ocr` | app-specific OCR options | import tasks, document processing |
-| Gravatar | `gravatar` | `gravatar` | user/profile display helpers |
 | reCAPTCHA | `reCaptcha` | `reCaptcha` | public forms, auth and registration controllers |
 | Redis | `redis` | `redis` | cache coordination, pub/sub, queue-like app flows |
 | Swoole | `swoole` | `swoole` | WebSocket module and long-running servers |

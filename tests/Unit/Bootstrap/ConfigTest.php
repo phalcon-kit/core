@@ -38,7 +38,6 @@ class ConfigTest extends AbstractUnit
             'modules',
             'router',
             'view',
-            'gravatar',
             'reCaptcha',
             'locale',
             'translate',

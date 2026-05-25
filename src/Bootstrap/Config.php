@@ -57,7 +57,6 @@ use PhalconKit\Support\Version;
  * @property PhalconConfig $filters
  * @property PhalconConfig $modules
  * @property PhalconConfig $router
- * @property PhalconConfig $gravatar
  * @property PhalconConfig $reCaptcha
  * @property PhalconConfig $aws
  * @property PhalconConfig $locale
@@ -528,7 +527,6 @@ class Config extends \PhalconKit\Config\Config
                 Provider\Utils\ServiceProvider::class => Env::get('PROVIDER_UTILS', Provider\Utils\ServiceProvider::class),
                 Provider\Aws\ServiceProvider::class => Env::get('PROVIDER_AWS', Provider\Aws\ServiceProvider::class),
                 Provider\OCR\ServiceProvider::class => Env::get('PROVIDER_OCR', Provider\OCR\ServiceProvider::class),
-                Provider\Gravatar\ServiceProvider::class => Env::get('PROVIDER_GRAVATAR', Provider\Gravatar\ServiceProvider::class),
                 Provider\Clamav\ServiceProvider::class => Env::get('PROVIDER_CLAMAV', Provider\Clamav\ServiceProvider::class),
                 Provider\OpenAi\ServiceProvider::class => Env::get('PROVIDER_OPENAI', Provider\OpenAi\ServiceProvider::class),
                 Provider\LoremIpsum\ServiceProvider::class => Env::get('PROVIDER_LOREM_IPSUM', Provider\LoremIpsum\ServiceProvider::class),
@@ -802,16 +800,6 @@ class Config extends \PhalconKit\Config\Config
                 'path' => Env::get('VOLT_PATH', './'),
                 'prefix' => Env::get('VOLT_PREFIX', null),
                 'stat' => Env::get('VOLT_STAT', true), // Whether Phalcon must check if there are differences between the template file and its compiled path
-            ],
-            
-            /**
-             * Gravatar Configuration
-             */
-            'gravatar' => [
-                'default_image' => Env::get('GRAVATAR_DEFAULT_IMAGE', 'identicon'),
-                'size' => Env::get('GRAVATAR_SIZE', 24),
-                'rating' => Env::get('GRAVATAR_RATING', 'pg'),
-                'use_https' => Env::get('GRAVATAR_USE_HTTPS', true),
             ],
             
             /**
