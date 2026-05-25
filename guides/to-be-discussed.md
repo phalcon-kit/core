@@ -135,10 +135,14 @@ Keep for discussion:
   The assets manager needs a native-style `TagFactory`, while the public `tag`
   service exposes PhalconKit's static helper facade. A cleanup would likely need
   separate service names or a compatibility bridge.
-- Gravatar provider:
-  `src/Provider/Gravatar/ServiceProvider.php`.
-  Either implement a maintained client with dependency/config/privacy decisions
-  or remove the empty provider from the default provider surface.
+- CLI router interface compatibility:
+  `src/Cli/Router.php`, `tests/Unit/Cli/RouterTest.php`,
+  `tests/Unit/Cli/ModuleTest.php`, `tests/Unit/Ws/ModuleTest.php`.
+  `Phalcon\Cli\RouterInterface` exists in the current runtime, but
+  `Phalcon\Cli\Router` is still not an instance of it because native return
+  signatures such as `setDefaultAction()` and `getRouteById()` do not match the
+  interface. Keep framework code typed against `PhalconKit\Router\RouterInterface`
+  unless upstream Phalcon changes the native implementation.
 - Model setup defaults:
   `src/Mvc/Model.php`.
   Revisit `notNullValidations => false` only after generated-model validation,
@@ -147,6 +151,11 @@ Keep for discussion:
   `src/Mvc/Model/Dynamic.php`.
   Replace APCu metadata key deletion with a metadata strategy or adapter wrapper
   only if it handles dynamic sources without changing normal model caching.
+- Dynamic record model identity:
+  `src/Modules/Api/Controllers/RecordController.php`.
+  The controller now uses `Dynamic::createInstance()` instead of runtime
+  `eval()`-generated subclasses. Revisit only if a real app needs distinct
+  model class names per dynamic source for metadata, events, or policy hooks.
 - Relationship assignment:
   `src/Mvc/Model/Traits/Relationship.php`,
   `tests/Unit/Mvc/Model/ModelTest.php`.
@@ -188,6 +197,22 @@ Keep for discussion:
   Filter hoisting and join-existence validation could improve performance or
   safety, but they need tests for aliases, permission-scoped joins, and
   user-supplied filter fields.
+- Aggregate WHERE/HAVING promotion:
+  `src/Mvc/Controller/Traits/Query.php`.
+  Automatically moving conditions containing aggregate functions from `where`
+  to `having` is disabled. A future implementation needs parser-aware behavior
+  or strict tests so normal fields containing function-like text are not moved
+  incorrectly.
+- Scaffolded API controller generation:
+  `src/Modules/Cli/Tasks/ScaffoldTask.php`.
+  Controller generation was previously sketched but is not active. Decide
+  whether scaffolding should own concrete API controllers, or whether generated
+  model abstracts/interfaces should remain the only core-owned scaffold output.
+- Faker task table scope:
+  `src/Modules/Cli/Tasks/FakerTask.php`.
+  The current task generates data for the first non-deleted table. Generating
+  all dynamic tables needs explicit limits, table filtering, and safety rules
+  before it can be enabled.
 - Distinct REST action:
   `src/Mvc/Controller/Traits/Actions/Rest/DistinctAction.php`.
   Implement only after response shape, allowed fields, joins, permissions,
@@ -202,6 +227,11 @@ Keep for discussion:
   Composite relation keys, multiple local/reference fields, through-relation
   soft-delete visibility, optional grouping, and loader options need a coherent
   API instead of isolated condition edits.
+- Binary UUID lifecycle:
+  `src/Mvc/Model/Traits/Uuid.php`.
+  Binary UUID create support exists, but fetch-time conversion and native
+  database UUID round-tripping need a tested API before adding transform hooks
+  for existing rows.
 - Locale model magic:
   `src/Mvc/Model/Interfaces/LocaleInterface.php`.
   Add `__isset()`/`__unset()` only after translated-property presence semantics
@@ -228,6 +258,18 @@ Closed or clarified during review:
 
 - Blank comments in flash, exposer, and dispatcher code were removed or
   replaced with explicit current-behavior comments.
+- Commented translation coverage was restored with the real `Phalcon Kit`
+  message key; delimiter-containing nested translation keys remain an open
+  design question above.
+- Commented ClamAV file-positive coverage was removed because stream-based
+  EICAR coverage already asserts positive detection without storing an EICAR
+  fixture in the repository.
+- Commented debug dumps, obsolete fallback throws, and runtime `eval()` sketch
+  code were removed from source. Current behavior is now either executable code
+  or tracked in this discussion guide.
+- REST query initialization now carries the configured aggregate `column`
+  collection into prepared find options instead of leaving the live code
+  commented out.
 - JSON escaping of `null` remains `null` as a string because the helper is used
   for `JSON.parse(decodeURIComponent(...))` payloads.
 - Event cancellation behavior is now asserted directly instead of questioned in

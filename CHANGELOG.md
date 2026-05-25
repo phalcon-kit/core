@@ -169,6 +169,9 @@ tag has been cut yet.
 - Added a reviewed inline follow-up inventory to the maintainer discussion
   guide, covering identity, providers, relationships, eager loading,
   dispatcher hooks, lifecycle helpers, and test fixture decisions.
+- Added official Phalcon documentation references to high-value framework
+  docblocks for DI, routing, dispatcher, application, view, models, and
+  relationship extension points.
 
 ### Changed
 
@@ -242,6 +245,18 @@ tag has been cut yet.
 - Expanded framework-facing PHPDoc for the JWT helper and logger registry APIs.
 - Expanded PHPDoc for PhalconKit DI containers, typed DI helpers, and framework
   exception contracts.
+- Expanded PHPDoc for MVC application/view wrappers, REST query state,
+  dispatcher listeners, WebSocket routing, and database profiling.
+- Replaced commented-out source/test code with live assertions, current
+  behavior comments, or durable maintainer discussion entries.
+- Removed the placeholder Gravatar provider, default provider registration,
+  default config section, and framework guidance references because the package
+  does not ship a maintained Gravatar client.
+- Made the MVC router's native `Phalcon\Mvc\RouterInterface` implementation
+  explicit and documented/tested why CLI and WebSocket routers can extend the
+  native CLI router plus implement PhalconKit's router interface, but cannot
+  also declare `Phalcon\Cli\RouterInterface` while Phalcon 5.13 signatures
+  remain incompatible.
 - Normalized framework-thrown configuration, service, HTTP, logic, argument,
   and runtime failures to PhalconKit-scoped exceptions while preserving native
   PHP exception categories for compatibility.
@@ -328,6 +343,10 @@ tag has been cut yet.
   are preserved instead of broadening aggregate queries.
 - Fixed REST count queries with joins so single-column primary keys default to
   distinct root-row counts instead of duplicated joined rows.
+- Fixed REST query initialization so configured aggregate columns are carried
+  into prepared find options.
+- Fixed disabled translation coverage by asserting the existing `Phalcon Kit`
+  translation key instead of leaving the stale `PhalconKit` test commented out.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
   reachable Redis daemon when the Redis extension is installed.
 - Fixed eager-loaded relationship assignment for models that declare relation
