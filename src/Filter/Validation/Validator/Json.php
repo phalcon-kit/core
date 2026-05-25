@@ -17,24 +17,54 @@ use Phalcon\Filter\Validation;
 use Phalcon\Filter\Validation\AbstractValidator;
 use Phalcon\Filter\Validation\ValidatorInterface;
 
+/**
+ * Validate that a field contains a syntactically valid JSON string.
+ *
+ * The validator intentionally checks strings only. It does not accept decoded
+ * arrays, objects, integers, or booleans, because controllers and models that
+ * use this validator are asserting the transport/storage representation rather
+ * than the decoded PHP value.
+ *
+ * `json_validate()` is used instead of `json_decode()` so validation does not
+ * allocate decoded structures just to prove syntax. The optional `depth` and
+ * `flags` options are passed through to PHP's JSON validator.
+ */
 class Json extends AbstractValidator implements ValidatorInterface
 {
+    /**
+     * Default validation message used when no custom message is configured.
+     *
+     * @var string
+     */
     protected $template = 'Field :field must be a valid json format';
     
     /**
-     * @param array $options = [
-     *     'message' => '',
-     *     'template' => '',
-     *     'depth' => 512,
-     *     'flags' => 0,
-     *     'allowEmpty' => false
-     * ]
+     * Create the JSON validator.
+     *
+     * Supported options:
+     * - `message`/`template`: native Phalcon message customization.
+     * - `allowEmpty`: when true, PHP-empty values such as `null` and `''` pass
+     *   before JSON syntax is checked.
+     * - `depth`: maximum nesting depth passed to `json_validate()`.
+     * - `flags`: JSON validation flags passed to `json_validate()`.
+     *
+     * @param array<string, mixed> $options Native Phalcon validator options plus
+     *     JSON validation options.
      */
     public function __construct(array $options = [])
     {
         parent::__construct($options);
     }
     
+    /**
+     * Validate the configured field value from the Phalcon validation context.
+     *
+     * @param Validation $validation Current validation context and message
+     *     collection.
+     * @param mixed $field Field name or field identifier provided by Phalcon.
+     *
+     * @return bool True when the value is an allowed empty value or valid JSON.
+     */
     #[\Override]
     public function validate(Validation $validation, mixed $field): bool
     {

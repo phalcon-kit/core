@@ -22,27 +22,51 @@ use PhalconKit\Filter\Sanitize\Md5;
  * Phalcon filter service with PhalconKit sanitizers registered by default.
  *
  * The service keeps Phalcon's native filter behavior and adds named sanitizers
- * for md5 hashes, JSON strings, and IP address normalization. Consumers can use
- * the declared magic methods through Phalcon's filter API or request the named
- * filters directly.
+ * for md5-style lowercase hexadecimal tokens, JSON strings, and IP address
+ * normalization. Consumers can use the declared magic methods through Phalcon's
+ * filter API, or request the named filters directly through
+ * `sanitize($value, [Filter::FILTER_JSON])`.
  *
- * @method string md5(string $input)
- * @method string json(string $input)
- * @method string ipv4(string $input)
- * @method string ipv6(string $input)
+ * Invalid values follow the sanitizer contract for their data type: JSON keeps
+ * `null` as `null`, invalid JSON becomes `null`, and invalid IP addresses become
+ * an empty string so form/request sanitization can collapse them to "no value".
+ *
+ * @see https://docs.phalcon.io/5.13/filter/
+ *
+ * @method string|null md5(string $input)
+ * @method string|null json(?string $input = null)
+ * @method string ipv4(?string $input = null)
+ * @method string ipv6(?string $input = null)
  */
 class Filter extends \Phalcon\Filter\Filter
 {
+    /**
+     * Sanitizer alias for lowercase hexadecimal md5-style tokens.
+     */
     public const string FILTER_MD5 = 'md5';
     
+    /**
+     * Sanitizer alias for strings that must already contain valid JSON.
+     */
     public const string FILTER_JSON = 'json';
     
+    /**
+     * Sanitizer alias for IPv4 address validation/normalization.
+     */
     public const string FILTER_IPV4 = 'ipv4';
     
+    /**
+     * Sanitizer alias for IPv6 address validation/normalization.
+     */
     public const string FILTER_IPV6 = 'ipv6';
     
     /**
      * Register PhalconKit sanitizers after Phalcon initializes its mapper.
+     *
+     * Phalcon passes its service mapper during construction. Calling the parent
+     * first preserves native filters, then the framework aliases are layered on
+     * top so the DI `filter` service and standalone `FilterFactory` instances
+     * expose the same custom sanitizers.
      *
      * @param array<string, string> $mapper Existing Phalcon filter mapper.
      *

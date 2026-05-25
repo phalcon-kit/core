@@ -20,6 +20,13 @@ namespace PhalconKit\Filter;
  * changing behavior. Keeping the wrapper in the framework namespace gives
  * applications a stable DI type to extend or replace when validation policy
  * needs to become application-specific.
+ *
+ * Use this class anywhere a native `Phalcon\Filter\Validation` instance is
+ * expected. Framework-specific validators under `PhalconKit\Filter\Validation`
+ * are designed to plug into this native validation flow without changing the
+ * message collection or field binding semantics.
+ *
+ * @see https://docs.phalcon.io/5.13/filter-validation/
  */
 class Validation extends \Phalcon\Filter\Validation
 {
