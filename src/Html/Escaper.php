@@ -16,32 +16,46 @@ namespace PhalconKit\Html;
 use PhalconKit\Html\Escaper\EscaperInterface;
 
 /**
- * PhalconKit\Html\Escaper
+ * HTML escaper with PhalconKit JSON-attribute support.
  *
- * Escapes different kinds of text securing them. By using this component you
- * may prevent XSS attacks.
+ * The class keeps Phalcon's native HTML/CSS/JS escaping behavior and adds a
+ * `json()` helper used by PhalconKit tag helpers for safely embedding JSON
+ * payloads in HTML attributes. The JSON helper raw-url-encodes the payload so a
+ * client can decode it with `decodeURIComponent()` before parsing.
  *
- * This component only works with UTF-8. The PREG extension needs to be compiled
- * with UTF-8 support.
+ * Like Phalcon's escaper, this component is intended for UTF-8 content. The
+ * PREG extension must have UTF-8 support enabled.
  *
  * ```php
- * $escaper = new \Phalcon\Html\Escaper();
+ * $escaper = new \PhalconKit\Html\Escaper();
  *
- * $escaped = $escaper->escapeCss("font-family: <Verdana>");
+ * $escaped = $escaper->json('{"name":"Ada"}');
  *
- * echo $escaped; // font\2D family\3A \20 \3C Verdana\3E
+ * echo $escaped; // %7B%22name%22%3A%22Ada%22%7D
  * ```
+ *
+ * @see \Phalcon\Html\Escaper
  */
 class Escaper extends \Phalcon\Html\Escaper implements EscaperInterface
 {
     /**
-     * Escapes a JSON string by raw URL encoding it.
+     * Escape a JSON payload for safe embedding in an HTML attribute.
      *
-     *  JS side could decode and parse this way:
-     *  JSON.parse(decodeURIComponent('<?= $this->escaper->json([]);?>'));
+     * Pass an already encoded JSON string when possible. If the value is a
+     * scalar that is not valid JSON, it is JSON-encoded as a scalar before raw
+     * URL encoding. Raw arrays and objects are not accepted by the current
+     * contract because `json_validate()` requires a string input before the
+     * fallback `json_encode()` branch is reached.
      *
-     * @param mixed|null $json The JSON string to escape. If null, an empty string is escaped.
-     * @return string Returns the raw URL encoded JSON string.
+     * JavaScript can decode and parse values like this:
+     * ```js
+     * JSON.parse(decodeURIComponent(encodedValue))
+     * ```
+     *
+     * @param mixed|null $json JSON string or scalar value to encode. Null is
+     *     represented as the literal string `null`.
+     *
+     * @return string Raw-url-encoded JSON payload.
      */
     #[\Override]
     public function json(mixed $json = null): string

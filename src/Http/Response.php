@@ -18,7 +18,10 @@ namespace PhalconKit\Http;
  *
  * This wrapper delegates to Phalcon's response object while providing a
  * framework-scoped type for DI definitions, controller return values, and
- * service contracts.
+ * service contracts. It does not override serialization, header emission, or
+ * status-code behavior; those remain native Phalcon response responsibilities.
+ *
+ * @see \Phalcon\Http\Response
  */
 class Response extends \Phalcon\Http\Response implements ResponseInterface
 {

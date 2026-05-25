@@ -15,8 +15,15 @@ use Phalcon\Support\Debug\Dump;
 
 if (!function_exists('dump')) {
     /**
-     * Dump the passed variables and end the script.
-     * @param mixed ...$params The variables to be dumped.
+     * Dump values in a CLI-safe or browser-safe representation.
+     *
+     * CLI and phpdbg output is encoded as pretty JSON so command-line debugging
+     * stays readable without HTML. Web output uses Phalcon's debug dumper to
+     * preserve type details in a browser-friendly format. This helper does not
+     * terminate execution; use `dd()` or `vdd()` for dump-and-die behavior.
+     *
+     * @param mixed ...$params Values to inspect.
+     *
      * @return void
      */
     function dump(...$params): void
@@ -37,9 +44,10 @@ if (!function_exists('exit_500')) {
     /**
      * Terminate execution with a 500 Internal Server Error response code.
      *
-     * This function sets the response headers to indicate a 500 Internal Server Error
-     * and terminates the execution of the script. It should be used when an unrecoverable
-     * error occurs and the server cannot fulfill the request.
+     * In web SAPIs, the response code is set to 500 when headers are still
+     * mutable. In CLI/phpdbg the helper simply exits with status code 1. This is
+     * intended for debugging helpers and unrecoverable bootstrap failures, not
+     * for normal exception/control-flow handling.
      *
      * @return void
      */
@@ -54,8 +62,13 @@ if (!function_exists('exit_500')) {
 
 if (!function_exists('dd')) {
     /**
-     * Dump variables and terminate execution with an error 500.
-     * @param mixed ...$params The variables to be dumped.
+     * Dump values and terminate execution as an error.
+     *
+     * This is the framework's dump-and-die helper. It uses `dump()` for output
+     * formatting, then delegates to `exit_500()` for web response/error status.
+     *
+     * @param mixed ...$params Values to inspect before termination.
+     *
      * @return void
      */
     function dd(...$params): void
@@ -67,10 +80,14 @@ if (!function_exists('dd')) {
 
 if (!function_exists('vdd')) {
     /**
-     * Prints the values of the given parameters using var_dump and
-     * then exits the program with a HTTP response status code of 500.
+     * Dump values through native `var_dump()` and terminate execution.
      *
-     * @param mixed ...$params The parameters to be dumped.
+     * This helper is intentionally lower-level than `dd()`: it bypasses the
+     * Phalcon debug dumper so edge cases involving object debug handlers,
+     * resources, or raw PHP output can be inspected directly.
+     *
+     * @param mixed ...$params Values to inspect before termination.
+     *
      * @return void
      */
     function vdd(...$params): void

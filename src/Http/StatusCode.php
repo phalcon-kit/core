@@ -14,17 +14,21 @@ declare(strict_types=1);
 namespace PhalconKit\Http;
 
 /**
- * According to Wikipedia List of HTTP status codes
+ * HTTP status-code constants and reason-phrase lookup helpers.
+ *
+ * The list combines standard status codes with a few commonly encountered
+ * vendor/proxy extension codes so framework code can avoid hard-coded numeric
+ * literals in controllers, exceptions, and tests.
  *
  * Example:
  * ```php
- *  StatusCode::getMessage[StatusCode::OK] // 'OK'
- *  StatusCode::getMessage[200] // 'OK'
- *  StatusCode::$messages[200] // 'OK'
- *  StatusCode::OK // 200
+ * StatusCode::getMessage(StatusCode::OK); // 'OK'
+ * StatusCode::getMessage(200); // 'OK'
+ * StatusCode::$messages[200]; // 'OK'
+ * StatusCode::OK; // 200
  * ```
  *
- * @link https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+ * @see https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
  */
 class StatusCode
 {
@@ -109,6 +113,11 @@ class StatusCode
     public const int OVERLOADED = 503;
     public const int BUSY = 503;
     
+    /**
+     * Map status codes to their reason phrases.
+     *
+     * @var array<int, string>
+     */
     public static array $messages = [
         self::CONTINUE => 'Continue',
         self::SWITCHING_PROTOCOLS => 'Switching Protocols',
@@ -188,8 +197,11 @@ class StatusCode
     ];
     
     /**
-     * Get the HTTP status message for the specified HTTP status code
-     * getMessage(200) -> 'OK'
+     * Return the reason phrase for an HTTP status code.
+     *
+     * @param int $code HTTP status code.
+     *
+     * @return string|null Reason phrase, or null when the code is unknown.
      */
     public static function getMessage(int $code): ?string
     {
@@ -197,8 +209,14 @@ class StatusCode
     }
     
     /**
-     * Get the HTTP code from the specified HTTP status message
-     * getCode('OK') -> 200
+     * Return the HTTP status code for an exact reason phrase.
+     *
+     * Matching is case-sensitive and uses the reason phrases stored in
+     * `StatusCode::$messages`.
+     *
+     * @param string $message Reason phrase to look up.
+     *
+     * @return int|null Status code, or null when the phrase is unknown.
      */
     public static function getCode(string $message): ?int
     {
@@ -206,8 +224,16 @@ class StatusCode
     }
     
     /**
-     * Get the HTTP code from the specified HTTP status message
-     * getStatus(200) -> '200 OK'
+     * Return a combined status line fragment such as `200 OK`.
+     *
+     * Unknown codes return the numeric code as a string because existing callers
+     * and tests use this helper as a display formatter, not only as a strict
+     * lookup.
+     *
+     * @param int $code HTTP status code.
+     *
+     * @return string|null Status code plus reason phrase, or the numeric code as
+     *     a string when the phrase is unknown.
      */
     public static function getStatus(int $code): ?string
     {

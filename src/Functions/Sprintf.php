@@ -13,16 +13,32 @@ declare(strict_types=1);
 
 if (!function_exists('implode_sprintf')) {
     /**
-     * Will implode an array_map return of the sprintf or mb_sprintf results
+     * Format every non-null array value and join the formatted parts.
+     *
+     * The callback receives both value and key, so formats can use `%1$s` for
+     * the value and `%2$s` for the key. Null values are omitted before
+     * formatting; false, zero, and empty strings are preserved.
+     *
+     * @param array<array-key, mixed> $array Values to format.
+     * @param string $glue String inserted between formatted values.
+     * @param string $format `sprintf()`/`mb_vsprintf()` format string.
+     * @param bool $multibyte Whether formatting should use `mb_vsprintf()`.
+     * @param string|null $encoding Encoding used when multibyte formatting is
+     *     enabled. Null uses `mb_internal_encoding()`.
+     *
+     * @return string Joined formatted values, or an empty string for an empty
+     *     input array.
      */
-    function implode_sprintf(array $array = [], string $glue = ' ', string $format = '%s', bool $multibyte = false, ?string $encoding = null): string
-    {
-        // Filter out null values from the array
-        $array = array_filter($array, function ($value) {
-            return $value !== null;
-        });
+    function implode_sprintf(
+        array $array = [],
+        string $glue = ' ',
+        string $format = '%s',
+        bool $multibyte = false,
+        ?string $encoding = null
+    ): string {
+        $array = array_filter($array, static fn (mixed $value): bool => $value !== null);
         
-        return implode($glue, array_map(function ($value, $key) use ($format, $multibyte, $encoding) {
+        return implode($glue, array_map(static function (mixed $value, string|int $key) use ($format, $multibyte, $encoding): string {
             return $multibyte
                 ? mb_vsprintf($format, [$value, $key], $encoding)
                 : sprintf($format, $value, $key);
@@ -32,7 +48,18 @@ if (!function_exists('implode_sprintf')) {
 
 if (!function_exists('implode_mb_sprintf')) {
     /**
-     * Will implode an array_map return of the mb_sprintf results
+     * Multibyte-safe variant of `implode_sprintf()`.
+     *
+     * Values are formatted with `mb_vsprintf()` so string width and precision
+     * handling respect the selected encoding.
+     *
+     * @param array<array-key, mixed> $array Values to format.
+     * @param string $glue String inserted between formatted values.
+     * @param string $format Multibyte sprintf format string.
+     * @param string|null $encoding Encoding used for multibyte formatting. Null
+     *     uses `mb_internal_encoding()`.
+     *
+     * @return string Joined formatted values.
      */
     function implode_mb_sprintf(array $array = [], string $glue = ' ', string $format = '%s', ?string $encoding = null): string
     {
@@ -42,18 +69,26 @@ if (!function_exists('implode_mb_sprintf')) {
 
 if (!function_exists('sprintfn')) {
     /**
-     * version of sprintf for cases where named arguments are desired (php syntax)
+     * Format a string with named placeholders backed by `vsprintf()`.
      *
-     * with sprintf: sprintf('second: %2$s ; first: %1$s', '1st', '2nd');
+     * Named placeholders use PHP's positional syntax with a symbolic name in
+     * place of the numeric position. The names are rewritten to numeric
+     * positions before calling `vsprintf()`.
      *
-     * with sprintfn: sprintfn('second: %second$s ; first: %first$s', array(
-     *  'first' => '1st',
-     *  'second'=> '2nd'
-     * ));
+     * Example:
+     * ```php
+     * sprintfn('second: %second$s ; first: %first$s', [
+     *     'first' => '1st',
+     *     'second' => '2nd',
+     * ]);
+     * ```
      *
-     * @param string $format sprintf format string, with any number of named arguments
-     * @param array $args array of [ 'arg_name' => 'arg value', ... ] replacements to be made
-     * @return string|false result of sprintf call, or bool false on error
+     * @param string $format Sprintf format string containing named placeholders.
+     * @param array<string, mixed> $args Replacement values keyed by placeholder
+     *     name.
+     *
+     * @return string|false Formatted string, or false after emitting a warning
+     *     when a named placeholder has no matching argument.
      */
     function sprintfn(string $format, array $args = []): false|string
     {
@@ -88,10 +123,17 @@ if (!function_exists('sprintfn')) {
 
 if (!function_exists('mb_sprintf')) {
     /**
-     * Return a formatted multibyte string
-     * A more complete and working version of mb_sprintf and mb_vsprintf.
-     * It should work with any "ASCII preserving" encoding such as UTF-8 and all the ISO-8859 charsets.
-     * It handles sign, padding, alignment, width and precision. Argument swapping is not handled.
+     * Return a formatted multibyte string.
+     *
+     * This convenience wrapper delegates to `mb_vsprintf()`. It is intended for
+     * ASCII-preserving encodings such as UTF-8 and ISO-8859 variants, and it
+     * handles sign, padding, alignment, width, and precision. Argument swapping
+     * is intentionally not supported by the multibyte implementation.
+     *
+     * @param string $format Multibyte-aware sprintf format.
+     * @param string|int|float ...$args Format arguments.
+     *
+     * @return string Formatted string.
      */
     function mb_sprintf(string $format, string|int|float ...$args): string
     {
@@ -101,12 +143,19 @@ if (!function_exists('mb_sprintf')) {
 
 if (!function_exists('mb_vsprintf')) {
     /**
-     * Return a formatted string
-     * It should work with any "ASCII preserving" encoding such as UTF-8 and all the ISO-8859 charsets.
-     * It handles sign, padding, alignment, width and precision. Argument swapping is not handled.
-     * Works with all encodings in format and arguments.
-     * Supported: Sign, padding, alignment, width and precision.
-     * Not supported: Argument swapping.
+     * Return a formatted string with multibyte-aware `%s` handling.
+     *
+     * The format is converted to UTF-8 while parsing directives, then converted
+     * back to the requested encoding before delegating non-string directives to
+     * `vsprintf()`. String directives support sign, padding, alignment, width,
+     * and precision. Argument swapping is intentionally not supported.
+     *
+     * @param string $format Multibyte-aware sprintf format.
+     * @param array<int, mixed> $argv Format arguments.
+     * @param string|null $encoding Encoding used for the format and arguments.
+     *     Null uses `mb_internal_encoding()`.
+     *
+     * @return string Formatted string.
      *
      * @author Viktor Söderqvist <viktor@textalk.se>
      *

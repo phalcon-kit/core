@@ -19,10 +19,13 @@ use Phalcon\Html\TagFactory as PhalconTagFactory;
  * Framework HTML tag factory.
  *
  * This class intentionally keeps Phalcon's tag-factory behavior while giving
- * applications a PhalconKit-scoped type to register in the DI container. It is
- * the extension point to use when an application wants to replace or decorate
- * the default HTML helpers without changing every consumer that asks for the
- * `tag`/tag-factory service.
+ * applications a PhalconKit-scoped type to register in the DI container. Use it
+ * when a service needs native Phalcon tag helpers but should remain typed to a
+ * framework-owned class.
+ *
+ * Applications that need to replace or decorate HTML helpers can extend this
+ * class and keep existing consumers pointed at the same `tag`/tag-factory
+ * service boundary.
  *
  * @see PhalconTagFactory
  */
