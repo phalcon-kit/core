@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables distinct-expression initialization.
+ *
+ * Attach this when an action must not inherit configured `DISTINCT` handling
+ * from the REST query builder.
+ */
 class SkipDistinct
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip distinct collection initialization.
+     *
+     * @return false Always disables distinct query state for the action.
      */
     public function getDistinct(): bool
     {

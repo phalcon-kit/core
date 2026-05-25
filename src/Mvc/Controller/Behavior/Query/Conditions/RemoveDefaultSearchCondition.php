@@ -16,8 +16,21 @@ namespace PhalconKit\Mvc\Controller\Behavior\Query\Conditions;
 use Phalcon\Events\Event;
 use PhalconKit\Mvc\Controller\Restful;
 
+/**
+ * Removes only the default search condition after initialization.
+ *
+ * This keeps custom search predicates intact while disabling the framework's
+ * generated request-search condition for the action.
+ */
 class RemoveDefaultSearchCondition
 {
+    /**
+     * Remove the `default` search condition entry from the controller.
+     *
+     * @param Event $event Controller lifecycle event emitted after condition initialization.
+     * @param Restful $controller REST controller whose search conditions should be adjusted.
+     * @return void
+     */
     public function afterInitializeConditions(Event $event, Restful $controller): void
     {
         $controller->getSearchConditions()?->remove('default');

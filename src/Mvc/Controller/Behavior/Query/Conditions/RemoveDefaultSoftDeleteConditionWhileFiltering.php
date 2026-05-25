@@ -17,16 +17,22 @@ use Phalcon\Events\Event;
 use Phalcon\Filter\Exception as FilterException;
 use PhalconKit\Mvc\Controller\Restful;
 
+/**
+ * Removes the default soft-delete condition only when the request filters by deletion state.
+ *
+ * This lets endpoints keep normal "not deleted" behavior by default, while
+ * allowing explicit `deleted` filters to include deleted rows or select only
+ * deleted rows according to the request filter value.
+ */
 class RemoveDefaultSoftDeleteConditionWhileFiltering
 {
     /**
-     * Handles the initialization of conditions after the controller is set up.
-     * Removes the default soft delete condition if the specified filtering parameters are present.
+     * Drop the `default` soft-delete condition when a `deleted` filter is present.
      *
-     * @param Event $event The event instance triggered during the controller's lifecycle.
-     * @param Restful $controller The controller instance being processed, containing methods for managing filters and conditions.
+     * @param Event $event Controller lifecycle event emitted after condition initialization.
+     * @param Restful $controller REST controller whose soft-delete conditions should be adjusted.
      * @return void
-     * @throws FilterException When request parameter filtering fails.
+     * @throws FilterException When reading or sanitizing request filter parameters fails.
      */
     public function afterInitializeConditions(Event $event, Restful $controller): void
     {

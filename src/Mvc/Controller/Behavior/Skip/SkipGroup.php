@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables group-by initialization.
+ *
+ * Attach this when an action must not carry configured or request-derived
+ * grouping into the final model query.
+ */
 class SkipGroup
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip group collection initialization.
+     *
+     * @return false Always disables group-by query state for the action.
      */
     public function getGroup(): bool
     {

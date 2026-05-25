@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables the combined REST condition collection.
+ *
+ * This bypasses condition assembly for actions that intentionally build their
+ * own query or should run without controller-managed filtering constraints.
+ */
 class SkipConditions
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip condition collection initialization.
+     *
+     * @return false Always disables the combined condition collection.
      */
     public function getConditions(): bool
     {

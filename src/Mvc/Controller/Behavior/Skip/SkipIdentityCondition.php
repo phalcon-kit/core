@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables identity-scope condition initialization.
+ *
+ * Attach this only for actions that deliberately bypass authenticated identity
+ * scoping, such as public resources or framework-maintained internal queries.
+ */
 class SkipIdentityCondition
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip identity condition initialization.
+     *
+     * @return false Always disables identity-scope conditions for the action.
      */
     public function getIdentityCondition(): bool
     {

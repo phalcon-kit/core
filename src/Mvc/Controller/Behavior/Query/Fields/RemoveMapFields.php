@@ -16,8 +16,21 @@ namespace PhalconKit\Mvc\Controller\Behavior\Query\Fields;
 use Phalcon\Events\Event;
 use PhalconKit\Mvc\Controller\Restful;
 
+/**
+ * Clears API-to-model field mapping rules after field initialization.
+ *
+ * Attach this listener when an action should not use controller field aliases
+ * or mapped field names while preparing query/save state.
+ */
 class RemoveMapFields
 {
+    /**
+     * Remove every field mapping rule from the controller field state.
+     *
+     * @param Event $event Controller lifecycle event emitted after field initialization.
+     * @param Restful $controller REST controller whose field map should be cleared.
+     * @return void
+     */
     public function afterInitializeFields(Event $event, Restful $controller): void
     {
         $controller->getMapFields()?->clear();

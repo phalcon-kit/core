@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables whitelist initialization.
+ *
+ * Attach this when an action must not apply the controller's configured field
+ * whitelist while normalizing request data or query state.
+ */
 class SkipWhiteList
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip whitelist initialization.
+     *
+     * @return false Always disables whitelist state for the action.
      */
     public function getWhiteList(): bool
     {

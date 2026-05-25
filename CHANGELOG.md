@@ -217,6 +217,9 @@ tag has been cut yet.
 - Expanded production-facing PHPDoc across REST query abstract contracts,
   including bind, cache, conditions, fields, joins, grouping, pagination,
   ordering, persistence, and eager-loading extension points.
+- Expanded production-facing PHPDoc across REST controller behavior listeners
+  for query-state removal, skip flags, field policy removal, soft-delete
+  condition overrides, and reserved model workflow markers.
 - Expanded production-facing PHPDoc across bootstrap config fragments, module
   wiring, REST actions, ACL/router/option contracts, helper wrappers, and
   WebSocket scaffolding so framework extension points are clearer for

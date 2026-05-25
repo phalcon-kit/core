@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables REST query bind-type initialization.
+ *
+ * This is useful together with {@see SkipBind} when an action should not pass
+ * request/configured bind metadata into the compiled Phalcon query options.
+ */
 class SkipBindTypes
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip bind-type collection initialization.
+     *
+     * @return false Always disables bind-type values for the action.
      */
     public function getBindTypes(): bool
     {

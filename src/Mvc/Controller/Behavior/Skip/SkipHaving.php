@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables HAVING-clause initialization.
+ *
+ * Use this with aggregate/grouped endpoints that need full control over their
+ * HAVING predicates instead of the REST controller defaults.
+ */
 class SkipHaving
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip HAVING collection initialization.
+     *
+     * @return false Always disables HAVING query state for the action.
      */
     public function getHaving(): bool
     {

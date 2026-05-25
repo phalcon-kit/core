@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables selected-column initialization.
+ *
+ * Use this when an action should rely on the model/default query projection
+ * instead of the REST controller's configured column collection.
+ */
 class SkipColumns
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip column collection initialization.
+     *
+     * @return false Always disables configured column selection for the action.
      */
     public function getColumns(): bool
     {

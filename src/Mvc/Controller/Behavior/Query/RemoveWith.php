@@ -16,8 +16,21 @@ namespace PhalconKit\Mvc\Controller\Behavior\Query;
 use Phalcon\Events\Event;
 use PhalconKit\Mvc\Controller\Restful;
 
+/**
+ * Clears eager-loading relation requests after `with` initialization.
+ *
+ * Use this listener when an action should not honor configured or request
+ * eager-loading relation graphs.
+ */
 class RemoveWith
 {
+    /**
+     * Remove every eager-loading relation from the controller query state.
+     *
+     * @param Event $event Controller lifecycle event emitted after `with` initialization.
+     * @param Restful $controller REST controller whose eager-loading collection should be cleared.
+     * @return void
+     */
     public function afterInitializeWith(Event $event, Restful $controller): void
     {
         $controller->getWith()?->clear();

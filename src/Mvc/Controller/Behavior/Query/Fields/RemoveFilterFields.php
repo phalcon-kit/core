@@ -16,8 +16,21 @@ namespace PhalconKit\Mvc\Controller\Behavior\Query\Fields;
 use Phalcon\Events\Event;
 use PhalconKit\Mvc\Controller\Restful;
 
+/**
+ * Clears filterable-field rules after REST field initialization.
+ *
+ * Use this listener when an action should not accept configured/requested
+ * filter fields through the standard REST field policy.
+ */
 class RemoveFilterFields
 {
+    /**
+     * Remove every filterable-field rule from the controller field state.
+     *
+     * @param Event $event Controller lifecycle event emitted after field initialization.
+     * @param Restful $controller REST controller whose filter fields should be cleared.
+     * @return void
+     */
     public function afterInitializeFields(Event $event, Restful $controller): void
     {
         $controller->getFilterFields()?->clear();

@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables search condition initialization.
+ *
+ * Use this when request search parameters should not be converted into
+ * controller-managed search predicates.
+ */
 class SkipSearchCondition
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip search condition initialization.
+     *
+     * @return false Always disables search conditions for the action.
      */
     public function getSearchCondition(): bool
     {

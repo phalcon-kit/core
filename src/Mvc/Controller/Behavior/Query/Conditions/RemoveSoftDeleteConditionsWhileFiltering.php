@@ -17,16 +17,22 @@ use Phalcon\Events\Event;
 use Phalcon\Filter\Exception as FilterException;
 use PhalconKit\Mvc\Controller\Restful;
 
+/**
+ * Clears all soft-delete conditions only when the request filters by deletion state.
+ *
+ * This variant is stronger than {@see RemoveDefaultSoftDeleteConditionWhileFiltering}:
+ * when a `deleted` filter is present, it removes every soft-delete predicate so
+ * the explicit request filter owns deleted-row visibility.
+ */
 class RemoveSoftDeleteConditionsWhileFiltering
 {
     /**
-     * This method is executed after initializing conditions for the given controller.
-     * Clears the soft delete conditions for the controller if specific filter fields are provided.
+     * Clear all soft-delete conditions when a `deleted` filter is present.
      *
-     * @param Event $event The event instance triggering the method.
-     * @param Restful $controller The controller instance on which conditions are being initialized.
+     * @param Event $event Controller lifecycle event emitted after condition initialization.
+     * @param Restful $controller REST controller whose soft-delete conditions should be cleared.
      * @return void
-     * @throws FilterException When request parameter filtering fails.
+     * @throws FilterException When reading or sanitizing request filter parameters fails.
      */
     public function afterInitializeConditions(Event $event, Restful $controller): void
     {

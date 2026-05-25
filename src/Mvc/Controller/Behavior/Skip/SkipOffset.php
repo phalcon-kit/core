@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables offset initialization.
+ *
+ * Attach this when an action should ignore request/configured pagination
+ * offsets and manage row positioning itself.
+ */
 class SkipOffset
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip offset initialization.
+     *
+     * @return false Always disables offset query state for the action.
      */
     public function getOffset(): bool
     {

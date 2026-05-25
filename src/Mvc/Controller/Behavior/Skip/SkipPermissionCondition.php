@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables permission condition initialization.
+ *
+ * Attach this only when an action intentionally bypasses permission-derived
+ * query predicates and enforces access through another explicit mechanism.
+ */
 class SkipPermissionCondition
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip permission condition initialization.
+     *
+     * @return false Always disables permission conditions for the action.
      */
     public function getPermissionConditions(): bool
     {

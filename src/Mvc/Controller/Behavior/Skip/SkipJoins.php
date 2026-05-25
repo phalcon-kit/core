@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables REST join initialization.
+ *
+ * Attach this when an action should not inherit configured joins, dynamic
+ * joins, or relation joins from the controller query policy.
+ */
 class SkipJoins
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip join collection initialization.
+     *
+     * @return false Always disables join query state for the action.
      */
     public function getJoins(): bool
     {

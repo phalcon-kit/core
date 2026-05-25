@@ -13,11 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Behavior\Skip;
 
+/**
+ * Behavior flag that disables limit initialization.
+ *
+ * Use this when an action should not receive controller/request pagination
+ * limits before it prepares its final query.
+ */
 class SkipLimit
 {
     /**
-     * Stop operation
-     * @return false
+     * Tell the REST controller to skip limit initialization.
+     *
+     * @return false Always disables limit query state for the action.
      */
     public function getLimit(): bool
     {

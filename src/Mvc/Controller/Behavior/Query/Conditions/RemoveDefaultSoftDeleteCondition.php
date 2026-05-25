@@ -16,8 +16,21 @@ namespace PhalconKit\Mvc\Controller\Behavior\Query\Conditions;
 use Phalcon\Events\Event;
 use PhalconKit\Mvc\Controller\Restful;
 
+/**
+ * Removes only the default soft-delete condition after initialization.
+ *
+ * Attach this when an action needs visibility into soft-deleted rows while
+ * retaining any application-defined soft-delete predicates.
+ */
 class RemoveDefaultSoftDeleteCondition
 {
+    /**
+     * Remove the `default` soft-delete condition entry from the controller.
+     *
+     * @param Event $event Controller lifecycle event emitted after condition initialization.
+     * @param Restful $controller REST controller whose soft-delete conditions should be adjusted.
+     * @return void
+     */
     public function afterInitializeConditions(Event $event, Restful $controller): void
     {
         $controller->getSoftDeleteConditions()?->remove('default');
