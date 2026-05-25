@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Exposer;
 
 /**
- * Builder
- *
  * Mutable state container used by {@see Exposer} during exposure traversal.
  *
  * This class is deliberately simple and strict. It enforces a **single invariant**
@@ -51,6 +49,8 @@ class Builder implements BuilderInterface
     
     /**
      * Flattened column rules (dot-path => rule).
+     *
+     * @var array<array-key, mixed>|null
      */
     private ?array $columns = null;
     
@@ -184,12 +184,22 @@ class Builder implements BuilderInterface
      * Columns (rules)
      * ---------------------------------------------------------------------- */
     
+    /**
+     * Return the flattened exposure rule map.
+     *
+     * @return array<array-key, mixed>|null
+     */
     #[\Override]
     public function getColumns(): ?array
     {
         return $this->columns;
     }
     
+    /**
+     * Replace the flattened exposure rule map.
+     *
+     * @param array<array-key, mixed>|null $columns
+     */
     #[\Override]
     public function setColumns(?array $columns = null): void
     {
@@ -276,6 +286,10 @@ class Builder implements BuilderInterface
      * - Stable dot-path generation.
      * - No accidental numeric keys.
      * - A single, canonical representation for root.
+     *
+     * @param string|null $key Local key or context key.
+     *
+     * @return string Canonical dot-path segment, or empty string for root.
      */
     public static function processKey(?string $key = null): string
     {

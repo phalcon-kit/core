@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Exposer;
 
 /**
- * Exposer
+ * Deterministic exposure engine built on top of a mutable Builder.
  *
- * Production-ready, deterministic exposure engine built on top of a mutable Builder.
+ * The exposer converts objects/arrays into public payloads according to a
+ * flattened rule map. It is used by models and response helpers that need
+ * consistent allow/deny behavior for nested values without tying that behavior
+ * to one model class or serializer.
  *
  * Design goals (all preserved):
  * - Deny-by-default or allow-by-default behavior controlled explicitly by rules.
@@ -52,6 +55,18 @@ class Exposer
 {
     /**
      * Create and initialize a Builder for an exposure run.
+     *
+     * Column definitions are parsed into the flattened rule map consumed by the
+     * traversal engine. `$expose` controls the default visibility when no
+     * matching rule exists, and `$protected` controls whether underscore-prefixed
+     * keys may be returned.
+     *
+     * @param mixed $object Root object, array, scalar, or iterable to expose.
+     * @param array<string|int, mixed>|null $columns Exposure rule definition.
+     * @param bool|null $expose Default visibility. Null uses allow-by-default.
+     * @param bool|null $protected Whether underscore-prefixed keys are allowed.
+     *
+     * @return Builder Initialized mutable traversal state.
      */
     public static function createBuilder(
         mixed $object,
@@ -73,6 +88,10 @@ class Exposer
     
     /**
      * Apply string formatting to a value.
+     *
+     * String rules use `mb_vsprintf()` with the current value as the only
+     * argument. This keeps formatter rules compact while still supporting
+     * multibyte-safe formatting.
      */
     private static function formatValue(string $format, mixed $value): string
     {
@@ -87,6 +106,9 @@ class Exposer
      * 2. Nearest parent rule
      * 3. Child-activation (a deeper rule === true)
      * 4. Protected-field enforcement
+     *
+     * @param Builder $builder Current traversal state. The method mutates the
+     *     builder's expose flag, value, and column rules as needed.
      */
     private static function checkExpose(Builder $builder): void
     {
@@ -162,10 +184,12 @@ class Exposer
     /**
      * Apply a single rule to the builder.
      *
-     * @param mixed  $rule
-     * @param string $ruleKey
-     * @param mixed  $currentValue
-     * @param bool   $isParentRule
+     * @param Builder $builder Current traversal state.
+     * @param mixed $rule Rule value resolved from the flattened column map.
+     * @param string $ruleKey Dot-path key that supplied the rule.
+     * @param mixed $currentValue Current value before the rule is applied.
+     * @param bool $isParentRule Whether this rule was inherited from a parent
+     *     path instead of matching the current full key exactly.
      */
     private static function applyRule(
         Builder $builder,
@@ -245,6 +269,17 @@ class Exposer
     
     /**
      * Expose a value graph according to builder state.
+     *
+     * Objects with `toArray()` are converted through that method before
+     * traversal; other objects are cast to arrays. The same builder instance is
+     * reused through recursion, so the method restores context after each
+     * nested traversal before returning.
+     *
+     * @param Builder $builder Prepared builder from {@see createBuilder()} or a
+     *     compatible custom builder state.
+     *
+     * @return mixed Public value, nested array, or null when the current scalar
+     *     is hidden.
      */
     public static function expose(Builder $builder): mixed
     {
@@ -293,6 +328,13 @@ class Exposer
      * Root semantics:
      * - A boolean without a key becomes a rule on the root path ('').
      * - Root context never produces ".field" keys.
+     *
+     * @param iterable<string|int|bool, mixed>|null $columns Nested column/rule
+     *     definition, or null to keep expose defaults only.
+     * @param string|null $context Current recursion path.
+     *
+     * @return array<string, mixed>|null Flattened rule map, or null when no
+     *     column definition was provided.
      */
     public static function parseColumnsRecursive(
         ?iterable $columns = null,

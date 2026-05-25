@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Exposer;
 
 /**
- * BuilderInterface
- *
  * Contract for the mutable state carrier used by the Exposer engine.
  *
  * This interface deliberately encodes **strong invariants** required by the
@@ -63,11 +61,15 @@ interface BuilderInterface
     
     /**
      * Get the flattened column rules map (dot-path => rule).
+     *
+     * @return array<array-key, mixed>|null
      */
     public function getColumns(): ?array;
     
     /**
      * Set the flattened column rules map.
+     *
+     * @param array<array-key, mixed>|null $columns
      */
     public function setColumns(?array $columns = null): void;
     
