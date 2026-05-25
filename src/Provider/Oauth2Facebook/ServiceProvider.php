@@ -20,6 +20,13 @@ use PhalconKit\Http\Request;
 use PhalconKit\Provider\AbstractServiceProvider;
 
 /**
+ * Registers the Facebook OAuth2 provider.
+ *
+ * Options are read from `oauth2.facebook`. The provider resolves the request
+ * service to convert a configured relative `redirectUri` into an absolute URI
+ * using the current scheme, host, and non-default port. It also resolves the
+ * session service so OAuth state flows have an active session-backed context.
+ *
  * @link https://github.com/tegaphilip/padlock
  * @link https://oauth2.thephpleague.com/framework-integrations/
  */
@@ -27,6 +34,12 @@ class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'oauth2Facebook';
     
+    /**
+     * Register the shared `oauth2Facebook` service.
+     *
+     * @throws \PhalconKit\Exception\ServiceException When required `session` or
+     *     `request` services are unavailable or have unexpected types.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
@@ -41,7 +54,6 @@ class ServiceProvider extends AbstractServiceProvider
             $oauthConfig = $config->pathToArray('oauth2') ?? [];
             $oauthFacebookConfig = $oauthConfig['facebook'] ?? [];
             
-            // Set the full url
             $secure = $request->isSecure();
             $scheme = $request->getScheme() . '://';
             $host = $request->getHttpHost();

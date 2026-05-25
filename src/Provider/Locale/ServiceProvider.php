@@ -17,10 +17,20 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Locale;
 
+/**
+ * Registers the locale resolver service.
+ *
+ * Locale options are read from `locale` config and control the default locale,
+ * session key, resolution mode, and allowed locale list. The service is shared
+ * because locale state can be reused by translation, view, and controller
+ * logic during the same request.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     /**
-     * Default values if nothing is provided from the config
+     * Default locale options used when config does not provide values.
+     *
+     * @var array{default: string, sessionKey: string, mode: string, allowed: array<int, string>}
      */
     public array $defaultOptions = [
         'default' => 'en',
@@ -31,6 +41,12 @@ class ServiceProvider extends AbstractServiceProvider
     
     protected string $serviceName = 'locale';
     
+    /**
+     * Register the shared `locale` service.
+     *
+     * Runtime options can override config when resolving the service manually,
+     * mainly for tests or custom bootstraps.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

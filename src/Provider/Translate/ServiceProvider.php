@@ -19,10 +19,23 @@ use Phalcon\Translate\InterpolatorFactory;
 use PhalconKit\Locale;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the translation adapter service.
+ *
+ * The provider creates Phalcon's Gettext adapter from `translate` config and
+ * applies the current `locale` service value as the active locale. Translation
+ * setup therefore depends on the locale provider being registered first.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'translate';
     
+    /**
+     * Register the shared `translate` service.
+     *
+     * @throws \PhalconKit\Exception\ServiceException When the `locale` service
+     *     is missing or is not a PhalconKit locale instance.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
