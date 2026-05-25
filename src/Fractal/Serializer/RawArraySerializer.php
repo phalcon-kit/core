@@ -22,11 +22,21 @@ use League\Fractal\Serializer\ArraySerializer;
  * This serializer is used when PhalconKit endpoints need the transformed data
  * itself as the response body. The resource key is accepted for Fractal
  * compatibility, but it is intentionally ignored.
+ *
+ * This is the default serializer used by PhalconKit REST helpers, so controller
+ * responses remain shaped like the transformed model/item arrays instead of
+ * being wrapped under a `data` or resource-name envelope.
+ *
+ * @see https://fractal.thephpleague.com/serializers/
  */
 class RawArraySerializer extends ArraySerializer
 {
     /**
      * Return collection data exactly as transformed by Fractal.
+     *
+     * The collection resource key is ignored on purpose. Use a different
+     * serializer when an API contract requires collection envelopes,
+     * pagination wrappers, or top-level metadata.
      *
      * @param string|null $resourceKey Fractal resource key, ignored by this raw
      *     serializer.
@@ -42,6 +52,9 @@ class RawArraySerializer extends ArraySerializer
     
     /**
      * Return item data exactly as transformed by Fractal.
+     *
+     * The item resource key is ignored on purpose so single-record responses
+     * keep the same top-level fields emitted by their transformer.
      *
      * @param string|null $resourceKey Fractal resource key, ignored by this raw
      *     serializer.
@@ -60,6 +73,10 @@ class RawArraySerializer extends ArraySerializer
      *
      * This keeps API responses shape-stable for callers that expect JSON
      * objects or arrays instead of literal null bodies.
+     *
+     * Fractal allows serializers to choose the representation of null
+     * resources. PhalconKit chooses `[]` here to match the raw-array response
+     * style used by collection and item resources.
      *
      * @return array<never, never>
      */

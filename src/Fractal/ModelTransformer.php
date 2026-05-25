@@ -22,11 +22,24 @@ use Phalcon\Mvc\Model;
  * the model exposes through Phalcon's normal serialization path. Applications
  * can extend this class when they need a starting point that preserves the
  * model's own visibility and virtual-field behavior.
+ *
+ * Use a dedicated application transformer when API output must hide fields,
+ * rename attributes, add computed values, or control included relationships.
+ * This default transformer is intentionally transparent rather than policy
+ * heavy.
+ *
+ * @see https://docs.phalcon.io/5.13/db-models/
+ * @see https://fractal.thephpleague.com/transformers/
  */
 class ModelTransformer extends Transformer
 {
     /**
      * Convert a model instance to the array consumed by Fractal serializers.
+     *
+     * No filtering is applied here beyond whatever the model's `toArray()`
+     * implementation already does. That keeps the default behavior predictable
+     * for generated/admin resources while leaving public API shaping to custom
+     * transformers.
      *
      * @param Model $model Model instance being serialized.
      *

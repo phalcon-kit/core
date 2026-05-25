@@ -33,6 +33,13 @@ use PhalconKit\Mvc\Model\Interfaces\RelationshipInterface;
  * Concrete transformers should call `includeCollectionIfLoaded()` and
  * `includeItemIfLoaded()` from Fractal include methods when an include should
  * reflect the model's loaded relationship state instead of forcing a query.
+ *
+ * This convention keeps include behavior aligned with controller eager-loading:
+ * the controller decides what relationships are loaded, and the transformer
+ * serializes only that already-known state.
+ *
+ * @see https://fractal.thephpleague.com/transformers/
+ * @see https://docs.phalcon.io/5.13/db-models-relationships/
  */
 class Transformer extends TransformerAbstract implements InjectionAwareInterface
 {
@@ -44,6 +51,11 @@ class Transformer extends TransformerAbstract implements InjectionAwareInterface
      * If the alias is not available, or if the loaded value is not iterable, an
      * empty collection is returned. This keeps collection includes stable for
      * clients while still avoiding implicit database reads.
+     *
+     * Returning an empty collection for missing/non-iterable values is
+     * deliberate: this helper is for "many" relationships, and an absent loaded
+     * relation should serialize as an empty include rather than trigger another
+     * model query from inside a transformer.
      *
      * @param ModelInterface $entity Model that may expose loaded relationship
      *     aliases through PhalconKit relationship helpers.
@@ -71,6 +83,10 @@ class Transformer extends TransformerAbstract implements InjectionAwareInterface
      * Missing aliases, null values, and iterable values return null because
      * Fractal item includes are meant for one related model. Use
      * `includeCollectionIfLoaded()` when the relation may contain many records.
+     *
+     * Returning null tells Fractal to omit the include instead of inventing a
+     * placeholder object. This avoids confusing one-to-one response shapes when
+     * the requested relation was not loaded by the controller/query layer.
      *
      * @param ModelInterface $entity Model that may expose loaded relationship
      *     aliases through PhalconKit relationship helpers.
@@ -103,6 +119,11 @@ class Transformer extends TransformerAbstract implements InjectionAwareInterface
      * PhalconKit tracks both loaded aliases and dirty aliases. Both are treated
      * as explicitly available values because they represent state already known
      * to the model rather than a relation that must be queried.
+     *
+     * @param ModelInterface $entity Model being inspected.
+     * @param string $alias Relationship alias as used by the transformer.
+     *
+     * @return bool True when the alias has eager-loaded or dirty in-memory data.
      */
     protected function isRelationAliasLoaded(ModelInterface $entity, string $alias): bool
     {
@@ -117,6 +138,9 @@ class Transformer extends TransformerAbstract implements InjectionAwareInterface
      * when both stores contain a value. Null is returned for models that do not
      * implement PhalconKit's relationship contract or for aliases that have not
      * been populated.
+     *
+     * @param ModelInterface $entity Model being inspected.
+     * @param string $alias Relationship alias as used by the transformer.
      *
      * @return mixed Relationship value, commonly a model, iterable resultset, or
      *     null when no explicit relation value exists.
