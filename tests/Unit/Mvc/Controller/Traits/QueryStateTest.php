@@ -1623,6 +1623,13 @@ class QueryStateTest extends AbstractUnit
             'name' => '[FooModel].[name]',
         ]));
 
+        $columnController = $this->newQueryController();
+        $columnController->initializeColumn();
+        $columnController->mergeColumn(new Collection(['status' => true]));
+        $columnController->initializeFind();
+        $find = $columnController->prepareFind();
+        $this->assertSame('status', $find['column']);
+
         $this->assertFalse($controller->conditionsShouldBeHaving('COUNT(id) > 1'));
         $this->assertStringStartsWith('_query_', $controller->generateBindKey('query'));
 

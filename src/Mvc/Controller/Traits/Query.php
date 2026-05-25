@@ -41,10 +41,16 @@ use PhalconKit\Mvc\Model\Interfaces\EagerLoadInterface;
 use PhalconKit\Support\Helper;
 
 /**
- * Class Query
+ * Shared REST query builder for PhalconKit controllers.
  *
- * This class provides methods for building and executing database queries.
- * It is used as a trait in other classes that need query building capabilities.
+ * The trait coordinates request-driven query state: filters, permissions,
+ * joins, eager-loading, grouping, aggregate columns, pagination, ordering,
+ * cache options, and save payload metadata. It compiles those collections into
+ * Phalcon model `find()`/aggregate option arrays while keeping extension hooks
+ * available through REST initialization events.
+ *
+ * @see https://docs.phalcon.io/5.13/db-models/
+ * @see https://docs.phalcon.io/5.13/db-models-relationships/
  */
 trait Query
 {
@@ -161,15 +167,13 @@ trait Query
             'limit' => $this->getLimit(),
             'offset' => $this->getOffset(),
             'order' => $this->getOrder(),
-//            'columns' => $this->getColumns(),
+            'column' => $this->getColumn(),
             'distinct' => $this->getDistinct(),
             'joins' => $this->getJoins(),
             'group' => $this->getGroup(),
             'having' => $this->getHaving(),
             'cache' => $this->getCacheConfig(),
         ]));
-
-//        dd($this->getFind()->toArray());
     }
     
     /**
@@ -210,7 +214,7 @@ trait Query
         
         $build = $this->prepareCollectionToCompile($find);
 
-        foreach (['distinct', 'group', 'order'] as $keyToJoin) {
+        foreach (['column', 'distinct', 'group', 'order'] as $keyToJoin) {
             if (isset($build[$keyToJoin]) && is_array($build[$keyToJoin])) {
                 $build[$keyToJoin] = $this->prepareFindListToString($build[$keyToJoin]);
                 if ($build[$keyToJoin] === '') {
@@ -236,11 +240,6 @@ trait Query
                 $build['bindTypes'] = array_merge($build['bindTypes'] ?? [], $normalizedJoins['bindTypes']);
             }
         }
-
-//        if ($this->conditionsShouldBeHaving($find['conditions'])) {
-//            $find['having'] = (!empty($find['having'])? $find['having'] . ' and ' : '') . $find['conditions'];
-//            $find['conditions'] = '(1)';
-//        }
 
         return $this->compileFind($build);
     }
@@ -276,7 +275,6 @@ trait Query
     public function conditionsShouldBeHaving(?string $conditions): bool
     {
         return false;
-//        return preg_match('/GROUP_CONCAT\(.+?\)|COUNT\(.+?\)|SUM\(.+?\)|AVG\(.+?\)|MIN\(.+?\)|MAX\(.+?\)/i', $conditions);
     }
     
     /**
