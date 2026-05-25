@@ -17,10 +17,23 @@ use Phalcon\Flash\Direct;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the direct flash messaging service.
+ *
+ * The default service uses Phalcon's direct flash adapter, enables auto-escape,
+ * and applies Bootstrap-compatible CSS classes. Applications that need session
+ * flash behavior should register their own provider intentionally because that
+ * changes message lifetime and session requirements.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'flash';
     
+    /**
+     * Default CSS classes used for direct flash message types.
+     *
+     * @var array<string, string>
+     */
     protected array $cssStyle = [
         'error' => 'alert alert-danger fade in',
         'success' => 'alert alert-success fade in',
@@ -28,6 +41,13 @@ class ServiceProvider extends AbstractServiceProvider
         'warning' => 'alert alert-warning fade in',
     ];
     
+    /**
+     * Register the shared `flash` service.
+     *
+     * The flash adapter receives DI and auto-escaping before being returned, so
+     * controller output can use the service without repeating those safety
+     * settings.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

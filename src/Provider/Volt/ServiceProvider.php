@@ -18,10 +18,25 @@ use PhalconKit\Di\DiInterface;
 use Phalcon\Mvc\View\Engine\Volt;
 use Phalcon\Mvc\ViewInterface;
 
+/**
+ * Registers the Volt template engine service.
+ *
+ * Volt is created with the configured view service and PhalconKit DI container,
+ * then receives options from `volt` config. This keeps compiler paths, template
+ * cache behavior, and engine options centralized in application configuration.
+ *
+ * @see https://docs.phalcon.io/5.13/volt/
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'volt';
     
+    /**
+     * Register the shared `volt` service.
+     *
+     * @throws \PhalconKit\Exception\ServiceException When the `view` service
+     *     does not implement Phalcon's view interface.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

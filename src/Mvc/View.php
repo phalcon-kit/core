@@ -28,10 +28,19 @@ use PhalconKit\Support\Slug;
  */
 class View extends \Phalcon\Mvc\View
 {
+    /**
+     * Whether `getContent()` should minify rendered HTML by default.
+     *
+     * The flag is intentionally view-local so applications can opt in through
+     * configuration without changing Phalcon's global rendering behavior.
+     */
     private bool $minify = false;
     
     /**
      * Return whether response content should be minified by default.
+     *
+     * @return bool True when rendered content should be minified unless a
+     *     per-call override is supplied to `getContent()`.
      */
     public function getMinify(): bool
     {
@@ -40,6 +49,9 @@ class View extends \Phalcon\Mvc\View
     
     /**
      * Enable or disable response content minification by default.
+     *
+     * @param bool $minify True to minify rendered content returned by
+     *     `getContent()` unless the call overrides the behavior.
      */
     public function setMinify(bool $minify): void
     {
@@ -88,8 +100,15 @@ class View extends \Phalcon\Mvc\View
     /**
      * Return rendered output, optionally applying lightweight minification.
      *
+     * The minifier removes normal HTML comments, single-line JavaScript-style
+     * comments, repeated whitespace, and line breaks. It is intentionally simple
+     * and should be used for conventional rendered views, not as a full HTML,
+     * CSS, or JavaScript optimizer.
+     *
      * @param bool|null $minify Override the default minification flag for this
      *     call. Null uses `getMinify()`.
+     *
+     * @return string Rendered response content.
      */
     #[\Override]
     public function getContent(?bool $minify = null): string

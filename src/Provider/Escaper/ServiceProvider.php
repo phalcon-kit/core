@@ -17,10 +17,24 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Html\Escaper;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the HTML escaper service.
+ *
+ * PhalconKit uses its escaper wrapper so tag helpers, views, and controller
+ * code can resolve one framework-scoped escaping implementation from DI while
+ * still relying on Phalcon-compatible escaping behavior.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'escaper';
     
+    /**
+     * Register the `escaper` service.
+     *
+     * The service is registered by class name instead of a closure because it
+     * has no provider-time configuration and can be instantiated directly by
+     * the DI container.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

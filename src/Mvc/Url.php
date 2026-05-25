@@ -42,7 +42,16 @@ class Url extends \Phalcon\Mvc\Url
     /**
      * Normalize a local path into an absolute path.
      *
+     * Absolute HTTP(S) URLs and protocol-relative URLs are returned unchanged
+     * because normalizing their path component here could alter an external
+     * target. Local paths are normalized by converting backslashes to forward
+     * slashes, removing empty and `.` segments, and resolving `..` segments
+     * without allowing the result to escape above `/`.
      *
+     * @param string $path Local path or fully-qualified URL.
+     *
+     * @return string Normalized absolute local path, or the original external
+     *     URL.
      */
     public static function getAbsolutePath(string $path): string
     {
