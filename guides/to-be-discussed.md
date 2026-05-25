@@ -153,10 +153,6 @@ Keep for discussion:
   The current task generates data for the first non-deleted table. Generating
   all dynamic tables needs explicit limits, table filtering, and safety rules
   before it can be enabled.
-- Distinct REST action:
-  `src/Mvc/Controller/Traits/Actions/Rest/DistinctAction.php`.
-  Implement only after response shape, allowed fields, joins, permissions,
-  pagination, and transformer behavior are specified.
 - Audit snapshots:
   `src/Mvc/Model/Behavior/Blameable.php`.
   Ensure snapshots include only scalar mapped columns even when assigned

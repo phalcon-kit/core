@@ -288,7 +288,7 @@ The standard envelope keys are `REST_PAYLOAD_TIMESTAMP`,
 `REST_PAYLOAD_VIEW`, and `REST_PAYLOAD_DEBUG`.
 
 The standard view keys include `REST_VIEW_DATA`, `REST_VIEW_MESSAGES`,
-`REST_VIEW_COUNT`, `REST_VIEW_SUM`, `REST_VIEW_AVERAGE`,
+`REST_VIEW_COUNT`, `REST_VIEW_FIELD`, `REST_VIEW_SUM`, `REST_VIEW_AVERAGE`,
 `REST_VIEW_MINIMUM`, `REST_VIEW_MAXIMUM`, `REST_VIEW_SAVED`,
 `REST_VIEW_RESULTS`, `REST_VIEW_STATS`, `REST_VIEW_DELETED`,
 `REST_VIEW_RESTORED`, and `REST_VIEW_REORDERED`.
@@ -359,6 +359,47 @@ save, filter, search, joins, and other REST policies.
 Keep `bucketTotal` and `totalCount` separate. On joined grouped endpoints, one
 root record can appear in more than one bucket, so the bucket sum can differ
 from the ungrouped total.
+
+## Distinct Value Responses
+
+`distinctAction()` returns distinct scalar values for one controller-approved
+field. It is useful for facets, autocomplete controls, and dashboard filters
+that must obey the same filters, joins, permissions, identity scoping, bind
+values, pagination, and cache policy as the normal REST query.
+
+The action is closed by default. Configure allowed fields in the controller
+initializer:
+
+```php
+use Phalcon\Support\Collection;
+
+public function initializeDistinctActionFields(): void
+{
+    $this->setDistinctActionFields(new Collection([
+        'status',
+        'type',
+        'ownerEmail' => 'Owner.email',
+    ], false));
+}
+```
+
+List entries expose and query the same field. Map entries expose a stable public
+field name and query a model or joined-model alias internally. The endpoint uses
+the `field` request parameter:
+
+```http
+GET /api/project/distinct?field=status
+GET /api/project/distinct?field=ownerEmail
+```
+
+Successful responses include:
+
+- `data`: the returned distinct values.
+- `field`: the public field requested by the client.
+- `count`: the number of returned values.
+
+Do not default this policy to all filter fields. A field can be safe to filter
+by without being safe or useful to enumerate publicly.
 
 ## Rest vs Restful
 

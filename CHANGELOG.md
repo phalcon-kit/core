@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 2.3.x - Unreleased
+
+### Added
+
+- Added an opt-in REST `distinctAction()` for enumerating values from explicitly
+  allowed fields while preserving the normal query filters, joins, permissions,
+  identity conditions, bind values, pagination, and cache options.
+
 ## 2.2.0 - 2026-05-25
 
 ### Added

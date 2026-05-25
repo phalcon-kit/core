@@ -52,12 +52,13 @@ trait RestActions
      *
      * Query configuration lives in {@see \PhalconKit\Mvc\Controller\Traits\Query::initializeQuery()},
      * while action traits can expose smaller policy sets that affect only their
-     * response behavior. {@see CountAction::initializeCountActionResponseFields()}
-     * is initialized here so controllers can customize count metadata through the
-     * same initialization lifecycle used by the rest of the REST API layer.
+     * response behavior. Count and distinct action policies are initialized
+     * here so controllers can customize action metadata through the same
+     * lifecycle used by the rest of the REST API layer.
      */
     public function initializeRestActions(): void
     {
         $this->initializeCountActionResponseFields();
+        $this->initializeDistinctActionFields();
     }
 }

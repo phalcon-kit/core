@@ -71,6 +71,11 @@ interface RestResponseInterface
     public const string REST_VIEW_COUNT = 'count';
 
     /**
+     * Standard view field containing the request field represented by the data.
+     */
+    public const string REST_VIEW_FIELD = 'field';
+
+    /**
      * Standard view field containing sum aggregate results.
      */
     public const string REST_VIEW_SUM = 'sum';

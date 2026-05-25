@@ -211,7 +211,7 @@ public function dashboardAction(): ResponseInterface
 ```
 
 Use `REST_VIEW_DATA`, `REST_VIEW_MESSAGES`, `REST_VIEW_COUNT`,
-`REST_VIEW_SUM`, `REST_VIEW_AVERAGE`, `REST_VIEW_MINIMUM`,
+`REST_VIEW_FIELD`, `REST_VIEW_SUM`, `REST_VIEW_AVERAGE`, `REST_VIEW_MINIMUM`,
 `REST_VIEW_MAXIMUM`, `REST_VIEW_SAVED`, `REST_VIEW_RESULTS`,
 `REST_VIEW_STATS`, `REST_VIEW_DELETED`, `REST_VIEW_RESTORED`, and
 `REST_VIEW_REORDERED` instead of repeating string literals in app controllers.
@@ -248,12 +248,44 @@ instead of inside `countAction()`.
 Do not present `bucketTotal` as a unique-record total. Joined grouped counts
 can place one root record in more than one bucket.
 
+## Distinct Actions
+
+`distinctAction()` exposes distinct values for one explicitly allowed field. Use
+it for facets or autocomplete controls that should respect the controller's
+normal filters, joins, permissions, identity conditions, binds, pagination, and
+cache policy.
+
+The default is closed. Configure fields during controller initialization:
+
+```php
+use Phalcon\Support\Collection;
+
+public function initializeDistinctActionFields(): void
+{
+    $this->setDistinctActionFields(new Collection([
+        'status',
+        'type',
+        'ownerEmail' => 'Owner.email',
+    ], false));
+}
+```
+
+Call it with `GET /api/project/distinct?field=status`. The response puts the
+value list in `data`, the requested public field in `field`, and the returned
+value count in `count`.
+
+Use map entries when the public API field should differ from the internal query
+alias. Avoid automatically reusing every filter field; high-cardinality fields
+such as emails, names, tokens, or IDs are often filterable but not good public
+enumeration fields.
+
 ## Controller Checklist
 
 For each REST resource, decide these separately:
 
 - Save policy: fields the API may write.
 - Filter policy: fields the API may query/filter.
+- Distinct policy: fields the API may enumerate as value lists.
 - Search policy: fields included in broad text search.
 - Expose policy: fields returned in responses.
 - Relation graph: aliases loaded through `initializeWith()`.

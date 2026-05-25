@@ -77,6 +77,7 @@ class CountActionTest extends AbstractUnit
         $controller = new class extends Restful {
             public bool $queryInitialized = false;
             public bool $countActionResponseFieldsInitialized = false;
+            public bool $distinctActionFieldsInitialized = false;
 
             public function initializeQuery(): void
             {
@@ -87,12 +88,18 @@ class CountActionTest extends AbstractUnit
             {
                 $this->countActionResponseFieldsInitialized = true;
             }
+
+            public function initializeDistinctActionFields(): void
+            {
+                $this->distinctActionFieldsInitialized = true;
+            }
         };
 
         $controller->initialize();
 
         $this->assertTrue($controller->queryInitialized);
         $this->assertTrue($controller->countActionResponseFieldsInitialized);
+        $this->assertTrue($controller->distinctActionFieldsInitialized);
     }
 
     public function testCountActionResponseFieldsUseCollectionPolicy(): void
