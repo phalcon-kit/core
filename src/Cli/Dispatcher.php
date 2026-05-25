@@ -15,6 +15,15 @@ namespace PhalconKit\Cli;
 
 use PhalconKit\Dispatcher\DispatcherTrait;
 
+/**
+ * CLI dispatcher with PhalconKit diagnostic state export.
+ *
+ * The dispatcher keeps Phalcon's native CLI dispatch behavior and adds the
+ * shared PhalconKit dispatcher helper surface through {@see DispatcherTrait},
+ * including state export used by diagnostics and tests.
+ *
+ * @see https://docs.phalcon.io/5.13/application-cli/
+ */
 class Dispatcher extends \Phalcon\Cli\Dispatcher implements DispatcherInterface
 {
     use DispatcherTrait;

@@ -31,16 +31,34 @@ use PhalconKit\Support\Utils;
  */
 class Module implements ModuleDefinitionInterface
 {
+    /**
+     * Built-in CLI module name used by bootstrap module maps.
+     */
     public const string NAME_CLI = 'cli';
     
+    /**
+     * Module name written into router defaults.
+     */
     public string $name = self::NAME_CLI;
     
+    /**
+     * Config service resolved or created by the module.
+     */
     public ?Config $config = null;
     
+    /**
+     * CLI dispatcher resolved or created by the module.
+     */
     public ?Dispatcher $dispatcher = null;
     
+    /**
+     * Autoloader used to register task/model namespaces.
+     */
     public ?Loader $loader = null;
     
+    /**
+     * CLI router resolved or created by the module.
+     */
     public ?Router $router = null;
     
     /**
@@ -49,6 +67,11 @@ class Module implements ModuleDefinitionInterface
      * When a loader service is registered, it must be a Phalcon autoloader.
      * Otherwise the module creates a local loader so lightweight CLI modules do
      * not need to pre-register one.
+     *
+     * @param DiInterface|null $container Optional container supplied by
+     *     Phalcon's module registration flow.
+     *
+     * @throws ServiceException When the registered loader is not compatible.
      */
     #[\Override]
     public function registerAutoloaders(?DiInterface $container = null): void
@@ -72,6 +95,11 @@ class Module implements ModuleDefinitionInterface
      * Registered replacements for `dispatcher` and `router` are resolved
      * through the shared service resolver so invalid module wiring fails before
      * the module mutates service state.
+     *
+     * @param DiInterface $container Container receiving the configured module
+     *     services.
+     *
+     * @throws ServiceException When resolved module services are incompatible.
      */
     #[\Override]
     public function registerServices(DiInterface $container): void
@@ -128,6 +156,9 @@ class Module implements ModuleDefinitionInterface
      *
      * @param DiInterface|null $container Optional DI container used by Phalcon
      *     module registration.
+     *
+     * @throws ServiceException When a registered replacement service has the
+     *     wrong type or cannot be resolved.
      */
     public function getServices(?DiInterface $container = null): void
     {
@@ -171,6 +202,9 @@ class Module implements ModuleDefinitionInterface
     
     /**
      * Store resolved module services back into the active DI container.
+     *
+     * @param DiInterface $container Container that should receive the resolved
+     *     config, dispatcher, loader, and router services.
      */
     public function setServices(DiInterface $container): void
     {
