@@ -16,8 +16,14 @@ namespace PhalconKit;
 use PhalconKit\Exception\ExceptionInterface;
 
 /**
- * PhalconKit\Exception
- * All Phalcon Kit exceptions should use or extend this exception
+ * Base checked category for general PhalconKit framework exceptions.
+ *
+ * New framework code should prefer the more specific exception classes under
+ * `PhalconKit\Exception` when a native PHP category is useful, such as
+ * `ConfigurationException`, `ServiceException`, `LogicException`, or
+ * `RuntimeException`. This base class remains available for older extension
+ * points and general framework failures that should still implement the common
+ * PhalconKit exception marker.
  */
 class Exception extends \Exception implements ExceptionInterface
 {

@@ -337,6 +337,8 @@ tag has been cut yet.
   against `dataLifeCycle.policies` instead of the model mapping table.
 - Fixed data lifecycle task initialization so app tasks that populate lifecycle
   `$models` and `$policies` before `parent::initialize()` keep those mappings.
+- Fixed debug HTML rewriting so regex rewrite failures throw a scoped
+  `RuntimeException` instead of relying on disabled PHP assertions.
 - Fixed dispatcher security forwarding so lean forbidden and unauthorized
   routes can omit unrelated route keys without PHP warnings or repeat forwards.
 - Fixed REST calculation query cleanup so valid falsy conditions such as `0`

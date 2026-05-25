@@ -13,18 +13,29 @@ declare(strict_types=1);
 
 namespace PhalconKit\Support;
 
+use PhalconKit\Exception\RuntimeException;
 use PhalconKit\Support\Version as PhalconKitVersion;
 use Phalcon\Support\Version as PhalconVersion;
 
 /**
- * Provides debug capabilities to Phalcon Kit applications
+ * Customizes Phalcon's debug renderer for PhalconKit applications.
+ *
+ * The renderer keeps Phalcon's native exception/debug page behavior but adds
+ * current-version documentation links, PhalconKit API links, and a compact
+ * responsive layout for large stack traces. The output is intended for
+ * development/debug environments only; production error handlers should not
+ * expose this HTML to end users.
  */
 class Debug extends \Phalcon\Support\Debug
 {
     /**
-     * Returns the version information for Phalcon Kit and Phalcon Framework.
+     * Return version links for PhalconKit and the active Phalcon runtime.
      *
-     * @return string The version information as HTML string.
+     * The Phalcon documentation link is generated from the installed major and
+     * medium version so local debug pages do not drift when the framework
+     * dependency is upgraded.
+     *
+     * @return string HTML fragment rendered in Phalcon's debug footer.
      */
     #[\Override]
     public function getVersion(): string
@@ -42,7 +53,15 @@ class Debug extends \Phalcon\Support\Debug
     }
     
     /**
-     * Intercept the rendered HTML and rewrite class links.
+     * Rewrite Phalcon debug HTML with stable docs/API links and table markup.
+     *
+     * Native Phalcon debug output contains versioned API links and some table
+     * header markup that is awkward to style. This method normalizes those
+     * fragments, adds links for PhalconKit class names, and fails with a scoped
+     * framework exception if one of the internal regex rewrites unexpectedly
+     * fails.
+     *
+     * @throws RuntimeException When an internal debug HTML rewrite fails.
      */
     #[\Override]
     public function renderHtml(\Throwable $exception): string
@@ -63,30 +82,30 @@ class Debug extends \Phalcon\Support\Debug
             },
             $html
         );
+        $html = self::requireRenderedHtml($html, 'rewriting Phalcon documentation links');
 
-        assert(is_string($html));
         $html = preg_replace(
             '#<thead>\s*<tr>\s*<th>Key</th>\s*</tr>\s*<tr>\s*<th>Value</th>\s*</tr>\s*</thead>#',
             '<thead><tr><th class="key">Key</th><th>Value</th></tr></thead>',
             $html
         );
+        $html = self::requireRenderedHtml($html, 'normalizing key/value debug table headers');
 
-        assert(is_string($html));
         $html = preg_replace(
             '~<thead>\s*<tr>\s*<th>\#</th>\s*</tr>\s*<tr>\s*<th>Path</th>\s*</tr>\s*</thead>~',
             '<thead><tr><th class="number">#</th><th>Path</th></tr></thead>',
             $html
         );
+        $html = self::requireRenderedHtml($html, 'normalizing included-file debug table headers');
 
-        assert(is_string($html));
         $html = preg_replace(
             '#<thead>\s*<tr>\s*<th>Memory</th>\s*</tr>\s*<tr>\s*<th></th>\s*</tr>\s*</thead>#',
             '<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>',
             $html
         );
+        $html = self::requireRenderedHtml($html, 'normalizing memory debug table headers');
         
         // --- Add Phalcon Kit class links ---
-        assert(is_string($html));
         $html = preg_replace_callback(
             '#(?<!href=")(PhalconKit\\\\[A-Za-z0-9_\\\\]+)#',
             static function (array $m): string {
@@ -101,12 +120,40 @@ class Debug extends \Phalcon\Support\Debug
             },
             $html
         );
+        $html = self::requireRenderedHtml($html, 'linking PhalconKit API classes');
         
-        assert(is_string($html));
         return $html;
     }
-    
-    
+
+    /**
+     * Require an internal debug rewrite to return rendered HTML.
+     *
+     * `preg_replace()` and `preg_replace_callback()` return null on regex
+     * failures and can return arrays when the subject is an array. This class
+     * always rewrites a string subject, so anything other than a string means
+     * PhalconKit's debug renderer is misconfigured or has drifted from the
+     * native Phalcon output shape.
+     *
+     * @throws RuntimeException When the rewrite failed.
+     */
+    private static function requireRenderedHtml(string|array|null $html, string $operation): string
+    {
+        if (!is_string($html)) {
+            throw new RuntimeException(sprintf(
+                'Could not render PhalconKit debug HTML while %s.',
+                $operation
+            ));
+        }
+
+        return $html;
+    }
+
+    /**
+     * Return the CSS injected into Phalcon's debug page.
+     *
+     * The stylesheet intentionally avoids external assets so debug pages remain
+     * useful when the asset pipeline, router, or public document root is broken.
+     */
     #[\Override]
     public function getCssSources(): string
     {
@@ -187,6 +234,14 @@ body :not(pre) mark{background:#000;color:#fff;padding:0 2px}
 STYLE;
     }
     
+    /**
+     * Return the JavaScript injected into Phalcon's debug page.
+     *
+     * The script progressively enhances the native debug output: tabs are only
+     * activated when the expected markup exists, and source previews collapse
+     * large files around the highlighted line without requiring external
+     * dependencies.
+     */
     #[\Override]
     public function getJsSources(): string
     {
