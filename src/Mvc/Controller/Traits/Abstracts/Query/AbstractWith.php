@@ -15,11 +15,23 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query;
 
 use Phalcon\Support\Collection;
 
+/**
+ * Abstract contract for eager-loading relation configuration.
+ */
 trait AbstractWith
 {
+    /**
+     * Initialize eager-loading relation configuration.
+     */
     abstract public function initializeWith(): void;
     
+    /**
+     * Replace eager-loading relation configuration.
+     */
     abstract public function setWith(?Collection $with): void;
     
+    /**
+     * Return eager-loading relation configuration.
+     */
     abstract public function getWith(): ?Collection;
 }

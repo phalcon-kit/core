@@ -15,13 +15,28 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query;
 
 use Phalcon\Support\Collection;
 
+/**
+ * Abstract contract for GROUP BY query configuration.
+ */
 trait AbstractGroup
 {
+    /**
+     * Initialize group configuration.
+     */
     abstract public function initializeGroup(): void;
     
+    /**
+     * Replace group configuration.
+     */
     abstract public function setGroup(?Collection $group): void;
     
+    /**
+     * Return group configuration.
+     */
     abstract public function getGroup(): ?Collection;
     
+    /**
+     * Return the controller's default grouping policy.
+     */
     abstract public function defaultGroup(): array|string|null;
 }

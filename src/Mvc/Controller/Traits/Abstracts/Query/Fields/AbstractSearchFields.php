@@ -16,13 +16,22 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields;
 use Phalcon\Support\Collection;
 
 /**
- * The AbstractSearchFields trait provides a base implementation for searching fields.
+ * Abstract contract for fields that may participate in text search.
  */
 trait AbstractSearchFields
 {
+    /**
+     * Initialize search field policy.
+     */
     abstract public function initializeSearchFields(): void;
     
+    /**
+     * Replace search field policy.
+     */
     abstract public function setSearchFields(?Collection $searchFields): void;
     
+    /**
+     * Return search field policy.
+     */
     abstract public function getSearchFields(): ?Collection;
 }

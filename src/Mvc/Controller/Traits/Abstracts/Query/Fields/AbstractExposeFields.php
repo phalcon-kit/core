@@ -16,13 +16,22 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields;
 use Phalcon\Support\Collection;
 
 /**
- * The AbstractExposeFields trait provides a base implementation for exposing fields.
+ * Abstract contract for list/detail exposure field policies.
  */
 trait AbstractExposeFields
 {
+    /**
+     * Initialize exposure field policy.
+     */
     abstract public function initializeExposeFields(): void;
     
+    /**
+     * Replace exposure field policy.
+     */
     abstract public function setExposeFields(?Collection $exposeFields): void;
     
+    /**
+     * Return exposure field policy.
+     */
     abstract public function getExposeFields(): ?Collection;
 }

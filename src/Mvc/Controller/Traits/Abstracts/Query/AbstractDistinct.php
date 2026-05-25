@@ -15,11 +15,23 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query;
 
 use Phalcon\Support\Collection;
 
+/**
+ * Abstract contract for SELECT DISTINCT configuration.
+ */
 trait AbstractDistinct
 {
+    /**
+     * Initialize distinct-field configuration.
+     */
     abstract public function initializeDistinct(): void;
     
+    /**
+     * Replace distinct-field configuration.
+     */
     abstract public function setDistinct(?Collection $distinct): void;
     
+    /**
+     * Return distinct-field configuration.
+     */
     abstract public function getDistinct(): ?Collection;
 }

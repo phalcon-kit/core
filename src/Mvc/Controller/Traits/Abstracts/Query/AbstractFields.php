@@ -19,6 +19,9 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields\AbstractMapFields;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields\AbstractSaveFields;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields\AbstractSearchFields;
 
+/**
+ * Abstract contract that groups all REST field-policy collections.
+ */
 trait AbstractFields
 {
     use AbstractExposeFields;
@@ -27,5 +30,8 @@ trait AbstractFields
     use AbstractSaveFields;
     use AbstractSearchFields;
     
+    /**
+     * Initialize expose, filter, map, save, and search field policies.
+     */
     abstract public function initializeFields(): void;
 }

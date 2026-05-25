@@ -20,6 +20,12 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Conditions\AbstractPermissi
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Conditions\AbstractSearchConditions;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Conditions\AbstractSoftDeleteConditions;
 
+/**
+ * Abstract contract for the composed REST query condition collections.
+ *
+ * The concrete condition stack combines permission, soft-delete, identity,
+ * request-filter, and search conditions into one compiler input collection.
+ */
 trait AbstractConditions
 {
     use AbstractFilterConditions;
@@ -28,9 +34,18 @@ trait AbstractConditions
     use AbstractSearchConditions;
     use AbstractSoftDeleteConditions;
     
+    /**
+     * Initialize all condition collections.
+     */
     abstract public function initializeConditions(): void;
     
+    /**
+     * Replace the composed condition collection.
+     */
     abstract public function setConditions(?Collection $conditions): void;
     
+    /**
+     * Return the composed condition collection.
+     */
     abstract public function getConditions(): ?Collection;
 }

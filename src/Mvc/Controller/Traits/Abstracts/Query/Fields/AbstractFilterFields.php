@@ -16,13 +16,22 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields;
 use Phalcon\Support\Collection;
 
 /**
- * The AbstractFilterFields trait provides a base implementation for filtering fields.
+ * Abstract contract for fields that may appear in request filters.
  */
 trait AbstractFilterFields
 {
+    /**
+     * Initialize filter field policy.
+     */
     abstract public function initializeFilterFields(): void;
     
+    /**
+     * Replace filter field policy.
+     */
     abstract public function setFilterFields(?Collection $filterFields): void;
     
+    /**
+     * Return filter field policy.
+     */
     abstract public function getFilterFields(): ?Collection;
 }

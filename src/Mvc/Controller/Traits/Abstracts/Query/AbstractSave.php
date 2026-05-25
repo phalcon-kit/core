@@ -13,9 +13,18 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query;
 
-use Phalcon\Mvc\ModelInterface;
-
+/**
+ * Abstract contract for REST persistence helpers.
+ */
 trait AbstractSave
 {
-    abstract protected function save(): array;
+    /**
+     * Persist the current request payload.
+     *
+     * @param string|null $forceMode Optional persistence mode such as
+     *     `create` or `update`.
+     *
+     * @return array<string, mixed>
+     */
+    abstract public function save(?string $forceMode = null): array;
 }

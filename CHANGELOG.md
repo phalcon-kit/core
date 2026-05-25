@@ -177,6 +177,8 @@ tag has been cut yet.
   relationship extension points.
 - Added unit coverage that keeps MVC controller trait interfaces aligned with
   their abstract trait contracts.
+- Added unit coverage that keeps MVC query abstract traits aligned with their
+  concrete query trait implementations.
 
 ### Changed
 
@@ -212,6 +214,9 @@ tag has been cut yet.
   scaffolding defaults.
 - Expanded production-facing PHPDoc across REST controller interfaces and
   shared controller trait contracts.
+- Expanded production-facing PHPDoc across REST query abstract contracts,
+  including bind, cache, conditions, fields, joins, grouping, pagination,
+  ordering, persistence, and eager-loading extension points.
 - Expanded production-facing PHPDoc across bootstrap config fragments, module
   wiring, REST actions, ACL/router/option contracts, helper wrappers, and
   WebSocket scaffolding so framework extension points are clearer for
@@ -359,6 +364,8 @@ tag has been cut yet.
   into prepared find options.
 - Fixed MVC controller export interface signatures so they match the response
   return types and XLSX options exposed by the concrete export trait.
+- Fixed REST query abstract signatures so filter conditions and save helpers
+  match the optional arguments supported by their concrete traits.
 - Fixed disabled translation coverage by asserting the existing `Phalcon Kit`
   translation key instead of leaving the stale `PhalconKit` test commented out.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a

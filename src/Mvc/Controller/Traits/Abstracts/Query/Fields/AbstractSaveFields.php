@@ -16,13 +16,22 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields;
 use Phalcon\Support\Collection;
 
 /**
- * The AbstractSaveFields trait provides a base implementation for saving fields.
+ * Abstract contract for fields that may be assigned during save operations.
  */
 trait AbstractSaveFields
 {
+    /**
+     * Initialize save field policy.
+     */
     abstract public function initializeSaveFields(): void;
     
+    /**
+     * Replace save field policy.
+     */
     abstract public function setSaveFields(?Collection $saveFields): void;
     
+    /**
+     * Return save field policy.
+     */
     abstract public function getSaveFields(): ?Collection;
 }

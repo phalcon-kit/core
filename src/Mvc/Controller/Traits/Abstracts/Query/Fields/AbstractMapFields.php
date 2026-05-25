@@ -16,13 +16,22 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields;
 use Phalcon\Support\Collection;
 
 /**
- * The AbstractMapFields trait provides a base implementation for mapping fields.
+ * Abstract contract for public-field to model-field mapping.
  */
 trait AbstractMapFields
 {
+    /**
+     * Initialize field mapping policy.
+     */
     abstract public function initializeMapFields(): void;
     
+    /**
+     * Replace field mapping policy.
+     */
     abstract public function setMapFields(?Collection $mapFields): void;
     
+    /**
+     * Return field mapping policy.
+     */
     abstract public function getMapFields(): ?Collection;
 }

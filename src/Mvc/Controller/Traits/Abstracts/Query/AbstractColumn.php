@@ -15,11 +15,23 @@ namespace PhalconKit\Mvc\Controller\Traits\Abstracts\Query;
 
 use Phalcon\Support\Collection;
 
+/**
+ * Abstract contract for aggregate column selection.
+ */
 trait AbstractColumn
 {
+    /**
+     * Initialize aggregate column configuration.
+     */
     abstract public function initializeColumn(): void;
     
+    /**
+     * Replace aggregate column configuration.
+     */
     abstract public function setColumn(?Collection $column): void;
     
+    /**
+     * Return aggregate column configuration.
+     */
     abstract public function getColumn(): ?Collection;
 }
