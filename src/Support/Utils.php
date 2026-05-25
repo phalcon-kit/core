@@ -13,10 +13,22 @@ declare(strict_types=1);
 
 namespace PhalconKit\Support;
 
+/**
+ * Miscellaneous low-level utility helpers.
+ *
+ * These methods are intentionally small and static because they are used by
+ * bootstrap, diagnostics, and legacy integration code before richer services
+ * are always available. Prefer more specific services/helpers for new domain
+ * behavior.
+ */
 class Utils
 {
     /**
-     * Remove time and memory limits
+     * Remove memory and execution-time limits for long-running maintenance work.
+     *
+     * This changes process-wide PHP INI settings. It is appropriate for trusted
+     * CLI maintenance tasks, but should be used carefully in request/worker
+     * contexts where unlimited runtime can exhaust server resources.
      */
     public static function setUnlimitedRuntime(): void
     {
@@ -27,7 +39,9 @@ class Utils
     }
     
     /**
-     * Get the Namespace from a class object
+     * Return the namespace of an object instance.
+     *
+     * @throws \ReflectionException If the object cannot be reflected.
      */
     public static function getNamespace(object $class): string
     {
@@ -35,7 +49,9 @@ class Utils
     }
     
     /**
-     * Get the Namespace from a class object
+     * Return the short class name of an object instance.
+     *
+     * @throws \ReflectionException If the object cannot be reflected.
      */
     public static function getShortName(object $class): string
     {
@@ -43,7 +59,9 @@ class Utils
     }
     
     /**
-     * Get the Namespace from a class object
+     * Return the fully qualified class name of an object instance.
+     *
+     * @throws \ReflectionException If the object cannot be reflected.
      */
     public static function getName(object $class): string
     {
@@ -51,7 +69,9 @@ class Utils
     }
     
     /**
-     * Get the directory from a class object
+     * Return the directory containing an object's declaring file.
+     *
+     * @throws \ReflectionException If the object cannot be reflected.
      */
     public static function getDirname(object $class): string
     {
@@ -59,7 +79,10 @@ class Utils
     }
     
     /**
-     * Return an array of the current memory usage in MB
+     * Return current and peak memory usage.
+     *
+     * @param float $divider Number used to convert bytes into display units.
+     * @param string $suffix Suffix appended to formatted values.
      *
      * @return array{
      *      memory: string,

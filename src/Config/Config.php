@@ -17,15 +17,34 @@ use Phalcon\Config\ConfigInterface as PhalconConfigInterface;
 use DateTimeImmutable;
 use PhalconKit\Exception\InvalidArgumentException;
 
+/**
+ * PhalconKit config wrapper with framework merge and typed-path helpers.
+ *
+ * The class keeps native `Phalcon\Config\Config` behavior and adds:
+ *
+ * - `pathToArray()` for provider code that needs array options.
+ * - append-aware recursive merge support for config fragments.
+ * - `getDateTime()` for lifecycle/retention config that stores date modifiers.
+ *
+ * @see https://docs.phalcon.io/5.13/config/
+ */
 class Config extends \Phalcon\Config\Config implements ConfigInterface
 {
     /**
-     * Retrieves a value from a path and converts it to an array.
+     * Resolve a config path and normalize the result to an array.
      *
-     * @param string $path The path to retrieve the value from.
-     * @param array|null $defaultValue The default value to return if the path does not exist.
-     * @param string|null $delimiter The delimiter to use for splitting the path.
-     * @return array|null The value from the path as an array, or null if the value does not exist.
+     * `null` is preserved so callers can distinguish a missing optional path
+     * from a configured scalar value. Native Phalcon config objects are
+     * converted through `toArray()`, and any other non-null value is cast to an
+     * array.
+     *
+     * @param string $path Path understood by Phalcon's native `path()` method.
+     * @param array|null $defaultValue Default returned when the path is
+     *     missing.
+     * @param string|null $delimiter Optional path delimiter.
+     *
+     * @return array|null Normalized array value, or null when the path
+     *     resolves to null.
      */
     #[\Override]
     public function pathToArray(string $path, ?array $defaultValue = null, ?string $delimiter = null): ?array
@@ -44,16 +63,23 @@ class Config extends \Phalcon\Config\Config implements ConfigInterface
     }
     
     /**
-     * Merges the current configuration object with another set of data.
+     * Merge data into this config instance.
      *
-     * @param array|PhalconConfigInterface $toMerge The data to merge into the current configuration.
-     *                        This can be an array or another configuration object that implements PhalconConfigInterface.
-     * @param bool $append Whether to append the data during the merge or replace existing values.
-     *                       Defaults to false, meaning values will be replaced during the merge.
-     * @return PhalconConfigInterface Returns the updated configuration object after the merge operation.
-     *                                The current instance is modified and returned.
-     * @throws InvalidArgumentException If the $toMerge parameter is not of a
-     *     valid data type.
+     * When `$append` is false, native Phalcon merge behavior is used. When
+     * `$append` is true, numeric-keyed values are appended while associative
+     * values are replaced recursively. This is useful for framework config
+     * fragments such as provider lists, permission features, and default seed
+     * data where applications need to extend list values instead of replacing
+     * the whole list.
+     *
+     * @param array|PhalconConfigInterface $toMerge Data to merge into this
+     *     config.
+     * @param bool $append Use PhalconKit append-aware merge semantics.
+     *
+     * @return PhalconConfigInterface The current mutated config instance.
+     *
+     * @throws InvalidArgumentException When append mode receives a value that
+     *     cannot be converted to an array.
      */
     #[\Override]
     public function merge(mixed $toMerge, bool $append = false): PhalconConfigInterface
@@ -76,13 +102,16 @@ class Config extends \Phalcon\Config\Config implements ConfigInterface
     }
     
     /**
-     * Merges two arrays recursively, appending values from the target array into the source array.
-     * Handles both associative and indexed arrays.
+     * Append-merge two arrays recursively.
      *
-     * @param array $source The source array to merge values into.
-     * @param array $target The target array to merge values from.
+     * Integer keys are appended to preserve list-style config fragments.
+     * String keys replace existing values unless both sides contain arrays, in
+     * which case the merge recurses.
      *
-     * @return array The resulting array after the merge operation.
+     * @param array $source Base config data.
+     * @param array $target Incoming config data.
+     *
+     * @return array Merged config data.
      */
     final protected function internalMergeAppend(array $source, array $target): array
     {
@@ -102,13 +131,17 @@ class Config extends \Phalcon\Config\Config implements ConfigInterface
     }
     
     /**
-     * Get a modified DateTime.
-     * Note: This is a helper to enhance strict typings and safely use DateTime within config
+     * Return a modified immutable date.
      *
-     * @param string $modifier The modifier string to modify the DateTime.
-     * @param DateTimeImmutable|null $dateTime Optional. The DateTime to modify. Defaults to current DateTime if not provided.
+     * This helper keeps date-modifier config strongly typed in lifecycle and
+     * retention code. When no base date is provided, the current time is used.
      *
-     * @return DateTimeImmutable The modified DateTime object.
+     * @param string $modifier Date/time modifier accepted by
+     *     `DateTimeImmutable::modify()`, such as `-1 month` or `+7 days`.
+     * @param DateTimeImmutable|null $dateTime Optional base date.
+     *
+     * @return DateTimeImmutable Modified date.
+     *
      * @throws \DateMalformedStringException If the modifier cannot be parsed.
      */
     public function getDateTime(string $modifier, ?DateTimeImmutable $dateTime = null): DateTimeImmutable

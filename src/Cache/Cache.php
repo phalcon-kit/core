@@ -17,9 +17,11 @@ namespace PhalconKit\Cache;
  * PhalconKit cache service type.
  *
  * This wrapper currently delegates to Phalcon's cache implementation without
- * changing behavior. It exists so applications can type and register cache
- * services under the PhalconKit namespace, and so future framework-level cache
- * behavior can be introduced without changing consumer service definitions.
+ * changing behavior. It exists so applications can type/register cache
+ * services under the PhalconKit namespace, while still using native Phalcon
+ * adapters, serializers, and cache semantics.
+ *
+ * @see https://docs.phalcon.io/5.13/cache/
  */
 class Cache extends \Phalcon\Cache\Cache
 {
