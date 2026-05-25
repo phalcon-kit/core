@@ -15,7 +15,16 @@ namespace PhalconKit\Mvc\Controller\Traits\Interfaces;
 
 use Phalcon\Http\ResponseInterface;
 
+/**
+ * Contract for setting HTTP status codes on controller responses.
+ */
 interface StatusCodeInterface
 {
+    /**
+     * Set the current response status code.
+     *
+     * @param int $code HTTP status code.
+     * @param string|null $message Optional HTTP reason phrase.
+     */
     public function setStatusCode(int $code = 200, ?string $message = null): ResponseInterface;
 }

@@ -13,7 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Interfaces;
 
+/**
+ * Contract for controller debug-mode checks.
+ */
 interface DebugInterface
 {
+    /**
+     * Determine whether debug output should be enabled for the current request.
+     */
     public function isDebugEnabled(): bool;
 }

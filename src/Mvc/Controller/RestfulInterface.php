@@ -15,6 +15,14 @@ namespace PhalconKit\Mvc\Controller;
 
 use PhalconKit\Mvc\Controller\Traits\Interfaces\ExposeInterface;
 
+/**
+ * Contract for full resource controllers.
+ *
+ * `RestfulInterface` extends the base REST controller contract with exposure
+ * helpers used by find/list/export actions. It represents controllers that are
+ * expected to provide the package's full resource workflow rather than only
+ * custom REST actions.
+ */
 interface RestfulInterface extends
     ExposeInterface,
     RestInterface

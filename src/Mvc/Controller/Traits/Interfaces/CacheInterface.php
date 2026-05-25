@@ -13,7 +13,16 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Interfaces;
 
+/**
+ * Contract for REST query cache-key helpers.
+ */
 interface CacheInterface
 {
+    /**
+     * Build a cache key for the current query parameters.
+     *
+     * @param array<string, mixed>|null $params Optional request/query
+     *     parameters. Implementations use current controller params when null.
+     */
     public function getCacheKey(?array $params = null): ?string;
 }

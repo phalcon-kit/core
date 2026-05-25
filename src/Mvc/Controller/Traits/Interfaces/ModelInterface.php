@@ -13,19 +13,59 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Interfaces;
 
+/**
+ * Contract for resolving the model managed by a REST controller.
+ */
 interface ModelInterface
 {
+    /**
+     * Return the explicit model class name, when one is configured.
+     *
+     * @return class-string<\Phalcon\Mvc\ModelInterface>|null
+     */
     public function getModelName(): ?string;
     
-    public function setModelName(?string $modelName = null): void;
+    /**
+     * Set the explicit model class name for this controller.
+     *
+     * @param class-string<\Phalcon\Mvc\ModelInterface>|null $modelName
+     */
+    public function setModelName(?string $modelName): void;
     
+    /**
+     * Return namespace prefixes searched when deriving a model from a controller.
+     *
+     * @return list<string>
+     */
     public function getModelNamespaces(): array;
     
-    public function setModelNamespaces(?array $modelNamespaces = []): void;
+    /**
+     * Replace namespace prefixes searched when deriving a model from a controller.
+     *
+     * @param list<string>|null $modelNamespaces
+     */
+    public function setModelNamespaces(?array $modelNamespaces): void;
     
+    /**
+     * Infer a model class name from the controller namespace/class.
+     *
+     * @param list<string>|null $namespaces Optional namespace prefixes.
+     * @param string $needle Namespace segment to replace with `Models`.
+     *
+     * @return class-string<\Phalcon\Mvc\ModelInterface>|null
+     */
     public function getModelNameFromController(?array $namespaces = null, string $needle = 'Models'): ?string;
     
+    /**
+     * Return the current controller route name.
+     */
     public function getControllerName(): string;
     
+    /**
+     * Resolve and instantiate the configured model class.
+     *
+     * @param class-string<\Phalcon\Mvc\ModelInterface>|null $modelName Optional
+     *     override.
+     */
     public function loadModel(?string $modelName = null): \Phalcon\Mvc\ModelInterface;
 }

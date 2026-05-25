@@ -175,6 +175,8 @@ tag has been cut yet.
 - Added official Phalcon documentation references to high-value framework
   docblocks for DI, routing, dispatcher, application, view, models, and
   relationship extension points.
+- Added unit coverage that keeps MVC controller trait interfaces aligned with
+  their abstract trait contracts.
 
 ### Changed
 
@@ -208,6 +210,8 @@ tag has been cut yet.
 - Removed stale commented-out source and test code around model relationship
   examples, dispatcher security, eager-loading options, export responses, and
   scaffolding defaults.
+- Expanded production-facing PHPDoc across REST controller interfaces and
+  shared controller trait contracts.
 - Expanded production-facing PHPDoc across bootstrap config fragments, module
   wiring, REST actions, ACL/router/option contracts, helper wrappers, and
   WebSocket scaffolding so framework extension points are clearer for
@@ -353,6 +357,8 @@ tag has been cut yet.
   distinct root-row counts instead of duplicated joined rows.
 - Fixed REST query initialization so configured aggregate columns are carried
   into prepared find options.
+- Fixed MVC controller export interface signatures so they match the response
+  return types and XLSX options exposed by the concrete export trait.
 - Fixed disabled translation coverage by asserting the existing `Phalcon Kit`
   translation key instead of leaving the stale `PhalconKit` test commented out.
 - Fixed Redis provider unit coverage so local PHPUnit runs no longer require a
