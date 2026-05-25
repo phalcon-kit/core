@@ -32,15 +32,17 @@ use PhalconKit\Support\Options\Options;
  * It lazily builds named loggers, caches them for repeated calls, and applies
  * formatter/adapter options consistently across default and logger-specific
  * configuration.
+ *
+ * @see https://docs.phalcon.io/5.13/logger/
  */
 class Loggers
 {
     use Options;
     
     /**
-     * An array to store logger objects
+     * Cached logger instances keyed by logger name.
      * 
-     * @var LoggerInterface[] $loggers
+     * @var array<string, LoggerInterface>
      */
     public array $loggers = [];
     
@@ -200,6 +202,21 @@ class Loggers
         $this->loggers[$name] = $logger;
     }
 
+    /**
+     * Instantiate a configured formatter class after validating its contract.
+     *
+     * Formatter names come from configuration, so this private helper guards the
+     * dynamic class name before instantiation and returns a framework-scoped
+     * exception when configuration is invalid.
+     *
+     * @param string $formatter Logical formatter name from config.
+     * @param string $formatterClass Configured formatter class name.
+     *
+     * @return FormatterInterface Formatter instance.
+     *
+     * @throws ConfigurationException When the configured class does not
+     *     implement Phalcon's formatter contract.
+     */
     private function createFormatter(string $formatter, string $formatterClass): FormatterInterface
     {
         if (!is_a($formatterClass, FormatterInterface::class, true)) {
@@ -218,6 +235,22 @@ class Loggers
         return new $formatterClass();
     }
 
+    /**
+     * Instantiate a configured adapter class for a logger driver.
+     *
+     * Built-in Phalcon adapters have different constructor signatures, so this
+     * method centralizes those differences. Custom adapters are expected to
+     * accept the configured `options` array.
+     *
+     * @param string $loggerDriver Logical driver name from config.
+     * @param string $adapterClass Configured adapter class name.
+     * @param array<string, mixed> $options Resolved logger options.
+     *
+     * @return AdapterInterface Adapter instance ready to receive a formatter.
+     *
+     * @throws ConfigurationException When the configured class does not
+     *     implement Phalcon's adapter contract.
+     */
     private function createAdapter(string $loggerDriver, string $adapterClass, array $options): AdapterInterface
     {
         if (!is_a($adapterClass, AdapterInterface::class, true)) {
@@ -237,6 +270,19 @@ class Loggers
         };
     }
 
+    /**
+     * Instantiate a custom logger adapter with its configured options array.
+     *
+     * This keeps built-in adapter branching small while still allowing
+     * applications to register their own Phalcon-compatible adapter classes in
+     * config.
+     *
+     * @param string $adapterClass Adapter class already validated against
+     *     AdapterInterface.
+     * @param array<string, mixed> $options Resolved logger options.
+     *
+     * @return AdapterInterface Custom adapter instance.
+     */
     private function createCustomAdapter(string $adapterClass, array $options): AdapterInterface
     {
         /**

@@ -19,11 +19,18 @@ use Phalcon\Translate\InterpolatorFactory;
 use PhalconKit\Exception\RuntimeException;
 
 /**
- * NestedNativeArray class is an implementation of the Translate Adapter interface that uses
- * a nested array as the translation source.
+ * Translation adapter backed by a nested PHP array.
+ *
+ * Phalcon's NativeArray adapter supports flat translation maps. This adapter
+ * adds delimiter-based nested lookup, while still preserving exact flat-key
+ * lookup precedence. A flat key such as `button.save` wins over a nested path
+ * `button => ['save' => ...]` when both exist.
+ *
+ * Missing keys return the original key by default. Set `triggerError` to true
+ * when development/test environments should fail fast on missing translations.
  *
  * Usage example:
- * ```
+ * ```php
  * $interpolator = new InterpolatorFactory();
  * $options = [
  *     'content' => [
@@ -43,7 +50,7 @@ use PhalconKit\Exception\RuntimeException;
  * $translator = new NestedNativeArray($interpolator, $options);
  *
  * // Check if translation exists
- * $translator->exists('en.welcome'); // returns true
+ * $translator->has('en.welcome'); // returns true
  *
  * // Get translated string
  * $translator->query('fr.goodbye'); // returns 'Au revoir!'
@@ -53,37 +60,41 @@ use PhalconKit\Exception\RuntimeException;
  * ```
  *
  * @implements \ArrayAccess<string, mixed>
- * @package PhalconKit\Translate\Adapter
+ *
+ * @see https://docs.phalcon.io/5.13/translate/
  */
 class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
 {
     /**
-     * Translation array.
-     * @var array $translate
+     * Translation content indexed by flat keys or nested arrays.
+     *
+     * @var array<string, mixed>
      */
     private array $translate = [];
     
     /**
-     * @var bool $triggerError Determines whether to trigger an error or not.
+     * Whether missing keys should throw instead of returning the original key.
      */
     private bool $triggerError = false;
     
     /**
-     * Sets the value of the delimiter.
+     * Delimiter used when resolving nested translation paths.
      *
-     * @param non-empty-string $delimiter The delimiter value to set.
+     * @var non-empty-string
      */
     protected string $delimiter = '.';
     
     /**
-     * PhalconKit\Translate\Adapter\NestedNativeArray constructor
+     * Create a nested-array translation adapter.
      *
-     * @param InterpolatorFactory $interpolator
-     * @param array $options [
-     *     'content' => '',
-     *     'triggerError' => false,
-     *     'delimiter' => '.',
-     * ]
+     * Supported options:
+     * - `content`: translation content as flat keys, nested arrays, or both.
+     * - `triggerError`: throw a RuntimeException when a key is missing.
+     * - `delimiter`: non-empty delimiter used for nested lookup.
+     *
+     * @param InterpolatorFactory $interpolator Factory used by Phalcon for
+     *     placeholder replacement.
+     * @param array<string, mixed> $options Adapter options.
      */
     public function __construct(InterpolatorFactory $interpolator, array $options)
     {
@@ -94,11 +105,14 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
     }
     
     /**
-     * Returns whether a translation exists for the given index
+     * Check whether a translation exists for the given key.
      *
-     * @param string $index The translation index to check
-     * @return bool True if a translation exists for the index, false otherwise
      * @deprecated since Phalcon Kit 1.0, use {@see self::has()} instead
+     *
+     * @param string $index Translation key to check.
+     *
+     * @return bool True when the key exists.
+     *
      * @see has()
      */
     #[Deprecated(
@@ -111,9 +125,14 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
     }
     
     /**
-     * Returns true if the translation for the given index exists, false otherwise.
-     * @param string $index The index of the translation to check.
-     * @return bool Returns true if the translation for the given index exists, false otherwise.
+     * Return true when a flat or nested translation key exists.
+     *
+     * Exact flat keys are checked first. If no exact key exists, the key is
+     * split by the configured delimiter and resolved through nested arrays.
+     *
+     * @param string $index Translation key to check.
+     *
+     * @return bool True when the key resolves to a configured translation.
      */
     #[\Override]
     public function has(string $index): bool
@@ -137,13 +156,13 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
     }
     
     /**
-     * Returns the index if translation key is not found
-     * Throws exception if triggerError is enabled and translation key is not found
+     * Return the missing key fallback or throw when strict mode is enabled.
      * 
-     * @param string $index The translation key
-     * @return string Returns the index
-     * @throws RuntimeException Throws exception if triggerError is enabled and
-     *     translation key is not found.
+     * @param string $index Missing translation key.
+     *
+     * @return string Original key when `triggerError` is false.
+     *
+     * @throws RuntimeException When `triggerError` is true.
      */
     public function notFound(string $index): string
     {
@@ -155,13 +174,20 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
     }
     
     /**
-     * Queries for a translated string based on the given translate key and optional placeholders.
+     * Return a translated string for a flat or nested key.
      *
-     * @param string $translateKey The translate key to query for a translated string.
-     * @param array $placeholders An optional array of placeholders to replace in the translated string.
-     * @return string The translated string or the not found string if the translate key is not found.
-     * @throws RuntimeException Throws exception if triggerError is enabled and
-     *     translation key is not found.
+     * Exact flat keys are returned before nested lookup is attempted. Nested
+     * values are resolved with the configured delimiter and then passed through
+     * Phalcon's placeholder interpolator.
+     *
+     * @param string $translateKey Translation key to resolve.
+     * @param array<string, mixed> $placeholders Placeholder values passed to the
+     *     interpolator.
+     *
+     * @return string Translated string, or the missing-key fallback.
+     *
+     * @throws RuntimeException When the key is missing and `triggerError` is
+     *     true.
      */
     #[\Override]
     public function query(string $translateKey, array $placeholders = []): string
@@ -185,9 +211,9 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
     }
     
     /**
-     * Converts the translate data to an array.
+     * Return the raw translation content.
      *
-     * @return array The translate data as an array.
+     * @return array<string, mixed> Translation content exactly as configured.
      */
     public function toArray(): array
     {

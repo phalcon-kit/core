@@ -16,8 +16,31 @@ namespace PhalconKit\Locales;
 use Phalcon\Translate\Adapter\NativeArray;
 use Phalcon\Translate\InterpolatorFactory;
 
+/**
+ * Built-in French translation adapter for framework messages.
+ *
+ * The adapter ships PhalconKit's default `fr_CA.UTF-8` strings and accepts
+ * application-provided NativeArray options so callers can override or extend
+ * the bundled content. It remains a normal Phalcon NativeArray adapter, so it
+ * can be registered anywhere Phalcon expects a translate adapter.
+ *
+ * @see https://docs.phalcon.io/5.13/translate/
+ */
 class Fr extends NativeArray
 {
+    /**
+     * Create the French locale adapter.
+     *
+     * The default domain is `phalcon-kit`. On Unix-like systems where
+     * `LC_MESSAGES` exists, it is passed to Phalcon so locale category handling
+     * matches native gettext conventions. User options are merged recursively so
+     * custom content can be layered over the bundled framework strings.
+     *
+     * @param InterpolatorFactory $interpolator Factory used by Phalcon to
+     *     interpolate placeholders.
+     * @param array<string, mixed> $options NativeArray options, commonly
+     *     `content`, `locale`, `defaultDomain`, or `category`.
+     */
     public function __construct(InterpolatorFactory $interpolator, array $options = [])
     {
         $config = [
@@ -29,7 +52,6 @@ class Fr extends NativeArray
             ],
         ];
         
-        // Only set category if LC_MESSAGES is actually defined (Unix/Linux systems with gettext)
         if (defined('LC_MESSAGES')) {
             $config['category'] = LC_MESSAGES;
         }
