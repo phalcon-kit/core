@@ -18,7 +18,6 @@ use PhalconKit\Bootstrap;
 use PhalconKit\Cli\Dispatcher as CliDispatcher;
 use PhalconKit\Ws\Dispatcher as WsDispatcher;
 use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
-use PhalconKit\Mvc\Dispatcher\Camelize;
 use PhalconKit\Mvc\Dispatcher\Preflight;
 use PhalconKit\Mvc\Dispatcher\Error;
 use PhalconKit\Mvc\Dispatcher\Rest;
@@ -26,10 +25,30 @@ use PhalconKit\Mvc\Dispatcher\Security;
 use PhalconKit\Mvc\Dispatcher\Maintenance;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the mode-specific dispatcher and core dispatch listeners.
+ *
+ * The dispatcher service is selected from the active bootstrap mode: MVC
+ * receives the HTTP dispatcher, CLI receives the task dispatcher, and WebSocket
+ * receives the task-style WebSocket dispatcher. Shared listeners such as
+ * preflight, ACL security, maintenance checks, logging, and module bootstrapping
+ * are attached before the concrete dispatcher is returned.
+ *
+ * MVC-only listeners are attached only for HTTP dispatching. CLI and WebSocket
+ * dispatchers keep the common listeners but avoid MVC error/rest behavior that
+ * depends on controllers and HTTP responses.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'dispatcher';
     
+    /**
+     * Register the shared `dispatcher` service.
+     *
+     * The returned dispatcher is configured with the shared events manager, the
+     * PhalconKit DI container, and the default namespace from
+     * `router.defaults.namespace` when that config value exists.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
@@ -42,14 +61,7 @@ class ServiceProvider extends AbstractServiceProvider
             $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
             
             /**
-             * Camelize
-             */
-//            $camelize = new Camelize();
-//            $camelize->setDI($di);
-//            $eventsManager->attach('dispatch', $camelize);
-            
-            /**
-             * Cors & Preflight
+             * CORS & Preflight
              */
             $security = new Preflight();
             $security->setDI($di);

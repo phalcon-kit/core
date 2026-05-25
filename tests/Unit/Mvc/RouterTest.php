@@ -55,14 +55,6 @@ class RouterTest extends AbstractUnit
         $this->assertIsArray($routerToArray['matches']);
         $this->assertEmpty($routerToArray['matches']);
         $this->assertNull($routerToArray['matched']);
-
-//        $this->assertIsString($routerToArray['matched']['id']);
-//        $this->assertIsString($routerToArray['matched']['name']);
-//        $this->assertIsString($routerToArray['matched']['hostname']);
-//        $this->assertIsString($routerToArray['matched']['paths']);
-//        $this->assertIsString($routerToArray['matched']['pattern']);
-//        $this->assertIsString($routerToArray['matched']['httpMethod']);
-//        $this->assertIsString($routerToArray['matched']['reversedPaths']);
     }
     
     public function testDefaultRoutes(): void

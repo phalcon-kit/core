@@ -129,8 +129,10 @@ Important dispatcher plugins:
 - `Security`: checks ACL permissions for controllers/tasks/actions.
 - `Preflight`: sets CORS headers and exits with 204 for preflight requests.
 - `Maintenance`: forwards to the configured maintenance route when enabled.
-- `Camelize`: normalizes controller/action names.
 - `Logger`: logs dispatch metadata when dispatcher logging is enabled.
+- `Camelize`: available as a listener class, but not registered by default.
+  Treat it as a pending design decision unless an application opts into it
+  explicitly.
 
 Rules:
 

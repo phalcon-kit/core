@@ -245,9 +245,12 @@ Keep for discussion:
   Add `__isset()`/`__unset()` only after translated-property presence semantics
   are defined.
 - Dispatcher listeners:
-  `src/Mvc/Dispatcher/Module.php`, `src/Mvc/Dispatcher/Rest.php`.
-  Standardize module namespace rewriting and decide whether the pass-through
-  REST dispatcher listener should gain supported behavior or be removed.
+  `src/Mvc/Dispatcher/Module.php`, `src/Mvc/Dispatcher/Rest.php`,
+  `src/Mvc/Dispatcher/Camelize.php`.
+  Standardize module namespace rewriting, decide whether the pass-through REST
+  dispatcher listener should gain supported behavior or be removed, and decide
+  whether Camelize should be an opt-in listener, a default listener, or removed
+  from the public dispatcher surface.
 - Translation keys containing the delimiter inside nested arrays:
   `tests/Unit/Translate/TranslateTest.php`,
   `src/Translate/Adapter/NestedNativeArray.php`.

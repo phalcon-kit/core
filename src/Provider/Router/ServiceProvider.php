@@ -21,10 +21,32 @@ use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Ws\Router as WsRouter;
 
+/**
+ * Registers the mode-specific router service.
+ *
+ * Router creation follows the active bootstrap mode. MVC receives the
+ * config-aware PhalconKit MVC router, CLI receives the CLI router, and
+ * WebSocket receives the WebSocket router that inherits CLI-style route
+ * matching. All variants implement the shared PhalconKit router contract so
+ * downstream code can use typed DI lookups without branching on the runtime
+ * mode.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'router';
     
+    /**
+     * Register the shared `router` service and apply configured defaults.
+     *
+     * The provider respects an already-created bootstrap router when one exists,
+     * otherwise it creates the router for the current mode. MVC routers receive
+     * the events manager, config service, base routes, hostname routes, and
+     * registered application module routes; CLI and WebSocket routers only need
+     * their configured defaults and DI reference.
+     *
+     * @throws ConfigurationException When the bootstrap mode is not supported by
+     *     the router provider.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
