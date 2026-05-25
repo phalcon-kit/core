@@ -18,21 +18,33 @@ use PhalconKit\Di\DiInterface;
 use Phalcon\Mvc\Model\MetaData\Memory;
 use Phalcon\Mvc\Model\MetaData\Stream;
 use Phalcon\Storage\SerializerFactory;
-use PhalconKit\Bootstrap;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Php;
 
+/**
+ * Registers the model metadata service.
+ *
+ * Metadata adapter selection comes from `metadata.driver` for web runtime and
+ * `metadata.driverCli` for CLI runtime. Adapter-specific options are merged
+ * over `metadata.default`, mirroring the cache provider pattern while honoring
+ * Phalcon's special constructor signatures for Memory and Stream metadata
+ * adapters.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'modelsMetadata';
     
+    /**
+     * Register the shared `modelsMetadata` service.
+     *
+     * Built-in Memory and Stream adapters are instantiated directly. Other
+     * adapters are created with Phalcon's cache adapter factory because their
+     * constructors expect a storage backend.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
         $di->setShared($this->getName(), function () use ($di) {
-            
-            $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
-            
             $config = $di->getConfig();
             
             $metadataConfig = $config->pathToArray('metadata') ?? [];

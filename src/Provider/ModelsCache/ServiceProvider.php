@@ -15,6 +15,13 @@ namespace PhalconKit\Provider\ModelsCache;
 
 use PhalconKit\Provider\Cache\ServiceProvider as CacheServiceProvider;
 
+/**
+ * Registers the model-result cache service.
+ *
+ * The provider reuses the generic cache provider and exposes the resulting
+ * cache wrapper under Phalcon's conventional `modelsCache` service name. Keep
+ * model cache configuration aligned with the `cache` provider option shape.
+ */
 class ServiceProvider extends CacheServiceProvider
 {
     protected string $serviceName = 'modelsCache';

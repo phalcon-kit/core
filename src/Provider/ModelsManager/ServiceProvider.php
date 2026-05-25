@@ -18,10 +18,24 @@ use Phalcon\Events\ManagerInterface;
 use PhalconKit\Mvc\Model\Manager;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the model manager service.
+ *
+ * The provider returns PhalconKit's model manager extension and attaches the
+ * shared events manager when one is available. This keeps model events,
+ * relationships, and framework model helpers on the same event bus used by the
+ * rest of the application.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'modelsManager';
     
+    /**
+     * Register the shared `modelsManager` service.
+     *
+     * The provider tolerates a missing or non-Phalcon events manager so tests and
+     * specialized bootstraps can create the model manager in isolation.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

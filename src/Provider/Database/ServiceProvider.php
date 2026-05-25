@@ -22,12 +22,47 @@ use PhalconKit\Db\Events\Profiler;
 use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers a configured PDO database connection.
+ *
+ * The provider resolves the active driver from `database.default` or from a
+ * subclass-specific `$driverName`. Driver definitions can extend one or more
+ * other driver definitions through `extends`, allowing applications to keep
+ * shared connection options in one place and override only the values that
+ * differ per connection.
+ *
+ * Core database logger and profiler listeners are attached to the shared events
+ * manager before the connection is returned.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
+    /**
+     * Optional configured driver name forced by a specialized provider.
+     *
+     * Null means the provider uses `database.default`. Subclasses such as the
+     * read-only and dynamic database providers set this value to select a named
+     * driver while reusing the base connection-building logic.
+     */
     protected ?string $driverName = null;
+
     protected string $serviceName = 'db';
+
+    /**
+     * Tracks whether database listeners were attached during this PHP process.
+     */
     protected static bool $attachedEvents = false;
     
+    /**
+     * Register the shared database service.
+     *
+     * Supported driver options include `adapter`, `dialectClass`, connection
+     * descriptor values accepted by the selected adapter, and control keys such
+     * as `extends`/`enable` that are removed before adapter construction.
+     *
+     * @throws ConfigurationException When driver options are invalid, adapter or
+     *     dialect classes do not exist, or the adapter does not extend Phalcon's
+     *     PDO adapter base class.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

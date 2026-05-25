@@ -14,17 +14,32 @@ declare(strict_types=1);
 namespace PhalconKit\Provider\Cache;
 
 use PhalconKit\Di\DiInterface;
-use PhalconKit\Bootstrap;
 use PhalconKit\Cache\Cache;
 use Phalcon\Cache\AdapterFactory;
 use Phalcon\Storage\SerializerFactory;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Php;
 
+/**
+ * Registers the application cache service.
+ *
+ * The provider builds a Phalcon cache adapter from `cache.driver` in web
+ * runtime and from `cache.cli` in CLI runtime, then wraps it in
+ * `PhalconKit\Cache\Cache`. Driver-specific options are merged over
+ * `cache.default` so shared defaults remain central while each adapter can
+ * override only what it needs.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'cache';
     
+    /**
+     * Register the shared `cache` service.
+     *
+     * Adapter creation is delegated to Phalcon's cache adapter factory, so
+     * driver names and option arrays should follow Phalcon's cache adapter
+     * expectations.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

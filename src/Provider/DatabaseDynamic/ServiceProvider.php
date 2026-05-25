@@ -13,6 +13,14 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\DatabaseDynamic;
 
+/**
+ * Registers the dynamic-model database connection service.
+ *
+ * This provider reuses the base database provider but forces the configured
+ * `dynamic` driver and exposes it as `dbd`. Dynamic models and generated
+ * record controllers can use this service when their storage should be isolated
+ * from the primary application database.
+ */
 class ServiceProvider extends \PhalconKit\Provider\Database\ServiceProvider
 {
     protected ?string $driverName = 'dynamic';
