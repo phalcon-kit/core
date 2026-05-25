@@ -72,9 +72,6 @@ class ModelTest extends AbstractUnit
         $this->prepareTests();
         
         $user = new User();
-//        $user->setUsername('test');
-//        $user->setFirstName('test');
-//        $user->setLastName('test');
         $user->setEmail('test@test.tld');
         
         // Create
@@ -192,34 +189,6 @@ class ModelTest extends AbstractUnit
         $this->userRoleFindAssert(1, 3);
         $this->userRoleFindAssert(1, 2);
         $this->userRoleFindAssert(1, 5, 1);
-        
-        // Reactivating a previously deleted relationship by roleId alone would
-        // need an explicit relationship-assignment contract.
-//        $user->assign([
-//            'userrolelist' => [
-//                true,
-////                [
-////                    'roleId' => 5, // this will create a new one and not update the existing one because its single to many
-////                ],
-//            ],
-//        ]);
-//
-//        $save = $user->save();
-//        $messages = $user->getMessages();
-//
-//        $this->assertEmpty($messages, json_encode($messages));
-//        $this->assertTrue($save);
-//
-//        $this->userRoleFindAssert($user->getId(), 3);
-//        $this->userRoleFindAssert($user->getId(), 2);
-//        $this->userRoleFindAssert($user->getId(), 5, 1); // the first one should still be deleted
-//
-//        $roles = UserRole::find([
-//            'userId = :userId: and roleId = :roleId:',
-//            'bind' => ['userId' => $user->getId(), 'roleId' => 5],
-//        ]);
-//        $this->assertEquals(2, $roles->count());
-//        $this->assertCount(2, $roles);
     }
     
     public function testManyToManyRelationship(): void
@@ -228,9 +197,6 @@ class ModelTest extends AbstractUnit
         
         $user = new User();
         $user->assign([
-//            'username' => 'test',
-//            'firstName' => 'test',
-//            'lastName' => 'test',
             'email' => 'test@test.tld',
             'rolelist' => [
                 false,

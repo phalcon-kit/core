@@ -139,7 +139,6 @@ class ExposerTest extends AbstractUnit
         unset($expected['test_removed']);
         unset($expected['test_removed_two']);
         $expected['test_replace_value'] = 'test_value_after';
-//        $expected['new_value'] = 'test';
         $expected['test_same_value_mb_sprintf'] = 'test_same_value_mb_sprintf';
         $expected['test_altered_value_mb_sprintf'] = 'test_altered_value_mb_sprintf!';
         $builder = Exposer::createBuilder($test, [
@@ -153,6 +152,7 @@ class ExposerTest extends AbstractUnit
         ]);
         $actual = Exposer::expose($builder);
         $this->assertEquals($expected, $actual);
+        $this->assertArrayNotHasKey('new_value', $actual);
     }
     
     public function testNestedExpose(): void

@@ -50,22 +50,18 @@ class Security extends Injectable
         
         if ($dispatcher instanceof MvcDispatcher) {
             $controller = $dispatcher->getControllerName();
-//            $controllerClass = $dispatcher->getControllerClass();
             $componentNames [] = 'controllers';
         }
         
         if ($dispatcher instanceof CliDispatcher) {
             $task = $dispatcher->getTaskName();
-//            $taskSuffix = $dispatcher->getTaskSuffix();
             $componentNames [] = 'tasks';
         }
         
         $handler = $controller ?? $task ?? null;
         $handlerRouteKey = $dispatcher instanceof CliDispatcher ? 'task' : 'controller';
         $handlerClass = $dispatcher->getHandlerClass();
-//        $handlerSuffix = $dispatcher->getHandlerSuffix();
         $action = $dispatcher->getActionName();
-//        $actionSuffix = $dispatcher->getActionSuffix();
         
         // Get ACL components (components + task, or components + controllers)
         $acl = $this->acl->get($componentNames);

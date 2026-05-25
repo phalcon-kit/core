@@ -227,7 +227,6 @@ EOT;
     {
         $from = './' . $this->abstractsPath . $definitions['abstract']['name'];
         $relatedImportItems = $this->getRelatedImportItems($related);
-//        $relatedDefaultItems = $this->getRelatedDefaultItems($related);
         $relatedPropertyItems = $this->getRelatedProperties($related);
         $importTypeClassTransformer = !empty($relatedPropertyItems) ?
             "import { Type } from 'class-transformer';" : '';
@@ -327,7 +326,6 @@ EOT;
         foreach ($columns as $column) {
             $columnName = $this->getColumnName($column->getName());
             $columnType = $this->getColumnTsType($column);
-//            $defaultValue = $this->getDefaultValue($column, $columnType);
             $propertyItems[] = "  $columnName!: $columnType;";
         }
         return implode("\n", $propertyItems);

@@ -19,17 +19,28 @@ use Phalcon\Mvc\ModelInterface;
 use PhalconKit\Mvc\Model\Behavior\Traits\SkippableTrait;
 
 /**
- * PhalconKit\Mvc\Model\Traits\Behavior\Transformable
+ * Applies configured attribute transformations during model lifecycle events.
  *
- * Allows to automatically update a model’s attribute saving the datetime when a
- * record is created or updated
+ * Each watched event can define a field-to-value map. Values may be scalars or
+ * callbacks; callbacks receive the model and field name on the first pass and
+ * may return another callback for deferred value generation. The final value is
+ * written through Phalcon's entity API so column maps and model internals stay
+ * consistent.
+ *
+ * @see https://docs.phalcon.io/5.13/db-models-events/
  */
 class Transformable extends Behavior
 {
     use SkippableTrait;
     
     /**
-     * Listens for notifications from the models manager
+     * Handle a model manager lifecycle notification.
+     *
+     * @param string $type Event name emitted by Phalcon's model manager.
+     * @param ModelInterface $model Model receiving transformed values.
+     *
+     * @return bool|null True when a configured transformation ran, null when
+     *     the behavior is disabled, does not match the event, or has no work.
      */
     #[\Override]
     public function notify(string $type, ModelInterface $model): ?bool
@@ -64,7 +75,6 @@ class Transformable extends Behavior
             
             assert($model instanceof EntityInterface);
             $model->writeAttribute($field, $value);
-//            $model->assign([$field => $value]);
         }
         
         return true;

@@ -156,7 +156,6 @@ final class EagerLoad
                 // Grouping by the intermediate referenced field may be useful,
                 // but should be an explicit option because it can affect
                 // ordering and duplicate rows.
-//                $builder->groupBy("[{$relIrModel}].[{$relIrReferencedField}]");
             }
             else {
                 // The query is for many models, so it's needed to execute an

@@ -393,7 +393,6 @@ trait Relationship
 
             // we got something to assign
             if (!empty($assign) || !$this->getKeepMissingRelatedAlias($alias)) {
-//                $assign = is_array($assign) ? array_values(array_filter($assign)) : $assign;
                 $this->{$alias} = $assign;
 
                 // fix to force recursive parent save from children entities within _preSaveRelatedRecords method
@@ -607,7 +606,6 @@ trait Relationship
                     $originBind = [];
                     foreach ($originFields as $originField) {
                         $originBind [] = $this->readAttribute($originField);
-//                        $originBind [] = $this->{'get' . ucfirst($originField)} ?? $this->$originField ?? null;
                     }
                     
                     $nodeIdListToKeep = [];
@@ -658,9 +656,6 @@ trait Relationship
                             if (is_array($assign)) {
                                 unset($assign[$key]);
                             }
-
-//                            // add to assign
-//                            $nodeAssign [] = $nodeEntity;
                         }
                     }
                     
@@ -992,7 +987,6 @@ trait Relationship
         $whiteListAlias = isset($whiteList, $alias) ? $whiteList[$alias] ?? [] : null;
         $dataColumnMapAlias = isset($dataColumnMap, $alias) ? $dataColumnMap[$alias] ?? [] : null;
         $entity->assign($data, $whiteListAlias, $dataColumnMapAlias);
-//        $entity->setDirtyState(self::DIRTY_STATE_TRANSIENT);
         
         return $entity;
     }

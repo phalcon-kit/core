@@ -417,7 +417,6 @@ final class Loader
             // Loader options are intentionally not threaded through yet because
             // soft-delete visibility and relation constraints need a public
             // eager-loading option contract.
-//            $eagerLoad->load($this->options); 
             $eagerLoad->load();
         }
         

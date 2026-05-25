@@ -382,9 +382,6 @@ trait FilterConditions
                 }
                 // @codeCoverageIgnoreEnd
 
-                // Scope must already be resolved before this block.
-                // $scope = $this->getFilterScope($node);
-
                 if ($scope === 'existential') {
                     /*
                      * EXISTENTIAL NO-VALUE SEMANTICS

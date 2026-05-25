@@ -129,9 +129,6 @@ trait Query
         // OFFSET
         $this->initializeOffset();
         $this->eventsManager->fire('rest:afterInitializeOffset', $this);
-
-//        $this->initializeSave();
-//        $this->eventsManager->fire('rest:afterInitializeSave', $this);
         
         // Eager-loading, post-query shaping
         $this->initializeWith();

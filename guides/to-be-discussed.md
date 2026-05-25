@@ -143,6 +143,12 @@ Keep for discussion:
   The assets manager needs a native-style `TagFactory`, while the public `tag`
   service exposes PhalconKit's static helper facade. A cleanup would likely need
   separate service names or a compatibility bridge.
+- Database logger correlation context:
+  `src/Db/Events/Logger.php`.
+  Query logs currently include the effective user and impersonated user IDs.
+  Decide whether they should also include session, request, trace, or
+  correlation IDs. Any addition needs a stable service contract that works for
+  MVC, CLI, WebSocket, stateless JWT, and no-session contexts.
 - CLI router interface compatibility:
   `src/Cli/Router.php`, `tests/Unit/Cli/RouterTest.php`,
   `tests/Unit/Cli/ModuleTest.php`, `tests/Unit/Ws/ModuleTest.php`.
@@ -187,6 +193,13 @@ Keep for discussion:
   `src/Mvc/Model/Traits/EagerLoad.php`.
   Keep `__callStatic()` for compatibility unless moving to Phalcon
   `missingMethods()` is proven to intercept the same public method names.
+- Eager-loading option propagation:
+  `src/Mvc/Model/EagerLoading/Loader.php`,
+  `src/Mvc/Model/EagerLoading/EagerLoad.php`.
+  Loader options are captured but not passed into relation loading yet. Define
+  explicit options for soft-delete visibility, through-relation grouping,
+  duplicate-row handling, and per-relation constraints before changing the
+  current load contract.
 - Model cache invalidation:
   `src/Mvc/Model/Traits/Cache.php`.
   Design cache keys, whitelist rules, and pre-warming before replacing the
@@ -205,6 +218,13 @@ Keep for discussion:
   Filter hoisting and join-existence validation could improve performance or
   safety, but they need tests for aliases, permission-scoped joins, and
   user-supplied filter fields.
+- REST query save initialization hooks:
+  `src/Mvc/Controller/Traits/Query.php`,
+  `src/Mvc/Controller/Traits/Query/Fields.php`,
+  `src/Mvc/Controller/Traits/Query/Save.php`.
+  Save-field initialization now runs through `initializeFields()`. Add dedicated
+  `rest:before/afterInitializeSave` hooks only if applications need to mutate
+  save-specific query state independently from filter/map/search/expose fields.
 - Aggregate WHERE/HAVING promotion:
   `src/Mvc/Controller/Traits/Query.php`.
   Automatically moving conditions containing aggregate functions from `where`
@@ -264,6 +284,23 @@ Keep for discussion:
   `tests/Unit/Provider/ClamavTest.php`.
   Add EICAR coverage only with a CI-safe fixture/download strategy that does
   not trigger repository, package, or local antivirus scanners unexpectedly.
+- Faker seed modes:
+  `src/Modules/Cli/Tasks/FakerTask.php`.
+  The built-in faker task currently inserts generated structure and curated
+  real-data fixtures. Re-enable synthetic record insertion only behind an
+  explicit CLI flag or config option so test/demo data volume, randomness, and
+  repeatability are predictable.
+- TypeScript scaffold defaults:
+  `src/Modules/Cli/Tasks/TsScaffoldTask.php`.
+  Default values and related default objects are helper methods but are not
+  emitted into generated TypeScript yet. Decide whether generated clients
+  should preserve database defaults, expose DTO defaults, or leave defaults to
+  server-side model validation.
+- Scaffold output encoding:
+  `src/Modules/Cli/Tasks/ScaffoldTask.php`.
+  Generated PHP files are written as UTF-8 without a BOM. Add a BOM option only
+  if a supported downstream editor or runtime requires it, because BOM output
+  can affect headers and generated-file diffs.
 
 Closed or clarified during review:
 
@@ -287,6 +324,10 @@ Closed or clarified during review:
   a comment.
 - The disabled multibyte sprintf encoding test was removed because the example
   used Chinese text with an encoding that cannot represent it.
+- Stale commented-out examples in model relationship tests, dispatcher
+  security, eager loading, export helpers, relationship assignment, and
+  scaffolding were either removed or captured above as explicit design
+  questions.
 
 ## Entry Template
 

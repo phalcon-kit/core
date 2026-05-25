@@ -169,6 +169,9 @@ tag has been cut yet.
 - Added a reviewed inline follow-up inventory to the maintainer discussion
   guide, covering identity, providers, relationships, eager loading,
   dispatcher hooks, lifecycle helpers, and test fixture decisions.
+- Added maintainer discussion entries for database log correlation,
+  eager-loading option propagation, REST save initialization hooks, faker seed
+  modes, TypeScript scaffold defaults, and scaffold output encoding.
 - Added official Phalcon documentation references to high-value framework
   docblocks for DI, routing, dispatcher, application, view, models, and
   relationship extension points.
@@ -202,6 +205,9 @@ tag has been cut yet.
 - Updated `EnvTest`, `ConfigTest`, database handling, and `.env` loading logic.
 - Replaced vague inline follow-up markers in source and tests with clearer
   current-behavior comments or durable maintainer discussion entries.
+- Removed stale commented-out source and test code around model relationship
+  examples, dispatcher security, eager-loading options, export responses, and
+  scaffolding defaults.
 - Expanded production-facing PHPDoc across bootstrap config fragments, module
   wiring, REST actions, ACL/router/option contracts, helper wrappers, and
   WebSocket scaffolding so framework extension points are clearer for

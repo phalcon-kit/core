@@ -189,7 +189,8 @@ trait Export
     {
         $filename ??= $this->getFilename();
 
-//        $this->response->setJsonContent($list); // bug with phalcon, avoid
+        // Encode explicitly so file exports keep raw JSON content and download
+        // headers instead of going through response helper behavior.
         $this->response->setContent(json_encode($list, $flags, $depth) ?: '[]');
         $this->response->setContentType('application/json');
         $this->response->setHeader('Content-disposition', 'attachment; filename="' . addslashes($filename) . '.json"');

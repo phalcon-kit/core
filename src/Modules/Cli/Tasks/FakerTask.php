@@ -59,10 +59,6 @@ DOC;
         $this->addModelsPermissions();
         $ret [] = $this->traitInsertAction($models);
         
-//        $this->insert = $this->generateFakeData();
-//        $this->addModelsPermissions();
-//        $ret [] = $this->traitInsertAction($models);
-        
         $ret [] = $this->generateRealData();
         
         return $ret;
@@ -170,12 +166,6 @@ DOC;
                 $recordList = [];
                 $columnList = [];
                 for ($r = 0; $r < $nbColumns; $r++) {
-//                    $recordList []= [
-//                        'uuid' => $faker->uuid(),
-//                        'name' => $faker->realTextBetween(5, 60),
-//                        'deleted' => (int)$faker->boolean(10),
-//                    ];
-                    
                     $columnList [] = [
                         'uuid' => $faker->uuid(),
                         'name' => $faker->realTextBetween(5, 60),

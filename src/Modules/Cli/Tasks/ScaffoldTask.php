@@ -1205,9 +1205,6 @@ PHP;
             return false; // Failed to convert to UTF-8
         }
         
-        // Optional: Add UTF-8 BOM
-//        $utf8Text = "\xEF\xBB\xBF" . $utf8Text;
-        
         // Write the file
         $fileHandle = fopen($file, 'w');
         if ($fileHandle === false) {

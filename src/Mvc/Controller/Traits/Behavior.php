@@ -33,7 +33,6 @@ trait Behavior
         // Native response collection changes the shape returned by event
         // dispatching, so keep it disabled until a V2 controller contract
         // explicitly supports multiple behavior responses.
-        // $eventsManager->collectResponses(true);
         
         // retrieve events based on the config roles and features
         $permissions = $this->config->pathToArray('permissions') ?? [];
