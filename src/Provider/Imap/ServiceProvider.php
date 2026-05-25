@@ -16,10 +16,25 @@ namespace PhalconKit\Provider\Imap;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the IMAP mailbox service.
+ *
+ * Mailbox options are read from `imap` config and passed to
+ * `PhpImap\Mailbox`. The service centralizes mailbox path, login credentials,
+ * attachment directory, encoding, and attachment filename behavior for mail
+ * ingestion workflows.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'imap';
     
+    /**
+     * Register the shared `imap` service.
+     *
+     * Runtime options may be supplied for tests or specialized bootstraps. Empty
+     * defaults are preserved so the service can still be constructed in
+     * environments where IMAP is configured later by the application.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

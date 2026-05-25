@@ -18,6 +18,14 @@ use PhalconKit\Exception\ServiceException;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Redis;
 
+/**
+ * Registers the native Redis client service.
+ *
+ * Connection settings come from the `redis` config section. The provider
+ * handles connection, optional authentication, and optional database selection
+ * before returning the client, wrapping extension failures in
+ * `ServiceException` so framework consumers can catch a stable exception type.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'redis';

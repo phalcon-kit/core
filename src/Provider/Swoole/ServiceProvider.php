@@ -18,10 +18,24 @@ use PhalconKit\Exception\ServiceException;
 use PhalconKit\Provider\AbstractServiceProvider;
 use Swoole\WebSocket\Server;
 
+/**
+ * Registers the Swoole WebSocket server service.
+ *
+ * The provider requires the Swoole extension and builds a
+ * `Swoole\WebSocket\Server` from the `swoole` config section. Conservative
+ * defaults are applied for host, port, worker count, max connections, heartbeat
+ * timing, logging, and trace flags.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'swoole';
     
+    /**
+     * Register the shared `swoole` service.
+     *
+     * @throws ServiceException When the Swoole extension or required constants
+     *     are not available in the current PHP runtime.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

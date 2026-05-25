@@ -16,10 +16,21 @@ namespace PhalconKit\Provider\ReCaptcha;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the ReCaptcha verifier service.
+ *
+ * The provider reads `reCaptcha` config and applies optional hostname, Android
+ * package, action, and score-threshold expectations to the verifier. Keeping
+ * those expectations in config makes controller validation logic smaller and
+ * keeps bot-protection policy centralized.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'reCaptcha';
     
+    /**
+     * Register the shared `reCaptcha` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

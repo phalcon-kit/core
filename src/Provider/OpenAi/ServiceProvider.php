@@ -19,10 +19,21 @@ use PhalconKit\Provider\AbstractServiceProvider;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * Registers the OpenAI API client service.
+ *
+ * The provider builds an `openai-php/client` instance from the `openai` config
+ * section. Supported values include API key, organization, project, and base
+ * URI. A Guzzle client is supplied explicitly so streaming responses use the
+ * same HTTP stack as normal requests.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'openAi';
     
+    /**
+     * Register the shared `openAi` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
@@ -33,12 +44,12 @@ class ServiceProvider extends AbstractServiceProvider
 
             $openAiFactory = OpenAI::factory()
                 ->withApiKey($openAiConfig['apiKey'] ?? '')
-                ->withOrganization($openAiConfig['organization'] ?? null) // default: null
-                ->withProject($openAiConfig['project'] ?? null) // default: null
-                ->withBaseUri($openAiConfig['baseUri'] ?? 'api.openai.com/v1') // default: api.openai.com/v1
-                ->withHttpClient($httpClient = new \GuzzleHttp\Client([])) // default: HTTP client found using PSR-18 HTTP Client Discovery
+                ->withOrganization($openAiConfig['organization'] ?? null)
+                ->withProject($openAiConfig['project'] ?? null)
+                ->withBaseUri($openAiConfig['baseUri'] ?? 'api.openai.com/v1')
+                ->withHttpClient($httpClient = new \GuzzleHttp\Client([]))
                 ->withStreamHandler(fn (RequestInterface $request): ResponseInterface => $httpClient->send($request, [
-                    'stream' => true // Allows to provide a custom stream handler for the http client.
+                    'stream' => true,
                 ]));
 
             return $openAiFactory->make();

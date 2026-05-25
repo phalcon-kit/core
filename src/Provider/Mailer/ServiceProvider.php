@@ -18,10 +18,24 @@ use Phalcon\Events\ManagerInterface;
 use Phalcon\Incubator\Mailer\Manager;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the mailer manager service.
+ *
+ * Mailer configuration is resolved from `mailer.driver`, `mailer.defaults`,
+ * and `mailer.drivers.<driver>`. Driver options are merged over defaults before
+ * constructing Phalcon Incubator's mailer manager, then the DI container and
+ * shared events manager are attached when available.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'mailer';
     
+    /**
+     * Register the shared `mailer` service.
+     *
+     * The SMTP driver enables PHPMailer authentication explicitly because SMTP
+     * credentials in the merged options imply authenticated transport.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
@@ -44,7 +58,6 @@ class ServiceProvider extends AbstractServiceProvider
                 $manager->setEventsManager($eventsManager);
             }
             
-            // temporary fix for smtp auth
             if ($driver === 'smtp') {
                 $manager->getMailer()->SMTPAuth = true;
             }
