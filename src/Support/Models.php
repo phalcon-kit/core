@@ -54,8 +54,6 @@ use PhalconKit\Models\Template;
 use PhalconKit\Models\Interfaces\TemplateInterface;
 use PhalconKit\Models\Table;
 use PhalconKit\Models\Interfaces\TableInterface;
-use PhalconKit\Models\Field;
-use PhalconKit\Models\Interfaces\FieldInterface;
 use PhalconKit\Models\Profile;
 use PhalconKit\Models\Interfaces\ProfileInterface;
 use PhalconKit\Models\Oauth2;
@@ -256,7 +254,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\BackupInterface
+     * Return the configured backup model instance.
+     *
+     * @return BackupInterface Cached instance for `Backup::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the backup model contract.
      */
     public function getBackup(): BackupInterface
     {
@@ -264,7 +266,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\AuditInterface
+     * Return the configured audit model instance.
+     *
+     * @return AuditInterface Cached instance for `Audit::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the audit model contract.
      */
     public function getAudit(): AuditInterface
     {
@@ -272,7 +278,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\AuditDetailInterface
+     * Return the configured audit-detail model instance.
+     *
+     * @return AuditDetailInterface Cached instance for `AuditDetail::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the audit-detail model contract.
      */
     public function getAuditDetail(): AuditDetailInterface
     {
@@ -280,7 +290,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\LogInterface
+     * Return the configured log model instance.
+     *
+     * @return LogInterface Cached instance for `Log::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the log model contract.
      */
     public function getLog(): LogInterface
     {
@@ -288,7 +302,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\EmailInterface
+     * Return the configured email model instance.
+     *
+     * @return EmailInterface Cached instance for `Email::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the email model contract.
      */
     public function getEmail(): EmailInterface
     {
@@ -296,7 +314,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\JobInterface
+     * Return the configured job model instance.
+     *
+     * @return JobInterface Cached instance for `Job::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the job model contract.
      */
     public function getJob(): JobInterface
     {
@@ -304,7 +326,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\FileInterface
+     * Return the configured file model instance.
+     *
+     * @return FileInterface Cached instance for `File::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the file model contract.
      */
     public function getFile(): FileInterface
     {
@@ -312,7 +338,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\SessionInterface
+     * Return the configured persisted-session model instance.
+     *
+     * @return SessionInterface Cached instance for `Session::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the persisted-session model contract.
      */
     public function getSession(): SessionInterface
     {
@@ -320,7 +350,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\FlagInterface
+     * Return the configured feature-flag model instance.
+     *
+     * @return FlagInterface Cached instance for `Flag::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the feature-flag model contract.
      */
     public function getFlag(): FlagInterface
     {
@@ -328,7 +362,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\SettingInterface
+     * Return the configured setting model instance.
+     *
+     * @return SettingInterface Cached instance for `Setting::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the setting model contract.
      */
     public function getSetting(): SettingInterface
     {
@@ -336,7 +374,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\LangInterface
+     * Return the configured language model instance.
+     *
+     * @return LangInterface Cached instance for `Lang::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the language model contract.
      */
     public function getLang(): LangInterface
     {
@@ -344,7 +386,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\TranslateInterface
+     * Return the configured translation model instance.
+     *
+     * @return TranslateInterface Cached instance for `Translate::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the translation model contract.
      */
     public function getTranslate(): TranslateInterface
     {
@@ -352,7 +398,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\WorkspaceInterface
+     * Return the configured workspace model instance.
+     *
+     * @return WorkspaceInterface Cached instance for `Workspace::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the workspace model contract.
      */
     public function getWorkspace(): WorkspaceInterface
     {
@@ -360,7 +410,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\WorkspaceInterface
+     * Return the configured workspace-language model instance.
+     *
+     * @return WorkspaceLangInterface Cached instance for `WorkspaceLang::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the workspace-language model contract.
      */
     public function getWorkspaceLang(): WorkspaceLangInterface
     {
@@ -368,7 +422,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\PageInterface
+     * Return the configured page model instance.
+     *
+     * @return PageInterface Cached instance for `Page::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the page model contract.
      */
     public function getPage(): PageInterface
     {
@@ -376,7 +434,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\PostInterface
+     * Return the configured post model instance.
+     *
+     * @return PostInterface Cached instance for `Post::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the post model contract.
      */
     public function getPost(): PostInterface
     {
@@ -384,7 +446,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\TemplateInterface
+     * Return the configured template model instance.
+     *
+     * @return TemplateInterface Cached instance for `Template::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the template model contract.
      */
     public function getTemplate(): TemplateInterface
     {
@@ -392,7 +458,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\TableInterface
+     * Return the configured table model instance.
+     *
+     * @return TableInterface Cached instance for `Table::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the table model contract.
      */
     public function getTable(): TableInterface
     {
@@ -400,7 +470,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\ProfileInterface
+     * Return the configured profile model instance.
+     *
+     * @return ProfileInterface Cached instance for `Profile::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the profile model contract.
      */
     public function getProfile(): ProfileInterface
     {
@@ -408,7 +482,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\UserInterface
+     * Return the configured OAuth2 identity model instance.
+     *
+     * @return Oauth2Interface Cached instance for `Oauth2::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the OAuth2 identity model contract.
      */
     public function getOauth2(): Oauth2Interface
     {
@@ -416,7 +494,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\UserInterface
+     * Return the configured user model instance.
+     *
+     * @return UserInterface Cached instance for `User::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the user model contract.
      */
     public function getUser(): UserInterface
     {
@@ -424,7 +506,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\UserTypeInterface
+     * Return the configured user-type model instance.
+     *
+     * @return UserTypeInterface Cached instance for `UserType::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the user-type model contract.
      */
     public function getUserType(): UserTypeInterface
     {
@@ -432,7 +518,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\UserGroupInterface
+     * Return the configured user-group model instance.
+     *
+     * @return UserGroupInterface Cached instance for `UserGroup::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the user-group model contract.
      */
     public function getUserGroup(): UserGroupInterface
     {
@@ -440,7 +530,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\UserRoleInterface
+     * Return the configured user-role model instance.
+     *
+     * @return UserRoleInterface Cached instance for `UserRole::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the user-role model contract.
      */
     public function getUserRole(): UserRoleInterface
     {
@@ -448,7 +542,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\UserFeatureInterface
+     * Return the configured user-feature model instance.
+     *
+     * @return UserFeatureInterface Cached instance for `UserFeature::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the user-feature model contract.
      */
     public function getUserFeature(): UserFeatureInterface
     {
@@ -456,7 +554,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\RoleInterface
+     * Return the configured role model instance.
+     *
+     * @return RoleInterface Cached instance for `Role::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the role model contract.
      */
     public function getRole(): RoleInterface
     {
@@ -464,7 +566,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\RoleRoleInterface
+     * Return the configured role-inheritance model instance.
+     *
+     * @return RoleRoleInterface Cached instance for `RoleRole::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the role-inheritance model contract.
      */
     public function getRoleRole(): RoleRoleInterface
     {
@@ -472,7 +578,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\RoleFeatureInterface
+     * Return the configured role-feature model instance.
+     *
+     * @return RoleFeatureInterface Cached instance for `RoleFeature::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the role-feature model contract.
      */
     public function getRoleFeature(): RoleFeatureInterface
     {
@@ -480,7 +590,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\GroupInterface
+     * Return the configured group model instance.
+     *
+     * @return GroupInterface Cached instance for `Group::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the group model contract.
      */
     public function getGroup(): GroupInterface
     {
@@ -488,7 +602,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\GroupRoleInterface
+     * Return the configured group-role model instance.
+     *
+     * @return GroupRoleInterface Cached instance for `GroupRole::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the group-role model contract.
      */
     public function getGroupRole(): GroupRoleInterface
     {
@@ -496,7 +614,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\GroupTypeInterface
+     * Return the configured group-type model instance.
+     *
+     * @return GroupTypeInterface Cached instance for `GroupType::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the group-type model contract.
      */
     public function getGroupType(): GroupTypeInterface
     {
@@ -504,7 +626,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\GroupFeatureInterface
+     * Return the configured group-feature model instance.
+     *
+     * @return GroupFeatureInterface Cached instance for `GroupFeature::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the group-feature model contract.
      */
     public function getGroupFeature(): GroupFeatureInterface
     {
@@ -512,7 +638,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\TypeInterface
+     * Return the configured type model instance.
+     *
+     * @return TypeInterface Cached instance for `Type::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the type model contract.
      */
     public function getType(): TypeInterface
     {
@@ -520,7 +650,11 @@ class Models extends Injectable
     }
     
     /**
-     * Return an instance of \PhalconKit\Models\Interfaces\FeatureInterface
+     * Return the configured feature model instance.
+     *
+     * @return FeatureInterface Cached instance for `Feature::class`.
+     * @throws ServiceException When the configured model does not implement
+     *     the feature model contract.
      */
     public function getFeature(): FeatureInterface
     {

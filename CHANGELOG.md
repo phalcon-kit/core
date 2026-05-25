@@ -220,6 +220,9 @@ tag has been cut yet.
 - Expanded production-facing PHPDoc across REST controller behavior listeners
   for query-state removal, skip flags, field policy removal, soft-delete
   condition overrides, and reserved model workflow markers.
+- Expanded production-facing PHPDoc for typed model resolver getters and
+  removed stale references to deprecated field/translation-table model classes
+  from the model-map support tests and imports.
 - Expanded production-facing PHPDoc across bootstrap config fragments, module
   wiring, REST actions, ACL/router/option contracts, helper wrappers, and
   WebSocket scaffolding so framework extension points are clearer for
