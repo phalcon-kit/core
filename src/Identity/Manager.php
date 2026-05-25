@@ -28,11 +28,27 @@ use PhalconKit\Mvc\Model\Behavior\Security;
 use PhalconKit\Mvc\ModelInterface;
 use PhalconKit\Support\Options\Options;
 use PhalconKit\Support\Options\OptionsInterface;
-use Phalcon\Filter\Validation\Validator\Confirmation;
 use Phalcon\Filter\Validation\Validator\Email;
 use Phalcon\Filter\Validation\Validator\PresenceOf;
 use Phalcon\Messages\Message;
 
+/**
+ * Coordinates authentication state for PhalconKit applications.
+ *
+ * The manager exposes a compact identity API on top of several lower-level
+ * traits: user lookup, session-backed identity storage, JWT claim handling,
+ * OAuth2 account linking, role inheritance, ACL role construction, and
+ * impersonation. It expects the application DI to provide the standard
+ * PhalconKit services used by those traits, including config, models, request,
+ * security, session, JWT, and bootstrap services.
+ *
+ * Identity state is stored as a small session payload keyed by the active JWT
+ * claim key. The primary session keys are `userId` for the effective user and
+ * `asUserId` for the original user during impersonation. Login and password
+ * reset responses deliberately avoid exposing whether an email address exists
+ * unless validation has already failed, so downstream code should preserve that
+ * behavior when overriding the manager.
+ */
 class Manager extends Injectable implements ManagerInterface, OptionsInterface
 {
     use Options;
@@ -46,10 +62,16 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     use User;
     
     /**
-     * Retrieves the identity based on the provided user expose parameter.
+     * Return the current identity payload.
      *
-     * @param array|null $userExpose Optional parameter to specify user-related data exposure.
-     * @return array The resulting identity data array.
+     * This method is the short public entry point used by controllers and API
+     * responses. It delegates to {@see getIdentity()} so subclasses only need
+     * to customize the detailed identity payload in one place.
+     *
+     * @param array|null $userExpose Optional expose definition passed to user
+     *     models before they are returned in the payload.
+     *
+     * @return array<string, mixed> Identity payload for the current request.
      */
     public function get(?array $userExpose = null): array
     {
@@ -57,10 +79,29 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     }
     
     /**
-     * Retrieves the identity information based on the provided user expose parameter.
+     * Build the current identity payload.
      *
-     * @param array|null $userExpose Optional parameter specifying details for user data exposure.
-     * @return array An associative array containing identity details such as logged-in status, user data, impersonation, roles, and groups.
+     * The payload includes both the effective user and the original user when
+     * impersonating. Related role, type, and group lists are normalized into
+     * maps keyed by each related entity's `getKey()` value so ACL checks and
+     * API consumers can use stable identifiers without inspecting model
+     * relation internals.
+     *
+     * @param array|null $userExpose Optional expose definition passed to
+     *     `expose()` on user models before returning them.
+     *
+     * @return array{
+     *     loggedInAs: bool,
+     *     userAs: mixed,
+     *     loggedIn: bool,
+     *     user: mixed,
+     *     roleList: array<string, object>,
+     *     typeList: array<string, object>,
+     *     groupList: array<string, object>
+     * }
+     *
+     * @throws LogicException When a related role/type/group entity cannot
+     *     provide a stable key.
      */
     public function getIdentity(?array $userExpose = null): array
     {
@@ -81,11 +122,23 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     }
     
     /**
-     * Handles the login process by validating the provided parameters, checking user credentials,
-     * and managing session state. Returns the login status along with any validation messages.
+     * Validate credentials and establish the session identity.
      *
-     * @param array $params Parameters for login, typically including 'email' and 'password'.
-     * @return array Contains login status, logged-in user information, and validation messages.
+     * The login flow accepts an email address and password, validates both
+     * fields, checks the configured user model, and stores the authenticated
+     * `userId` in the identity session. Missing users, disabled passwords, and
+     * invalid passwords all return the same generic login-failed message so the
+     * response does not reveal whether an account exists. Deleted users are
+     * rejected with a forbidden message after password verification succeeds.
+     *
+     * Successful login also refreshes the global model security roles from the
+     * effective ACL roles, allowing model behaviors to evaluate the newly
+     * authenticated identity immediately.
+     *
+     * @param array<string, mixed> $params Login fields. Supported keys are
+     *     `email` and `password`.
+     *
+     * @return array{loggedIn: bool, loggedInAs: bool, messages: \Phalcon\Messages\Messages}
      */
     public function login(array $params = []): array
     {
@@ -137,9 +190,14 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     }
     
     /**
-     * Logs out the current user by removing the session identity and returns the login status.
+     * Remove the current session identity.
      *
-     * @return array An associative array containing the user's login status and identity status after logout.
+     * Logout clears the identity stored under the current claim key. It does not
+     * clear unrelated session data or rotate JWT/session claim keys; callers
+     * that need token rotation should use the JWT refresh flow separately.
+     *
+     * @return array{loggedIn: bool, loggedInAs: bool} Login state after the
+     *     identity has been removed.
      */
     public function logout(): array
     {
@@ -152,18 +210,28 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     }
 
     /**
-     * Resets a user's password or generates a reset token for the user, depending on the input parameters.
+     * Start or complete a password reset flow.
      *
-     * @param array|null $params Parameters including email, token,
-     *                           password, and password confirmation for the reset operation.
-     *                           - 'email': The user's email address.
-     *                           - 'token': An optional reset token for password update.
-     *                           - 'password': The new password to set (relevant with token).
-     *                           - 'passwordConfirm': The confirmation of the new password.
-     * @return array An array containing the following keys:
-     *               - 'saved': A boolean indicating whether the save operation was successful.
-     *               - 'sent': A boolean indicating whether the reset token email was sent successfully.
-     *               - 'messages': A collection of validation or processing messages.
+     * When only `email` is provided, the manager creates a random reset token,
+     * stores its hash on the user record, and returns an empty response on
+     * success. When `resetToken` and `password` are provided, the token is
+     * verified against the stored hash before the password is updated and the
+     * reset token is cleared.
+     *
+     * To prevent user enumeration, a valid request for a missing email returns
+     * the same empty response shape as a successful request. Validation failures
+     * and persistence failures still return messages because those are
+     * actionable by the caller. Notification delivery is intentionally left to
+     * application code until the framework has a mailer/event contract for this
+     * flow.
+     *
+     * @param array<string, mixed>|null $params Reset fields. Supported keys are
+     *     `email`, optional `resetToken`, and `password` when completing a
+     *     reset.
+     *
+     * @return array<string, mixed> Empty on successful or intentionally opaque
+     *     outcomes, or `messages` when validation/persistence fails.
+     *
      * @throws SecurityException When token generation fails.
      */
     public function reset(?array $params = null): array
@@ -244,12 +312,22 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     }
     
     /**
-     * Collects and returns a list of entities from the specified property of the model, keyed by a method from each entity.
+     * Normalize a related model list into a key-indexed map.
      *
-     * @param ModelInterface|null $model The model containing the property with the list of entities.
-     * @param string $property The name of the property in the model that holds the list of entities.
-     * @param string $keyMethod The name of the method in each entity used to generate the key. Defaults to 'getKey'.
-     * @return array An associative array of entities, keyed by the specified method from each entity.
+     * Identity payloads need stable role, type, and group keys regardless of
+     * whether relations were eager-loaded, staged as dirty related records, or
+     * assigned to public fixture properties in tests. This helper checks those
+     * sources in order and ignores missing or non-iterable values.
+     *
+     * @param ModelInterface|null $model Model that may expose the relation.
+     * @param string $property Relation alias or property name to read.
+     * @param string $keyMethod Method each related entity must expose to
+     *     provide the map key.
+     *
+     * @return array<string, object> Related entities keyed by their stable key.
+     *
+     * @throws LogicException When a related entity is not an object or does not
+     *     implement the required key method.
      */
     private function collectList(?ModelInterface $model, string $property, string $keyMethod = 'getKey'): array
     {

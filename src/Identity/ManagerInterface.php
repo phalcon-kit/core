@@ -21,6 +21,18 @@ use PhalconKit\Identity\Traits\Interfaces\RoleInterface;
 use PhalconKit\Identity\Traits\Interfaces\SessionInterface;
 use PhalconKit\Identity\Traits\Interfaces\UserInterface;
 
+/**
+ * Public contract for the default PhalconKit identity manager.
+ *
+ * The manager is intentionally composed from smaller identity capability
+ * contracts so applications can reason about ACL, impersonation, JWT, OAuth2,
+ * role, session, and user behavior independently. Concrete implementations
+ * should preserve the same session identity keys, user model expectations, and
+ * anti-enumeration behavior as {@see Manager} unless they clearly document a
+ * different application-specific policy.
+ *
+ * @see Manager Default implementation used by the core service providers.
+ */
 interface ManagerInterface extends
     AclInterface,
     ImpersonationInterface,

@@ -129,6 +129,14 @@ Keep for discussion:
   Replace the hard-coded `admin`/`dev` role gate only after a config-backed
   impersonation permission contract exists, including audit/session behavior for
   "login as" flows.
+- Identity role matching flag naming:
+  `src/Identity/Traits/Role.php`,
+  `src/Identity/Traits/Acl.php`.
+  The legacy `$or` parameter name is confusing because current behavior treats
+  `false` as any-match and `true` as all-match at the current nesting level.
+  Documentation now states the real behavior, but a future API could add clearer
+  names such as `hasAnyRole()`, `hasAllRoles()`, or an explicit match-mode
+  value while keeping the existing methods for compatibility.
 - Tag factory and legacy tag service split:
   `src/Provider/Assets/ServiceProvider.php`,
   `tests/Unit/Html/TagFactoryTest.php`.

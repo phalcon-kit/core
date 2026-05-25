@@ -15,6 +15,14 @@ namespace PhalconKit\Identity\Traits;
 
 use Phalcon\Acl\Role;
 
+/**
+ * Builds the ACL role objects used by PhalconKit permission checks.
+ *
+ * The trait combines execution context, identity roles, guest fallback, and
+ * configured role inheritance into one map keyed by role name. Consumers should
+ * use the returned map as the effective role set rather than reading raw user
+ * relations directly.
+ */
 trait Acl
 {
     /**
@@ -34,9 +42,9 @@ trait Acl
      * @param array|null $roles List of role identifiers to test.
      *                          - `null` typically implies a truthy check against defaults,
      *                            depending on {@see has()} semantics.
-     * @param bool $or Logical mode:
-     *                          - `false` (default): all roles must be present (AND).
-     *                          - `true`: at least one role must be present (OR).
+     * @param bool $or Legacy matching mode passed to {@see has()}:
+     *                 - `false` (default): at least one role must be present.
+     *                 - `true`: all roles must be present.
      *
      * @return bool True if the role condition is satisfied, false otherwise.
      */

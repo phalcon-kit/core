@@ -18,25 +18,40 @@ use PhalconKit\Exception\ServiceException;
 use PhalconKit\Models\Interfaces\UserInterface;
 use PhalconKit\Mvc\Model\Behavior\Security as SecurityBehavior;
 
+/**
+ * Resolves identity users from the configured user model.
+ *
+ * The trait keeps separate cached instances for the effective user and the
+ * original impersonating user. It reads only lightweight ids from the identity
+ * session payload, then loads full user records with role, group, and type
+ * relations for downstream ACL and API payloads.
+ */
 trait User
 {
     /**
-     * Current/impersonated user instance
+     * Effective user for the current request.
      */
     protected ?UserInterface $user = null;
     
     /**
-     * Original user instance when impersonating
+     * Original user when the current request is impersonating another user.
      */
     protected ?UserInterface $userAs = null;
     
     /**
-     * Return the current user or impersonated user object based on the session
+     * Return the effective user or original impersonating user.
      *
-     * @param bool $as Flag to indicate whether to get the user as another user
-     * @param bool|null $force Flag to indicate whether to force the retrieval of the user object
+     * Unless `$force` is set, the method returns the cached instance for the
+     * requested slot. A fresh lookup reads `userId` or `asUserId` from the
+     * session identity payload and eager-loads role, group, and type relations
+     * through the configured user model.
      *
-     * @return UserInterface|null The user object or null if session is not available
+     * @param bool $as Return the original impersonating user instead of the
+     *     effective user.
+     * @param bool|null $force Force a fresh lookup instead of using the cached
+     *     model instance.
+     *
+     * @return UserInterface|null User model or null when no identity is stored.
      */
     public function getUser(bool $as = false, ?bool $force = null): ?UserInterface
     {
@@ -113,10 +128,9 @@ trait User
     }
     
     /**
-     * Set the current user or impersonated user instance.
+     * Cache the effective user for this manager instance.
      *
-     * @param UserInterface|null $user The user instance to set or null to unset the current user.
-     * @return void
+     * @param UserInterface|null $user User model or null to clear the cache.
      */
     public function setUser(?UserInterface $user): void
     {
@@ -124,9 +138,9 @@ trait User
     }
     
     /**
-     * Retrieve the original user when impersonating
+     * Return the original user during impersonation.
      *
-     * @return UserInterface|null The user instance or null if not available.
+     * @return UserInterface|null Original user or null when not impersonating.
      */
     public function getUserAs(): ?UserInterface
     {
@@ -134,10 +148,9 @@ trait User
     }
     
     /**
-     * Set the original user instance when impersonating
+     * Cache the original user for this manager instance.
      *
-     * @param UserInterface|null $user The user instance to set, or null to unset.
-     * @return void
+     * @param UserInterface|null $user User model or null to clear the cache.
      */
     public function setUserAs(?UserInterface $user): void
     {
@@ -145,10 +158,11 @@ trait User
     }
     
     /**
-     * Retrieves the current/impersonated user or the original user ID.
+     * Return the effective or original user's id.
      *
-     * @param bool $as Determines whether to retrieve the original user (true) or the current/impersonated one (false).
-     * @return int|null Returns the user ID as an integer if available, or null if the user is not set.
+     * @param bool $as Return the original impersonating user id.
+     *
+     * @return int|null User id or null when no matching user is logged in.
      */
     public function getUserId(bool $as = false): ?int
     {
@@ -157,9 +171,9 @@ trait User
     }
     
     /**
-     * Retrieves the original user ID when impersonating.
+     * Return the original user's id during impersonation.
      *
-     * @return int|null Returns the user ID as an integer if available, or null otherwise.
+     * @return int|null Original user id or null when not impersonating.
      */
     public function getUserAsId(): ?int
     {
@@ -167,9 +181,9 @@ trait User
     }
     
     /**
-     * Retrieves the list of roles associated with the current identity.
+     * Return roles associated with the current effective identity.
      *
-     * @return array Returns an array of roles. If no roles are set, returns an empty array.
+     * @return array<string, object> Role entities keyed by their stable key.
      */
     public function getRoleList(): array
     {
@@ -177,9 +191,9 @@ trait User
     }
     
     /**
-     * Retrieves the list of groups associated with the current identity.
+     * Return groups associated with the current effective identity.
      *
-     * @return array Returns an array of group identifiers or an empty array if no groups are found.
+     * @return array<string, object> Group entities keyed by their stable key.
      */
     public function getGroupList(): array
     {
@@ -187,9 +201,9 @@ trait User
     }
     
     /**
-     * Retrieves the list of types associated with the current identity.
+     * Return types associated with the current effective identity.
      *
-     * @return array Returns an array of types. If no types are found, returns an empty array.
+     * @return array<string, object> Type entities keyed by their stable key.
      */
     public function getTypeList(): array
     {
@@ -197,11 +211,12 @@ trait User
     }
     
     /**
-     * Checks if the user is currently logged in.
+     * Check whether the effective or original user is logged in.
      *
-     * @param bool $as Determines whether to check the original user (true) or the current/impersonated one (false).
-     * @param bool $force Forces a fresh check ignoring cached user session data when set to true.
-     * @return bool Returns true if the user is logged in, false otherwise.
+     * @param bool $as Check the original impersonating user.
+     * @param bool $force Force a fresh lookup instead of using cached users.
+     *
+     * @return bool True when a matching user model can be resolved.
      */
     public function isLoggedIn(bool $as = false, bool $force = false): bool
     {
@@ -209,10 +224,11 @@ trait User
     }
     
     /**
-     * Checks if the user is logged in and impersonating another user.
+     * Check whether the current session is impersonating another user.
      *
-     * @param bool $force Determines whether to enforce a specific login check.
-     * @return bool Returns true if the user is logged in based on the condition, otherwise false.
+     * @param bool $force Force a fresh lookup of the original user.
+     *
+     * @return bool True when `asUserId` resolves to a user.
      */
     public function isLoggedInAs(bool $force = false): bool
     {
@@ -220,10 +236,11 @@ trait User
     }
     
     /**
-     * Finds and retrieves a user by their unique identifier.
+     * Find a user by primary key through the configured user model.
      *
-     * @param int $id The unique identifier of the user to be retrieved.
-     * @return UserInterface|null Returns the user instance if found, or null if no user exists with the specified identifier.
+     * @param int $id User id.
+     *
+     * @return UserInterface|null Matching user or null.
      */
     public function findUserById(int $id): ?UserInterface
     {
@@ -235,10 +252,11 @@ trait User
     }
     
     /**
-     * Finds and retrieves a user by their email address.
+     * Find a user by email through the configured user model.
      *
-     * @param string $string The email address of the user to search for.
-     * @return UserInterface|null Returns a UserInterface instance if a user with the specified email is found, or null if no user matches the email.
+     * @param string $string Email address.
+     *
+     * @return UserInterface|null Matching user or null.
      */
     public function findUserByEmail(string $string): ?UserInterface
     {

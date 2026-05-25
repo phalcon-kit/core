@@ -13,9 +13,25 @@ declare(strict_types=1);
 
 namespace PhalconKit\Identity\Traits\Interfaces;
 
+/**
+ * Contract for switching an authenticated session into and out of impersonation.
+ */
 interface ImpersonationInterface
 {
+    /**
+     * Impersonate another user while preserving the original user id.
+     *
+     * @param array<string, mixed> $params Parameters containing the target
+     *     `userId`.
+     *
+     * @return array<string, mixed> Login state and validation messages.
+     */
     public function loginAs(array $params = []): array;
 
+    /**
+     * Restore the original user stored in the impersonation session payload.
+     *
+     * @return array{loggedIn: bool, loggedInAs: bool}
+     */
     public function logoutAs(): array;
 }

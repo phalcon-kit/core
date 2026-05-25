@@ -19,18 +19,37 @@ use PhalconKit\Di\AbstractInjectable;
 use Phalcon\Filter\Filter;
 use stdClass;
 
+/**
+ * Resolves identity claims from JWTs, bearer authorization, or session fallback.
+ *
+ * Access and refresh tokens both carry the same claim payload, but use
+ * different token ids so the validator can distinguish normal and refresh
+ * flows. The claim `key` is also used by the session identity trait as the
+ * server-side lookup key for the small `userId`/`asUserId` payload.
+ */
 trait Jwt
 {
     use AbstractInjectable;
     
+    /**
+     * Cached claim payload for the current manager instance.
+     *
+     * @var array<string, mixed>
+     */
     public array $claim = [];
     
     /**
-     * Generates a new JWT and refresh token based on the specified claim and configuration.
-     * If the claim does not have a key or is refreshed, it creates a new key and updates the session if enabled.
+     * Generate access and refresh tokens for the current claim.
      *
-     * @param bool $refresh Indicates whether to refresh the claim by generating a new key and invalidating previous tokens.
-     * @return array Contains the generated JWT, refresh token, and a flag indicating if the claim was refreshed.
+     * When no claim key exists, a new UUID key is created. During refresh, the
+     * existing identity payload is copied from the old key to the new key after
+     * the old storage entry is removed, which invalidates tokens tied to the old
+     * key while keeping the user logged in.
+     *
+     * @param bool $refresh Rotate the claim key and invalidate previous tokens.
+     *
+     * @return array{jwt: string, refreshToken: string, refreshed: bool}
+     *
      * @throws SecurityException When token key generation fails.
      * @throws ValidatorException When JWT validation fails.
      */
@@ -87,12 +106,18 @@ trait Jwt
     }
     
     /**
-     * Retrieves the claim using different authentication methods such as JWT, Authorization Header, or Session.
-     * If the claim is cached and not forced to refresh, it returns the cached claim.
+     * Resolve the current claim from request and session sources.
      *
-     * @param bool $refresh Determines whether to attempt refreshing the claim if available.
-     * @param bool $force Forces bypassing the cached claim and retrieving a new one.
-     * @return array The claim data or an empty array if no claim is found.
+     * Resolution order is refresh token, JWT request value, authorization
+     * header, then optional session fallback. The fallback is intentionally
+     * disabled by default because it couples token authentication to server-side
+     * session state.
+     *
+     * @param bool $refresh Prefer the refresh-token source.
+     * @param bool $force Ignore the cached claim for this manager instance.
+     *
+     * @return array<string, mixed> Claim payload or an empty array when no
+     *     supported credential is present.
      */
     public function getClaim(bool $refresh = false, bool $force = false): array
     {
@@ -137,10 +162,9 @@ trait Jwt
     }
     
     /**
-     * Sets the claim information for the current instance.
+     * Replace the cached claim for this manager instance.
      *
-     * @param array $claim The claim data to set.
-     * @return void
+     * @param array<string, mixed> $claim Claim payload.
      */
     public function setClaim(array $claim): void
     {
@@ -148,13 +172,19 @@ trait Jwt
     }
     
     /**
-     * Generates a JWT (JSON Web Token) using the provided identifier, payload data, and additional options.
+     * Build a signed JWT with Phalcon's JWT service.
      *
-     * @param string $id The unique identifier for the JWT, typically representing a specific user or session.
-     * @param array $data An associative array containing the payload data to be encoded in the JWT.
-     * @param array $options An associative array of options for the token such as issuer, audience, subject, etc. Defaults will be applied if not provided.
-     * @return string The generated JWT token as a string.
-     * @throws ValidatorException
+     * Missing issuer and audience values default to the current request URI.
+     * Missing token id defaults to `$id`, and the subject defaults to the JSON
+     * encoded claim data.
+     *
+     * @param string $id Expected token id.
+     * @param array<string, mixed> $data Claim payload encoded into `sub`.
+     * @param array<string, mixed> $options Additional JWT builder options.
+     *
+     * @return string Encoded JWT.
+     *
+     * @throws ValidatorException When the JWT builder rejects the options.
      */
     public function getJwtToken(string $id, array $data = [], array $options = []): string
     {
@@ -170,11 +200,17 @@ trait Jwt
     }
     
     /**
-     * Extracts claims from a provided JWT token after validating it.
+     * Validate a JWT and return its decoded subject payload.
      *
-     * @param string $token The JWT token to parse and validate.
-     * @param string|null $claim An optional identifier to validate the token against.
-     * @return array The claims extracted from the token, or an empty array if no valid claims are found.
+     * The token must match the current request URI as issuer and audience. When
+     * `$claim` is provided, it is used as the expected token id so access and
+     * refresh tokens cannot be exchanged.
+     *
+     * @param string $token Encoded JWT.
+     * @param string|null $claim Expected token id.
+     *
+     * @return array<string, mixed> Decoded `sub` payload or an empty array when
+     *     the subject is missing/non-array.
      */
     public function getClaimFromToken(string $token, ?string $claim = null): array
     {
@@ -194,10 +230,13 @@ trait Jwt
     }
     
     /**
-     * Extracts claim information from the authorization header if it follows the Bearer token format.
+     * Resolve a claim from a bearer authorization header.
      *
-     * @param array $authorization The authorization header split into an array with the type and token.
-     * @return array The claim information extracted from the token or an empty array if extraction fails.
+     * @param array<int, string> $authorization Header parts, usually
+     *     `[Bearer, token]`.
+     *
+     * @return array<string, mixed> Claim payload or an empty array when the
+     *     header is not a bearer token.
      */
     public function getClaimFromAuthorization(array $authorization): array
     {
@@ -212,10 +251,13 @@ trait Jwt
     }
     
     /**
-     * Retrieves the raw JSON body from the request.
-     * If the body is not valid JSON, an empty stdClass object is returned.
+     * Return the request JSON body as an object.
      *
-     * @return stdClass The raw JSON body as an object or an empty stdClass object if the input is invalid.
+     * Phalcon throws for invalid JSON; identity credential lookup treats that
+     * as an empty body so malformed optional JSON does not prevent header/query
+     * credentials from being evaluated.
+     *
+     * @return stdClass Parsed body or an empty object.
      */
     private function getJsonRawBody()
     {

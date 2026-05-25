@@ -14,9 +14,20 @@ declare(strict_types=1);
 namespace PhalconKit\Identity\Traits\Abstracts;
 
 /**
+ * Declares OAuth2 linking methods required by composed identity traits.
+ *
+ * Implementations should normalize provider data into the core OAuth2 model,
+ * link it to a local user, and establish the standard session identity when
+ * the linked user can log in.
+ *
  * @phpstan-ignore trait.unused
  */
 trait AbstractOauth2
 {
+    /**
+     * @param array<string, mixed>|null $meta
+     *
+     * @return array<string, mixed>
+     */
     abstract public function oauth2(string $provider, string $providerUuid, string $accessToken, ?string $refreshToken = null, ?array $meta = []): array;
 }

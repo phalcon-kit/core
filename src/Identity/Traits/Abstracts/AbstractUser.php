@@ -15,6 +15,13 @@ namespace PhalconKit\Identity\Traits\Abstracts;
 
 use PhalconKit\Models\Interfaces\UserInterface;
 
+/**
+ * Declares user-resolution methods required by identity behavior traits.
+ *
+ * The default manager resolves users from the configured model service and
+ * caches the effective/original user on the manager instance for the duration
+ * of the request.
+ */
 trait AbstractUser
 {
     abstract public function getUser(bool $as = false, ?bool $force = null): ?UserInterface;

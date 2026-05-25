@@ -19,20 +19,29 @@ use Phalcon\Messages\Message;
 use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Traits\Abstracts\AbstractRole;
 
+/**
+ * Implements session-based user impersonation.
+ *
+ * The effective `userId` is replaced with the target user while the original
+ * user id is stored in `asUserId`. Calling {@see logoutAs()} restores the
+ * original id. Authorization is currently the legacy admin/dev role check; a
+ * configurable permission contract is tracked as a future design topic.
+ */
 trait Impersonation
 {
     use AbstractRole;
     
     /**
-     * Allows an admin or developer to log in as another user based on their user ID.
-     * Validates the provided parameters to ensure the presence and numericality of the user ID.
-     * Also handles the scenario where the user attempts to return to their original session.
+     * Switch the current session to another user.
      *
-     * @param array $params Associative array containing the key 'userId', which represents the ID of the user to log in as.
-     * @return array An array containing the validation messages, login status, and login-as status:
-     *               - 'messages': Validation messages, if any.
-     *               - 'loggedIn': Boolean indicating whether the user is logged in under their original session.
-     *               - 'loggedInAs': Boolean indicating whether the user is logged in as another user.
+     * The target `userId` must be present, numeric, and resolvable through the
+     * configured user model. If the target id equals the current `asUserId`, the
+     * method treats the request as a return-to-self action and restores the
+     * original session.
+     *
+     * @param array<string, mixed> $params Parameters containing `userId`.
+     *
+     * @return array{messages?: \Phalcon\Messages\Messages, loggedIn: bool, loggedInAs: bool}
      */
     public function loginAs(array $params = []): array
     {
@@ -73,14 +82,13 @@ trait Impersonation
     }
     
     /**
-     * Logs out from a session where the user was logged in (impersonating)
-     * as another user, reverting back to the original session identity.
-     * If the current session identity includes an 'asUserId', the identity
-     * is updated to the corresponding 'userId'.
+     * Restore the original user from an impersonated session.
      *
-     * @return array An array containing the user's login status after reverting:
-     *               - 'loggedIn': Boolean indicating whether the original user is logged in.
-     *               - 'loggedInAs': Boolean indicating whether the session is currently logged in as another user.
+     * If both `userId` and `asUserId` are present, the original id becomes the
+     * effective `userId` and the impersonation marker is removed.
+     *
+     * @return array{loggedIn: bool, loggedInAs: bool} Login state after the
+     *     restore attempt.
      */
     public function logoutAs(): array
     {

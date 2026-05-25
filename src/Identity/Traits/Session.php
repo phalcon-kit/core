@@ -16,6 +16,14 @@ namespace PhalconKit\Identity\Traits;
 use PhalconKit\Di\AbstractInjectable;
 use PhalconKit\Identity\Traits\Abstracts\AbstractJwt;
 
+/**
+ * Stores identity payloads in the configured session service.
+ *
+ * The payload is written under the active JWT claim key, not directly under the
+ * static session key. This allows JWT refreshes to rotate the storage key and
+ * invalidate older tokens while preserving the small session identity payload
+ * when appropriate.
+ */
 trait Session
 {
     use AbstractInjectable;
@@ -25,10 +33,12 @@ trait Session
     public const string REFRESH_SUFFIX = '-refresh';
     
     /**
-     * Retrieves the session key, optionally appending a refresh suffix.
+     * Return the configured identity session namespace.
      *
-     * @param bool $refresh Indicates whether to append the '-refresh' suffix to the session key.
-     * @return string The retrieved session key, with or without the refresh suffix.
+     * @param bool $refresh Append {@see REFRESH_SUFFIX} for refresh-token
+     *     operations.
+     *
+     * @return string Configured session key with the optional refresh suffix.
      */
     public function getSessionKey(bool $refresh = false): string
     {
@@ -36,9 +46,10 @@ trait Session
     }
     
     /**
-     * Removes the session identity associated with the current instance, if a valid key exists.
+     * Remove the identity payload stored under the active claim key.
      *
-     * @return void
+     * If no claim key is available, there is no addressable identity payload
+     * and the method intentionally becomes a no-op.
      */
     public function removeSessionIdentity(): void
     {
@@ -49,10 +60,10 @@ trait Session
     }
     
     /**
-     * Sets the session identity by storing the provided identity data in the session.
+     * Store the identity payload under the active claim key.
      *
-     * @param array $identity An associative array representing the identity data to be stored in the session.
-     * @return void
+     * @param array<string, mixed> $identity Identity payload, usually including
+     *     `userId` and optionally `asUserId`.
      */
     public function setSessionIdentity(array $identity): void
     {
@@ -63,9 +74,9 @@ trait Session
     }
     
     /**
-     * Retrieves the session identity from the session storage.
+     * Return the identity payload stored under the active claim key.
      *
-     * @return array An associative array representing the identity data retrieved from the session. Returns an empty array if no data is found.
+     * @return array<string, mixed> Empty when no key or payload exists.
      */
     public function getSessionIdentity(): array
     {
@@ -74,9 +85,10 @@ trait Session
     }
     
     /**
-     * Checks if a session identity exists by verifying the presence of a valid key and its association in the session.
+     * Check whether an identity payload exists for the active claim key.
      *
-     * @return bool Returns true if a session identity exists; otherwise, false.
+     * @return bool True when both a claim key and matching session payload are
+     *     present.
      */
     public function hasSessionIdentity(): bool
     {
@@ -85,9 +97,10 @@ trait Session
     }
     
     /**
-     * Retrieves the 'key' value from the claim array if it exists, or returns null.
+     * Return the active claim key used to address session identity storage.
      *
-     * @return string|null The 'key' value from the claim array, or null if not found.
+     * @return string|null Claim key or null when no usable claim has been
+     *     resolved.
      */
     public function getKey(): ?string
     {

@@ -21,25 +21,34 @@ use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Traits\Abstracts\AbstractSession;
 use PhalconKit\Identity\Traits\Abstracts\AbstractUser;
 
+/**
+ * Links provider OAuth2 identities to local users.
+ *
+ * The trait owns the core OAuth2 persistence flow: find or create the provider
+ * identity, store current tokens and profile metadata, attach the provider
+ * identity to the logged-in local user when possible, then establish the normal
+ * PhalconKit session identity for the linked user.
+ */
 trait Oauth2
 {
     use AbstractSession;
     use AbstractUser;
     
     /**
-     * OAuth2 authentication
+     * Create/update an OAuth2 identity and log in its linked local user.
      *
-     * @param string $provider The OAuth2 provider
-     * @param string $providerUuid The UUID associated with the provider
-     * @param string $accessToken The access token provided by the provider
-     * @param string|null $refreshToken The refresh token provided by the provider (optional)
-     * @param array|null $meta Additional metadata associated with the user (optional)
+     * If the provider identity is not linked yet and a local user is already
+     * logged in, the provider identity is attached to that user. Otherwise the
+     * saved provider identity must already contain a user id before login can
+     * succeed.
      *
-     * @return array Returns an array with the following keys:
-     *   - 'saved': Indicates whether the OAuth2 entity was saved successfully
-     *   - 'loggedIn': Indicates whether the user is currently logged in
-     *   - 'loggedInAs': Indicates the user that is currently logged in
-     *   - 'messages': An array of validation messages
+     * @param string $provider Provider key.
+     * @param string $providerUuid Stable provider-side user identifier.
+     * @param string $accessToken Provider access token.
+     * @param string|null $refreshToken Optional provider refresh token.
+     * @param array<string, mixed>|null $meta Optional provider profile data.
+     *
+     * @return array{saved: bool, loggedIn: bool, loggedInAs: bool, messages: \Phalcon\Messages\Messages}
      *
      * @throws FilterException When OAuth provider fields cannot be sanitized.
      */
