@@ -20,16 +20,32 @@ use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Php;
 
+/**
+ * Registers the framework configuration service.
+ *
+ * The provider reads the active bootstrap config, creates a default
+ * `Bootstrap\Config` when none exists, and applies `app` config values to
+ * `PhalconKit\Support\Php::set()`. This keeps PHP runtime flags synchronized
+ * with application configuration during service bootstrap.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'config';
     
+    /**
+     * Optional provider-local config reference for custom subclasses.
+     */
     protected ConfigInterface $config;
     
+    /**
+     * Register the shared `config` service.
+     *
+     * @throws \PhalconKit\Exception\ServiceException When the bootstrap service
+     *     is missing or does not implement the PhalconKit bootstrap contract.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
-        // Set shared service in DI
         $di->setShared($this->getName(), function () use ($di) {
     
             $bootstrap = $di->getTyped('bootstrap', Bootstrap::class);
@@ -37,10 +53,8 @@ class ServiceProvider extends AbstractServiceProvider
             $bootstrap->config ??= new Config();
             $config = $bootstrap->getConfig();
             
-            // Launch bootstrap prepare raw php configs
             Php::set($config->pathToArray('app') ?? []);
             
-            // Set the config
             return $config;
         });
     }

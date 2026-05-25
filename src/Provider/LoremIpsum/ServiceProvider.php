@@ -17,10 +17,19 @@ use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Di\DiInterface;
 use joshtronic\LoremIpsum;
 
+/**
+ * Registers the lorem ipsum generator service.
+ *
+ * This service is primarily useful for scaffolding, demos, fixtures, and tests
+ * that need deterministic access to the package's lorem ipsum generator.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'loremIpsum';
     
+    /**
+     * Register the shared `loremIpsum` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

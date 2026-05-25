@@ -17,26 +17,32 @@ use Phalcon\Annotations\Adapter\Memory;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the annotations reader service.
+ *
+ * Adapter configuration is read from `annotations.driver`,
+ * `annotations.default`, and `annotations.drivers.<driver>`. The memory
+ * adapter is used when no adapter is configured, matching Phalcon's lightweight
+ * default for applications that do not need persistent annotation caching.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'annotations';
     
+    /**
+     * Register the shared `annotations` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
         $di->setShared($this->getName(), function () use ($di) {
-    
-            // config
             $config = $di->getConfig();
             $annotationsConfig = $config->pathToArray('annotations', []);
-    
-            // options
             $driverName = $annotationsConfig['driver'] ?? 'memory';
             $driverOptions = $annotationsConfig['drivers'][$driverName] ?? [];
             $defaultOptions = $annotationsConfig['default'] ?? [];
             $options = array_merge($defaultOptions, $driverOptions);
-    
-            // adapter
+
             $adapter = $driverOptions['adapter'] ?? Memory::class;
             if (!is_string($adapter) || $adapter === '') {
                 $adapter = Memory::class;

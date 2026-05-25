@@ -17,10 +17,19 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Env;
 
+/**
+ * Registers the environment helper service.
+ *
+ * The service exposes `PhalconKit\Support\Env` through DI for code that prefers
+ * service resolution over static helper calls.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'env';
     
+    /**
+     * Register the shared `env` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

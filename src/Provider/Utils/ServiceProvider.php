@@ -17,10 +17,20 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Utils;
 
+/**
+ * Registers the utility helper service.
+ *
+ * `PhalconKit\Support\Utils` groups framework utility helpers that do not fit a
+ * narrower service. The provider keeps those helpers injectable for consumers
+ * that avoid static access.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'utils';
     
+    /**
+     * Register the shared `utils` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

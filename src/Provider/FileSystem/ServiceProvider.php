@@ -18,10 +18,20 @@ use League\Flysystem\Local\LocalFilesystemAdapter;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the local filesystem service.
+ *
+ * The provider creates a Flysystem local adapter rooted at the runtime argument,
+ * `app.dir.root`, or the current working directory. Use runtime roots for tests
+ * or isolated storage, and config roots for application-wide file operations.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'fileSystem';
     
+    /**
+     * Register the shared `fileSystem` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

@@ -17,10 +17,19 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Support\Version;
 
+/**
+ * Registers the framework version helper service.
+ *
+ * The service exposes package/runtime version helpers through DI for diagnostics
+ * and framework metadata responses.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'version';
     
+    /**
+     * Register the shared `version` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

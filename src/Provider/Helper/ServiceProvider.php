@@ -17,10 +17,20 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Support\HelperFactory;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the helper factory service.
+ *
+ * Helper service aliases are read from the `helpers` config section and passed
+ * to `PhalconKit\Support\HelperFactory`, allowing applications to add or replace
+ * helper implementations while keeping the same DI service name.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'helper';
     
+    /**
+     * Register the shared `helper` service.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
