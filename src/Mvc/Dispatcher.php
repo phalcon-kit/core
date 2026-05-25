@@ -22,6 +22,8 @@ use PhalconKit\Dispatcher\DispatcherTrait;
  * The dispatcher keeps Phalcon's MVC dispatch behavior and mixes in the
  * framework forwarding protections and diagnostic export helpers from
  * `DispatcherTrait`.
+ *
+ * @see https://docs.phalcon.io/5.13/dispatcher/
  */
 class Dispatcher extends \Phalcon\Mvc\Dispatcher implements DispatcherInterface
 {

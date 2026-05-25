@@ -23,6 +23,8 @@ use PhalconKit\Config\ConfigInterface;
  * applications. Code that participates in the PhalconKit provider/bootstrap
  * boundary should type against this interface instead of native
  * `Phalcon\Di\DiInterface` so `getTyped()` and `getConfig()` are available.
+ *
+ * @see https://docs.phalcon.io/5.13/di/
  */
 interface DiInterface extends \Phalcon\Di\DiInterface
 {

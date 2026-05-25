@@ -22,6 +22,8 @@ use PhalconKit\Di\TypedServicesTrait;
  * This container mirrors Phalcon's CLI FactoryDefault service registration and
  * adds PhalconKit typed lookup helpers. It is the default container for
  * PhalconKit CLI bootstraps unless an application passes a custom DiInterface.
+ *
+ * @see https://docs.phalcon.io/5.13/di/
  */
 class Cli extends \Phalcon\Di\FactoryDefault\Cli implements DiInterface
 {

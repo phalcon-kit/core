@@ -22,6 +22,8 @@ use Phalcon\Cli\Dispatcher as CliDispatcher;
  * The trait normalizes two framework concerns across dispatcher types:
  * preserving only positional action arguments when invoking handlers, and
  * preventing event-driven forwards from cycling back to the current target.
+ *
+ * @see https://docs.phalcon.io/5.13/dispatcher/
  */
 trait DispatcherTrait
 {

@@ -19,6 +19,8 @@ namespace PhalconKit\Di;
  * This container mirrors Phalcon's FactoryDefault service registration and adds
  * PhalconKit typed lookup helpers. It is the default container for non-CLI
  * PhalconKit bootstraps unless an application passes a custom DiInterface.
+ *
+ * @see https://docs.phalcon.io/5.13/di/
  */
 class FactoryDefault extends \Phalcon\Di\FactoryDefault implements DiInterface
 {

@@ -17,14 +17,21 @@ use PhalconKit\Support\Helper;
 use PhalconKit\Support\Slug;
 
 /**
- * {@inheritdoc}
+ * MVC view wrapper with PhalconKit path normalization and optional minification.
+ *
+ * When a direct controller/action view path is not present, controller and
+ * action names are converted from camelCase to slug form before delegating to
+ * Phalcon. `getContent()` can also perform lightweight HTML output minification
+ * for applications that opt in through `setMinify()`.
+ *
+ * @see https://docs.phalcon.io/5.13/views/
  */
 class View extends \Phalcon\Mvc\View
 {
     private bool $minify = false;
     
     /**
-     * True if content minifier is enabled
+     * Return whether response content should be minified by default.
      */
     public function getMinify(): bool
     {
@@ -32,7 +39,7 @@ class View extends \Phalcon\Mvc\View
     }
     
     /**
-     * Set true to enable content minifier
+     * Enable or disable response content minification by default.
      */
     public function setMinify(bool $minify): void
     {
@@ -40,7 +47,13 @@ class View extends \Phalcon\Mvc\View
     }
     
     /**
-     * {@inheritdoc}
+     * Render a view, falling back to slugged controller/action paths.
+     *
+     * @param string $controllerName Controller name selected by the dispatcher.
+     * @param string $actionName Action name selected by the dispatcher.
+     * @param array<array-key, mixed> $params View parameters.
+     *
+     * @return \Phalcon\Mvc\View|bool Native Phalcon render result.
      */
     #[\Override]
     public function render(string $controllerName, string $actionName, array $params = []): \Phalcon\Mvc\View|bool
@@ -53,13 +66,13 @@ class View extends \Phalcon\Mvc\View
     }
     
     /**
-     * Perform the automatic rendering returning the output as a string
+     * Render a view to a string, falling back to slugged paths when needed.
      *
-     * {@inheritDoc}
-     * @param string $controllerName
-     * @param string $actionName
-     * @param array $params
-     * @param mixed $configCallback
+     * @param string $controllerName Controller name selected by the dispatcher.
+     * @param string $actionName Action name selected by the dispatcher.
+     * @param array<array-key, mixed> $params View parameters.
+     * @param mixed $configCallback Optional native Phalcon render callback.
+     *
      * @return string
      */
     #[\Override]
@@ -73,8 +86,10 @@ class View extends \Phalcon\Mvc\View
     }
     
     /**
-     * Returns output from another view stage
-     * Can also minify the content
+     * Return rendered output, optionally applying lightweight minification.
+     *
+     * @param bool|null $minify Override the default minification flag for this
+     *     call. Null uses `getMinify()`.
      */
     #[\Override]
     public function getContent(?bool $minify = null): string

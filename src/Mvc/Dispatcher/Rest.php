@@ -22,11 +22,20 @@ use PhalconKit\Di\Injectable;
  *
  * The class is intentionally inert until REST-specific dispatch behavior is
  * promoted to a supported framework contract.
+ *
+ * @see https://docs.phalcon.io/5.13/dispatcher/
  */
 class Rest extends Injectable
 {
-//    public function beforeDispatch(Event $event, Dispatcher $dispatcher): bool
-    public function beforeDispatch(): bool
+    /**
+     * Allow the dispatcher to continue before a REST controller is invoked.
+     *
+     * The native Phalcon dispatcher event signature is kept even though the
+     * current implementation does not need the arguments. That makes this class
+     * a safe place to add future REST dispatch behavior without changing the
+     * listener's public shape.
+     */
+    public function beforeDispatch(Event $event, Dispatcher $dispatcher): bool
     {
         return true;
     }

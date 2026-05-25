@@ -14,10 +14,20 @@ declare(strict_types=1);
 namespace PhalconKit\Db;
 
 /**
- * {@inheritdoc}
+ * Database profiler with null-safe profile access and array diagnostics.
+ *
+ * Phalcon's profiler can throw type errors when no profile data has been
+ * collected in some runtime states. This wrapper normalizes those cases to
+ * empty profile lists and zero elapsed time so debug endpoints can inspect the
+ * profiler without defensive try/catch blocks.
  */
 class Profiler extends \Phalcon\Db\Profiler
 {
+    /**
+     * Return collected query profiles or an empty list when none are available.
+     *
+     * @return array<int, \Phalcon\Db\Profiler\Item>
+     */
     #[\Override]
     public function getProfiles(): array
     {
@@ -28,6 +38,9 @@ class Profiler extends \Phalcon\Db\Profiler
         }
     }
 
+    /**
+     * Return total elapsed profile time in nanoseconds.
+     */
     #[\Override]
     public function getTotalElapsedNanoseconds(): float
     {
@@ -38,12 +51,24 @@ class Profiler extends \Phalcon\Db\Profiler
         }
     }
 
+    /**
+     * Return total elapsed profile time as reported by Phalcon.
+     */
     #[\Override]
     public function getTotalElapsedSeconds(): float
     {
         return parent::getTotalElapsedSeconds();
     }
 
+    /**
+     * Export profiler data for debug responses.
+     *
+     * @return array{
+     *     profiles: array<int, array<string, mixed>>,
+     *     numberTotalStatements: int,
+     *     totalElapsedSeconds: float
+     * }
+     */
     public function toArray(): array
     {
         $profiles = [];

@@ -21,6 +21,8 @@ use PhalconKit\Config\ConfigInterface;
  * This router extends the framework router with application-facing defaults for
  * the bundled frontend module. It registers simple controller/action routes and
  * optional locale-prefixed variants based on the configured allowed locales.
+ *
+ * @see https://docs.phalcon.io/5.13/routing/
  */
 class Router extends \PhalconKit\Mvc\Router
 {

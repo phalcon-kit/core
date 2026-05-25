@@ -22,8 +22,14 @@ use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
 
 /**
- * Simple HMVC - allow requests with namespaces and modules
- * {@inheritdoc}
+ * MVC application with PhalconKit's typed DI boundary and HMVC helper.
+ *
+ * The application keeps Phalcon's MVC lifecycle, but it requires a PhalconKit
+ * DI implementation so internal framework code can rely on typed service
+ * helpers. `request()` provides a small HMVC dispatch helper for rendering an
+ * internal controller/task target without mutating the active dispatcher.
+ *
+ * @see https://docs.phalcon.io/5.13/application/
  */
 class Application extends \Phalcon\Mvc\Application
 {
