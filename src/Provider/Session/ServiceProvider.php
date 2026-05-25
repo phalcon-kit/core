@@ -23,10 +23,36 @@ use Phalcon\Storage\AdapterFactory;
 use Phalcon\Storage\SerializerFactory;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the session manager service.
+ *
+ * Session configuration is resolved from `session.driver`,
+ * `session.default`, `session.drivers`, and optional `session.ini` values. The
+ * default driver is Phalcon's stream adapter with a temporary-directory save
+ * path, which keeps legacy MVC applications session-capable without extra
+ * configuration.
+ *
+ * This provider intentionally starts the session before returning it. A future
+ * stateless mode should be designed as an explicit behavior change rather than
+ * hidden behind adapter selection.
+ *
+ * @see https://docs.phalcon.io/5.13/session/
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'session';
     
+    /**
+     * Register the shared `session` service.
+     *
+     * Adapter classes using Phalcon's stream/noop constructor are instantiated
+     * directly. Other adapters are created with a storage adapter factory and
+     * must implement `SessionHandlerInterface` before being attached to the
+     * manager.
+     *
+     * @throws ConfigurationException When a factory-backed adapter does not
+     *     implement PHP's session handler interface.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
@@ -42,21 +68,23 @@ class ServiceProvider extends AbstractServiceProvider
             $driverOptions = $sessionConfig['drivers'][$driverName] ?? [];
             $options = array_merge($defaultOptions, $driverOptions);
             
-            // Create the new session manager
+            // Create a fresh manager for the configured adapter.
             $session = new Manager();
             
-            // this is for unit testing purpose and should not have to happen
+            // Avoid leaking an already-active PHP session into the configured
+            // manager. This mainly protects tests and long-running processes
+            // that resolve the service multiple times with different config.
             if ($session->exists()) {
                 $session->destroy();
             }
             
-            // ini_set
+            // Apply session INI settings before the manager starts.
             $sessionIniConfig = $sessionConfig['ini'] ?? [];
             foreach ($sessionIniConfig as $sessionIniKey => $sessionIniValue) {
                 ini_set($sessionIniKey, $sessionIniValue);
             }
             
-            // Set the storage adapter
+            // Resolve and instantiate the configured storage adapter.
             $adapter = $options['adapter'] ?? Stream::class;
             if (!is_string($adapter) || $adapter === '') {
                 $adapter = Stream::class;
@@ -81,7 +109,8 @@ class ServiceProvider extends AbstractServiceProvider
                 }
                 $session->setAdapter($adapterInstance);
                 
-                // ini_set save_handler and save_path for redis
+                // Redis-backed sessions also need PHP's native session INI
+                // values so native session handling points at the same backend.
                 if (is_a($adapter, Redis::class, true)) {
                     $options['host'] ??= '127.0.0.1';
                     $options['port'] ??= 6379;
@@ -90,7 +119,7 @@ class ServiceProvider extends AbstractServiceProvider
                 }
             }
             
-            // Start and return the session
+            // Keep existing package behavior: resolving the service starts it.
             $session->start();
             return $session;
         });
