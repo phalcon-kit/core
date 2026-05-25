@@ -15,13 +15,19 @@ namespace PhalconKit\Support\Helper\Arr;
 
 /**
  * Apply a callback to every scalar value in a nested array.
+ *
+ * Array keys and nesting are preserved. Only non-array leaf values are passed
+ * to the callback, which makes the helper useful for normalizing config values
+ * without changing the shape expected by providers or policy builders.
  */
 class RecursiveMap
 {
     /**
      * Invoke the helper for a nested array.
      *
-     * @param array<string|int, mixed> $collection
+     * @param array<string|int, mixed> $collection Input array.
+     * @param callable $callback Callback applied to each non-array value.
+     *
      * @return array<string|int, mixed>
      */
     public function __invoke(array $collection, callable $callback): array
@@ -33,7 +39,7 @@ class RecursiveMap
      * Apply a callback to each non-array value and preserve array structure.
      *
      * @param array<string|int, mixed> $collection The array to process.
-     * @param callable $callback Callback receiving each scalar/non-array value.
+     * @param callable $callback Callback receiving each non-array value.
      *
      * @return array<string|int, mixed>
      */

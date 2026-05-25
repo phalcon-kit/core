@@ -16,10 +16,22 @@ namespace PhalconKit\Support\Helper\Str;
 use PhalconKit\Support\Slug;
 
 /**
- * Creates a slug to be used for pretty URLs
+ * Create URL-friendly slugs through the shared slug generator.
+ *
+ * This helper exposes {@see Slug::generate()} through the helper factory and
+ * static helper facade, so application code can call `Helper::slugify()` or
+ * resolve the helper service directly.
  */
 class Slugify
 {
+    /**
+     * Generate a normalized slug.
+     *
+     * @param string $string Source text.
+     * @param array<string, string> $replace Search/replace pairs applied before
+     *     slug cleanup.
+     * @param string $delimiter Word delimiter used in the final slug.
+     */
     public function __invoke(string $string, array $replace = [], string $delimiter = '-'): string
     {
         return Slug::generate($string, $replace, $delimiter);

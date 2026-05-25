@@ -14,16 +14,21 @@ declare(strict_types=1);
 namespace PhalconKit\Support\Helper\Str;
 
 /**
- * Normalize Line Breaks
+ * Normalize line-break sequences in text.
+ *
+ * The default pattern converts CRLF and old Mac CR line breaks to LF while
+ * leaving existing LF characters untouched. Callers can pass a custom regex and
+ * replacement when they need a different normalization policy.
  */
 class NormalizeLineBreaks
 {
     /**
-     * Replaces line breaks in the given string based on a specified regular expression and replacement string.
+     * Replace matching line-break sequences.
      *
      * @param string $string The input string where line breaks will be replaced.
-     * @param string $lineBreaksRegex The regular expression pattern to match line breaks. Defaults to "/\r\n|\r/".
-     * @param string $replacement The string to replace matched line breaks with. Defaults to "\n".
+     * @param string $lineBreaksRegex Regex passed to `preg_replace()`. An empty
+     *     string disables replacement and returns the input unchanged.
+     * @param string $replacement Replacement text for matched line breaks.
      *
      * @return string The processed string with line breaks replaced.
      */

@@ -15,13 +15,18 @@ namespace PhalconKit\Support\Helper\Arr;
 
 /**
  * Replace string fragments throughout a nested array.
+ *
+ * This helper is intentionally conservative: nested arrays are processed
+ * recursively, string leaves are passed through `str_replace()`, and all other
+ * values are returned unchanged. It is useful for config/template arrays that
+ * contain placeholders alongside booleans, numbers, or nulls.
  */
 class RecursiveStrReplace
 {
     /**
      * Invoke the helper and return an array result.
      *
-     * @param array<string|int, mixed> $collection
+     * @param array<string|int, mixed> $collection Input array.
      * @param array<string, string> $replaces Search/replace map.
      *
      * @return array<string|int, mixed>
@@ -35,7 +40,8 @@ class RecursiveStrReplace
      * Recursively replace string values while preserving non-string values.
      *
      * @param array<string|int, mixed> $collection Input array.
-     * @param array<string, string> $replaces Search/replace map.
+     * @param array<string, string> $replaces Search strings as keys and
+     *     replacement strings as values.
      *
      * @return array<string|int, mixed>|null
      */

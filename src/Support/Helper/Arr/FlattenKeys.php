@@ -18,7 +18,9 @@ namespace PhalconKit\Support\Helper\Arr;
  *
  * Integer keys with string values are treated as shorthand enabled fields. This
  * shape is used by exposure and controller field policies where nested config
- * needs to become a flat lookup table.
+ * needs to become a flat lookup table. Nested arrays also create an explicit
+ * entry for their parent key with `false` when no direct parent rule exists,
+ * allowing callers to distinguish a container node from an enabled leaf.
  */
 class FlattenKeys
 {
@@ -26,6 +28,9 @@ class FlattenKeys
      * Invoke the helper and always return an array.
      *
      * @param array<string|int, mixed> $collection Nested policy/config values.
+     * @param string $delimiter Delimiter used between nested path segments.
+     * @param bool $lowerKey Normalize string keys to lowercase.
+     *
      * @return array<array-key, mixed>
      */
     public function __invoke(array $collection = [], string $delimiter = '.', bool $lowerKey = true): array
@@ -35,6 +40,11 @@ class FlattenKeys
     
     /**
      * Flatten a nested rule map into delimiter-separated keys.
+     *
+     * Example input `['user' => ['email' => true]]` becomes
+     * `['user.email' => true, 'user' => false]`. A list item like `['email']`
+     * is treated as `['email' => true]` so concise allow-lists can be written
+     * without repeating `true`.
      *
      * @param array<string|int, mixed> $collection Nested policy/config values.
      * @param string $delimiter Key delimiter, normally `.`.
@@ -49,7 +59,7 @@ class FlattenKeys
         $ret = [];
         
         foreach ($collection as $key => $value) {
-            // flip value to key
+            // Numeric keys are shorthand for enabled string values.
             if (is_int($key)) {
                 if (is_string($value)) {
                     $key = $value;
@@ -60,17 +70,16 @@ class FlattenKeys
                 }
             }
             
-            // force lower case key
+            // Policy lookups are usually case-insensitive when requested.
             if (is_string($key)) {
                 $key = trim($lowerKey ? mb_strtolower($key) : $key);
             }
             
-            // true for empty string
+            // Empty strings represent enabled leaves in compact config arrays.
             if (is_string($value) && empty($value)) {
                 $value = true;
             }
             
-            // set the key
             $currentKey = (!empty($context) ? $context . (!empty($key) ? $delimiter : null) : null) . $key;
             if (is_callable($value)) {
                 $value = $value();
