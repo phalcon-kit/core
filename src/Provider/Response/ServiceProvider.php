@@ -17,10 +17,25 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Http\Response;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the HTTP response service.
+ *
+ * The response service wraps Phalcon's native response with PhalconKit's HTTP
+ * contract and applies globally configured headers from `response.headers`.
+ * This keeps security, cache, and platform headers centralized in config
+ * instead of scattering them across controllers.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'response';
     
+    /**
+     * Register the shared `response` service.
+     *
+     * Headers configured under `response.headers` are applied as soon as the
+     * response is built. Applications that replace this provider should either
+     * preserve that config behavior or document their own header strategy.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

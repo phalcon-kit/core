@@ -17,10 +17,24 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 use PhalconKit\Ws\WebSocket;
 
+/**
+ * Registers the WebSocket application service.
+ *
+ * WebSocket handling uses the task-style `PhalconKit\Ws\WebSocket` entrypoint
+ * rather than the MVC application. Keeping it under its own DI service name
+ * lets bootstraps select WebSocket routing and dispatching without overloading
+ * the HTTP or CLI application services.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'webSocket';
     
+    /**
+     * Register the shared `webSocket` service.
+     *
+     * The service receives the active DI container so WebSocket task modules can
+     * resolve the same configured services as CLI and MVC modules.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {

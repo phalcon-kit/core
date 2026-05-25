@@ -17,10 +17,25 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Cli\Console;
 use PhalconKit\Provider\AbstractServiceProvider;
 
+/**
+ * Registers the CLI console service.
+ *
+ * The console service is the Phalcon CLI entrypoint used by task bootstraps.
+ * It is registered separately from the MVC application so command execution can
+ * use CLI router/dispatcher defaults while still sharing the same PhalconKit DI
+ * contracts as the rest of the framework.
+ */
 class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'console';
     
+    /**
+     * Register the shared `console` service.
+     *
+     * The console receives the DI container at construction time, matching
+     * Phalcon's native console lifecycle and allowing task modules to resolve
+     * framework services from the configured container.
+     */
     #[\Override]
     public function register(DiInterface $di): void
     {
