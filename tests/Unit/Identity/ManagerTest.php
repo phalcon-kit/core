@@ -70,6 +70,30 @@ class ManagerTest extends AbstractUnit
         $this->assertArrayNotHasKey('unit-session-key', $session->data);
     }
 
+    public function testStatelessIdentityStoresPayloadInClaimInsteadOfSession(): void
+    {
+        $session = $this->createSession();
+        $identity = $this->createManager(['identity' => ['stateless' => true]], session: $session);
+        $identity->setClaim(['key' => 'unit-session-key']);
+
+        $this->assertFalse($identity->hasSessionIdentity());
+        $this->assertSame([], $identity->getSessionIdentity());
+
+        $identity->setSessionIdentity(['userId' => 42, 'asUserId' => 7]);
+
+        $this->assertTrue($identity->hasSessionIdentity());
+        $this->assertSame(['userId' => 42, 'asUserId' => 7], $identity->getSessionIdentity());
+        $this->assertSame(['key' => 'unit-session-key', 'userId' => 42, 'asUserId' => 7], $identity->claim);
+        $this->assertSame([], $session->data);
+
+        $identity->removeSessionIdentity();
+
+        $this->assertFalse($identity->hasSessionIdentity());
+        $this->assertSame([], $identity->getSessionIdentity());
+        $this->assertSame(['key' => 'unit-session-key'], $identity->claim);
+        $this->assertSame([], $session->data);
+    }
+
     public function testLogoutRemovesSessionIdentityAndReportsLoggedOutState(): void
     {
         $identity = $this->createManager();
@@ -83,6 +107,30 @@ class ManagerTest extends AbstractUnit
             'loggedInAs' => false,
         ], $result);
         $this->assertFalse($identity->hasSessionIdentity());
+    }
+
+    public function testStatelessLogoutClearsClaimIdentityAndReturnsAnonymousTokens(): void
+    {
+        $session = $this->createSession();
+        $jwt = $this->createJwtService();
+        $identity = $this->createManager(
+            ['identity' => ['stateless' => true]],
+            session: $session,
+            request: $this->createRequest(),
+            jwt: $jwt
+        );
+        $identity->setClaim(['key' => 'unit-session-key', 'userId' => 42]);
+
+        $result = $identity->logout();
+
+        $this->assertSame('token:' . Manager::SESSION_KEY, $result['jwt']);
+        $this->assertSame('token:' . Manager::SESSION_KEY . Manager::REFRESH_SUFFIX, $result['refreshToken']);
+        $this->assertFalse($result['refreshed']);
+        $this->assertFalse($result['loggedIn']);
+        $this->assertFalse($result['loggedInAs']);
+        $this->assertSame(['key' => 'unit-session-key'], $identity->claim);
+        $this->assertSame('{"key":"unit-session-key"}', $jwt->builderOptions[0]['subject']);
+        $this->assertSame([], $session->data);
     }
 
     public function testGetDelegatesToIdentityPayload(): void
@@ -374,6 +422,36 @@ class ManagerTest extends AbstractUnit
         $this->assertSame(['userId' => 42], $identity->getSessionIdentity());
     }
 
+    public function testStatelessLoginReturnsUpdatedJwtWithClaimIdentity(): void
+    {
+        $session = $this->createSession();
+        $jwt = $this->createJwtService();
+        $user = $this->createLoginUser(42, 'hashed-password', true, false);
+        $identity = $this->createLoginManager(
+            $user,
+            config: ['identity' => ['stateless' => true]],
+            session: $session,
+            request: $this->createRequest(),
+            jwt: $jwt,
+            security: $this->createSecurity(uuids: ['login-key'])
+        );
+
+        $result = $identity->login([
+            'email' => 'user@example.test',
+            'password' => 'secret',
+        ]);
+
+        $this->assertTrue($result['loggedIn']);
+        $this->assertFalse($result['loggedInAs']);
+        $this->assertSame(0, $result['messages']->count());
+        $this->assertSame('token:' . Manager::SESSION_KEY, $result['jwt']);
+        $this->assertSame('token:' . Manager::SESSION_KEY . Manager::REFRESH_SUFFIX, $result['refreshToken']);
+        $this->assertFalse($result['refreshed']);
+        $this->assertSame(['userId' => 42, 'key' => 'login-key'], $identity->claim);
+        $this->assertSame('{"userId":42,"key":"login-key"}', $jwt->builderOptions[0]['subject']);
+        $this->assertSame([], $session->data);
+    }
+
     public function testLoginRejectsDeletedUsers(): void
     {
         $user = $this->createLoginUser(42, 'hashed-password', true, true);
@@ -572,6 +650,18 @@ class ManagerTest extends AbstractUnit
         );
         $this->assertSame(['key' => 'session-key'], $fallback->getClaim(force: true));
 
+        $statelessFallback = $this->createManager(
+            [
+                'identity' => [
+                    'sessionFallback' => true,
+                    'stateless' => true,
+                ],
+            ],
+            session: $session,
+            request: $this->createRequest(throwJson: true)
+        );
+        $this->assertSame([], $statelessFallback->getClaim(force: true));
+
         $unsupported = $this->createManager(request: $this->createRequest());
         $this->assertSame([], $unsupported->getClaim(force: true));
     }
@@ -607,6 +697,36 @@ class ManagerTest extends AbstractUnit
         $this->assertSame(200, $jwt->builderOptions[1]['expiration']);
     }
 
+    public function testGetJwtPreservesStatelessIdentityPayloadWithoutSessionFallback(): void
+    {
+        $session = $this->createSession();
+        $jwt = $this->createJwtService();
+        $identity = $this->createManager(
+            [
+                'identity' => [
+                    'stateless' => true,
+                    'sessionFallback' => true,
+                ],
+            ],
+            session: $session,
+            request: $this->createRequest(),
+            jwt: $jwt,
+            security: $this->createSecurity(uuids: ['created-key'])
+        );
+        $identity->setSessionIdentity(['userId' => 42]);
+
+        $result = $identity->getJwt();
+
+        $this->assertSame([
+            'jwt' => 'token:' . Manager::SESSION_KEY,
+            'refreshToken' => 'token:' . Manager::SESSION_KEY . Manager::REFRESH_SUFFIX,
+            'refreshed' => false,
+        ], $result);
+        $this->assertSame(['userId' => 42, 'key' => 'created-key'], $identity->claim);
+        $this->assertSame('{"userId":42,"key":"created-key"}', $jwt->builderOptions[0]['subject']);
+        $this->assertSame([], $session->data);
+    }
+
     public function testGetJwtRefreshRotatesClaimAndMovesSessionIdentity(): void
     {
         $session = $this->createSession();
@@ -626,6 +746,28 @@ class ManagerTest extends AbstractUnit
         $this->assertArrayNotHasKey('old-key', $session->data);
         $this->assertSame(['userId' => 42], $session->data['new-key']);
         $this->assertSame(['key' => 'new-key'], $session->data[Manager::SESSION_KEY]);
+    }
+
+    public function testGetJwtRefreshRotatesStatelessClaimIdentityWithoutSessionStorage(): void
+    {
+        $session = $this->createSession();
+        $jwt = $this->createJwtService([
+            'refresh-token' => ['sub' => '{"key":"old-key","userId":42}'],
+        ]);
+        $identity = $this->createManager(
+            ['identity' => ['stateless' => true]],
+            session: $session,
+            request: $this->createRequest(params: ['refreshToken' => 'refresh-token']),
+            jwt: $jwt,
+            security: $this->createSecurity(uuids: ['new-key'])
+        );
+
+        $result = $identity->getJwt(true);
+
+        $this->assertTrue($result['refreshed']);
+        $this->assertSame(['key' => 'new-key', 'userId' => 42], $identity->claim);
+        $this->assertSame('{"key":"new-key","userId":42}', $jwt->builderOptions[0]['subject']);
+        $this->assertSame([], $session->data);
     }
 
     public function testUserTraitLoadsCachesFindsAndReportsUsers(): void
@@ -746,8 +888,14 @@ class ManagerTest extends AbstractUnit
         return $this->attachIdentityServices($identity, $config, bootstrap: $this->createBootstrap($ws, $cli));
     }
 
-    private function createLoginManager(?UserInterface $user = null): Manager
-    {
+    private function createLoginManager(
+        ?UserInterface $user = null,
+        array $config = [],
+        ?object $session = null,
+        ?object $request = null,
+        ?object $jwt = null,
+        ?object $security = null,
+    ): Manager {
         $identity = new class extends Manager {
             public ?UserInterface $unitUser = null;
 
@@ -772,7 +920,14 @@ class ManagerTest extends AbstractUnit
         };
         $identity->unitUser = $user;
 
-        return $this->attachIdentityServices($identity);
+        return $this->attachIdentityServices(
+            $identity,
+            $config,
+            session: $session,
+            request: $request,
+            jwt: $jwt,
+            security: $security
+        );
     }
 
     private function createResetManager(

@@ -27,8 +27,9 @@ interface Oauth2Interface
      * @param string|null $refreshToken Optional provider refresh token.
      * @param array<string, mixed>|null $meta Optional provider profile data.
      *
-     * @return array<string, mixed> Save state, login state, and validation
-     *     messages.
+     * @return array<string, mixed> Save state, login state, validation
+     *     messages, and optional JWT values when stateless identity mode
+     *     changes the token payload.
      */
     public function oauth2(string $provider, string $providerUuid, string $accessToken, ?string $refreshToken = null, ?array $meta = []): array;
 }

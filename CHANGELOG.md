@@ -17,7 +17,12 @@ release notes.
 
 ## 2.1.x - Unreleased
 
-No unreleased changes yet.
+### Added
+
+- Added identity-only stateless mode through `identity.stateless` and the
+  `IDENTITY_STATELESS` environment variable so API clients can keep the
+  Phalcon session service available while carrying the identity payload in JWT
+  claims instead of PHP session storage.
 
 ## 2.0.0 - 2026-05-25
 

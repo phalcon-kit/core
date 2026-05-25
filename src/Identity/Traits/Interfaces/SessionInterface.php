@@ -15,6 +15,11 @@ namespace PhalconKit\Identity\Traits\Interfaces;
 
 /**
  * Contract for storing identity payloads under the current claim key.
+ *
+ * Implementations may persist the payload in the PHP session service or carry
+ * it directly in JWT claims for stateless identity mode, but callers should use
+ * this contract consistently instead of reading either storage location
+ * directly.
  */
 interface SessionInterface
 {

@@ -18,6 +18,7 @@ use Phalcon\Filter\Validation\Validator\PresenceOf;
 use Phalcon\Messages\Message;
 use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Traits\Abstracts\AbstractRole;
+use PhalconKit\Identity\Traits\Abstracts\AbstractSession;
 
 /**
  * Implements session-based user impersonation.
@@ -30,6 +31,7 @@ use PhalconKit\Identity\Traits\Abstracts\AbstractRole;
 trait Impersonation
 {
     use AbstractRole;
+    use AbstractSession;
     
     /**
      * Switch the current session to another user.
@@ -41,7 +43,12 @@ trait Impersonation
      *
      * @param array<string, mixed> $params Parameters containing `userId`.
      *
-     * @return array{messages?: \Phalcon\Messages\Messages, loggedIn: bool, loggedInAs: bool}
+     * @return array{messages?: \Phalcon\Messages\Messages, loggedIn: bool, loggedInAs: bool, jwt?: string, refreshToken?: string, refreshed?: bool}
+     *
+     * @throws \Phalcon\Encryption\Security\Exception When stateless token key
+     *     generation fails.
+     * @throws \Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException
+     *     When stateless JWT creation fails.
      */
     public function loginAs(array $params = []): array
     {
@@ -50,6 +57,7 @@ trait Impersonation
         $validation->add('userId', new PresenceOf(['message' => 'required']));
         $validation->add('userId', new Numericality(['message' => 'not-numeric']));
         $messages = $validation->validate($params);
+        $statelessJwt = [];
         
         // Legacy default: only admin/dev roles can impersonate users. A
         // config-driven permission contract remains a public API design topic.
@@ -57,7 +65,10 @@ trait Impersonation
             $sessionIdentity = $this->getSessionIdentity();
             
             // himself, return back to normal login
-            if ((int)$sessionIdentity['asUserId'] === (int)$params['userId']) {
+            if (
+                isset($sessionIdentity['asUserId'])
+                && (int)$sessionIdentity['asUserId'] === (int)$params['userId']
+            ) {
                 return $this->logoutAs();
             }
             
@@ -68,17 +79,18 @@ trait Impersonation
                     'userId' => (int)$params['userId'],
                     'asUserId' => $sessionIdentity['userId'],
                 ]);
+                $statelessJwt = $this->getJwtForStatelessIdentity();
             }
             else {
                 $validation->appendMessage(new Message('User Not Found', 'userId', 'PresenceOf', 404));
             }
         }
         
-        return [
+        return array_merge($statelessJwt, [
             'messages' => $validation->getMessages(),
             'loggedIn' => $this->isLoggedIn(false, true),
             'loggedInAs' => $this->isLoggedIn(true, true),
-        ];
+        ]);
     }
     
     /**
@@ -87,19 +99,26 @@ trait Impersonation
      * If both `userId` and `asUserId` are present, the original id becomes the
      * effective `userId` and the impersonation marker is removed.
      *
-     * @return array{loggedIn: bool, loggedInAs: bool} Login state after the
-     *     restore attempt.
+     * @return array{loggedIn: bool, loggedInAs: bool, jwt?: string, refreshToken?: string, refreshed?: bool} Login state after
+     *     the restore attempt.
+     *
+     * @throws \Phalcon\Encryption\Security\Exception When stateless token key
+     *     generation fails.
+     * @throws \Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException
+     *     When stateless JWT creation fails.
      */
     public function logoutAs(): array
     {
+        $statelessJwt = [];
         $sessionIdentity = $this->getSessionIdentity();
         if (!empty($sessionIdentity['userId']) && !empty($sessionIdentity['asUserId'])) {
             $this->setSessionIdentity(['userId' => $sessionIdentity['asUserId']]);
+            $statelessJwt = $this->getJwtForStatelessIdentity();
         }
         
-        return [
+        return array_merge($statelessJwt, [
             'loggedIn' => $this->isLoggedIn(false, true),
             'loggedInAs' => $this->isLoggedIn(true, true),
-        ];
+        ]);
     }
 }

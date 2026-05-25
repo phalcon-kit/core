@@ -39,4 +39,15 @@ trait AbstractSession
     abstract public function hasSessionIdentity(): bool;
     
     abstract public function getKey(): ?string;
+
+    /**
+     * Return refreshed JWT values when the concrete identity storage is
+     * stateless.
+     *
+     * Stateful identity storage persists the payload server-side, so callers
+     * should receive an empty array and preserve their legacy response shape.
+     *
+     * @return array{jwt?: string, refreshToken?: string, refreshed?: bool}
+     */
+    abstract protected function getJwtForStatelessIdentity(): array;
 }

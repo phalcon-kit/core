@@ -21,6 +21,13 @@ interface JwtInterface
     /**
      * Build access and refresh tokens for the current claim.
      *
+     * In stateless identity mode the claim also carries the identity payload,
+     * so callers should replace their stored token after any login/logout or
+     * impersonation change that returns new JWT values. Replacing the client
+     * token does not revoke older signed JWTs by itself; applications that need
+     * immediate revocation need a denylist, token-version check, short access
+     * token lifetime, or similar strategy.
+     *
      * @param bool $refresh Rotate the claim key and preserve session identity
      *     under the new key when possible.
      *

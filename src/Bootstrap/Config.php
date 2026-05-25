@@ -336,6 +336,7 @@ class Config extends \PhalconKit\Config\Config
                 'adapter' => Env::get('IDENTITY_ADAPTER', 'session'), // session | database | redis
                 'mode' => Env::get('IDENTITY_SESSION_MODE', 'jwt'), // jwt | string
                 'sessionKey' => Env::get('IDENTITY_SESSION_KEY', 'phalcon-kit-identity'),
+                'stateless' => Env::get('IDENTITY_STATELESS', false),
                 'sessionFallback' => Env::get('IDENTITY_SESSION_FALLBACK', false),
                 'token' => [
                     'expiration' => $this->getDateTime(Env::get('IDENTITY_TOKEN_EXPIRATION', '+1 day'), $now)->getTimestamp(),
@@ -899,7 +900,6 @@ class Config extends \PhalconKit\Config\Config
                     'session.cache_expire' => Env::get('SESSION_CACHE_EXPIRE', '180'),
                     'session.use_trans_sid' => Env::get('SESSION_USE_TRANS_SID', '0'),
                     'session.trans_sid_tags' => Env::get('SESSION_TRANS_SID_TAGS', 'a=href,area=href,frame=src,form='),
-//                    'session.trans_sid_hosts' => Env::get('SESSION_TRANS_SID_HOSTS', $_SERVER['HTTP_HOST'] ?? ''), // @deprecated
                     'session.sid_length' => Env::get('SESSION_SID_LENGTH', '32'),
                     'session.sid_bits_per_character' => Env::get('SESSION_SID_BITS_PER_CHARACTER', '4'),
                     'session.upload_progress.enabled' => Env::get('SESSION_UPLOAD_PROGRESS_ENABLED', '1'),

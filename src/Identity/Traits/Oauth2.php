@@ -26,8 +26,10 @@ use PhalconKit\Identity\Traits\Abstracts\AbstractUser;
  *
  * The trait owns the core OAuth2 persistence flow: find or create the provider
  * identity, store current tokens and profile metadata, attach the provider
- * identity to the logged-in local user when possible, then establish the normal
- * PhalconKit session identity for the linked user.
+ * identity to the logged-in local user when possible, then establish the
+ * PhalconKit identity payload for the linked user. Stateless identity mode
+ * returns refreshed JWT values after a successful login so API clients can
+ * replace the token that now carries the linked user id.
  */
 trait Oauth2
 {
@@ -48,13 +50,17 @@ trait Oauth2
      * @param string|null $refreshToken Optional provider refresh token.
      * @param array<string, mixed>|null $meta Optional provider profile data.
      *
-     * @return array{saved: bool, loggedIn: bool, loggedInAs: bool, messages: \Phalcon\Messages\Messages}
+     * @return array{saved: bool, loggedIn: bool, loggedInAs: bool, messages: \Phalcon\Messages\Messages, jwt?: string, refreshToken?: string, refreshed?: bool}
      *
      * @throws FilterException When OAuth provider fields cannot be sanitized.
+     * @throws \Phalcon\Encryption\Security\Exception When stateless token key
+     *     generation fails after a successful OAuth2 login.
+     * @throws \Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException
+     *     When stateless JWT creation fails after a successful OAuth2 login.
      */
     public function oauth2(string $provider, string $providerUuid, string $accessToken, ?string $refreshToken = null, ?array $meta = []): array
     {
-        $loggedInUser = null;
+        $statelessJwt = [];
         
         // retrieve and prepare oauth2 entity
         $oauth2 = \PhalconKit\Models\Oauth2::findFirst([
@@ -124,14 +130,15 @@ trait Oauth2
             // login success
             else {
                 $this->setSessionIdentity(['userId' => $user->getId()]);
+                $statelessJwt = $this->getJwtForStatelessIdentity();
             }
         }
         
-        return [
+        return array_merge($statelessJwt, [
             'saved' => $saved,
             'loggedIn' => $this->isLoggedIn(false, true),
             'loggedInAs' => $this->isLoggedIn(true, true),
             'messages' => $validation->getMessages(),
-        ];
+        ]);
     }
 }

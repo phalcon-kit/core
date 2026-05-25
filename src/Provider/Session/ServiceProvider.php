@@ -32,9 +32,10 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * path, which keeps legacy MVC applications session-capable without extra
  * configuration.
  *
- * This provider intentionally starts the session before returning it. A future
- * stateless mode should be designed as an explicit behavior change rather than
- * hidden behind adapter selection.
+ * This provider intentionally starts the session before returning it. Identity
+ * flows that need stateless JWT-only behavior should use `identity.stateless`
+ * so flash messages, OAuth2 state, locale persistence, and other PHP-session
+ * consumers can keep working normally.
  *
  * @see https://docs.phalcon.io/5.13/session/
  */

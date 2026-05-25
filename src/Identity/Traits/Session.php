@@ -17,12 +17,18 @@ use PhalconKit\Di\AbstractInjectable;
 use PhalconKit\Identity\Traits\Abstracts\AbstractJwt;
 
 /**
- * Stores identity payloads in the configured session service.
+ * Stores the lightweight identity payload for the active manager.
  *
- * The payload is written under the active JWT claim key, not directly under the
- * static session key. This allows JWT refreshes to rotate the storage key and
- * invalidate older tokens while preserving the small session identity payload
- * when appropriate.
+ * By default the payload is written under the active JWT claim key in the
+ * configured session service. This allows JWT refreshes to rotate the storage
+ * key and invalidate older tokens while preserving the small `userId` and
+ * `asUserId` payload.
+ *
+ * When `identity.stateless` is enabled, the same payload is stored directly in
+ * the JWT claim instead. That mode is intended for API clients that want the
+ * identity layer to avoid PHP session persistence while the rest of the
+ * application can still use sessions for unrelated features such as flash
+ * messages, OAuth2 state, or locale persistence.
  */
 trait Session
 {
@@ -31,6 +37,16 @@ trait Session
     
     public const string SESSION_KEY = 'phalcon-kit-identity';
     public const string REFRESH_SUFFIX = '-refresh';
+
+    /**
+     * Claim fields that belong to token bookkeeping instead of the identity
+     * payload returned by {@see getSessionIdentity()} in stateless mode.
+     *
+     * @var array<string, true>
+     */
+    private const array TOKEN_CLAIM_KEYS = [
+        'key' => true,
+    ];
     
     /**
      * Return the configured identity session namespace.
@@ -53,6 +69,11 @@ trait Session
      */
     public function removeSessionIdentity(): void
     {
+        if ($this->isStatelessIdentity()) {
+            $this->setClaim(array_intersect_key($this->claim, self::TOKEN_CLAIM_KEYS));
+            return;
+        }
+
         $key = $this->getKey();
         if ($key) {
             $this->session->remove($key);
@@ -67,6 +88,11 @@ trait Session
      */
     public function setSessionIdentity(array $identity): void
     {
+        if ($this->isStatelessIdentity()) {
+            $this->setClaim(array_merge($this->claim, $identity));
+            return;
+        }
+
         $key = $this->getKey();
         if ($key) {
             $this->session->set($key, $identity);
@@ -80,6 +106,10 @@ trait Session
      */
     public function getSessionIdentity(): array
     {
+        if ($this->isStatelessIdentity()) {
+            return array_diff_key($this->getClaim(), self::TOKEN_CLAIM_KEYS);
+        }
+
         $key = $this->getKey();
         return ($key ? $this->session->get($key) : null) ?? [];
     }
@@ -92,6 +122,10 @@ trait Session
      */
     public function hasSessionIdentity(): bool
     {
+        if ($this->isStatelessIdentity()) {
+            return !empty($this->getSessionIdentity());
+        }
+
         $key = $this->getKey();
         return $key && $this->session->has($key);
     }
@@ -105,5 +139,33 @@ trait Session
     public function getKey(): ?string
     {
         return $this->getClaim()['key'] ?? null;
+    }
+
+    /**
+     * Check whether identity state should be carried only in JWT claims.
+     *
+     * This setting does not disable the framework session service globally. It
+     * only changes where the identity payload is persisted, which keeps
+     * unrelated session consumers available for applications that still need
+     * them.
+     */
+    protected function isStatelessIdentity(): bool
+    {
+        return (bool)$this->config->path('identity.stateless', false);
+    }
+
+    /**
+     * Return fresh JWT values after an identity state change when needed.
+     *
+     * Stateless clients must replace their token after login, logout, OAuth2
+     * login, and impersonation changes because the identity payload lives in
+     * the token subject. Stateful clients keep receiving the legacy response
+     * shape because the session-backed payload has already changed server-side.
+     *
+     * @return array{jwt?: string, refreshToken?: string, refreshed?: bool}
+     */
+    protected function getJwtForStatelessIdentity(): array
+    {
+        return $this->isStatelessIdentity() ? $this->getJwt() : [];
     }
 }

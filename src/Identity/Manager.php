@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Identity;
 
 use Phalcon\Encryption\Security\Exception as SecurityException;
+use Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException;
 use PhalconKit\Di\Injectable;
 use PhalconKit\Exception\LogicException;
 use PhalconKit\Filter\Validation;
@@ -42,12 +43,15 @@ use Phalcon\Messages\Message;
  * PhalconKit services used by those traits, including config, models, request,
  * security, session, JWT, and bootstrap services.
  *
- * Identity state is stored as a small session payload keyed by the active JWT
- * claim key. The primary session keys are `userId` for the effective user and
- * `asUserId` for the original user during impersonation. Login and password
- * reset responses deliberately avoid exposing whether an email address exists
- * unless validation has already failed, so downstream code should preserve that
- * behavior when overriding the manager.
+ * Identity state is stored as a small payload keyed by the active JWT claim
+ * key. The payload normally lives in the session service; when
+ * `identity.stateless` is enabled it lives directly in the JWT claim so API
+ * clients can avoid server-side identity persistence. The primary payload keys
+ * are `userId` for the effective user and `asUserId` for the original user
+ * during impersonation. Login and password reset responses deliberately avoid
+ * exposing whether an email address exists unless validation has already
+ * failed, so downstream code should preserve that behavior when overriding the
+ * manager.
  */
 class Manager extends Injectable implements ManagerInterface, OptionsInterface
 {
@@ -126,10 +130,12 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
      *
      * The login flow accepts an email address and password, validates both
      * fields, checks the configured user model, and stores the authenticated
-     * `userId` in the identity session. Missing users, disabled passwords, and
+     * `userId` in the identity payload. Missing users, disabled passwords, and
      * invalid passwords all return the same generic login-failed message so the
      * response does not reveal whether an account exists. Deleted users are
      * rejected with a forbidden message after password verification succeeds.
+     * When stateless identity is enabled, successful responses also include a
+     * freshly signed JWT/refresh-token pair containing the new identity payload.
      *
      * Successful login also refreshes the global model security roles from the
      * effective ACL roles, allowing model behaviors to evaluate the newly
@@ -138,7 +144,10 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
      * @param array<string, mixed> $params Login fields. Supported keys are
      *     `email` and `password`.
      *
-     * @return array{loggedIn: bool, loggedInAs: bool, messages: \Phalcon\Messages\Messages}
+     * @return array{loggedIn: bool, loggedInAs: bool, messages: \Phalcon\Messages\Messages, jwt?: string, refreshToken?: string, refreshed?: bool}
+     *
+     * @throws SecurityException When stateless token key generation fails.
+     * @throws ValidatorException When stateless JWT creation fails.
      */
     public function login(array $params = []): array
     {
@@ -147,6 +156,7 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
         $validation->add('email', new Email(['message' => 'email-not-valid']));
         $validation->add('password', new PresenceOf(['message' => 'required']));
         $validation->validate($params);
+        $statelessJwt = [];
         
         $messages = $validation->getMessages();
         if (!$messages->count()) {
@@ -174,39 +184,46 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
             
             // login success
             else {
-                // save userId into session
+                // save userId into the configured identity storage
                 $this->setSessionIdentity(['userId' => $user->getId()]);
 
                 // Update roles globally in the model security behavior
                 Security::setRoles($this->identity->getAclRoles());
+
+                $statelessJwt = $this->getJwtForStatelessIdentity();
             }
         }
         
-        return [
+        return array_merge($statelessJwt, [
             'loggedIn' => $this->isLoggedIn(false, true),
             'loggedInAs' => $this->isLoggedIn(true, true),
             'messages' => $validation->getMessages(),
-        ];
+        ]);
     }
     
     /**
-     * Remove the current session identity.
+     * Remove the current identity payload.
      *
      * Logout clears the identity stored under the current claim key. It does not
-     * clear unrelated session data or rotate JWT/session claim keys; callers
-     * that need token rotation should use the JWT refresh flow separately.
+     * clear unrelated session data. Stateless clients receive a refreshed
+     * anonymous token response and must replace/discard any older authenticated
+     * token client-side; JWTs are not server-revoked without an application
+     * revocation strategy.
      *
-     * @return array{loggedIn: bool, loggedInAs: bool} Login state after the
-     *     identity has been removed.
+     * @return array{loggedIn: bool, loggedInAs: bool, jwt?: string, refreshToken?: string, refreshed?: bool} Login state after
+     *     the identity has been removed.
+     *
+     * @throws SecurityException When stateless token key generation fails.
+     * @throws ValidatorException When stateless JWT creation fails.
      */
     public function logout(): array
     {
         $this->removeSessionIdentity();
         
-        return [
+        return array_merge($this->getJwtForStatelessIdentity(), [
             'loggedIn' => $this->isLoggedIn(false, true),
             'loggedInAs' => $this->isLoggedIn(true, true),
-        ];
+        ]);
     }
 
     /**

@@ -113,6 +113,35 @@ Use app providers when a service needs app configuration, app credentials, or a
 different implementation. Avoid replacing a core provider just to change one
 runtime option when config already supports it.
 
+## Stateless Identity
+
+API-only applications can keep PhalconKit's normal `session` service available
+while making identity itself stateless:
+
+```php
+'identity' => [
+    'stateless' => true,
+],
+```
+
+or through the environment:
+
+```ini
+IDENTITY_STATELESS=true
+```
+
+Stateless identity stores the small identity payload, such as `userId` and
+`asUserId`, directly in the JWT claim instead of PHP session storage. The
+session provider still registers and starts the configured Phalcon session
+manager, so flash messages, OAuth2 state, locale persistence, and other session
+consumers keep their normal behavior.
+
+Do not combine stateless identity with `identity.sessionFallback`; fallback
+storage is ignored when `identity.stateless` is enabled. Clients must replace
+their JWT after login, logout, OAuth2 login, impersonation, and refresh
+responses that include new token values. Old JWTs are not server-revoked unless
+the application adds its own revocation strategy.
+
 ### App Service Provider Example
 
 Use a provider when the service belongs in the DI container and is shared by

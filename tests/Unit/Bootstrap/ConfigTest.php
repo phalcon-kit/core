@@ -139,6 +139,21 @@ class ConfigTest extends AbstractUnit
         }
     }
 
+    public function testIdentityStatelessConfigUsesEnvironmentFlag(): void
+    {
+        $previous = Env::get('IDENTITY_STATELESS');
+
+        try {
+            Env::set('IDENTITY_STATELESS', 'true');
+
+            $config = new Config();
+
+            $this->assertTrue($config->path('identity.stateless'));
+        } finally {
+            Env::set('IDENTITY_STATELESS', $previous);
+        }
+    }
+
     public function testGetDateTimeAppliesModifierFromProvidedDate(): void
     {
         $config = new Config();

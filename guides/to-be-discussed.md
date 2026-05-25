@@ -42,56 +42,6 @@ Discussion triggers:
 - Desired behavior is clear for joined-group cases.
 - The performance cost of an extra count query is acceptable or configurable.
 
-## Stateless Session Option
-
-Status: Open
-
-Area: session provider, identity, API-only applications
-
-Context:
-
-- Some REST/API applications authenticate with JWTs, bearer tokens, signed
-  requests, or another stateless mechanism and do not want PHP session cookies,
-  session files, or server-side session state.
-- The current session provider always builds a Phalcon session manager and
-  starts it, defaulting to the stream adapter when no adapter is configured.
-- Phalcon's `Noop` adapter is useful, but a true stateless mode may also need
-  to skip `start()`, avoid `Set-Cookie` headers, and define how session reads
-  and writes behave.
-- Existing consumers can rely on sessions for identity fallback, locale
-  persistence, flash messages, OAuth2 state, CSRF/security behavior, session
-  bags, and impersonation flows.
-
-Current stance:
-
-- Do not silently make `Noop` the default or disable sessions globally; that
-  would break existing session-backed applications.
-- Do not treat "stateless" as only a storage-adapter choice until cookie,
-  startup, and session-dependent service behavior are defined.
-- If added later, it should be an explicit opt-in configuration with clear
-  migration notes for services that require session state.
-
-Possible future shape:
-
-- `session.stateless: true` or `session.enabled: false` as an explicit config
-  flag.
-- A no-state session registration strategy, such as a `Noop` manager that does
-  not start, a null session service compatible with the expected interface, or
-  a clear exception when session-dependent code is used.
-- Recommended stateless API config, for example JWT identity without
-  `identity.sessionFallback`, locale mode without session persistence, and an
-  OAuth2 state strategy that does not depend on PHP sessions.
-- Tests proving no session files are written, no session cookie is emitted, and
-  known session consumers fail clearly or use documented fallbacks.
-
-Discussion triggers:
-
-- A real API application needs to run without server-side session state.
-- Desired behavior is clear for OAuth2 state, flash messages, locale,
-  session bags, impersonation, and security/CSRF helpers.
-- Security review accepts the logout, replay, token revocation, and state
-  validation tradeoffs for the stateless path.
-
 ## Reviewed Inline Follow-Ups
 
 Status: Reviewed; selected items remain open.
@@ -148,7 +98,7 @@ Keep for discussion:
   Query logs currently include the effective user and impersonated user IDs.
   Decide whether they should also include session, request, trace, or
   correlation IDs. Any addition needs a stable service contract that works for
-  MVC, CLI, WebSocket, stateless JWT, and no-session contexts.
+  MVC, CLI, WebSocket, and stateless JWT identity contexts.
 - CLI router interface compatibility:
   `src/Cli/Router.php`, `tests/Unit/Cli/RouterTest.php`,
   `tests/Unit/Cli/ModuleTest.php`, `tests/Unit/Ws/ModuleTest.php`.

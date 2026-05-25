@@ -177,9 +177,9 @@ Rules for custom auth endpoints:
 
 ## JWT And Session Identity
 
-The JWT claim contains a generated `key`. Session identity is stored behind
-that key. This means a token identifies a session bucket, and the bucket stores
-values such as:
+The JWT claim contains a generated `key`. By default, session identity is
+stored behind that key. This means a token identifies a session bucket, and the
+bucket stores values such as:
 
 ```php
 ['userId' => 123]
@@ -195,10 +195,22 @@ Core behavior:
   authorization header, usually `X-Authorization`.
 - `identity.sessionFallback` can use PHP session storage as fallback, but avoid
   enabling it unless the app needs that compatibility mode.
+- `identity.stateless` stores the identity payload directly in the JWT claim
+  instead of behind the claim key in PHP session storage.
 
 Apps can override the identity provider to persist session identity somewhere
 else, such as an app `Session` model. The provider must still register the
 service as `identity` and return an identity manager with the DI injected.
+
+For API-only applications that do not want identity to depend on PHP session
+cookies or server-side identity storage, set `identity.stateless` or
+`IDENTITY_STATELESS=true`. Stateless identity keeps the regular `session`
+service available for unrelated framework features while moving
+`userId`/`asUserId` into the JWT subject. Do not combine it with
+`identity.sessionFallback`; fallback storage is ignored in stateless identity
+mode. Clients must replace their JWT after login, logout, OAuth2 login,
+impersonation, and refresh responses that include new token values. Old JWTs
+are not server-revoked unless the application adds a revocation strategy.
 
 ## Impersonation
 

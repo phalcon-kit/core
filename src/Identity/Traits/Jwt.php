@@ -25,7 +25,8 @@ use stdClass;
  * Access and refresh tokens both carry the same claim payload, but use
  * different token ids so the validator can distinguish normal and refresh
  * flows. The claim `key` is also used by the session identity trait as the
- * server-side lookup key for the small `userId`/`asUserId` payload.
+ * server-side lookup key for the small `userId`/`asUserId` payload, unless
+ * `identity.stateless` stores that payload directly in the token subject.
  */
 trait Jwt
 {
@@ -41,10 +42,14 @@ trait Jwt
     /**
      * Generate access and refresh tokens for the current claim.
      *
-     * When no claim key exists, a new UUID key is created. During refresh, the
-     * existing identity payload is copied from the old key to the new key after
-     * the old storage entry is removed, which invalidates tokens tied to the old
-     * key while keeping the user logged in.
+     * When no claim key exists, a new UUID key is created. During refresh with
+     * session-backed identity storage, the existing identity payload is copied
+     * from the old key to the new key after the old storage entry is removed,
+     * which invalidates tokens tied to the old key while keeping the user
+     * logged in. In stateless identity mode, the payload is preserved directly
+     * in the claim so clients can carry it without PHP session storage; old
+     * signed JWTs remain valid until expiration or an application-level
+     * revocation strategy rejects them.
      *
      * @param bool $refresh Rotate the claim key and invalidate previous tokens.
      *
@@ -57,12 +62,13 @@ trait Jwt
     {
         $claim = $this->getClaim($refresh, $refresh);
         
-        // this enables or disable the session fallback (not recommended to enable)
-        $sessionFallback = $this->config->path('identity.sessionFallback', false);
+        // Session fallback is intentionally ignored by stateless identity mode.
+        $sessionFallback = !$this->config->path('identity.stateless', false)
+            && $this->config->path('identity.sessionFallback', false);
         
         // undefined key, create a new one using uuid
         if (empty($claim['key'])) {
-            $this->setClaim(['key' => $this->security->getRandom()->uuid()]);
+            $this->setClaim(array_merge($claim, ['key' => $this->security->getRandom()->uuid()]));
             
             // save new key into session when using session fallback
             if ($sessionFallback) {
@@ -111,7 +117,7 @@ trait Jwt
      * Resolution order is refresh token, JWT request value, authorization
      * header, then optional session fallback. The fallback is intentionally
      * disabled by default because it couples token authentication to server-side
-     * session state.
+     * session state, and is always skipped when `identity.stateless` is enabled.
      *
      * @param bool $refresh Prefer the refresh-token source.
      * @param bool $force Ignore the cached claim for this manager instance.
@@ -152,7 +158,11 @@ trait Jwt
         }
         
         // Using Session Fallback (less secure)
-        if ($this->config->path('identity.sessionFallback', false) && $this->session->has($this->getSessionKey())) {
+        if (
+            !$this->config->path('identity.stateless', false)
+            && $this->config->path('identity.sessionFallback', false)
+            && $this->session->has($this->getSessionKey())
+        ) {
             $this->setClaim($this->session->get($this->getSessionKey()));
             return $this->claim;
         }
