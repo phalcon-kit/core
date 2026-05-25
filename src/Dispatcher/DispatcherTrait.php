@@ -27,22 +27,51 @@ use Phalcon\Cli\Dispatcher as CliDispatcher;
  */
 trait DispatcherTrait
 {
+    /**
+     * Return the namespace currently targeted by the dispatcher.
+     */
     abstract public function getNamespaceName(): ?string;
     
+    /**
+     * Return the module currently targeted by the dispatcher.
+     */
     abstract public function getModuleName(): ?string;
 
+    /**
+     * Update the current module name before forwarding.
+     */
     abstract public function setModuleName(?string $moduleName = null): void;
     
+    /**
+     * Return the action currently targeted by the dispatcher.
+     */
     abstract public function getActionName(): string;
     
+    /**
+     * Return current dispatch parameters.
+     *
+     * @return array<int|string, mixed>
+     */
     abstract public function getParams(): array;
     
+    /**
+     * Return the resolved controller or task class name.
+     */
     abstract public function getHandlerClass(): string;
     
+    /**
+     * Return the native handler suffix used by the dispatcher.
+     */
     abstract public function getHandlerSuffix(): string;
 
+    /**
+     * Return the native action suffix used by the dispatcher.
+     */
     abstract public function getActionSuffix(): string;
     
+    /**
+     * Return the concrete handler method name Phalcon will invoke.
+     */
     abstract public function getActiveMethod(): string;
     
     /**

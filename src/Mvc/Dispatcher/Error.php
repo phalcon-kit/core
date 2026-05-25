@@ -19,8 +19,21 @@ use Phalcon\Events\Event;
 use PhalconKit\Di\Injectable;
 use PhalconKit\Mvc\Dispatcher;
 
+/**
+ * Dispatcher listener that maps missing handlers/actions and runtime failures.
+ *
+ * Missing controllers/actions are forwarded to the configured not-found route.
+ * Other exceptions are forwarded to the configured fatal route only when debug
+ * mode is disabled; in debug mode the original exception is rethrown so
+ * developer tooling can render it.
+ */
 class Error extends Injectable
 {
+    /**
+     * Fallback route used when `router.notFound` is not fully configured.
+     *
+     * @var array{module: ?string, namespace: ?string, controller: string, action: string}
+     */
     public array $defaultNotFoundRoute = [
         'module' => null,
         'namespace' => null,
@@ -28,6 +41,11 @@ class Error extends Injectable
         'action' => 'notFound',
     ];
     
+    /**
+     * Fallback route used when `router.error` is not fully configured.
+     *
+     * @var array{module: ?string, namespace: ?string, controller: string, action: string}
+     */
     public array $defaultErrorRoute = [
         'module' => null,
         'namespace' => null,
@@ -36,9 +54,18 @@ class Error extends Injectable
     ];
     
     /**
-     * Forward to 404 or 500 error controller
+     * Forward dispatch exceptions to the configured error routes.
+     *
+     * @param Event $event Dispatcher event emitted by Phalcon.
+     * @param Dispatcher $dispatcher PhalconKit MVC dispatcher.
+     * @param NativeException $exception Exception raised during dispatch.
+     *
+     * @return bool False when the listener handled the exception by forwarding.
+     *
      * @throws DispatchException When forwarding to the configured error route
      *     fails.
+     * @throws NativeException When debug mode is enabled or the exception is
+     *     not handled by this listener.
      */
     public function beforeException(Event $event, Dispatcher $dispatcher, NativeException $exception): bool
     {
@@ -77,6 +104,14 @@ class Error extends Injectable
         throw $exception;
     }
     
+    /**
+     * Merge missing route parts from a default route definition.
+     *
+     * @param array<string, mixed> $route Configured route override.
+     * @param array<string, mixed> $default Fallback route parts.
+     *
+     * @return array<string, mixed>
+     */
     public function appendDefaultToRoute(array $route, array $default): array
     {
         $route['module'] ??= $default['module'] ?? null;

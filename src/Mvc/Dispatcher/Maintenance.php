@@ -23,13 +23,26 @@ use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Dispatcher;
 
 /**
- * Maintenance Dispatcher Plugin
- * Redirect to the maintenance module/controller/action
+ * Dispatcher listener that redirects traffic while maintenance mode is enabled.
+ *
+ * The listener reads `app.maintenance` and `router.maintenance` from config and
+ * forwards matching requests before the target controller/action runs.
  */
 class Maintenance extends Injectable
 {
+    /**
+     * Default maintenance module route part.
+     */
     public const ?string DEFAULT_MAINTENANCE_MODULE = null;
+
+    /**
+     * Default maintenance controller route part.
+     */
     public const ?string DEFAULT_MAINTENANCE_CONTROLLER = 'error';
+
+    /**
+     * Default maintenance action route part.
+     */
     public const ?string DEFAULT_MAINTENANCE_ACTION = 'maintenance';
     
     /**

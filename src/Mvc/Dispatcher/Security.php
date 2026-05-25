@@ -21,12 +21,23 @@ use Phalcon\Mvc\Dispatcher as MvcDispatcher;
 use PhalconKit\Di\Injectable;
 
 /**
- * This is the security plugin which controls that users only have access to the modules they're assigned to
+ * Dispatcher listener that enforces configured ACL permissions.
+ *
+ * The listener compares the active controller/task class and action against
+ * PhalconKit ACL components. When permissions are not configured it allows the
+ * request, preserving the framework's permissive default for applications that
+ * have not opted into ACL configuration.
  */
 class Security extends Injectable
 {
     /**
-     * This action is executed before execute any action in the application
+     * Check ACL permissions before Phalcon enters the dispatch loop.
+     *
+     * @param Event $event Dispatch event emitted by Phalcon.
+     * @param AbstractDispatcher $dispatcher Active MVC or CLI dispatcher.
+     *
+     * @return bool True when dispatch can continue, false after forwarding.
+     *
      * @throws DispatcherException When dispatcher state cannot be inspected.
      */
     public function beforeDispatchLoop(Event $event, AbstractDispatcher $dispatcher): bool
@@ -35,7 +46,18 @@ class Security extends Injectable
     }
     
     /**
-     * Check if the current identity is allowed from the dispatcher
+     * Determine whether the current identity may execute the active handler.
+     *
+     * Unauthorized users with more than one ACL role are forwarded to
+     * `router.unauthorized`; users with only one role are forwarded to
+     * `router.forbidden`. Missing ACL components forward to `router.notFound`.
+     *
+     * @param Event $event Dispatch event emitted by Phalcon.
+     * @param AbstractDispatcher|null $dispatcher Dispatcher to inspect. When
+     *     omitted, the injected dispatcher service is used.
+     *
+     * @return bool True when dispatch can continue, false after forwarding.
+     *
      * @throws DispatcherException When dispatcher state cannot be inspected.
      */
     public function checkAcl(Event $event, ?AbstractDispatcher $dispatcher = null): bool
@@ -44,7 +66,7 @@ class Security extends Injectable
         
         $componentNames = ['components'];
         
-        // get controller and action
+        // Collect the route parts needed to detect authorization-forward cycles.
         $module = $dispatcher->getModuleName();
         $namespace = $dispatcher->getNamespaceName();
         
@@ -63,10 +85,10 @@ class Security extends Injectable
         $handlerClass = $dispatcher->getHandlerClass();
         $action = $dispatcher->getActionName();
         
-        // Get ACL components (components + task, or components + controllers)
+        // ACL components are grouped by shared components plus handler type.
         $acl = $this->acl->get($componentNames);
         
-        // Security not found
+        // Unknown handlers are treated as not-found instead of forbidden.
         if (!$acl->isComponent($handlerClass)) {
             $notFoundRoute = $this->config->pathToArray('router.notFound') ?? [];
             $dispatcher->forward($notFoundRoute);

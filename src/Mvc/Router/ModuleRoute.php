@@ -16,10 +16,38 @@ namespace PhalconKit\Mvc\Router;
 use Phalcon\Mvc\Router\Group as RouterGroup;
 use PhalconKit\Support\Slug;
 
+/**
+ * Route group for one MVC module, optionally scoped by hostname and locale.
+ *
+ * The group registers the conventional PhalconKit routes for:
+ * - module root
+ * - controller index
+ * - controller/action/params
+ *
+ * When locales are provided, it also registers locale-prefixed variants using
+ * both one regex route and concrete per-locale route names. Hostname groups use
+ * host-derived route names so generated routes do not collide with path-based
+ * module routes.
+ *
+ * @see https://docs.phalcon.io/5.13/routing/
+ */
 class ModuleRoute extends RouterGroup
 {
+    /**
+     * Allowed locale prefixes for this module route group.
+     *
+     * @var list<string>
+     */
     public array $locale;
     
+    /**
+     * Create a module route group.
+     *
+     * @param array<string, mixed>|string|null $paths Native Phalcon route
+     *     paths. PhalconKit expects at least `module` in normal module usage.
+     * @param list<string> $locale Locale prefixes to register.
+     * @param string|null $hostname Optional hostname constraint.
+     */
     public function __construct(array|string|null $paths = null, array $locale = [], ?string $hostname = null)
     {
         $this->locale = $locale;
@@ -29,6 +57,13 @@ class ModuleRoute extends RouterGroup
         parent::__construct($paths);
     }
     
+    /**
+     * Register default, controller, action, and locale-aware routes.
+     *
+     * The method is called by Phalcon's router group lifecycle after
+     * construction. Route names are deterministic so applications can generate
+     * URLs for either plain module routes or locale/hostname-specific routes.
+     */
     public function initialize(): void
     {
         $hostname = $this->getHostname();

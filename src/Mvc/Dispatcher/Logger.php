@@ -18,10 +18,16 @@ use Phalcon\Logger\Exception as LoggerException;
 use PhalconKit\Di\Injectable;
 use PhalconKit\Dispatcher\DispatcherInterface;
 
+/**
+ * Dispatcher listener that logs route resolution metadata.
+ *
+ * The listener writes one structured log entry before the dispatch loop starts
+ * when both the global logger flag and dispatcher logger flag are enabled.
+ */
 class Logger extends Injectable
 {
     /**
-     * Check if the logger is currently enabled or not from the config
+     * Determine whether dispatcher logging is enabled by configuration.
      */
     public function isEnabled(): bool
     {
@@ -30,8 +36,11 @@ class Logger extends Injectable
     }
     
     /**
-     * This action is executed before execute any action in the application
-     * Keeping a log of the dispatch event
+     * Log the current dispatcher state before action execution.
+     *
+     * @param Event $event Dispatch event emitted by Phalcon.
+     * @param DispatcherInterface $dispatcher Active PhalconKit dispatcher.
+     *
      * @throws LoggerException When Phalcon cannot write the dispatch log entry.
      */
     public function beforeDispatchLoop(Event $event, DispatcherInterface $dispatcher): void
