@@ -40,6 +40,18 @@ trait AbstractQuery
      * Return the prepared find-option collection.
      */
     abstract public function getFind(): ?Collection;
+
+    /**
+     * Compile the current find collection into Phalcon query options.
+     *
+     * @param Collection|null $find Optional collection to compile instead of
+     *     the controller's current find state.
+     * @param bool $ignoreKey Preserve compatibility with the concrete query
+     *     compiler signature.
+     *
+     * @return array<string|int, mixed>
+     */
+    abstract public function prepareFind(?Collection $find = null, bool $ignoreKey = false): array;
     
     /**
      * Execute a model find query.

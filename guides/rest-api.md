@@ -282,6 +282,41 @@ $this->getConditions()->set('assigned_user', [
 Keep advanced filter logic in private methods or traits so the controller stays
 readable.
 
+## Grouped Count Responses
+
+`countAction()` keeps the native Phalcon result in the `count` response field.
+When a controller has a `group` clause, that value can be a grouped count
+result instead of a scalar total.
+
+Controllers that need dashboard or facet metadata can opt into explicit extra
+fields:
+
+```php
+use Phalcon\Support\Collection;
+
+public function initializeCountActionResponseFields(): void
+{
+    $this->setCountActionResponseFields(new Collection([
+        self::COUNT_RESPONSE_GROUPED_COUNT,
+        self::COUNT_RESPONSE_BUCKET_TOTAL,
+        self::COUNT_RESPONSE_TOTAL_COUNT,
+    ], false));
+}
+```
+
+`Restful::initialize()` calls this initializer after the query policy setup, so
+count response metadata follows the same controller initialization pattern as
+save, filter, search, joins, and other REST policies.
+
+- `groupedCount`: the raw grouped count result returned by the normal count
+  query.
+- `bucketTotal`: the sum of the returned grouped buckets.
+- `totalCount`: a second count query with the group clause removed.
+
+Keep `bucketTotal` and `totalCount` separate. On joined grouped endpoints, one
+root record can appear in more than one bucket, so the bucket sum can differ
+from the ungrouped total.
+
 ## Rest vs Restful
 
 Use `PhalconKit\Mvc\Controller\Rest` for custom JSON endpoints such as health

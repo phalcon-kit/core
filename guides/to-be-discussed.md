@@ -4,44 +4,6 @@ This file tracks design questions that are worth revisiting, but should not
 change public behavior until there is a concrete application need, migration
 plan, and test coverage.
 
-## REST Grouped Count Totals
-
-Status: Open
-
-Area: REST controllers, aggregate query responses
-
-Context:
-
-- `count()` can return either a scalar total or a grouped count result when a
-  `group` clause is present.
-- A grouped count result is useful for bucket counts, but callers sometimes
-  also want a total count in the same response.
-- Summing grouped buckets is not always the same as counting unique root
-  records, especially when grouping by joined relations where one root record
-  can appear in multiple buckets.
-
-Current stance:
-
-- Do not change `count()` to return a mixed structured payload such as
-  `['groups' => ..., 'total' => ...]`; that would break callers and blur native
-  Phalcon return semantics.
-- Do not automatically sum grouped counts and label that value as a total.
-- If this is added later, prefer explicit names and opt-in behavior.
-
-Possible future shape:
-
-- `groupedCount`: grouped count result.
-- `totalCount`: separate ungrouped count query using the same filters.
-- `bucketTotal`: sum of grouped buckets, explicitly named so it is not confused
-  with a unique root-record total.
-
-Discussion triggers:
-
-- A real application needs both grouped bucket counts and total counts in one
-  response.
-- Desired behavior is clear for joined-group cases.
-- The performance cost of an extra count query is acceptable or configurable.
-
 ## Reviewed Inline Follow-Ups
 
 Status: Reviewed; selected items remain open.

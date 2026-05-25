@@ -188,6 +188,38 @@ Use this base-controller pattern intentionally:
 - Avoid unused imports in copied examples; keep the base controller clean
   because every resource inherits it.
 
+## Count Actions
+
+`countAction()` exposes the native Phalcon count result as `count`. If the
+query has a `group` clause, `count` can be a grouped result instead of a scalar
+total.
+
+Controllers that need count metadata can opt into explicit extra fields:
+
+```php
+use Phalcon\Support\Collection;
+
+public function initializeCountActionResponseFields(): void
+{
+    $this->setCountActionResponseFields(new Collection([
+        self::COUNT_RESPONSE_GROUPED_COUNT,
+        self::COUNT_RESPONSE_BUCKET_TOTAL,
+        self::COUNT_RESPONSE_TOTAL_COUNT,
+    ], false));
+}
+```
+
+`Restful::initialize()` calls this initializer with the rest of the REST setup,
+so count response metadata should be configured in the controller lifecycle
+instead of inside `countAction()`.
+
+- `groupedCount` is the raw grouped count result.
+- `bucketTotal` sums the returned grouped buckets.
+- `totalCount` runs a second count query with the group clause removed.
+
+Do not present `bucketTotal` as a unique-record total. Joined grouped counts
+can place one root record in more than one bucket.
+
 ## Controller Checklist
 
 For each REST resource, decide these separately:

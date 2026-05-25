@@ -17,6 +17,12 @@ release notes.
 
 ## 2.2.x - Unreleased
 
+### Added
+
+- Added opt-in REST count response fields for grouped endpoints:
+  `groupedCount` for the native grouped count result, `bucketTotal` for the sum
+  of returned buckets, and `totalCount` for a separate ungrouped count query.
+
 ## 2.1.0 - 2026-05-25
 
 ### Added
