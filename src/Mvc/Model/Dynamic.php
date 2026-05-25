@@ -106,16 +106,6 @@ class Dynamic extends Model
     }
     
     /**
-     * Retrieves the metadata associated with the object.
-     *
-     * @return array The metadata as an associative array. Returns an empty array if no metadata is set.
-     */
-//    public function metaData(): array
-//    {
-//        return $this->_metaData ??= $this->getModelsMetaData()->readMetaData($this);
-//    }
-    
-    /**
      * Dynamically set the column mapping.
      * Phalcon uses this to map database columns to model attributes.
      */

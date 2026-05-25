@@ -83,7 +83,6 @@ trait Locale
             }
         }
 
-//        return $this->$method(...$arguments);
         return parent::__call($method, $arguments);
     }
 

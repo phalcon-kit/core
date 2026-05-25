@@ -259,7 +259,6 @@ trait Export
         $this->response->setHeader('Last-Modified', gmdate('D, d M Y H:i:s') . ' GMT');
 
         return $this->response;
-//        return $xlsx->downloadAs($filename . '.xlsx');
     }
     
     /**
@@ -363,7 +362,5 @@ trait Export
         $this->response->setHeader('Content-disposition', 'attachment; filename="' . addslashes($filename) . '.csv"');
         
         return $this->response;
-//        $csv->output($filename . '.csv');
-//        return true;
     }
 }

@@ -90,28 +90,6 @@ class ClamavTest extends AbstractUnit
         $clamav->endSession();
     }
     
-    // Positive EICAR coverage needs a fixture/download strategy that is safe
-    // for local development, CI scanners, and package archives.
-//    public function testPositive(): void
-//    {
-//        $clamav = $this->getClamav();
-//        $clamav->startSession();
-//        
-//        $positiveFile = __DIR__ . '/../../Files/clamav-positive.txt';
-//        $result = $clamav->scanFile($positiveFile);
-//        
-//        $this->assertInstanceOf(Result::class, $result);
-//        $this->assertFalse($result->isOk(), 'ok');
-//        $this->assertFalse($result->isError(), 'error');
-//        $this->assertTrue($result->isFound(), 'found');
-//        $this->assertIsString($result->getId(), 'isString id');
-//        $this->assertNotEmpty($result->getId(), 'notEmpty id');
-//        $this->assertEquals(realpath($positiveFile), $result->getFilename(), 'filename');
-//        $this->assertEquals('Eicar-Signature', $result->getReason(), 'reason');
-//        
-//        $clamav->endSession();
-//    }
-    
     public function testNotFound(): void
     {
         $clamav = $this->getClamav();

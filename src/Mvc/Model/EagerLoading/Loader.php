@@ -392,14 +392,6 @@ final class Loader
                     throw new RuntimeException(sprintf('Unknown relation type `%s`', $relType));
                 }
                 
-                // Composite relation keys need dedicated bind generation and
-                // assignment logic before eager loading can support them.
-//                if (is_array($relation->getFields()) ||
-//                    is_array($relation->getReferencedFields())
-//                ) {
-//                    throw new RuntimeException('Relations with composite keys are not supported');
-//                }
-                
                 $parent = $parentName !== null ? $eagerLoads[$parentName] : $this;
                 $constraints = $nestingLevel + 1 === $nestingLevels ? $queryConstraints : null;
                 

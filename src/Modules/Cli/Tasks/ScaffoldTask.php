@@ -155,13 +155,6 @@ DOC;
             $definitions = $this->getDefinitionsAction($table);
             $relationships = $this->getRelationshipItems($table, $columns, $tables);
             
-            // Controller
-//            $savePath = $this->getControllersDirectory($definitions['controller']['file']);
-//            if (!file_exists($savePath) || $force) {
-//                $this->saveFile($savePath, $this->createControllerOutput($definitions, $columns, $relationships), $force);
-//                $ret [] = 'Controller API `' . $definitions['controller']['file'] . '` created';
-//            }
-            
             // Abstract
             if (!$this->isNoAbstracts()) {
                 $savePath = $this->getAbstractsDirectory($definitions['abstract']['file']);

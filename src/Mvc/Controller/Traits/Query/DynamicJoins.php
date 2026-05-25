@@ -199,11 +199,6 @@ trait DynamicJoins
                     
                     // if the join part alias is defined and the dynamic join alias never created
                     if (!isset($this->dynamicJoinsBuild[$joinAlias])) {
-                        // force join condition to be an array
-//                        if (!is_array($dynamicJoins[$alias][1])) {
-//                            $dynamicJoins[$alias][1] = [$dynamicJoins[$alias][1]];
-//                        }
-
                         // generate the join filter conditions
                         $joinFilters = $this->getParam('joins');
                         $joinFilters = is_array($joinFilters) ? $joinFilters : [];
@@ -371,10 +366,7 @@ trait DynamicJoins
             }
         }
 
-        // Return shallow -> deep (anchor first)
-//        return $ret;
-
-//        // return in reverse order as the first should be the longest alias
+        // Return deep -> shallow so the longest alias is processed first.
         return array_reverse($ret);
     }
 }

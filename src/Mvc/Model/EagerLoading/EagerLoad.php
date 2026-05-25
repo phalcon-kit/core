@@ -103,12 +103,6 @@ final class EagerLoad
             if ($relationKey !== null) {
                 $bindValues[$relationKey] = true;
             }
-            // Composite local fields need tuple-aware binding before this can
-            // collect multiple values safely.
-//            $relFieldAr = is_array($relField)? $relField : [$relField];
-//            foreach ($relFieldAr as $relField) {
-//                $bindValues[$record->readAttribute($relField)] = true;
-//            }
         }
         unset($record);
 

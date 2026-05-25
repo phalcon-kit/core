@@ -73,32 +73,6 @@ trait Uuid
                         );
                 },
             ],
-//            'beforeValidation' => [
-//                $field => function (EntityInterface $model, string $field) use ($security, $binary) {
-//                    if ($binary) {
-//                        // uuid field should remain unchanged
-//                        return new RawValue('`' . $field . '`');
-//                    }
-//                },
-//            ],
-//            'afterFetch' => [
-//                $field => function (EntityInterface $model, string $field) use ($binary) {
-//                    // $native not yet supported while fetching
-//                    $value = $model->readAttribute($field);
-//                    if ($binary && !empty($value)) {
-//                        $hex = bin2hex($value);
-//                        return sprintf(
-//                            '%s-%s-%s-%s-%s',
-//                            substr($hex, 0, 8),
-//                            substr($hex, 8, 4),
-//                            substr($hex, 12, 4),
-//                            substr($hex, 16, 4),
-//                            substr($hex, 20, 12)
-//                        );
-//                    }
-//                    return $value;
-//                },
-//            ],
         ]));
     }
     

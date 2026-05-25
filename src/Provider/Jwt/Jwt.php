@@ -191,12 +191,6 @@ class Jwt
      */
     public function parseToken(string $token): Token
     {
-        // fix phalcon error
-        // https://github.com/phalcon/cphalcon/blob/bf9b70cee49afcccd10cfee783218ead2419d8ef/phalcon/Encryption/Security/JWT/Token/Parser.zep#L166
-        // https://github.com/phalcon/cphalcon/issues/15608#issuecomment-1359323119
-        // resolved in: https://github.com/phalcon/cphalcon/pull/16381
-//        json_encode(null);
-        
         $this->token = $this->parser()->parse($token);
         return $this->token;
     }

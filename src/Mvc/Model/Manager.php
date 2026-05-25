@@ -86,12 +86,4 @@ class Manager extends PhalconModelsManager implements ManagerInterface
             unset($this->behaviors[$entityName][$behaviorName]);
         }
     }
-    
-    /**
-     * Merge two arrays of find parameters
-     */
-//    public function _mergeFindParameters(?array $findParamsOne = [], ?array $findParamsTwo = []): array
-//    {
-//        return $this->mergeFindParameters($findParamsOne, $findParamsTwo);
-//    }
 }

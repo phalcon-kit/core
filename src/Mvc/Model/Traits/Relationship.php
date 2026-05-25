@@ -746,8 +746,6 @@ trait Relationship
         $referencedFields = is_array($referencedFields) ? $referencedFields : [$referencedFields];
         
         foreach ($relatedRecords as $recordAfter) {
-//            $test = $recordAfter->toArray();
-//            $recordAfter->assign($relationFields);
             foreach ($relationFields as $key => $relationField) {
                 $recordAfter->writeAttribute($referencedFields[$key], $this->readAttribute($relationField));
             }
@@ -759,7 +757,6 @@ trait Relationship
                     return false;
                 }
             } catch (\Exception $e) {
-//                dd($test, $recordAfter->toArray());
                 $this->appendMessages([
                     new Message($e->getMessage() . ' - ' . $e->getCode(), $lowerCaseAlias, 'Exception', (int)$e->getCode()),
                 ]);

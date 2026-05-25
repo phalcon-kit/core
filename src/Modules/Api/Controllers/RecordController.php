@@ -100,11 +100,6 @@ class RecordController extends Controller
     public function getModelName(): ?string
     {
         if (!isset($this->modelName)) {
-//            $source = $this->getSource();
-//            $sourceClass = '_' . md5($source);
-//            $sourceFullClass = '\\PhalconKit\\Models\\' . $sourceClass;
-//            eval('namespace PhalconKit\Models; class ' . $sourceClass . ' extends \\' . Dynamic::class . ' {}');
-//            $this->modelName = $sourceFullClass;
             $this->modelName = Dynamic::class;
         }
         
@@ -116,14 +111,9 @@ class RecordController extends Controller
     {
         $modelName ??= $this->getModelName() ?? '';
         $modelInstance = Dynamic::createInstance($this->getSource(), $this->getColumnMap());
-//        $modelInstance = new $modelName();
-//        $modelInstance = $this->modelsManager->load($modelName);
-//        if ($modelInstance instanceof Dynamic) {
-            $modelInstance->setDynamicSource($this->getSource());
-            $modelInstance->setDynamicMetaData($this->getMetaData());
-            $modelInstance->setDynamicColumnMap($this->getColumnMap());
-//        }
-//        assert($modelInstance instanceof ModelInterface);
+        $modelInstance->setDynamicSource($this->getSource());
+        $modelInstance->setDynamicMetaData($this->getMetaData());
+        $modelInstance->setDynamicColumnMap($this->getColumnMap());
         return $modelInstance;
     }
     

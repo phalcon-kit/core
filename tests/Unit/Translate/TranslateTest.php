@@ -43,14 +43,14 @@ class TranslateTest extends AbstractUnit
         $this->assertEquals($key, $this->translate->t($key));
     }
     
-//    public function testExistingKey(): void
-//    {
-//        $key = 'PhalconKit';
-//        $this->assertTrue($this->translate->has($key));
-//        $this->assertTrue($this->translate->exists($key));
-//        $this->assertNotEquals($key, $this->translate->query($key));
-//        $this->assertNotEquals($key, $this->translate->t($key));
-//    }
+    public function testExistingKey(): void
+    {
+        $key = 'Phalcon Kit';
+        $this->assertTrue($this->translate->has($key));
+        $this->assertTrue($this->translate->exists($key));
+        $this->assertNotSame($key, $this->translate->query($key));
+        $this->assertNotSame($key, $this->translate->t($key));
+    }
 
     public function testNestedNativeArray(): void
     {
@@ -85,8 +85,6 @@ class TranslateTest extends AbstractUnit
             'nesting.interpolation' => 'value:interpolated',
             'nesting.collision' => 'value',
             'nesting.collision2' => 'value',
-//            'nesting.with.nesting' => 'value',
-//            'nesting.with.sub.nesting' => 'value',
         ];
         $placeholders = [
             'value' => 'interpolated'

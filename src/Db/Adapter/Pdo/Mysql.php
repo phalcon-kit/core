@@ -43,8 +43,6 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
         try {
             return parent::executePrepared($newStatement, $newPlaceholders, $newDataTypes);
         } catch (\Throwable $e) {
-//            dd($statement, $placeholders, $dataTypes);
-//            dd($newStatement, $newPlaceholders, $newDataTypes, $e);
             throw new RuntimeException(
                 $e->getMessage() . ' - ' .
                 $newStatement->queryString . ' - ' .
@@ -53,7 +51,6 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
                 (int)$e->getCode(),
                 $e
             );
-//            throw $e;
         }
     }
     
