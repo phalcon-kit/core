@@ -23,6 +23,11 @@ release notes.
   allowed fields while preserving the normal query filters, joins, permissions,
   identity conditions, bind values, pagination, and cache options.
 
+### Fixed
+
+- Fixed single-entity REST save failures with validation/domain messages so they
+  return `422 Unprocessable Entity` instead of `400 Bad Request`.
+
 ## 2.2.0 - 2026-05-25
 
 ### Added

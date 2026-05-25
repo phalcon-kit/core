@@ -116,8 +116,8 @@ trait SaveAction
      *
      * Single entity:
      * - 200 OK → success
-     * - 400 Bad Req → malformed / invalid input
-     * - 422 Unprocessable → validation / domain failure
+     * - 400 Bad Req → malformed input without validation/domain messages
+     * - 422 Unprocessable → validation/domain failure with messages
      *
      * Batch:
      * - 200 OK → all entities saved
@@ -162,16 +162,26 @@ trait SaveAction
         /* ---------- Single entity ---------- */
 
         if ($ret[self::REST_VIEW_SAVED] !== true) {
-            // Distinguish malformed vs domain failure
-            $this->response->setStatusCode(
-                empty($ret[self::REST_VIEW_MESSAGES] ?? null)
-                    ? 422 // domain / validation failure
-                    : 400 // malformed / invalid request
-            );
+            $this->response->setStatusCode($this->getSaveActionFailureStatusCode($ret));
         }
 
         $this->setRestViewVars($ret);
 
         return $this->setRestResponse($ret[self::REST_VIEW_SAVED] === true);
+    }
+
+    /**
+     * Resolve the HTTP status code for a failed single-entity save.
+     *
+     * Model, validation, and domain-rule failures normally include messages and
+     * map to 422 Unprocessable Entity. A failure without messages is treated as
+     * a malformed request because the persistence layer could not provide a
+     * domain-specific reason for the rejection.
+     *
+     * @param array $ret Single-entity save result.
+     */
+    protected function getSaveActionFailureStatusCode(array $ret): int
+    {
+        return empty($ret[self::REST_VIEW_MESSAGES] ?? null) ? 400 : 422;
     }
 }
