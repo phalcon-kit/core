@@ -15,10 +15,28 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 1.1.x - Unreleased
+## 2.1.x - Unreleased
 
-The current source tree reports package runtime version `1.1.0`, but no `1.1.0`
-tag has been cut yet.
+No unreleased changes yet.
+
+## 2.0.0 - 2026-05-25
+
+### Upgrade Notes
+
+- Requires PHP 8.5 or newer and Phalcon 5.13.x.
+- Normal `PhalconKit\Bootstrap` consumers receive the PhalconKit DI container
+  automatically, but custom bootstraps and tests must now provide
+  `PhalconKit\Di\DiInterface` instead of relying on native-only Phalcon
+  containers in framework integration paths.
+- Native DI, config, service, model, and controller contract failures now throw
+  PhalconKit-scoped exceptions where possible instead of depending on PHP
+  assertions, late return-type errors, or raw Phalcon exceptions.
+- The placeholder Gravatar provider, config entry, and guidance were removed
+  because the package does not ship a maintained Gravatar client.
+- The package target moved from a general Phalcon toolkit baseline to a
+  Phalcon 5.13 REST API framework surface with stricter QA, generated-model
+  contracts, typed DI helpers, and documented migration paths from older Zemit
+  usage.
 
 ### Added
 

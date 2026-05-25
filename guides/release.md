@@ -47,8 +47,9 @@ Review the archive if package exclusions changed.
 Use a SemVer tag:
 
 ```shell
-git tag 1.1.0
-git push origin 1.1.0
+VERSION=2.0.0
+git tag "$VERSION"
+git push origin "$VERSION"
 ```
 
 Prefer signed tags when possible.
