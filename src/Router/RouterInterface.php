@@ -40,7 +40,9 @@ interface RouterInterface extends InjectionAwareInterface
      * loose return surface.
      *
      * @param array<string, mixed> $defaults
+     *
+     * @psalm-suppress MissingReturnType Native Phalcon router implementations
+     *     expose incompatible concrete return types for this method.
      */
-    /** @psalm-suppress MissingReturnType */
     public function setDefaults(array $defaults);
 }

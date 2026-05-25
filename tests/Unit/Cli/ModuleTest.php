@@ -56,11 +56,6 @@ class ModuleTest extends AbstractUnit
         $this->assertIsString($namespaces['PhalconKit\\Cli\\Tasks']);
         $this->assertIsString($namespaces['PhalconKit\\Cli\\Models']);
         $this->assertIsString($namespaces['PhalconKit\\Models']);
-        
-        // do this for real module testing
-//        $this->assertFileExists($namespaces['PhalconKit\\Cli\\Tasks']);
-//        $this->assertFileExists($namespaces['PhalconKit\\Cli\\Models']);
-//        $this->assertFileExists($namespaces['PhalconKit\\Models']);
     }
     
     public function testGetNamespace(): void
@@ -100,7 +95,8 @@ class ModuleTest extends AbstractUnit
         
         // Interfaces
         $this->assertInstanceOf(\PhalconKit\Router\RouterInterface::class, $this->module->router);
-//        $this->assertInstanceOf(\Phalcon\Cli\RouterInterface::class, $this->module->router);
+        $this->assertNotInstanceOf(\Phalcon\Cli\RouterInterface::class, $this->module->router);
+        $this->assertInstanceOf(\Phalcon\Cli\Router::class, $this->module->router);
         $this->assertInstanceOf(\PhalconKit\Dispatcher\DispatcherInterface::class, $this->module->dispatcher);
         $this->assertInstanceOf(\Phalcon\Cli\DispatcherInterface::class, $this->module->dispatcher);
     }

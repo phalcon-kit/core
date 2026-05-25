@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc;
 
 use Phalcon\Di\Di;
+use Phalcon\Mvc\RouterInterface as PhalconMvcRouterInterface;
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Mvc\Router\ModuleRoute;
@@ -26,8 +27,10 @@ use PhalconKit\Router\RouterInterface;
  * PhalconKit config service. It remains compatible with Phalcon's router API
  * while exposing a small `toArray()` diagnostic snapshot through
  * `RouterInterface`.
+ *
+ * @see https://docs.phalcon.io/5.13/routing/
  */
-class Router extends \Phalcon\Mvc\Router implements RouterInterface
+class Router extends \Phalcon\Mvc\Router implements PhalconMvcRouterInterface, RouterInterface
 {
     /**
      * Config service used to build default, hostname, module, and locale routes.
