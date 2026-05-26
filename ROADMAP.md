@@ -264,9 +264,8 @@ Scope:
 - Added opt-in `eventsManager.listeners` configuration for the shared Phalcon
   events manager used by database, dispatcher, model, view, and application
   services.
-- Listener definitions support class names, DI service names, direct listener
-  objects/callables, explicit priorities, constructor arguments, and
-  `enabled => false` for merged config.
+- Listener definitions support class names, DI service names, explicit
+  priorities, constructor arguments, and `enabled => false` for merged config.
 - Bootstrap attaches configured listeners after providers are registered and
   before modules/router setup, with idempotency for repeated `bootServices()`
   calls in tests or custom bootstraps.

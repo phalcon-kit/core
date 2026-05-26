@@ -81,7 +81,7 @@ class ConfiguredEventListenersTest extends AbstractUnit
     public function testAttachRejectsInvalidListenerDefinition(): void
     {
         $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('must define "class", "service", or "listener"');
+        $this->expectExceptionMessage('must define "class" or "service"');
 
         ConfiguredEventListeners::attach(new Di(), new Manager(), [
             'unit' => [

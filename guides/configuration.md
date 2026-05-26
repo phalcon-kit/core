@@ -140,8 +140,8 @@ shared Phalcon events manager during bootstrap:
 
 Listeners are grouped by Phalcon event type, such as `dispatch`, `db`, `model`,
 or `view`. A listener can be a class name, a DI service name, or an array with
-`class`, `service`, or `listener`. Array definitions also support `priority`,
-`arguments`, and `enabled => false`.
+`class` or `service`. Array definitions also support `priority`, `arguments`,
+and `enabled => false`.
 
 The bootstrap attaches these listeners after providers are registered and before
 modules/router setup. Core providers keep their existing built-in listener

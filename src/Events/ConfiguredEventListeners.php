@@ -24,8 +24,8 @@ use PhalconKit\Exception\ConfigurationException;
  *
  * This helper keeps the bootstrap-level event attachment contract small and
  * explicit. Applications configure listeners by event type, then each listener
- * definition resolves to a class, DI service, object, or callable. Listener
- * priorities use Phalcon's native priority support; the helper enables
+ * definition resolves to a class or DI service. Listener priorities use
+ * Phalcon's native priority support; the helper enables
  * priorities before attaching so configured ordering works consistently across
  * MVC, CLI, WebSocket, and test bootstraps that share the same events manager.
  *
@@ -35,7 +35,6 @@ use PhalconKit\Exception\ConfigurationException;
  * - `'listenerServiceName'`
  * - `['class' => ListenerClass::class, 'priority' => 200]`
  * - `['service' => 'listenerServiceName', 'priority' => 200]`
- * - `['listener' => $callableOrObject, 'priority' => 200]`
  *
  * Array definitions may set `enabled => false` to disable one entry without
  * removing it from merged configuration.
@@ -124,7 +123,6 @@ final class ConfiguredEventListeners
     {
         return array_key_exists('class', $definition)
             || array_key_exists('service', $definition)
-            || array_key_exists('listener', $definition)
             || array_key_exists('enabled', $definition)
             || array_key_exists('priority', $definition);
     }
@@ -151,10 +149,6 @@ final class ConfiguredEventListeners
 
             $priority = self::resolvePriority($definition['priority'] ?? Manager::DEFAULT_PRIORITY, $eventType, $index);
 
-            if (array_key_exists('listener', $definition)) {
-                return self::finalizeListener($di, $definition['listener'], $eventType, $index);
-            }
-
             if (array_key_exists('service', $definition)) {
                 return self::listenerFromService($di, $definition['service'], $eventType, $index);
             }
@@ -173,7 +167,7 @@ final class ConfiguredEventListeners
             }
 
             throw new ConfigurationException(sprintf(
-                'Configured event listener "%s" for event "%s" must define "class", "service", or "listener".',
+                'Configured event listener "%s" for event "%s" must define "class" or "service".',
                 (string)$index,
                 $eventType
             ));
@@ -183,7 +177,11 @@ final class ConfiguredEventListeners
             return self::listenerFromString($di, $definition, $eventType, $index);
         }
 
-        return self::finalizeListener($di, $definition, $eventType, $index);
+        throw new ConfigurationException(sprintf(
+            'Configured event listener "%s" for event "%s" must be a class name, DI service name, or array definition.',
+            (string)$index,
+            $eventType
+        ));
     }
 
     /**

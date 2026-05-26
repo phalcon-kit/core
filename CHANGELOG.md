@@ -15,13 +15,13 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## Unreleased
+## 2.6.0 - 2026-05-26
 
 ### Added
 
 - Added opt-in `eventsManager.listeners` configuration so applications can
-  attach class-based, service-based, or callable listeners to the shared
-  Phalcon events manager during bootstrap with explicit priorities.
+  attach class-based or service-based listeners to the shared Phalcon events
+  manager during bootstrap with explicit priorities.
 - Added opt-in strict relationship assignment for models so API/resource layers
   can reject non-whitelisted relation aliases, unknown complex relation
   payloads, and malformed nested relation values without changing the default
@@ -46,6 +46,8 @@ release notes.
 - Fixed model cache invalidation so mutable model events clear the shared
   model cache for creates, deletes, restores, reorders, or changed snapshots,
   while unchanged snapshot saves no longer trigger a cache clear.
+- Fixed PhalconKit's internal version helper so `core.version` reports the
+  tagged `2.6.0` release version.
 
 ## 2.5.0 - 2026-05-26
 
