@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Fixed
+
+- Fixed the model eager-loading trait's abstract `find()` and `findFirst()`
+  declarations so downstream projects using PhalconKit's patched
+  `phalcon/ide-stubs` do not see incompatible finder signatures.
+
 ## 2.3.0 - 2026-05-25
 
 ### Added

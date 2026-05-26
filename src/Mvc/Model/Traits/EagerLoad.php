@@ -21,9 +21,39 @@ use PhalconKit\Mvc\Model\EagerLoading\Loader;
 
 trait EagerLoad
 {
-    abstract public static function find($parameters = null);
+    /**
+     * Run Phalcon's native static finder for the model using this trait.
+     *
+     * The explicit `mixed` parameter mirrors PhalconKit's patched
+     * `phalcon/ide-stubs` contract for `Phalcon\Mvc\Model::find()`. Keeping the
+     * abstract dependency in sync with the upstream model API prevents static
+     * analyzers and downstream projects from seeing this trait as a narrower,
+     * incompatible declaration.
+     *
+     * Eager loading requires an iterable Phalcon resultset because
+     * `findWith()` delegates the returned records to the eager-loading loader.
+     *
+     * @param mixed $parameters Native Phalcon find parameters, usually an
+     *     array, string, integer primary key, or null.
+     * @return ResultsetInterface Resultset returned by the concrete model
+     *     implementation.
+     */
+    abstract public static function find(mixed $parameters = null): ResultsetInterface;
     
-    abstract public static function findFirst($parameters = null);
+    /**
+     * Run Phalcon's native static first-record finder for the model using this trait.
+     *
+     * Phalcon can return a model instance, a row, false, null, or another value
+     * depending on hydration and extension behavior, so this dependency keeps
+     * the same broad `mixed` return declared by the patched Phalcon stubs.
+     * `findFirstWith()` narrows that value at runtime and only eager-loads when
+     * a real model instance is returned.
+     *
+     * @param mixed $parameters Native Phalcon find-first parameters, usually an
+     *     array, string, integer primary key, or null.
+     * @return mixed Native result returned by the concrete model implementation.
+     */
+    abstract public static function findFirst(mixed $parameters = null): mixed;
     
     /**
      * Example:

@@ -40,7 +40,10 @@ trait Events
      * Retrieves records from the database that match the specified conditions.
      *
      * @see \Phalcon\Mvc\Model::find()
-     * @param array|int|null|string $parameters Optional conditions to filter the retrieved records. Can include arrays, strings, or other query parameters.
+     * @param mixed $parameters Optional native Phalcon find parameters. The
+     *     public signature stays broad to match PhalconKit's patched Phalcon
+     *     model stubs, while callers normally pass an array, string, integer
+     *     primary key, or null.
      * @return ResultsetInterface&\Traversable Returns the result set, or an empty result set if the operation is canceled.
      */
     #[\Override]
@@ -64,7 +67,10 @@ trait Events
      * Finds the first record that matches the given parameters.
      *
      * @see \Phalcon\Mvc\Model::findFirst()
-     * @param array|int|null|string $parameters Optional parameters to filter the query.
+     * @param mixed $parameters Optional native Phalcon find-first parameters.
+     *     The public signature stays broad to match PhalconKit's patched
+     *     Phalcon model stubs, while callers normally pass an array, string,
+     *     integer primary key, or null.
      * @return ModelInterface|Row|false|null The first matching record, or null if no record is found or false if the operation is canceled.
      */
     #[\Override]
