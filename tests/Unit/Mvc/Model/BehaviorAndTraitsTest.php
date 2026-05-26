@@ -24,6 +24,7 @@ use Phalcon\Messages\Message;
 use Phalcon\Mvc\Model\Relation;
 use Phalcon\Support\Collection;
 use PhalconKit\Acl\Acl as AclService;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Manager as IdentityManager;
@@ -176,6 +177,22 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertCount(1, $calls);
     }
 
+    public function testActionBehaviorRejectsNonCallableOptions(): void
+    {
+        $behavior = new Action([
+            'afterSave' => [
+                'flush' => 'not-a-callable',
+            ],
+        ]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Action behavior option "flush" for event "afterSave" must be callable; got "string".'
+        );
+
+        $behavior->notify('afterSave', new ModelBehaviorDouble());
+    }
+
     public function testTransformableBehaviorWritesResolvedValues(): void
     {
         $model = new ModelBehaviorDouble();
@@ -235,6 +252,16 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
         $behavior->disable();
         $this->assertNull($behavior->notify('beforeCreate', $model));
+    }
+
+    public function testSnapshotBehaviorRejectsNonModelSubjects(): void
+    {
+        $behavior = new Snapshot();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Snapshot behavior requires a Phalcon model instance');
+
+        $behavior->beforeCreate($this->createStub(\Phalcon\Mvc\ModelInterface::class));
     }
 
     public function testSoftDeleteBehaviorOptionsAndDisabledNotify(): void
@@ -555,6 +582,31 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
         $model->removeBehavior('custom');
         $this->assertFalse($model->hasBehavior('custom'));
+    }
+
+    public function testTypedBehaviorGetterRejectsMissingBehavior(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->fakeModelsManager = new FakeModelsManager();
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Expected model behavior "uuid" for "' . ModelBehaviorDouble::class . '"');
+        $this->expectExceptionMessage('got "null"');
+
+        $model->getUuidBehavior();
+    }
+
+    public function testTypedBehaviorGetterRejectsWrongBehaviorClass(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->fakeModelsManager = new FakeModelsManager();
+        $model->setBehavior('uuid', new Action());
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('Expected model behavior "uuid" for "' . ModelBehaviorDouble::class . '"');
+        $this->expectExceptionMessage('to be an instance of "' . Transformable::class . '"');
+
+        $model->getUuidBehavior();
     }
 
     public function testModelBehaviorTraitRejectsNativeOnlyModelsManager(): void
@@ -993,6 +1045,16 @@ class BehaviorAndTraitsTest extends AbstractUnit
         } finally {
             ini_set('phalcon.orm.events', (string)$oldEvents);
         }
+    }
+
+    public function testPositionBehaviorRejectsNonPhalconKitModelForAfterSave(): void
+    {
+        $behavior = new Position(['field' => 'position', 'rawSql' => true]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Position behavior requires "PhalconKit\Mvc\Model" for after-save position updates');
+
+        $behavior->afterSave($this->createStub(\Phalcon\Mvc\ModelInterface::class), 'position', true);
     }
 
     public function testReplicationTraitHelpers(): void

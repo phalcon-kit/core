@@ -74,8 +74,6 @@ trait Updated
      */
     public function getUpdatedBehavior(): Transformable
     {
-        $behavior = $this->getBehavior('updated');
-        assert($behavior instanceof Transformable);
-        return $behavior;
+        return $this->getTypedBehavior('updated', Transformable::class);
     }
 }

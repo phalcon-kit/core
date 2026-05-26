@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Model\Behavior;
 
 use Phalcon\Mvc\Model\Behavior;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model\Behavior\Traits\SkippableTrait;
 
 class Action extends Behavior
@@ -41,8 +42,16 @@ class Action extends Behavior
         }
 
         foreach ($options as $action => $value) {
-            assert(is_callable($value));
-            $value($model, $action);
+            if (!is_callable($value)) {
+                throw new LogicException(sprintf(
+                    'Action behavior option "%s" for event "%s" must be callable; got "%s".',
+                    (string)$action,
+                    $type,
+                    get_debug_type($value)
+                ));
+            }
+
+            $value($model, (string)$action);
         }
     }
 }

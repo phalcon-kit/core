@@ -223,7 +223,7 @@ Non-goal:
 
 ### Runtime Assert Review
 
-Status: Next
+Status: Done
 
 Target: `2.6.x`
 
@@ -238,6 +238,17 @@ Validation:
 
 - Search `assert(` before starting the block.
 - Add tests only for assertions that become public runtime failures.
+
+Outcome:
+
+- Converted runtime-sensitive model behavior, metadata helper, controller model
+  lookup, string formatting, and eager-loading assertions into contextual
+  PhalconKit exceptions.
+- Added focused unit coverage for behavior registry, behavior option, metadata
+  host, controller loader, and eager-loading contract failures.
+- Left dense relationship, eager-loading internals, and CLI scaffolder asserts
+  in place where reviewed code uses them as local static-analysis narrowing
+  after Phalcon or reflection APIs already constrain the value shape.
 
 ### Configurable Event Attachments
 

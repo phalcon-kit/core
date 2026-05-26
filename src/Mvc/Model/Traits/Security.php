@@ -60,8 +60,6 @@ trait Security
      */
     public function getSecurityBehavior(): SecurityBehavior
     {
-        $behavior = $this->getBehavior('security');
-        assert($behavior instanceof SecurityBehavior);
-        return $behavior;
+        return $this->getTypedBehavior('security', SecurityBehavior::class);
     }
 }

@@ -108,8 +108,6 @@ trait Uuid
      */
     public function getUuidBehavior(): Transformable
     {
-        $behavior = $this->getBehavior('uuid');
-        assert($behavior instanceof Transformable);
-        return $behavior;
+        return $this->getTypedBehavior('uuid', Transformable::class);
     }
 }

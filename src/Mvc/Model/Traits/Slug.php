@@ -65,8 +65,6 @@ trait Slug
      */
     public function getSlugBehavior(): Transformable
     {
-        $slugBehavior = $this->getBehavior('slug');
-        assert($slugBehavior instanceof Transformable);
-        return $slugBehavior;
+        return $this->getTypedBehavior('slug', Transformable::class);
     }
 }

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
-use Phalcon\Mvc\ModelInterface;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEntity;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractMetaData;
 use PhalconKit\Support\Helper;
@@ -35,14 +34,16 @@ trait Attribute
      */
     public function getAttribute(string $attribute): mixed
     {
-        assert($this instanceof ModelInterface);
-        if ($this->getModelsMetaData()->hasAttribute($this, $attribute)) {
+        $model = $this->requireMetaDataModel();
+        $entity = $this->requireMetaDataEntity();
+
+        if ($model->getModelsMetaData()->hasAttribute($model, $attribute)) {
             $method = 'get' . ucfirst(Helper::camelize($attribute));
             if (method_exists($this, $method)) {
                 return $this->$method();
             }
             
-            return $this->readAttribute($attribute);
+            return $entity->readAttribute($attribute);
         }
         
         return null;
@@ -58,14 +59,16 @@ trait Attribute
      */
     public function setAttribute(string $attribute, mixed $value): void
     {
-        assert($this instanceof ModelInterface);
-        if ($this->getModelsMetaData()->hasAttribute($this, $attribute)) {
+        $model = $this->requireMetaDataModel();
+        $entity = $this->requireMetaDataEntity();
+
+        if ($model->getModelsMetaData()->hasAttribute($model, $attribute)) {
             $method = 'set' . ucfirst(Helper::camelize($attribute));
             if (method_exists($this, $method)) {
                 $this->$method($value);
             }
             
-            $this->writeAttribute($attribute, $value);
+            $entity->writeAttribute($attribute, $value);
         }
     }
 }

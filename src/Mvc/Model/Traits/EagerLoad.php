@@ -17,6 +17,8 @@ use JetBrains\PhpStorm\Deprecated;
 use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\LogicException;
+use PhalconKit\Exception\RuntimeException;
 use PhalconKit\Mvc\Model\EagerLoading\Loader;
 
 trait EagerLoad
@@ -190,7 +192,16 @@ trait EagerLoad
     {
         $parameters = static::getParametersFromArguments($arguments);
         $list = parent::$forwardMethod($parameters);
-        assert($list instanceof ResultsetInterface);
+
+        if (!$list instanceof ResultsetInterface) {
+            throw new RuntimeException(sprintf(
+                'Expected "%s::%s()" to return "%s" for eager loading; got "%s".',
+                static::class,
+                $forwardMethod,
+                ResultsetInterface::class,
+                get_debug_type($list)
+            ));
+        }
         
         if (is_countable($list) && $list->count()) {
             return Loader::fromResultset($list, ...$arguments);
@@ -217,7 +228,14 @@ trait EagerLoad
      */
     public function load(array ...$arguments): ?ModelInterface
     {
-        assert($this instanceof ModelInterface);
+        if (!$this instanceof ModelInterface) {
+            throw new LogicException(sprintf(
+                'Eager-loading model helpers require the trait host to implement "%s"; got "%s".',
+                ModelInterface::class,
+                get_debug_type($this)
+            ));
+        }
+
         return Loader::fromModel($this, ...$arguments);
     }
     

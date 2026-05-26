@@ -16,6 +16,7 @@ namespace PhalconKit\Mvc\Model\Behavior;
 use Phalcon\Mvc\Model;
 use Phalcon\Mvc\Model\Behavior;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model\Behavior\Traits\SkippableTrait;
 
 class Snapshot extends Behavior
@@ -38,7 +39,13 @@ class Snapshot extends Behavior
     
     public function beforeCreate(ModelInterface $model): void
     {
-        assert($model instanceof Model);
+        if (!$model instanceof Model) {
+            throw new LogicException(sprintf(
+                'Snapshot behavior requires a Phalcon model instance; got "%s".',
+                get_debug_type($model)
+            ));
+        }
+
         $model->setSnapshotData($model->toArray());
     }
 }

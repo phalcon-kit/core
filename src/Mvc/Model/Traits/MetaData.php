@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
-use Phalcon\Mvc\EntityInterface;
-use Phalcon\Mvc\ModelInterface;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractMetaData;
 
 /**
@@ -31,8 +29,9 @@ trait MetaData
      */
     public function getColumnMap(): ?array
     {
-        assert($this instanceof ModelInterface);
-        return $this->getModelsMetaData()->getColumnMap($this);
+        $model = $this->requireMetaDataModel();
+
+        return $model->getModelsMetaData()->getColumnMap($model);
     }
     
     /**
@@ -42,8 +41,9 @@ trait MetaData
      */
     public function getPrimaryKeys(): array
     {
-        assert($this instanceof ModelInterface);
-        return $this->getModelsMetaData()->getPrimaryKeyAttributes($this);
+        $model = $this->requireMetaDataModel();
+
+        return $model->getModelsMetaData()->getPrimaryKeyAttributes($model);
     }
     
     /**
@@ -55,12 +55,11 @@ trait MetaData
     {
         $ret = [];
         $columnMap = $this->getColumnMap() ?? [];
-        
-        assert($this instanceof EntityInterface);
+        $entity = $this->requireMetaDataEntity();
         
         foreach ($this->getPrimaryKeys() as $primaryKey) {
             $attributeField = $columnMap[$primaryKey] ?? $primaryKey;
-            $ret [$attributeField] = $this->readAttribute($attributeField);
+            $ret [$attributeField] = $entity->readAttribute($attributeField);
         }
         
         return $ret;

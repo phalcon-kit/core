@@ -67,9 +67,7 @@ trait SoftDelete
      */
     public function getSoftDeleteBehavior(): SoftDeleteBehavior
     {
-        $behavior = $this->getBehavior('softDelete');
-        assert($behavior instanceof SoftDeleteBehavior);
-        return $behavior;
+        return $this->getTypedBehavior('softDelete', SoftDeleteBehavior::class);
     }
     
     /**

@@ -68,8 +68,6 @@ trait Restored
      */
     public function getRestoredBehavior(): Transformable
     {
-        $behavior = $this->getBehavior('restored');
-        assert($behavior instanceof Transformable);
-        return $behavior;
+        return $this->getTypedBehavior('restored', Transformable::class);
     }
 }

@@ -16,6 +16,7 @@ namespace PhalconKit\Mvc\Model\Behavior;
 use Phalcon\Mvc\EntityInterface;
 use Phalcon\Mvc\Model\Behavior;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model\Behavior\Traits\SkippableTrait;
 
 /**
@@ -73,7 +74,15 @@ class Transformable extends Behavior
                 $value = $value();
             }
             
-            assert($model instanceof EntityInterface);
+            if (!$model instanceof EntityInterface) {
+                throw new LogicException(sprintf(
+                    'Transformable behavior for event "%s" requires a model implementing "%s"; got "%s".',
+                    $type,
+                    EntityInterface::class,
+                    get_debug_type($model)
+                ));
+            }
+
             $model->writeAttribute($field, $value);
         }
         

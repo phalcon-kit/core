@@ -34,6 +34,10 @@ release notes.
   runtime exceptions instead of leaking League CSV exceptions through the
   controller API. CSV responses now use League CSV's `toString()` method instead
   of its deprecated string cast.
+- Fixed runtime-sensitive assertion paths in model behaviors, model metadata
+  helpers, eager-loading helpers, and controller model lookup so invalid
+  framework state now raises contextual PhalconKit exceptions even when PHP
+  assertions are disabled.
 - Fixed model cache invalidation so mutable model events clear the shared
   model cache for creates, deletes, restores, reorders, or changed snapshots,
   while unchanged snapshot saves no longer trigger a cache clear.

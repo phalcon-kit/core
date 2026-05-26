@@ -17,6 +17,7 @@ use Phalcon\Db\RawValue;
 use Phalcon\Mvc\EntityInterface;
 use Phalcon\Mvc\Model\Behavior;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model;
 use PhalconKit\Mvc\Model\Behavior\Traits\ProgressTrait;
 use PhalconKit\Mvc\Model\Behavior\Traits\SkippableTrait;
@@ -103,7 +104,16 @@ class Position extends Behavior
             if (is_null($positionValue)) {
                 // if position field is empty, force current max(position)+1
                 $lastRecord = $model::findFirst(['order' => $field . ' DESC']);
-                if ($lastRecord && assert($lastRecord instanceof $model)) {
+                if ($lastRecord) {
+                    if (!$lastRecord instanceof $model) {
+                        throw new LogicException(sprintf(
+                            'Position behavior expected "%s::findFirst()" to return "%s"; got "%s".',
+                            $model::class,
+                            $model::class,
+                            get_debug_type($lastRecord)
+                        ));
+                    }
+
                     $lastPosition = (int)$lastRecord->readAttribute($field);
                     $model->writeAttribute($field, $lastPosition + 1);
                 }
@@ -113,7 +123,7 @@ class Position extends Behavior
     
     public function afterSave(ModelInterface $model, string $field, bool $rawSql): void
     {
-        assert($model instanceof Model);
+        $model = $this->requireModel($model, 'after-save position updates');
         if (!$this->inProgress() && $model->hasSnapshotData() && $model->hasUpdated($field)) {
             self::staticStart();
             
@@ -184,5 +194,32 @@ class Position extends Behavior
             
             self::staticStop();
         }
+    }
+
+    /**
+     * Require a PhalconKit model for position behavior internals.
+     *
+     * The public Phalcon behavior signature accepts the native model interface,
+     * but position shifting uses PhalconKit helpers for snapshots, primary-key
+     * values, query execution, and message context. A deterministic exception
+     * is clearer than relying on PHP assertions or late method-call failures.
+     *
+     * @param ModelInterface $model Model passed by the native behavior event.
+     * @param string $context Operation that needs PhalconKit model helpers.
+     *
+     * @throws LogicException When the behavior receives an incompatible model.
+     */
+    private function requireModel(ModelInterface $model, string $context): Model
+    {
+        if ($model instanceof Model) {
+            return $model;
+        }
+
+        throw new LogicException(sprintf(
+            'Position behavior requires "%s" for %s; got "%s".',
+            Model::class,
+            $context,
+            get_debug_type($model)
+        ));
     }
 }

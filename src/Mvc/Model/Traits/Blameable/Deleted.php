@@ -110,8 +110,6 @@ trait Deleted
      */
     public function getDeletedBehavior(): Transformable
     {
-        $behavior = $this->getBehavior('deleted');
-        assert($behavior instanceof Transformable);
-        return $behavior;
+        return $this->getTypedBehavior('deleted', Transformable::class);
     }
 }

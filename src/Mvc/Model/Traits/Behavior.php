@@ -15,6 +15,7 @@ namespace PhalconKit\Mvc\Model\Traits;
 
 use Phalcon\Mvc\Model\BehaviorInterface;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractModelsManager;
 
 /**
@@ -50,8 +51,40 @@ trait Behavior
     public function getBehavior(string $behaviorName): ?BehaviorInterface
     {
         $modelsManager = $this->getPhalconKitModelsManager();
-        assert($this instanceof ModelInterface);
-        return $modelsManager->getBehavior($this, $behaviorName);
+        return $modelsManager->getBehavior($this->getBehaviorModel(), $behaviorName);
+    }
+
+    /**
+     * Retrieve a named behavior and require the expected behavior class.
+     *
+     * The named behavior registry returns the generic Phalcon behavior
+     * interface. Public model helper methods usually promise a concrete
+     * behavior type, so this helper centralizes the runtime check and produces
+     * a stable framework exception when an initializer was skipped or a behavior
+     * name was reused with the wrong implementation.
+     *
+     * @template TBehavior of BehaviorInterface
+     * @param string $behaviorName Registry key such as `uuid` or `softDelete`.
+     * @param class-string<TBehavior> $expectedClass Expected behavior class.
+     * @return TBehavior Registered behavior narrowed to the expected class.
+     *
+     * @throws ServiceException When the behavior is missing or has the wrong
+     *     type.
+     */
+    protected function getTypedBehavior(string $behaviorName, string $expectedClass): BehaviorInterface
+    {
+        $behavior = $this->getBehavior($behaviorName);
+        if ($behavior instanceof $expectedClass) {
+            return $behavior;
+        }
+
+        throw new ServiceException(sprintf(
+            'Expected model behavior "%s" for "%s" to be an instance of "%s"; got "%s".',
+            $behaviorName,
+            $this->getBehaviorModel()::class,
+            $expectedClass,
+            get_debug_type($behavior)
+        ));
     }
     
     /**
@@ -71,8 +104,7 @@ trait Behavior
     public function setBehavior(string $behaviorName, BehaviorInterface $behavior): void
     {
         $modelsManager = $this->getPhalconKitModelsManager();
-        assert($this instanceof ModelInterface);
-        $modelsManager->setBehavior($this, $behaviorName, $behavior);
+        $modelsManager->setBehavior($this->getBehaviorModel(), $behaviorName, $behavior);
     }
     
     /**
@@ -89,8 +121,7 @@ trait Behavior
     public function hasBehavior(string $behaviorName): bool
     {
         $modelsManager = $this->getPhalconKitModelsManager();
-        assert($this instanceof ModelInterface);
-        return $modelsManager->hasBehavior($this, $behaviorName);
+        return $modelsManager->hasBehavior($this->getBehaviorModel(), $behaviorName);
     }
     
     /**
@@ -107,7 +138,29 @@ trait Behavior
     public function removeBehavior(string $behaviorName): void
     {
         $modelsManager = $this->getPhalconKitModelsManager();
-        assert($this instanceof ModelInterface);
-        $modelsManager->removeBehavior($this, $behaviorName);
+        $modelsManager->removeBehavior($this->getBehaviorModel(), $behaviorName);
+    }
+
+    /**
+     * Require the trait host to be a Phalcon model instance.
+     *
+     * Model behavior registry APIs key entries by model class. If this trait is
+     * accidentally composed into a non-model class, failing here gives
+     * extension authors a deterministic PhalconKit exception even when PHP
+     * assertions are disabled.
+     *
+     * @throws ServiceException When the trait host is not a Phalcon model.
+     */
+    private function getBehaviorModel(): ModelInterface
+    {
+        if ($this instanceof ModelInterface) {
+            return $this;
+        }
+
+        throw new ServiceException(sprintf(
+            'Model behavior helpers require the trait host to implement "%s"; got "%s".',
+            ModelInterface::class,
+            get_debug_type($this)
+        ));
     }
 }

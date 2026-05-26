@@ -68,8 +68,6 @@ trait Created
      */
     public function getCreatedBehavior(): Transformable
     {
-        $behavior = $this->getBehavior('created');
-        assert($behavior instanceof Transformable);
-        return $behavior;
+        return $this->getTypedBehavior('created', Transformable::class);
     }
 }

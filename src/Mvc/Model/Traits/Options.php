@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
+use PhalconKit\Exception\LogicException;
 use PhalconKit\Support\Options\Manager;
 use PhalconKit\Support\Options\ManagerInterface;
 
@@ -41,11 +42,18 @@ trait Options
      */
     public function getOptionsManager(): ManagerInterface
     {
-        if (!isset($this->optionsManager)){
+        if (!isset($this->optionsManager)) {
             $this->initializeOptions();
         }
-        
-        assert($this->optionsManager instanceof ManagerInterface);
+
+        if (!$this->optionsManager instanceof ManagerInterface) {
+            throw new LogicException(sprintf(
+                'Options helpers expected an initialized "%s"; got "%s".',
+                ManagerInterface::class,
+                get_debug_type($this->optionsManager)
+            ));
+        }
+
         return $this->optionsManager;
     }
     

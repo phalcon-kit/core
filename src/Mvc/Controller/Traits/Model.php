@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits;
 
+use Phalcon\Autoload\Loader;
 use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Di\ServiceResolver;
 use PhalconKit\Exception\InvalidArgumentException;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 
@@ -63,16 +66,30 @@ trait Model
     }
     
     /**
-     * Gets the namespaces used for the model lookup.
-     * If no model namespace is set, the namespaces defined in the loader will be returned.
+     * Get namespaces used when deriving a model class from the controller name.
      *
-     * @return array The namespaces used for the model lookup.
+     * Explicit namespaces set through {@see setModelNamespaces()} win. When no
+     * explicit map exists and the DI contains a `loader` service, the method
+     * reads namespaces from Phalcon's autoloader. A registered but incompatible
+     * loader is treated as a configuration error because otherwise model
+     * inference would fail later with a less useful method-call error when PHP
+     * assertions are disabled.
+     *
+     * @return array<string, string> Namespace-to-directory map used for model
+     *     lookup.
+     *
+     * @throws ServiceException When the optional `loader` service is present
+     *     but is not a Phalcon autoload loader.
      */
     public function getModelNamespaces(): array
     {
         if (!isset($this->modelNamespaces) && $this->di->has('loader')) {
-            $loader = $this->di->get('loader');
-            assert($loader instanceof \Phalcon\Autoload\Loader);
+            $loader = ServiceResolver::fromContainer(
+                $this->di,
+                'loader',
+                Loader::class,
+                context: 'controller model lookup'
+            );
             $this->modelNamespaces = $loader->getNamespaces();
         }
         

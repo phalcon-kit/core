@@ -64,9 +64,7 @@ trait Snapshot
      */
     public function getSnapshotBehavior(): SnapshotBehavior
     {
-        $behavior = $this->getBehavior('snapshot');
-        assert($behavior instanceof SnapshotBehavior);
-        return $behavior;
+        return $this->getTypedBehavior('snapshot', SnapshotBehavior::class);
     }
     
     /**

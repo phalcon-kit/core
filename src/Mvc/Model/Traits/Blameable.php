@@ -98,9 +98,7 @@ trait Blameable
      */
     public function getBlameableBehavior(): BlameableBehavior
     {
-        $blameableBehavior = $this->getBehavior('blameable');
-        assert($blameableBehavior instanceof BlameableBehavior);
-        return $blameableBehavior;
+        return $this->getTypedBehavior('blameable', BlameableBehavior::class);
     }
     
     /**

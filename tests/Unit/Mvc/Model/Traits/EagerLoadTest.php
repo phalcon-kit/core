@@ -13,10 +13,15 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc\Model\Traits;
 
+use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
+use PhalconKit\Exception\LogicException;
+use PhalconKit\Exception\RuntimeException;
 use PhalconKit\Mvc\Model\Traits\EagerLoad;
 use PhalconKit\Mvc\Model\Traits\Events;
 use PhalconKit\Tests\Unit\AbstractUnit;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidForwardDouble;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidHostDouble;
 use ReflectionClass;
 use ReflectionNamedType;
 
@@ -58,6 +63,28 @@ class EagerLoadTest extends AbstractUnit
         $this->assertModelAggregateSignature($trait, 'average', 'array', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
         $this->assertModelAggregateSignature($trait, 'minimum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
         $this->assertModelAggregateSignature($trait, 'maximum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
+    }
+
+    public function testFindWithByRejectsUnexpectedNativeFinderReturn(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(
+            'Expected "' . EagerLoadInvalidForwardDouble::class . '::findByBroken()" to return "'
+            . ResultsetInterface::class
+            . '" for eager loading; got "stdClass".'
+        );
+
+        EagerLoadInvalidForwardDouble::exposeFindWithByBroken();
+    }
+
+    public function testLoadRejectsInvalidTraitHost(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Eager-loading model helpers require the trait host to implement "' . ModelInterface::class . '"'
+        );
+
+        (new EagerLoadInvalidHostDouble())->load();
     }
 
     private function assertModelAggregateSignature(
