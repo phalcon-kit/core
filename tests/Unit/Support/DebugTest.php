@@ -113,4 +113,29 @@ class DebugTest extends AbstractUnit
         $this->assertStringContainsString('<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>', $html);
         $this->assertStringContainsString('PhalconKit\\Support\\Debug', $html);
     }
+
+    public function testUncaughtExceptionDebugPagesSetServerErrorStatus(): void
+    {
+        $debug = new class extends Debug {
+            public function applyUncaughtExceptionStatusCode(): void
+            {
+                $this->setUncaughtExceptionStatusCode();
+            }
+        };
+
+        $previousCode = http_response_code();
+
+        try {
+            http_response_code(200);
+
+            $debug->applyUncaughtExceptionStatusCode();
+
+            $this->assertSame(500, http_response_code());
+        }
+        finally {
+            if (is_int($previousCode)) {
+                http_response_code($previousCode);
+            }
+        }
+    }
 }

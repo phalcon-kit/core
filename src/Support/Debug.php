@@ -29,6 +29,41 @@ use Phalcon\Support\Version as PhalconVersion;
 class Debug extends \Phalcon\Support\Debug
 {
     /**
+     * Render an uncaught exception debug page with a server-error status.
+     *
+     * Phalcon's native debug renderer writes the HTML page but does not
+     * consistently update PHP's active response code. In browser/dev-server
+     * workflows that means a fatal controller error can be shown to developers
+     * while the HTTP response still reports `200 OK`. Setting the status before
+     * delegating keeps debug output useful without lying to clients, upload
+     * widgets, or test harnesses that rely on the transport status.
+     */
+    #[\Override]
+    public function onUncaughtException(\Throwable $exception): bool
+    {
+        $this->setUncaughtExceptionStatusCode();
+
+        return parent::onUncaughtException($exception);
+    }
+
+    /**
+     * Set the transport status used by uncaught-exception debug output.
+     *
+     * The debug page is only reached for exceptions that escaped normal
+     * controller/dispatcher handling. Treating those as `500` is the safest
+     * default: expected REST validation failures should be converted to
+     * framework responses before this point, while uncaught throwables represent
+     * server-side failures even when their exception code happens to contain a
+     * different integer.
+     */
+    protected function setUncaughtExceptionStatusCode(): void
+    {
+        if (!headers_sent()) {
+            http_response_code(500);
+        }
+    }
+
+    /**
      * Return version links for PhalconKit and the active Phalcon runtime.
      *
      * The Phalcon documentation link is generated from the installed major and

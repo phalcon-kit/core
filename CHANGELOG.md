@@ -15,6 +15,19 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 2.3.2 - 2026-05-26
+
+### Added
+
+- Added a repository-owned roadmap to replace GitHub Project tracking with
+  local release blocks, planning rules, and the migrated project-card snapshot.
+
+### Fixed
+
+- Fixed PhalconKit debug exception pages so uncaught throwables set an HTTP
+  `500 Internal Server Error` status instead of leaving the response at the
+  default `200 OK`.
+
 ## 2.3.1 - 2026-05-26
 
 ### Fixed

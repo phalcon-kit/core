@@ -4,6 +4,10 @@ This file tracks design questions that are worth revisiting, but should not
 change public behavior until there is a concrete application need, migration
 plan, and test coverage.
 
+Actionable release blocks live in the [Project Roadmap](../ROADMAP.md). Promote
+an item there only after the expected behavior, compatibility risk, and
+validation plan are concrete.
+
 ## Reviewed Inline Follow-Ups
 
 Status: Reviewed; selected items remain open.
@@ -127,9 +131,10 @@ Keep for discussion:
 - Dynamic join filtering:
   `src/Mvc/Controller/Traits/Query/DynamicJoins.php`,
   `src/Mvc/Controller/Traits/Query/Conditions/FilterSemantics.php`.
-  Filter hoisting and join-existence validation could improve performance or
-  safety, but they need tests for aliases, permission-scoped joins, and
-  user-supplied filter fields.
+  Dynamic joins already support request-driven relationship joins for filters.
+  Further filter hoisting and join-existence validation could improve
+  performance or safety, but they need tests for aliases, permission-scoped
+  joins, and user-supplied filter fields.
 - REST query save initialization hooks:
   `src/Mvc/Controller/Traits/Query.php`,
   `src/Mvc/Controller/Traits/Query/Fields.php`,
@@ -153,10 +158,6 @@ Keep for discussion:
   The current task generates data for the first non-deleted table. Generating
   all dynamic tables needs explicit limits, table filtering, and safety rules
   before it can be enabled.
-- Audit snapshots:
-  `src/Mvc/Model/Behavior/Blameable.php`.
-  Ensure snapshots include only scalar mapped columns even when assigned
-  relations are present on the model.
 - Eager loading limitations:
   `src/Mvc/Model/EagerLoading/Loader.php`,
   `src/Mvc/Model/EagerLoading/EagerLoad.php`.
@@ -226,6 +227,8 @@ Closed or clarified during review:
 - REST query initialization now carries the configured aggregate `column`
   collection into prepared find options instead of leaving the live code
   commented out.
+- Audit snapshot filtering was promoted to the project roadmap because the
+  desired behavior is concrete and testable.
 - JSON escaping of `null` remains `null` as a string because the helper is used
   for `JSON.parse(decodeURIComponent(...))` payloads.
 - Event cancellation behavior is now asserted directly instead of questioned in
