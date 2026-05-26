@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 
+use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Http\ResponseInterface;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractExpose;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
@@ -68,11 +70,16 @@ trait FindFirstAction
      * Find the first matching record with configured eager-loaded relations.
      *
      * The action returns 404 when no entity matches. On success, `data` holds
-     * the exposed model payload, including related data where configured.
+     * the exposed model payload. If the client sends no `with` parameter, the
+     * controller's default eager-load graph is used. If the client sends
+     * `with`, only the requested, controller-approved subset is loaded.
+     *
+     * @throws FilterException When request parameter filtering fails.
+     * @throws HttpException When a requested relationship is not allowed.
      */
     public function findFirstWithAction(): ResponseInterface
     {
-        $result = $this->findFirstWith();
+        $result = $this->findFirstWith($this->getRequestedWith());
         
         if (!$result) {
             return $this->setRestErrorResponse(404);

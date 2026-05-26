@@ -120,7 +120,7 @@ Validation:
 
 ### Response Relationships On Demand
 
-Status: Design
+Status: Done in the current `2.5.x` development line
 
 Why:
 
@@ -133,17 +133,28 @@ Why:
 
 Scope:
 
-- Define a request parameter for relation selection.
-- Reuse the existing `with`/eager-loading policy surface where possible.
-- Require an allow-list for client-requested relationships.
-- Decide how defaults, request additions, and behavior-based removals merge.
-- Add tests for allowed aliases, nested aliases, rejected aliases, list/detail
-  actions, and behavior interaction.
+- Define `with` as the request parameter for response relation selection.
+- Keep `findAction()` relation-free; only `findWithAction()` and
+  `findFirstWithAction()` read the request-time relation parameter.
+- Reuse the existing controller `with` collection as both the default eager-load
+  graph and the allow-list for request-time subsets.
+- Treat a missing `with` request parameter as "use the configured defaults" and
+  a present parameter as "load only this allowed subset."
+- Support direct nested requests such as `Author.Profile.Avatar`; the eager
+  loader builds required parent paths internally, and configured parent
+  constraints are preserved when the requested child path needs them.
+- Reject requested child paths outside the configured graph instead of letting
+  arbitrary relationship aliases reach the eager loader.
+- Add tests for default behavior, no-relationship `findAction()`, allowed
+  aliases, nested aliases, parent-of-configured nested aliases, rejected aliases,
+  and `findFirstWithAction()`.
 
 Compatibility:
 
-- Existing default eager-loading behavior must remain unchanged.
-- Applications must be able to deny all request-driven relations.
+- Existing default eager-loading behavior is unchanged when the request does
+  not include `with`.
+- Applications can deny all request-driven relations by leaving `with` null or
+  setting an empty collection.
 
 Validation:
 

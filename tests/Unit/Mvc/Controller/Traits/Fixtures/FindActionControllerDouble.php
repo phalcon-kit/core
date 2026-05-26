@@ -16,6 +16,7 @@ namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures;
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
+use Phalcon\Mvc\ModelInterface;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Restful;
 
@@ -34,6 +35,18 @@ final class FindActionControllerDouble extends Restful
      * @var array<int, mixed>
      */
     public array $findWithResult = [];
+
+    /**
+     * @var array{with: array<string|int, mixed>|null, find: array<string|int, mixed>|null}|null
+     */
+    public ?array $findWithArguments = null;
+
+    public ?ModelInterface $findFirstWithResult = null;
+
+    /**
+     * @var array{with: array<string|int, mixed>|null, find: array<string|int, mixed>|null}|null
+     */
+    public ?array $findFirstWithArguments = null;
 
     /**
      * @var array<int, array<string, mixed>>
@@ -55,6 +68,8 @@ final class FindActionControllerDouble extends Restful
     public bool $findCalled = false;
 
     public bool $findWithCalled = false;
+
+    public bool $findFirstWithCalled = false;
 
     /**
      * Disable normal query initialization for this action-focused double.
@@ -93,8 +108,26 @@ final class FindActionControllerDouble extends Restful
     public function findWith(?array $with = null, ?array $find = null): array
     {
         $this->findWithCalled = true;
+        $this->findWithArguments = [
+            'with' => $with,
+            'find' => $find,
+        ];
 
         return $this->findWithResult;
+    }
+
+    /**
+     * Return the configured eager-loaded first-record result.
+     */
+    public function findFirstWith(?array $with = null, ?array $find = null): ?ModelInterface
+    {
+        $this->findFirstWithCalled = true;
+        $this->findFirstWithArguments = [
+            'with' => $with,
+            'find' => $find,
+        ];
+
+        return $this->findFirstWithResult;
     }
 
     /**
@@ -116,6 +149,14 @@ final class FindActionControllerDouble extends Restful
     public function listExpose(mixed $items, ?array $expose = null): array
     {
         return $this->exposedData;
+    }
+
+    /**
+     * Return deterministic exposed first-record data.
+     */
+    public function expose(mixed $item, ?array $expose = null): array
+    {
+        return $this->exposedData[0] ?? [];
     }
 
     /**

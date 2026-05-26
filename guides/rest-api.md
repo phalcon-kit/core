@@ -112,6 +112,35 @@ rules:
 
 This keeps public API behavior explicit and reviewable.
 
+## Response Relationships On Demand
+
+`findAction()` never eager-loads relationships. Use it for plain lists where
+the response should contain only the exposed root records.
+
+`findWithAction()` and `findFirstWithAction()` use the controller's configured
+`with` collection when the frontend does not send a `with` parameter. When the
+frontend does send `with`, PhalconKit treats the configured collection as an
+allow-list and loads only the requested subset.
+
+```text
+GET /api/projects/find-with
+GET /api/projects/find-with?with=OwnerEntity,StatusEntity
+GET /api/projects/find-with?with=OwnerEntity.ProfileEntity.AvatarFile
+GET /api/projects/find-with?with[]=OwnerEntity&with[]=StatusEntity
+GET /api/projects/find-with?with[OwnerEntity.ProfileEntity]=1
+```
+
+Nested paths can be requested directly. A request for
+`OwnerEntity.ProfileEntity.AvatarFile` is passed to the eager loader as one
+path, and the loader resolves the required parent relationships internally. If
+the configured graph contains a deeper path such as
+`OwnerEntity.ProfileEntity.AvatarFile`, clients may request a parent subset
+such as `OwnerEntity.ProfileEntity` without also loading the avatar relation.
+
+The inverse is not allowed: configuring `OwnerEntity` does not let a client
+request `OwnerEntity.ProfileEntity`. Leave `with` null or set an empty
+collection to deny all request-time relationship selection.
+
 ## Save Nested Payloads
 
 If the generated model has a relation alias such as `UserNode`, you can allow a

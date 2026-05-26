@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits\Actions\Rest;
 
 use Phalcon\Mvc\Model\ResultsetInterface;
+use Phalcon\Mvc\ModelInterface;
 use Phalcon\Support\Collection;
 use PhalconKit\Exception\HttpException;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -174,6 +175,114 @@ class FindActionTest extends AbstractUnit
         $this->assertSame([['id' => 99]], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
         $this->assertSame(9, $controller->view->getVar(FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
         $this->assertSame([[]], $controller->countFinds);
+    }
+
+    public function testFindActionNeverLoadsRequestedRelationships(): void
+    {
+        $controller = $this->createController(['with' => 'Author']);
+
+        $controller->findAction();
+
+        $this->assertTrue($controller->findCalled);
+        $this->assertFalse($controller->findWithCalled);
+        $this->assertSame([['id' => 1]], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
+    }
+
+    public function testFindWithActionUsesDefaultRelationshipsWhenRequestDoesNotSpecifyWith(): void
+    {
+        $controller = $this->createController();
+        $controller->setWith(new Collection(['Author', 'Author.Profile'], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+        $controller->exposedData = [['id' => 2]];
+
+        $controller->findWithAction();
+
+        $this->assertTrue($controller->findWithCalled);
+        $this->assertSame(['with' => null, 'find' => null], $controller->findWithArguments);
+        $this->assertSame([['id' => 2]], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
+    }
+
+    public function testFindWithActionUsesOnlyRequestedAllowedRelationships(): void
+    {
+        $controller = $this->createController(['with' => 'Author.Profile']);
+        $controller->setWith(new Collection(['Author', 'Author.Profile', 'Comments'], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame(['with' => ['Author.Profile'], 'find' => null], $controller->findWithArguments);
+    }
+
+    public function testFindWithActionAllowsParentOfConfiguredNestedRelationship(): void
+    {
+        $controller = $this->createController(['with' => 'Author.Profile']);
+        $controller->setWith(new Collection(['Author.Profile.Avatar'], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame(['with' => ['Author.Profile'], 'find' => null], $controller->findWithArguments);
+    }
+
+    public function testFindWithActionPreservesConfiguredParentConstraintsForNestedRequest(): void
+    {
+        $constraint = static fn(): null => null;
+        $controller = $this->createController([
+            'with' => [
+                'Author.Profile' => '1',
+            ],
+        ]);
+        $controller->setWith(new Collection([
+            'Author' => $constraint,
+            'Author.Profile' => true,
+            'Comments',
+        ], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame([
+            'with' => [
+                'Author' => $constraint,
+                'Author.Profile',
+            ],
+            'find' => null,
+        ], $controller->findWithArguments);
+    }
+
+    public function testFindWithActionRejectsRelationshipOutsideConfiguredGraph(): void
+    {
+        $controller = $this->createController(['with' => 'Author.Profile']);
+        $controller->setWith(new Collection(['Author'], false));
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unauthorized relationship "Author.Profile".');
+
+        $controller->findWithAction();
+    }
+
+    public function testFindWithActionRejectsRequestedRelationshipWithoutConfiguredGraph(): void
+    {
+        $controller = $this->createController(['with' => 'Author']);
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unauthorized relationship "Author".');
+
+        $controller->findWithAction();
+    }
+
+    public function testFindFirstWithActionUsesRequestedRelationshipSubset(): void
+    {
+        $controller = $this->createController(['with' => 'Author.Profile']);
+        $controller->setWith(new Collection(['Author.Profile', 'Comments'], false));
+        $controller->findFirstWithResult = $this->createStub(ModelInterface::class);
+        $controller->exposedData = [['id' => 3]];
+
+        $controller->findFirstWithAction();
+
+        $this->assertTrue($controller->findFirstWithCalled);
+        $this->assertSame(['with' => ['Author.Profile'], 'find' => null], $controller->findFirstWithArguments);
+        $this->assertSame(['id' => 3], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
     }
 
     public function testFindActionAcceptsArrayCountRequestSyntax(): void

@@ -592,6 +592,8 @@ Guidelines:
 - Use bind values and bind types for dynamic values.
 - Keep always-needed relations outside the switch.
 - Avoid loading relations only to hide them later.
+- Remember that `findAction()` stays relation-free. Only `findWithAction()` and
+  `findFirstWithAction()` use this response eager-load graph.
 
 For list/detail differences, prefer a clear early return:
 
@@ -618,6 +620,35 @@ public function initializeWith(): void
 
 Keep list relation graphs small. Detail and save responses can load larger
 graphs when the client needs the full editable resource.
+
+## Request-Time Relation Selection
+
+`findWithAction()` and `findFirstWithAction()` support a frontend `with`
+parameter. If the parameter is absent, the configured `initializeWith()` graph
+is loaded exactly as before. If the parameter is present, the configured graph
+becomes the allow-list and only the requested subset is loaded.
+
+Supported request shapes:
+
+- `?with=OwnerEntity,StatusEntity`
+- `?with[]=OwnerEntity&with[]=StatusEntity`
+- `?with[OwnerEntity.ProfileEntity]=1`
+- `?with=OwnerEntity.ProfileEntity.AvatarFile`
+
+Nested paths can be requested directly. The eager loader already resolves
+required parent paths, so the client does not need to send both
+`OwnerEntity.ProfileEntity` and `OwnerEntity.ProfileEntity.AvatarFile`.
+
+Allowed subset rules:
+
+- A configured exact path can be requested.
+- A parent of a configured nested path can be requested.
+- A child path that is not in the configured graph is rejected.
+- Configured parent constraint callbacks are preserved when the requested child
+  path needs that parent relation.
+
+This is response eager loading only. Use dynamic joins for request-time
+filtering, searching, permissions, or ordering against related models.
 
 ## Query Joins
 

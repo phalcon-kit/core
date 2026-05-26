@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Added
+
+- Added request-time eager-load selection for REST `findWithAction()` and
+  `findFirstWithAction()`, allowing clients to request an allowed subset of the
+  controller's configured `with` graph while keeping `findAction()` relation-free.
+
 ## 2.4.0 - 2026-05-26
 
 ### Added

@@ -86,13 +86,18 @@ trait FindAction
     /**
      * Find records with eager-loaded relationships and expose the result list.
      *
-     * Relationships are resolved by the controller/model eager-loading
-     * contract. The exposed response shape remains the same as `findAction()`,
-     * with related data included where configured.
+     * When the client does not send the `with` parameter, relationships are
+     * resolved from the controller's configured eager-load graph. When the
+     * client sends `with`, only the requested, controller-approved subset is
+     * loaded. The exposed response shape remains the same as `findAction()`,
+     * with related data included where the eager-load graph permits it.
+     *
+     * @throws FilterException When request parameter filtering fails.
+     * @throws HttpException When a requested relationship is not allowed.
      */
     public function findWithAction(): ResponseInterface
     {
-        $this->setRestViewVar(self::REST_VIEW_DATA, $this->listExpose($this->findWith()));
+        $this->setRestViewVar(self::REST_VIEW_DATA, $this->listExpose($this->findWith($this->getRequestedWith())));
         $this->setFindActionCountFieldValues();
 
         return $this->setRestResponse(true);
