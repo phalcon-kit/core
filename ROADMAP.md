@@ -28,13 +28,13 @@ public changes in [CHANGELOG.md](CHANGELOG.md).
 
 ## Current Focus
 
-Target: `2.4.x`
+Target: `2.6.x`
 
-Theme: REST query hardening and request-surface safety.
+Theme: Model correctness and low-risk framework diagnostics.
 
-Decision: keep `2.4.x` focused on REST query behavior. Promote non-REST work
-only after these request-surface decisions are implemented or explicitly
-deferred.
+Decision: REST request-surface work shipped in `2.4.x` and `2.5.x`. The next
+line should favor narrow correctness fixes with concrete regression tests over
+new broad API surface.
 
 ### REST Order Safety
 
@@ -166,22 +166,23 @@ Validation:
 
 ### Model Correctness
 
-Status: Planned
+Status: Next
 
-Target: `2.5.x`
+Target: `2.6.x`
 
 Scope:
 
 - Audit snapshots should include only scalar mapped columns when assigned
-  relations are present on a model.
+  relations are present on a model. Done in the current `2.6.x` development
+  line.
 - Relationship assignment strict mode should be designed before implementation.
 - Model cache invalidation needs a key and whitelist strategy before changing
   the current coarse flush behavior.
 
-Best first task:
+Next task:
 
-- Start with audit snapshot filtering because it is narrow, easy to reproduce,
-  and has clear regression-test value.
+- Design relationship assignment strict mode from concrete assignment and eager
+  loading scenarios before changing runtime behavior.
 
 ### Exception Taxonomy Cleanup
 

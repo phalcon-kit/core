@@ -488,25 +488,62 @@ class Blameable extends Behavior
     }
 
     /**
-     * Normalize a full row using column metadata.
+     * Normalize a full row using model column metadata.
+     *
+     * Phalcon models can expose assigned relationships through `toArray()` and
+     * snapshot data. Audit payloads are column snapshots, not response payloads,
+     * so this method keeps only keys that map to real model columns before
+     * normalizing scalar values by database type.
      */
     protected function normalizeArray(
         array $data,
         ?array $columnMap,
         array $columnTypes
     ): array {
-        foreach ($data as $key => $value) {
-            $column = $columnMap
-                ? array_search($key, $columnMap, true) ?: $key
-                : $key;
+        $normalized = [];
 
-            $data[$key] = $this->normalizeValue(
+        foreach ($data as $key => $value) {
+            $column = $this->resolveAuditColumnName($key, $columnMap, $columnTypes);
+
+            if ($column === null) {
+                continue;
+            }
+
+            $normalized[$key] = $this->normalizeValue(
                 $value,
                 $columnTypes[$column] ?? null
             );
         }
 
-        return $data;
+        return $normalized;
+    }
+
+    /**
+     * Resolve one public/snapshot key to its database column name.
+     *
+     * With a non-empty column map, audit snapshots use mapped attribute names
+     * while data types remain keyed by database column names. Without a map,
+     * the key must already be a metadata column. Unknown keys are treated as
+     * relation or transient payloads and are excluded from audit JSON.
+     *
+     * @param array<string, string>|null $columnMap Database column to model
+     *     attribute map, or null when column renaming is disabled.
+     * @param array<string, int> $columnTypes Database column types from
+     *     Phalcon metadata.
+     */
+    protected function resolveAuditColumnName(
+        string|int $key,
+        ?array $columnMap,
+        array $columnTypes
+    ): ?string {
+        $key = (string)$key;
+
+        if (!empty($columnMap)) {
+            $column = array_search($key, $columnMap, true);
+            return is_string($column) ? $column : null;
+        }
+
+        return array_key_exists($key, $columnTypes) ? $key : null;
     }
 
     /* ============================================================

@@ -426,6 +426,31 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame('true', $behavior->publicNormalizeJson(true));
         $this->assertSame(['id' => 5], $behavior->publicNormalizeArray(['id' => '5'], ['id' => 'id'], ['id' => Column::TYPE_INTEGER]));
         $this->assertSame(['id' => 5], $behavior->publicNormalizeArray(['id' => '5'], null, ['id' => Column::TYPE_INTEGER]));
+        $this->assertSame(['id' => 5], $behavior->publicNormalizeArray(['id' => '5'], [], ['id' => Column::TYPE_INTEGER]));
+        $this->assertSame(
+            ['id' => 5],
+            $behavior->publicNormalizeArray(
+                [
+                    'id' => '5',
+                    'AuthorEntity' => ['id' => 1],
+                    'transient' => 'ignored',
+                ],
+                ['id' => 'id'],
+                ['id' => Column::TYPE_INTEGER]
+            )
+        );
+        $this->assertSame(
+            ['id' => 5],
+            $behavior->publicNormalizeArray(
+                [
+                    'id' => '5',
+                    'AuthorEntity' => ['id' => 1],
+                    'transient' => 'ignored',
+                ],
+                null,
+                ['id' => Column::TYPE_INTEGER]
+            )
+        );
     }
 
     public function testBlameableNotifyAndCreateAudit(): void
@@ -439,6 +464,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $model = new ModelBehaviorDouble();
         $model->id = 10;
         $model->name = 'After';
+        $model->attributes['AuthorEntity'] = ['id' => 1, 'name' => 'Related'];
         $model->fakeModelsMetaData = new FakeMetaData();
         $model->fakeModelsMetaData->attributes = ['id', 'name', 'deleted'];
         $model->fakeModelsMetaData->fakeColumnMap = ['id' => 'id', 'name' => 'name', 'deleted' => 'deleted'];
@@ -455,8 +481,17 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame(10, FakeAudit::$last->getPrimary());
         $this->assertArrayHasKey('AuditDetailList', FakeAudit::$last->assigned[1]);
         $this->assertCount(3, FakeAudit::$last->assigned[1]['AuditDetailList']);
+        $this->assertSame(
+            ['id' => 10, 'name' => 'After', 'deleted' => 0],
+            json_decode((string)FakeAudit::$last->getAfter(), true)
+        );
 
-        $model->snapshotData = ['id' => 10, 'name' => 'Before', 'deleted' => 0];
+        $model->snapshotData = [
+            'id' => 10,
+            'name' => 'Before',
+            'deleted' => 0,
+            'AuthorEntity' => ['id' => 1, 'name' => 'Related'],
+        ];
         $model->changedFields = ['name'];
         $model->hasSnapshotData = true;
 
@@ -465,6 +500,14 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame('update', FakeAudit::$last->getEvent());
         $this->assertArrayHasKey('AuditDetailList', FakeAudit::$last->assigned[1]);
         $this->assertCount(1, FakeAudit::$last->assigned[1]['AuditDetailList']);
+        $this->assertSame(
+            ['id' => 10, 'name' => 'Before', 'deleted' => 0],
+            json_decode((string)FakeAudit::$last->getBefore(), true)
+        );
+        $this->assertSame(
+            ['id' => 10, 'name' => 'After', 'deleted' => 0],
+            json_decode((string)FakeAudit::$last->getAfter(), true)
+        );
 
         $model->messages = [];
         $model->setDirtyRelated(['child' => [new ModelBehaviorDouble()]]);

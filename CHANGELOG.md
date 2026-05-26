@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Fixed
+
+- Fixed audit `before` and `after` snapshots so assigned relationship or
+  transient payloads from `toArray()` are excluded, keeping audit JSON limited
+  to mapped model columns.
+
 ## 2.5.0 - 2026-05-26
 
 ### Added
