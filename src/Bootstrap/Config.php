@@ -546,6 +546,18 @@ class Config extends \PhalconKit\Config\Config
              */
             'filters' => [
             ],
+
+            /**
+             * Shared Event Manager Configuration
+             *
+             * Listener definitions are grouped by Phalcon event type, such as
+             * `dispatch`, `db`, `model`, or `view`. Each entry may reference a
+             * listener class, a DI service, or an already-built listener object.
+             */
+            'eventsManager' => [
+                'listeners' => [
+                ],
+            ],
             
             /**
              * Flash Service

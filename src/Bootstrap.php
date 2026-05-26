@@ -22,6 +22,7 @@ use PhalconKit\Cli\Console;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Di\FactoryDefault;
 use PhalconKit\Di\FactoryDefault\Cli as FactoryDefaultCli;
+use PhalconKit\Events\ConfiguredEventListeners;
 use PhalconKit\Events\EventsAwareTrait;
 use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Mvc\Application;
@@ -96,6 +97,15 @@ class Bootstrap
      * CLI and WebSocket modes do not populate this property.
      */
     public ?ResponseInterface $response = null;
+
+    /**
+     * Whether config-declared listeners were attached to the shared manager.
+     *
+     * `bootServices()` can be called directly in tests and custom bootstraps.
+     * Tracking this state prevents duplicate configured listener registration
+     * while keeping the default bootstrap sequence deterministic.
+     */
+    protected bool $configuredEventListenersAttached = false;
     
     /**
      * Docopt command specification used by the default CLI argument parser.
@@ -345,7 +355,8 @@ DOC;
     /**
      * Resolves early services that need to be initialized before modules run.
      *
-     * At the moment this eagerly initializes the `debug` service. The
+     * At the moment this eagerly initializes the `debug` service and attaches
+     * any configured shared event-manager listeners. The
      * `ServiceProviderInterface::boot()` hook remains available to provider
      * implementations, but the default bootstrap does not iterate provider
      * instances after registration.
@@ -353,6 +364,46 @@ DOC;
     public function bootServices(): void
     {
         $this->di->getTyped('debug', Debug::class);
+        $this->attachConfiguredEventListeners();
+    }
+
+    /**
+     * Attach listeners declared under `eventsManager.listeners`.
+     *
+     * This hook runs after providers are registered and before modules/router
+     * setup. That timing lets application config add listeners for shared event
+     * types such as `dispatch`, `db`, `model`, or `view` without replacing the
+     * core providers that create those services.
+     *
+     * @throws ConfigurationException When listener config exists but no
+     *     `eventsManager` service is registered.
+     * @throws ConfigurationException When a configured listener definition is
+     *     invalid.
+     */
+    protected function attachConfiguredEventListeners(): void
+    {
+        if ($this->configuredEventListenersAttached) {
+            return;
+        }
+
+        $listeners = $this->getConfig()->pathToArray('eventsManager.listeners') ?? [];
+        if ($listeners === []) {
+            $this->configuredEventListenersAttached = true;
+            return;
+        }
+
+        if (!$this->di->has('eventsManager')) {
+            throw new ConfigurationException(
+                'Configured event listeners require an "eventsManager" DI service.'
+            );
+        }
+
+        ConfiguredEventListeners::attach(
+            $this->di,
+            $this->di->getTyped('eventsManager', Events\ManagerInterface::class),
+            $listeners
+        );
+        $this->configuredEventListenersAttached = true;
     }
     
     /**

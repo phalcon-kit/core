@@ -113,6 +113,41 @@ Use app providers when a service needs app configuration, app credentials, or a
 different implementation. Avoid replacing a core provider just to change one
 runtime option when config already supports it.
 
+## Event Listeners
+
+Use `eventsManager.listeners` for app-owned listeners that should attach to the
+shared Phalcon events manager during bootstrap:
+
+```php
+'eventsManager' => [
+    'listeners' => [
+        'dispatch' => [
+            [
+                'class' => \App\Listeners\SecurityHeaders::class,
+                'priority' => 200,
+            ],
+            [
+                'service' => 'auditDispatchListener',
+                'priority' => 100,
+            ],
+        ],
+        'db' => [
+            \App\Listeners\QueryCorrelation::class,
+        ],
+    ],
+],
+```
+
+Listeners are grouped by Phalcon event type, such as `dispatch`, `db`, `model`,
+or `view`. A listener can be a class name, a DI service name, or an array with
+`class`, `service`, or `listener`. Array definitions also support `priority`,
+`arguments`, and `enabled => false`.
+
+The bootstrap attaches these listeners after providers are registered and before
+modules/router setup. Core providers keep their existing built-in listener
+wiring; this config is for application listeners that should participate in the
+same shared event manager without replacing providers.
+
 ## Stateless Identity
 
 API-only applications can keep PhalconKit's normal `session` service available

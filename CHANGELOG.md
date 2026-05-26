@@ -19,6 +19,9 @@ release notes.
 
 ### Added
 
+- Added opt-in `eventsManager.listeners` configuration so applications can
+  attach class-based, service-based, or callable listeners to the shared
+  Phalcon events manager during bootstrap with explicit priorities.
 - Added opt-in strict relationship assignment for models so API/resource layers
   can reject non-whitelisted relation aliases, unknown complex relation
   payloads, and malformed nested relation values without changing the default

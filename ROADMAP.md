@@ -255,16 +255,27 @@ Outcome:
 
 ### Configurable Event Attachments
 
-Status: Design
+Status: Done in the current `2.6.x` development line
 
-Target: Unscheduled
+Target: `2.6.x`
 
 Scope:
 
-- Decide whether configuration should attach listeners to database,
-  dispatcher, models manager, logger, and other events-aware services.
-- Define service-name, event-name, listener factory, and ordering rules.
-- Ensure the design works for MVC, CLI, WebSocket, and test bootstraps.
+- Added opt-in `eventsManager.listeners` configuration for the shared Phalcon
+  events manager used by database, dispatcher, model, view, and application
+  services.
+- Listener definitions support class names, DI service names, direct listener
+  objects/callables, explicit priorities, constructor arguments, and
+  `enabled => false` for merged config.
+- Bootstrap attaches configured listeners after providers are registered and
+  before modules/router setup, with idempotency for repeated `bootServices()`
+  calls in tests or custom bootstraps.
+
+Non-goal:
+
+- Do not introduce per-service event-manager replacement in `2.6.x`. Existing
+  providers already share the main manager, and replacing service-owned managers
+  needs a separate compatibility plan.
 
 ### REST API Controller Scaffolding
 

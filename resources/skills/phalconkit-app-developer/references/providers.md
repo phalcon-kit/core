@@ -425,7 +425,7 @@ unless a row says otherwise. The service name is the DI key.
 | `Env` | `env` | Environment | Wrapper for environment lookups. Prefer central config defaults over calling env directly in app services. |
 | `Router` | `router` | `router`, `modules` | Mode-aware MVC/CLI/WS router. Use `$this->router` for route params and prefer config routes/module registration over ad hoc route wiring. |
 | `Dispatcher` | `dispatcher` | `router`, `app`, events | Mode-aware dispatcher with PhalconKit security, maintenance, module, logging, REST, and error listeners. Controllers normally use it indirectly; use `$this->dispatcher->getActionName()` for action-aware controller setup. |
-| `EventsManager` | `eventsManager` | none by default | Provider class exists, but the default provider map currently does not list it. Use `$this->di->get('eventsManager')` to attach listeners when the DI supplies it. Register this provider explicitly only when the app needs to replace event manager behavior. |
+| `EventsManager` | `eventsManager` | `eventsManager.listeners` | Shared Phalcon events manager used by dispatch, database, model, view, and application services. Prefer config-driven listener attachment for app listeners; register the provider explicitly only when replacing event manager behavior. |
 | `Request` | `request` | HTTP request state | HTTP request wrapper. Use `$this->request->getQuery()`, `$this->request->getPost()`, or REST controller helpers for request data. |
 | `Response` | `response` | `response.headers`, `response.corsHeaders`, `response.cache` | HTTP response wrapper with configured headers. Use `$this->response->setJsonContent($payload)` or `setRestResponse()` in REST controllers. |
 

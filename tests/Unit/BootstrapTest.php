@@ -16,6 +16,7 @@ namespace PhalconKit\Tests\Unit;
 use Phalcon\Application\AbstractApplication;
 use Phalcon\Cli\RouterInterface as CliRouterInterface;
 use Phalcon\Di\Di as NativeDi;
+use Phalcon\Events\Manager;
 use Phalcon\Mvc\RouterInterface as MvcRouterInterface;
 use PhalconKit\Bootstrap;
 use PhalconKit\Config\ConfigInterface;
@@ -33,6 +34,8 @@ use PhalconKit\Tests\Unit\Bootstrap\Fixtures\BootstrapConsoleDouble;
 use PhalconKit\Tests\Unit\Bootstrap\Fixtures\BootstrapProviderDouble;
 use PhalconKit\Tests\Unit\Bootstrap\Fixtures\BootstrapWebSocketDouble;
 use PhalconKit\Tests\Unit\Bootstrap\Fixtures\LightweightBootstrap;
+use PhalconKit\Tests\Unit\Events\Fixtures\ConfiguredEventListenerState;
+use PhalconKit\Tests\Unit\Events\Fixtures\ConfiguredHighPriorityListener;
 
 /**
  * Class BootstrapTest
@@ -278,6 +281,41 @@ class BootstrapTest extends AbstractUnit
         $newRouter = new MvcRouter(false, $config);
         $bootstrap->setRouter($newRouter);
         $this->assertSame($newRouter, $bootstrap->getRouter());
+    }
+
+    public function testBootServicesAttachesConfiguredEventListenersOnce(): void
+    {
+        ConfiguredEventListenerState::reset();
+        $di = new Di();
+        $eventsManager = new Manager();
+        $config = new Config([
+            'providers' => [],
+            'eventsManager' => [
+                'listeners' => [
+                    'unit' => [
+                        [
+                            'class' => ConfiguredHighPriorityListener::class,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $bootstrap = new LightweightBootstrap(Bootstrap::MODE_MVC, $di, $config);
+
+        $di->set('debug', new Debug());
+        $di->set('eventsManager', $eventsManager);
+
+        $bootstrap->bootServices();
+        $bootstrap->bootServices();
+
+        $eventsManager->fire('unit:beforeRun', $bootstrap, ['boot' => true]);
+
+        $this->assertSame([
+            ConfiguredHighPriorityListener::class,
+        ], array_column(ConfiguredEventListenerState::$calls, 'listener'));
+        $this->assertSame([
+            ['boot' => true],
+        ], array_column(ConfiguredEventListenerState::$calls, 'data'));
     }
 
     public function testRegisterRouterRegistersMissingRouterService(): void

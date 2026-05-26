@@ -18,6 +18,7 @@
       <exclude>tests/Unit/Provider/ClamavTest.php</exclude>
       <exclude>tests/Unit/Bootstrap/Fixtures</exclude>
       <exclude>tests/Unit/Db/Fixtures</exclude>
+      <exclude>tests/Unit/Events/Fixtures</exclude>
       <exclude>tests/Unit/Identity/Fixtures</exclude>
       <exclude>tests/Unit/Mvc/Controller/Traits/Fixtures</exclude>
       <exclude>tests/Unit/Mvc/Model/Fixtures</exclude>
