@@ -32,7 +32,7 @@ class EventsTraitBase
         return '7';
     }
 
-    public static function sum(mixed $parameters = []): mixed
+    public static function sum(mixed $parameters = null): mixed
     {
         return '1.5';
     }
@@ -42,12 +42,12 @@ class EventsTraitBase
         return '2.5';
     }
 
-    public static function minimum(mixed $parameters = []): mixed
+    public static function minimum(mixed $parameters = null): mixed
     {
         return '3.5';
     }
 
-    public static function maximum(mixed $parameters = []): mixed
+    public static function maximum(mixed $parameters = null): mixed
     {
         return '4.5';
     }

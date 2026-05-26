@@ -86,7 +86,7 @@ trait Events
      * The "beforeCount" event can cancel the operation by returning false.
      *
      * @see \Phalcon\Mvc\Model::count()
-     * @param array|null|string $parameters Optional parameters to filter the count operation.
+     * @param mixed $parameters Optional native Phalcon count parameters.
      * @return ResultsetInterface|int|false The count result or a ResultsetInterface, depending on the implementation.
      */
     #[\Override]
@@ -107,11 +107,11 @@ trait Events
      * If the "beforeSum" event cancels the operation, this method returns false.
      *
      * @see \Phalcon\Mvc\Model::sum()
-     * @param array $parameters Optional parameters to customize the sum operation.
+     * @param mixed $parameters Optional native Phalcon sum parameters.
      * @return ResultsetInterface|float|false Returns the sum result as a float, a result set interface, or false if the operation is canceled.
      */
     #[\Override]
-    public static function sum(mixed $parameters = []): ResultsetInterface|float|false
+    public static function sum(mixed $parameters = null): ResultsetInterface|float|false
     {
         $sum = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::sum($parameters));
         
@@ -150,11 +150,12 @@ trait Events
     /**
      * Calculates the minimum value of a specified column in the database according to the given conditions.
      *
-     * @param array $parameters Parameters to customize the query, such as conditions, column selection, or groupings.
+     * @param mixed $parameters Native Phalcon parameters to customize the query,
+     *     such as conditions, column selection, or groupings.
      * @return ResultsetInterface|float|false Returns the minimum value as a float, a ResultsetInterface object, or false if no matching records are found or the operation fails.
      */
     #[\Override]
-    public static function minimum(mixed $parameters = []): ResultsetInterface|float|false
+    public static function minimum(mixed $parameters = null): ResultsetInterface|float|false
     {
         $minimum = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::minimum($parameters));
         
@@ -168,11 +169,12 @@ trait Events
     /**
      * Calculates the maximum value of a specified column in the database based on the given conditions.
      *
-     * @param array $parameters Parameters to customize the query, such as conditions, column selection, or groupings.
+     * @param mixed $parameters Native Phalcon parameters to customize the query,
+     *     such as conditions, column selection, or groupings.
      * @return ResultsetInterface|float|false Returns the computed maximum value as a float, a ResultsetInterface object for detailed results, or false on failure.
      */
     #[\Override]
-    public static function maximum(mixed $parameters = []): ResultsetInterface|float|false
+    public static function maximum(mixed $parameters = null): ResultsetInterface|float|false
     {
         $maximum = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::maximum($parameters));
         

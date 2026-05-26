@@ -15,6 +15,7 @@ namespace PhalconKit\Tests\Unit\Mvc\Model\Traits;
 
 use Phalcon\Mvc\Model\ResultsetInterface;
 use PhalconKit\Mvc\Model\Traits\EagerLoad;
+use PhalconKit\Mvc\Model\Traits\Events;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -46,5 +47,40 @@ class EagerLoadTest extends AbstractUnit
         $this->assertNull($findFirstParameters[0]->getDefaultValue());
         $this->assertInstanceOf(ReflectionNamedType::class, $findFirstReturnType);
         $this->assertSame('mixed', $findFirstReturnType->getName());
+    }
+
+    public function testEventAggregateContractsMatchPatchedPhalconSignatures(): void
+    {
+        $trait = new ReflectionClass(Events::class);
+
+        $this->assertModelAggregateSignature($trait, 'count', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|int|false');
+        $this->assertModelAggregateSignature($trait, 'sum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
+        $this->assertModelAggregateSignature($trait, 'average', 'array', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
+        $this->assertModelAggregateSignature($trait, 'minimum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
+        $this->assertModelAggregateSignature($trait, 'maximum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
+    }
+
+    private function assertModelAggregateSignature(
+        ReflectionClass $trait,
+        string $methodName,
+        string $default,
+        string $returnType
+    ): void {
+        $method = $trait->getMethod($methodName);
+        $parameters = $method->getParameters();
+
+        $this->assertTrue($method->isStatic());
+        $this->assertCount(1, $parameters);
+        $this->assertSame($methodName === 'average' ? 'array' : 'mixed', (string)$parameters[0]->getType());
+        $this->assertTrue($parameters[0]->isDefaultValueAvailable());
+
+        if ($default === 'array') {
+            $this->assertSame([], $parameters[0]->getDefaultValue());
+        }
+        else {
+            $this->assertNull($parameters[0]->getDefaultValue());
+        }
+
+        $this->assertSame($returnType, (string)$method->getReturnType());
     }
 }
