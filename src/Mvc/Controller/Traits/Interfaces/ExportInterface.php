@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Interfaces;
 
 use Phalcon\Http\ResponseInterface;
+use PhalconKit\Exception\HttpException;
+use PhalconKit\Exception\RuntimeException;
 
 /**
  * Contract for REST file export helpers.
@@ -30,6 +32,8 @@ interface ExportInterface
      * @param array<string, mixed>|null $params Request/export parameters.
      *
      * @return string One of `json`, `xml`, `csv`, or `xlsx`.
+     *
+     * @throws HttpException When the requested content type is unsupported.
      */
     public function getContentType(?array $params = null): string;
     
@@ -41,7 +45,7 @@ interface ExportInterface
     /**
      * Determine the union of exported columns from an array payload.
      *
-     * @param array<int, array<string, mixed>> $list Rows to inspect.
+     * @param array<array-key, mixed> $list Rows to inspect.
      *
      * @return list<string>
      */
@@ -50,19 +54,24 @@ interface ExportInterface
     /**
      * Export rows using the requested or detected content type.
      *
-     * @param array<int, array<string, mixed>> $list Rows to export.
+     * @param array<array-key, mixed> $list Rows to export.
      * @param string|null $filename Filename without extension.
      * @param string|null $contentType Explicit export type.
-     * @param array<string, mixed>|null $params Export options.
+     * @param array<array-key, mixed>|null $params Export options.
+     *
+     * @throws HttpException When the content type or request-controlled export
+     *     options are invalid.
+     * @throws RuntimeException When the selected exporter accepts its options
+     *     but cannot generate the response payload.
      */
     public function export(array $list, ?string $filename = null, ?string $contentType = null, ?array $params = null): ResponseInterface;
     
     /**
      * Export rows as XML.
      *
-     * @param array<int, array<string, mixed>> $list Rows to export.
+     * @param array<array-key, mixed> $list Rows to export.
      * @param string|null $filename Filename without extension.
-     * @param array<string, mixed>|null $params XML export options.
+     * @param array<array-key, mixed>|null $params XML export options.
      */
     public function exportXml(array $list, ?string $filename = null, ?array $params = null): ResponseInterface;
     
@@ -79,7 +88,7 @@ interface ExportInterface
     /**
      * Export rows as XLSX.
      *
-     * @param array<int, array<string, mixed>> $list Rows to export.
+     * @param array<array-key, mixed> $list Rows to export.
      * @param string|null $filename Filename without extension.
      * @param bool $forceRawValue Prefix formula-like values to reduce
      *     spreadsheet formula injection risk.
@@ -89,9 +98,13 @@ interface ExportInterface
     /**
      * Export rows as CSV.
      *
-     * @param array<int, array<string, mixed>> $list Rows to export.
+     * @param array<array-key, mixed> $list Rows to export.
      * @param string|null $filename Filename without extension.
-     * @param array<string, mixed>|null $params CSV export options.
+     * @param array<array-key, mixed>|null $params CSV export options.
+     *
+     * @throws HttpException When a CSV option has an invalid type or value.
+     * @throws RuntimeException When CSV generation fails after options have
+     *     been accepted.
      */
     public function exportCsv(array $list, ?string $filename = null, ?array $params = null): ResponseInterface;
 }

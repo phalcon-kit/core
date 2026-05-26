@@ -104,7 +104,9 @@ class Application extends \Phalcon\Mvc\Application
      *     empty string when the dispatcher returns null.
      * @throws ServiceException When the dispatcher service is missing or does
      *     not extend Phalcon's abstract dispatcher.
-     * @throws \Exception When the underlying dispatcher fails while dispatching.
+     * @throws \Throwable Propagates dispatcher and controller failures
+     *     unchanged so HTTP/domain exceptions keep their original type and
+     *     status semantics.
      */
     public function request(array $location = []): string
     {

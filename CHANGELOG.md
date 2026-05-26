@@ -29,6 +29,11 @@ release notes.
 - Fixed audit `before` and `after` snapshots so assigned relationship or
   transient payloads from `toArray()` are excluded, keeping audit JSON limited
   to mapped model columns.
+- Fixed REST CSV exports so invalid CSV options now throw PhalconKit HTTP
+  exceptions with status `400`, while CSV writer failures are wrapped in scoped
+  runtime exceptions instead of leaking League CSV exceptions through the
+  controller API. CSV responses now use League CSV's `toString()` method instead
+  of its deprecated string cast.
 - Fixed model cache invalidation so mutable model events clear the shared
   model cache for creates, deletes, restores, reorders, or changed snapshots,
   while unchanged snapshot saves no longer trigger a cache clear.

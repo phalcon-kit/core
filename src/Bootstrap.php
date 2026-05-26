@@ -468,7 +468,9 @@ DOC;
      * when unavailable. The returned string is the response body content, or
      * `null` if the application did not return a response object.
      *
-     * @throws \Exception When the Phalcon application cannot handle the request.
+     * @throws \Throwable Propagates failures from Phalcon MVC request handling
+     *     unchanged so the application's configured error pipeline can decide
+     *     how to render or log them.
      */
     public function handleApplication(Application $application): ?string
     {

@@ -16,10 +16,12 @@ namespace PhalconKit\Mvc\Controller\Traits;
 use League\Csv\Bom;
 use League\Csv\CannotInsertRecord;
 use League\Csv\CharsetConverter;
-use League\Csv\InvalidArgument;
+use League\Csv\Exception as CsvException;
+use League\Csv\InvalidArgument as CsvInvalidArgument;
 use League\Csv\Writer;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Exception\HttpException;
+use PhalconKit\Exception\RuntimeException;
 use Shuchkin\SimpleXLSXGen;
 use Spatie\ArrayToXml\ArrayToXml;
 use PhalconKit\Support\Helper;
@@ -263,105 +265,222 @@ trait Export
     }
     
     /**
-     * @return ResponseInterface
-     * @throws InvalidArgument
-     * @throws CannotInsertRecord
-     * @throws \League\Csv\Exception
+     * Export rows as CSV and translate CSV library failures into stable
+     * PhalconKit exceptions.
+     *
+     * Request-controlled CSV options are validated by the League CSV writer.
+     * Invalid delimiters, enclosures, escape characters, or BOM values become a
+     * `400` HTTP exception because the client supplied an unsupported export
+     * option. Insert/write failures remain server-side runtime errors and keep
+     * the original League exception as `previous` for diagnostics.
+     *
+     * @param array<array-key, mixed> $list Rows to export.
+     * @param string|null $filename Filename without extension.
+     * @param array<array-key, mixed>|null $params CSV export options.
+     *
+     * @return ResponseInterface Download response containing CSV content.
+     *
+     * @throws HttpException When a CSV export option has an invalid type or
+     *     value.
+     * @throws RuntimeException When CSV generation fails after options have
+     *     been accepted.
      */
     public function exportCsv(array $list, ?string $filename = null, ?array $params = null): ResponseInterface
+    {
+        return $this->withCsvExceptions(
+            fn(): ResponseInterface => $this->buildCsvExportResponse($list, $filename, $params)
+        );
+    }
+
+    /**
+     * Build the CSV writer output and attach it to the controller response.
+     *
+     * This method assumes its caller wraps League CSV exceptions through
+     * {@see withCsvExceptions()}. Keeping the generation logic separate from
+     * exception translation keeps the public method small while preserving the
+     * current CSV behavior: Windows-compatible UTF-8 by default, UTF-16/tab
+     * output for `mode=mac`, forced enclosures unless relaxed, and optional
+     * newline collapsing for spreadsheet compatibility.
+     *
+     * @param array<array-key, mixed> $list Rows to export.
+     * @param string|null $filename Filename without extension.
+     * @param array<array-key, mixed>|null $params CSV export options.
+     *
+     * @throws CsvException When League CSV rejects an option or cannot write
+     *     rows.
+     * @throws HttpException When an option has a type that should not reach the
+     *     League writer.
+     */
+    private function buildCsvExportResponse(array $list, ?string $filename, ?array $params): ResponseInterface
     {
         $filename ??= $this->getFilename();
         $params ??= $this->getParams();
         $columns = $this->getExportColumns($list);
-        
-        // Get CSV custom request parameters
+
+        // Get CSV custom request parameters.
         $mode = $params['mode'] ?? null;
-        $delimiter = $params['delimiter'] ?? null;
-        $enclosure = $params['enclosure'] ?? null;
-        $endOfLine = $params['endOfLine'] ?? null;
-        $escape = $params['escape'] ?? null;
-        $outputBOM = $params['outputBOM'] ?? null;
+        $delimiter = $this->getCsvStringOption($params, 'delimiter');
+        $enclosure = $this->getCsvStringOption($params, 'enclosure');
+        $endOfLine = $this->getCsvStringOption($params, 'endOfLine');
+        $escape = $this->getCsvStringOption($params, 'escape');
+        $outputBOM = $this->getCsvOutputBomOption($params);
         $skipIncludeBOM = $params['skipIncludeBOM'] ?? false;
         $necessaryEnclosure = $params['necessaryEnclosure'] ?? false;
         $keepEndOfLines = $params['keepEndOfLines'] ?? false;
 
         $csv = Writer::from('php://memory');
         $csv->setEscape('\\');
-        
-        // CSV - MS Excel on MacOS
+
+        // CSV - MS Excel on MacOS.
         if ($mode === 'mac') {
-            $csv->setOutputBOM(Bom::Utf16Le); // utf-16
-            $csv->setDelimiter("\t"); // tabs separated
-            $csv->setEndOfLine("\r\n"); // end of lines
+            $csv->setOutputBOM(Bom::Utf16Le);
+            $csv->setDelimiter("\t");
+            $csv->setEndOfLine("\r\n");
             CharsetConverter::addTo($csv, 'UTF-8', 'UTF-16');
         }
-        
-        // CSV - MS Excel on Windows
+
+        // CSV - MS Excel on Windows.
         else {
-            $csv->setOutputBOM(Bom::Utf8); // utf-8
-            $csv->setDelimiter(','); // comma separated
-            $csv->setEndOfLine("\r\n"); // end of lines
+            $csv->setOutputBOM(Bom::Utf8);
+            $csv->setDelimiter(',');
+            $csv->setEndOfLine("\r\n");
             CharsetConverter::addTo($csv, 'UTF-8', 'UTF-8');
         }
-        
-        // relax enclosure
+
         if ($necessaryEnclosure) {
             $csv->necessaryEnclosure();
         }
-        // force enclosure
         else {
             $csv->forceEnclosure();
         }
-        // set enclosure
+
         if (isset($enclosure)) {
             $csv->setEnclosure($enclosure);
         }
-        // set output bom
         if (isset($outputBOM)) {
             $csv->setOutputBOM($outputBOM);
         }
-        // set delimiter
         if (isset($delimiter)) {
             $csv->setDelimiter($delimiter);
         }
-        // send end of line
         if (isset($endOfLine)) {
             $csv->setEndOfLine($endOfLine);
         }
-        // set escape
         if (isset($escape)) {
             $csv->setEscape($escape);
         }
-        // skip include bom
+
         if ($skipIncludeBOM) {
             $csv->skipInputBOM();
         }
-        // include bom
         else {
             $csv->includeInputBOM();
         }
-        
-        // Headers
+
         $csv->insertOne($columns);
-        
+
         foreach ($list as $row) {
             $outputRow = [];
             foreach ($columns as $column) {
-                $outputRow[$column] = $row[$column] ?? '';
-                
-                // sometimes excel can't process the cells multiple lines correctly when loading csv
-                // this is why we remove the new lines by default, user can choose to keep them using $keepEndOfLines
+                $outputRow[$column] = is_array($row) ? $row[$column] ?? '' : '';
+
+                // Excel imports multiline CSV cells inconsistently, so
+                // collapse whitespace unless the caller explicitly opts in.
                 if (!$keepEndOfLines && is_string($outputRow[$column])) {
                     $outputRow[$column] = trim(preg_replace('/\s+/', ' ', $outputRow[$column]) ?? '');
                 }
             }
             $csv->insertOne($outputRow);
         }
-        
-        $this->response->setContent((string)$csv);
+
+        $this->response->setContent($csv->toString());
         $this->response->setContentType('text/csv');
         $this->response->setHeader('Content-disposition', 'attachment; filename="' . addslashes($filename) . '.csv"');
-        
+
         return $this->response;
+    }
+
+    /**
+     * Execute CSV generation while exposing stable framework exceptions.
+     *
+     * League CSV exceptions are useful internally but too vendor-specific for a
+     * public REST controller helper. This wrapper keeps client option mistakes
+     * as HTTP `400` errors and turns lower-level writer failures into
+     * PhalconKit runtime exceptions with the original exception attached for
+     * logs and debuggers.
+     *
+     * @param callable(): ResponseInterface $callback CSV generation callback.
+     *
+     * @throws HttpException When a CSV option is rejected by the writer.
+     * @throws RuntimeException When CSV writing fails after options are valid.
+     */
+    private function withCsvExceptions(callable $callback): ResponseInterface
+    {
+        try {
+            return $callback();
+        }
+        catch (CsvInvalidArgument $e) {
+            throw new HttpException('Invalid CSV export option: ' . $e->getMessage(), 400, $e);
+        }
+        catch (CannotInsertRecord $e) {
+            throw new RuntimeException('Failed to write CSV export rows.', previous: $e);
+        }
+        catch (CsvException $e) {
+            throw new RuntimeException('Failed to generate CSV export.', previous: $e);
+        }
+    }
+
+    /**
+     * Return a string-based CSV option from the export parameter array.
+     *
+     * CSV control options are normally request values and must be strings before
+     * they are passed to League CSV's typed setters. Validating the shape here
+     * turns accidental nested arrays or objects into a stable HTTP `400` instead
+     * of a PHP `TypeError`.
+     *
+     * @param array<array-key, mixed> $params Export options.
+     * @param string $name Option name to read.
+     *
+     * @throws HttpException When the option is present but not a string.
+     */
+    private function getCsvStringOption(array $params, string $name): ?string
+    {
+        $value = $params[$name] ?? null;
+        if ($value === null || is_string($value)) {
+            return $value;
+        }
+
+        throw new HttpException(sprintf(
+            'Invalid CSV export option "%s": expected string or null, got %s.',
+            $name,
+            get_debug_type($value)
+        ), 400);
+    }
+
+    /**
+     * Return the optional output BOM value accepted by the CSV writer.
+     *
+     * Application code can pass a League `Bom` enum directly, while request
+     * input usually passes one of the string values supported by League CSV.
+     * Other shapes are rejected before they reach the writer's typed API.
+     *
+     * @param array<array-key, mixed> $params Export options.
+     *
+     * @return Bom|string|null
+     *
+     * @throws HttpException When the `outputBOM` option has an unsupported type.
+     */
+    private function getCsvOutputBomOption(array $params): Bom|string|null
+    {
+        $value = $params['outputBOM'] ?? null;
+        if ($value === null || is_string($value) || $value instanceof Bom) {
+            return $value;
+        }
+
+        throw new HttpException(sprintf(
+            'Invalid CSV export option "outputBOM": expected string, %s, or null, got %s.',
+            Bom::class,
+            get_debug_type($value)
+        ), 400);
     }
 }

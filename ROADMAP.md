@@ -30,7 +30,7 @@ public changes in [CHANGELOG.md](CHANGELOG.md).
 
 Target: `2.6.x`
 
-Theme: Low-risk framework diagnostics and exception cleanup.
+Theme: Low-risk framework diagnostics and runtime assertion cleanup.
 
 Decision: REST request-surface work shipped in `2.4.x` and `2.5.x`. The next
 line should favor narrow correctness fixes, clear failure modes, and concrete
@@ -192,7 +192,7 @@ Follow-up:
 
 ### Exception Taxonomy Cleanup
 
-Status: Next
+Status: Done in the current `2.6.x` development line
 
 Target: `2.6.x`
 
@@ -203,6 +203,18 @@ Scope:
 - Keep native SPL exceptions where they are precise and internal.
 - Clean stale broad `@throws` docblocks when they no longer describe real
   behavior.
+- REST CSV exports now wrap invalid League CSV options in `HttpException` and
+  writer failures in scoped runtime exceptions while preserving the original
+  vendor exception as `previous`.
+- Native Phalcon MVC/bootstrap failures are documented as intentionally
+  propagated unchanged so application HTTP/domain exceptions keep their original
+  type and status semantics.
+
+Validation:
+
+- Runtime source now has no native generic `throw new \Exception`,
+  `\RuntimeException`, `\LogicException`, or `\InvalidArgumentException` sites,
+  and no stale broad `@throws \Exception` annotations.
 
 Non-goal:
 
@@ -211,7 +223,7 @@ Non-goal:
 
 ### Runtime Assert Review
 
-Status: Design
+Status: Next
 
 Target: `2.6.x`
 
