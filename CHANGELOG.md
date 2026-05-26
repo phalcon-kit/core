@@ -15,6 +15,15 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Added
+
+- Added `Model::getSnapshotChangedFields()` for snapshot-based changed-field
+  detection with column-map normalization, nullable SQL `"NULL"` handling,
+  ignore-list support for lifecycle fields, and native `getChangedFields()`
+  fallback when no snapshot exists.
+
 ## 2.6.0 - 2026-05-26
 
 ### Added

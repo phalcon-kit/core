@@ -240,6 +240,38 @@ PhalconKit model traits and behaviors cover common persistence rules:
 Use generated defaults for schema-derived behavior and concrete models for
 business-specific behavior.
 
+## Snapshot Changed Fields
+
+Use `getSnapshotChangedFields()` when audit logs, domain comparisons,
+replication decisions, or API response metadata need to know which persisted
+snapshot values differ from the model's current raw attributes.
+
+The helper complements Phalcon's native `getChangedFields()` instead of
+replacing it. Native dirty tracking still controls persistence behavior.
+`getSnapshotChangedFields()` returns mapped model field names, accepts snapshots
+keyed by either database columns or mapped fields, reads current values through
+`readAttribute()` rather than domain getters, and falls back to native
+`getChangedFields()` only when no snapshot data exists.
+
+```php
+$changedFields = $record->getSnapshotChangedFields([
+    'updatedAt',
+    'updatedBy',
+    'updatedAs',
+]);
+```
+
+The ignore list accepts either mapped model fields such as `updatedAt` or
+database columns such as `updated_at`. Use it for lifecycle and bookkeeping
+fields that should not appear in business-facing diffs. Nullable fields follow
+PhalconKit's existing SQL `"NULL"` string convention, so nullable `"NULL"`
+snapshot values compare as `null` without mutating the snapshot.
+
+Do not use snapshot changed fields as the sole authorization context for
+sensitive flows such as password reset or privileged account changes. Those
+flows should pass explicit intent and authorization context through the service
+or controller layer.
+
 ## Model Cache Invalidation
 
 The model cache behavior currently uses a coarse invalidation strategy. Create,

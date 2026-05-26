@@ -264,6 +264,67 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $behavior->beforeCreate($this->createStub(\Phalcon\Mvc\ModelInterface::class));
     }
 
+    public function testSnapshotChangedFieldsCompareDatabaseColumnSnapshots(): void
+    {
+        $model = $this->createSnapshotChangedFieldsModel();
+        $model->name = 'Current';
+        $model->updatedAt = '2026-05-26 10:00:00';
+        $model->attributes['nullableTitle'] = null;
+        $model->attributes['requiredTitle'] = 'NULL';
+        $model->snapshotData = [
+            'name' => 'Previous',
+            'updated_at' => '2026-05-25 10:00:00',
+            'nullable_title' => 'NULL',
+            'required_title' => 'NULL',
+            'relatedPayload' => ['ignored' => true],
+        ];
+        $model->hasSnapshotData = true;
+
+        $this->assertSame(['name'], $model->getSnapshotChangedFields(['updated_at']));
+    }
+
+    public function testSnapshotChangedFieldsCompareMappedSnapshotFields(): void
+    {
+        $model = $this->createSnapshotChangedFieldsModel();
+        $model->name = 'Current';
+        $model->updatedAt = '2026-05-26 10:00:00';
+        $model->attributes['nullableTitle'] = null;
+        $model->snapshotData = [
+            'name' => 'Previous',
+            'updatedAt' => '2026-05-25 10:00:00',
+            'nullableTitle' => ' NULL ',
+        ];
+        $model->hasSnapshotData = true;
+
+        $this->assertSame(['name', 'updatedAt'], $model->getSnapshotChangedFields());
+        $this->assertSame(['name'], $model->getSnapshotChangedFields(['updatedAt']));
+    }
+
+    public function testSnapshotChangedFieldsOmitUnchangedSnapshotFields(): void
+    {
+        $model = $this->createSnapshotChangedFieldsModel();
+        $model->name = 'Current';
+        $model->updatedAt = '2026-05-26 10:00:00';
+        $model->attributes['nullableTitle'] = null;
+        $model->snapshotData = [
+            'name' => 'Current',
+            'updatedAt' => '2026-05-26 10:00:00',
+            'nullableTitle' => 'NULL',
+        ];
+        $model->hasSnapshotData = true;
+
+        $this->assertSame([], $model->getSnapshotChangedFields());
+    }
+
+    public function testSnapshotChangedFieldsFallbackToNativeChangedFieldsWithoutSnapshot(): void
+    {
+        $model = $this->createSnapshotChangedFieldsModel();
+        $model->hasSnapshotData = false;
+        $model->changedFields = ['name', 'updated_at', 'name'];
+
+        $this->assertSame(['name'], $model->getSnapshotChangedFields(['updatedAt']));
+    }
+
     public function testSoftDeleteBehaviorOptionsAndDisabledNotify(): void
     {
         $behavior = new SoftDelete(['field' => 'removed', 'value' => 9]);
@@ -2074,5 +2135,24 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
         $this->assertFalse($model->postSaveRelatedThroughAfter($through, [$related], $visited));
         $this->assertSame('Unable to save intermediate model `' . IntermediateModelDouble::class . '`', $model->messages[array_key_last($model->messages)]->getMessage());
+    }
+
+    private function createSnapshotChangedFieldsModel(): ModelBehaviorDouble
+    {
+        $metadata = new FakeMetaData();
+        $metadata->attributes = ['id', 'name', 'updated_at', 'nullable_title', 'required_title'];
+        $metadata->fakeColumnMap = [
+            'id' => 'id',
+            'name' => 'name',
+            'updated_at' => 'updatedAt',
+            'nullable_title' => 'nullableTitle',
+            'required_title' => 'requiredTitle',
+        ];
+        $metadata->notNullAttributes = ['id', 'required_title'];
+
+        $model = new ModelBehaviorDouble();
+        $model->fakeModelsMetaData = $metadata;
+
+        return $model;
     }
 }

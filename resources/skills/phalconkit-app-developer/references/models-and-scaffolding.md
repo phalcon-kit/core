@@ -261,6 +261,13 @@ base. The PhalconKit model base provides a broad feature layer through traits:
   integer last insert ids, virtual foreign keys, snapshots on save, and
   disabled automatic not-null validations so app validations stay explicit.
 
+Use `getSnapshotChangedFields()` when application code needs a
+business-facing diff between the stored model snapshot and current raw
+attributes. It returns mapped model field names, supports an ignore list for
+lifecycle fields such as `updatedAt`, and falls back to native
+`getChangedFields()` when no snapshot exists. Do not use it as the sole
+authorization signal for sensitive flows; pass explicit flow context instead.
+
 ## Concrete Model Baseline
 
 Concrete models should usually extend their generated abstract, implement the
