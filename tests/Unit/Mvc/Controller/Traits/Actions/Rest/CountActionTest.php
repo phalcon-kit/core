@@ -78,6 +78,7 @@ class CountActionTest extends AbstractUnit
             public bool $queryInitialized = false;
             public bool $countActionResponseFieldsInitialized = false;
             public bool $distinctActionFieldsInitialized = false;
+            public bool $findActionCountFieldsInitialized = false;
 
             public function initializeQuery(): void
             {
@@ -93,6 +94,11 @@ class CountActionTest extends AbstractUnit
             {
                 $this->distinctActionFieldsInitialized = true;
             }
+
+            public function initializeFindActionCountFields(): void
+            {
+                $this->findActionCountFieldsInitialized = true;
+            }
         };
 
         $controller->initialize();
@@ -100,6 +106,7 @@ class CountActionTest extends AbstractUnit
         $this->assertTrue($controller->queryInitialized);
         $this->assertTrue($controller->countActionResponseFieldsInitialized);
         $this->assertTrue($controller->distinctActionFieldsInitialized);
+        $this->assertTrue($controller->findActionCountFieldsInitialized);
     }
 
     public function testCountActionResponseFieldsUseCollectionPolicy(): void

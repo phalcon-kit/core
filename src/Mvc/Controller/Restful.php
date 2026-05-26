@@ -33,7 +33,8 @@ class Restful extends Rest
      * The query initializer prepares filters, joins, conditions, bind values,
      * pagination, and the final `find` policy used by the standard REST actions.
      * The action initializer prepares response-shaping policies that are not part
-     * of the database query itself, such as optional grouped-count metadata.
+     * of the database query itself, such as optional count-action metadata,
+     * embedded list counts, and distinct-value fields.
      *
      * Concrete API controllers that override `initialize()` should call
      * `parent::initialize()` unless they intentionally replace the full REST

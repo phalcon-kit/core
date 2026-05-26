@@ -15,6 +15,19 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 2.4.0 - 2026-05-26
+
+### Added
+
+- Added opt-in REST order-field policies so controllers can restrict
+  client-controlled `order` parameters to explicit public fields or
+  public-to-query aliases while preserving legacy unrestricted ordering when no
+  policy is configured.
+- Added embedded count metadata for REST list actions, allowing clients to
+  request supported `count`, `groupedCount`, `bucketTotal`, and `totalCount`
+  fields while controllers can optionally restrict or block them without
+  changing default list responses.
+
 ## 2.3.2 - 2026-05-26
 
 ### Added

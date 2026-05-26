@@ -125,7 +125,6 @@ namespace App\Modules\Api\Controllers;
 
 use App\Config\Exposers;
 use Phalcon\Db\Column;
-use Phalcon\Http\ResponseInterface;
 use Phalcon\Support\Collection;
 use PhalconKit\Modules\Api\Controller;
 
@@ -140,6 +139,13 @@ abstract class AbstractController extends Controller
         parent::initialize();
     }
 
+    public function initializeFindActionCountFields(): void
+    {
+        $this->setFindActionCountFields(new Collection([
+            self::REST_VIEW_COUNT,
+        ], false));
+    }
+
     public function filterStatusOrAdminCondition(): array
     {
         if ($this->identity->hasRole($this->getSuperRoles())) {
@@ -152,32 +158,6 @@ abstract class AbstractController extends Controller
             'bindTypes' => ['statusDraft' => Column::BIND_PARAM_STR],
         ];
     }
-
-    public function findAction(): ResponseInterface
-    {
-        $find = $this->prepareFind();
-        $count = $this->count($find);
-
-        $this->setRestViewVars([
-            self::REST_VIEW_COUNT => is_countable($count) && $count ? count($count) : $count,
-            self::REST_VIEW_DATA => $this->listExpose($this->find($find)),
-        ]);
-
-        return $this->setRestResponse(true);
-    }
-
-    public function findWithAction(): ResponseInterface
-    {
-        $find = $this->prepareFind();
-        $count = $this->count($find);
-
-        $this->setRestViewVars([
-            self::REST_VIEW_COUNT => is_countable($count) && $count ? count($count) : $count,
-            self::REST_VIEW_DATA => $this->listExpose($this->findWith(null, $find)),
-        ]);
-
-        return $this->setRestResponse(true);
-    }
 }
 ```
 
@@ -189,6 +169,8 @@ Use this base-controller pattern intentionally:
   permission methods in the concrete controller.
 - Preserve the framework action signatures when overriding standard REST
   actions.
+- Prefer `initializeFindActionCountFields()` over overriding `findAction()` just
+  to add list counts.
 - Avoid unused imports in copied examples; keep the base controller clean
   because every resource inherits it.
 
@@ -247,6 +229,41 @@ instead of inside `countAction()`.
 
 Do not present `bucketTotal` as a unique-record total. Joined grouped counts
 can place one root record in more than one bucket.
+
+## Embedded List Counts
+
+`findAction()` and `findWithAction()` can embed count metadata when the client
+requests it with the `count` parameter. By default, a null list-count policy is
+unrestricted across the supported framework fields. Override
+`initializeFindActionCountFields()` only when a controller must restrict or
+block embedded counts.
+
+```php
+use Phalcon\Support\Collection;
+
+public function initializeFindActionCountFields(): void
+{
+    $this->setFindActionCountFields(new Collection([
+        self::REST_VIEW_COUNT,
+        self::COUNT_RESPONSE_BUCKET_TOTAL,
+        self::COUNT_RESPONSE_TOTAL_COUNT,
+    ], false));
+}
+```
+
+Request examples:
+
+- `?count=1` or `?count=true` requests the standard `count` field.
+- `?count=count,totalCount` requests named fields.
+- `?count[]=count&count[]=totalCount` requests named fields as a list.
+- `?count[totalCount]=1` requests named fields as an enabled map.
+
+List counts use the same prepared query as the list endpoint, so filters,
+search, joins, permissions, identity conditions, binds, and cache policy stay
+consistent. Limit and offset are removed for count queries. Without a client
+`count` request, no count query runs and the legacy list payload is preserved.
+Passing an empty collection to `setFindActionCountFields()` blocks every
+embedded count field, while unsupported request names are rejected.
 
 ## Distinct Actions
 
@@ -983,6 +1000,53 @@ final class RecordController extends AbstractController
 Use traits for cohesive workflows, not for hiding unrelated helper methods.
 Each trait should still follow the controller's permission, binding, response,
 and validation rules.
+
+## Allowed Order Fields
+
+Controllers accept client ordering by default for backward compatibility. For
+new or security-sensitive resources, opt in to an explicit order policy so only
+known public sort keys can reach the query builder.
+
+```php
+use Phalcon\Support\Collection;
+
+public function initializeOrderFields(): void
+{
+    $this->setOrderFields(new Collection([
+        'createdAt',
+        'status' => true,
+        'ownerEmail' => 'Owner.email',
+    ]));
+}
+```
+
+Supported policy shapes match the other REST field collections:
+
+- `['createdAt', 'status']` allows public names that map to the same query
+  field.
+- `['status' => true]` enables a keyed map entry.
+- `['ownerEmail' => 'Owner.email']` lets the API expose a stable public key
+  while ordering by a joined alias or model-qualified field.
+- false, null, and empty-string values are ignored so inherited policies can be
+  disabled during merges.
+
+Do not automatically reuse filter fields as order fields. A column can be safe
+to filter while still being expensive or misleading to sort. If a resource uses
+the same policy intentionally, copy or merge that collection explicitly:
+
+```php
+public function initializeOrderFields(): void
+{
+    $filterFields = $this->getFilterFields();
+
+    $this->setOrderFields($filterFields === null ? null : clone $filterFields);
+}
+```
+
+When `orderFields` is null, ordering remains unrestricted. When it is a
+collection, unlisted request fields throw an HTTP 403 error. Default order
+definitions are parsed through the same path, so include default sort fields in
+the policy when a controller opts in.
 
 ## Custom Order
 

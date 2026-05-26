@@ -61,33 +61,39 @@ class QueryStateTest extends AbstractUnit
         $controller->initializeExposeFields();
         $controller->initializeFilterFields();
         $controller->initializeMapFields();
+        $controller->initializeOrderFields();
         $controller->initializeSaveFields();
         $controller->initializeSearchFields();
 
         $this->assertFalse($controller->hasExposeFields());
         $this->assertFalse($controller->hasFilterFields());
         $this->assertFalse($controller->hasMapFields());
+        $this->assertFalse($controller->hasOrderFields());
         $this->assertFalse($controller->hasSaveFields());
         $this->assertFalse($controller->hasSearchFields());
         $this->assertNull($controller->getFilterFields());
         $this->assertNull($controller->getMapFields());
+        $this->assertNull($controller->getOrderFields());
         $this->assertNull($controller->getSaveFields());
         $this->assertNull($controller->getSearchFields());
 
         $controller->mergeExposeFields(new Collection(['id']));
         $controller->mergeFilterFields(new Collection(['status']));
         $controller->mergeMapFields(new Collection(['publicName' => 'name']));
+        $controller->mergeOrderFields(new Collection(['createdAt']));
         $controller->mergeSaveFields(new Collection(['title']));
         $controller->mergeSearchFields(new Collection(['body']));
 
         $this->assertTrue($controller->hasExposeFields());
         $this->assertTrue($controller->hasFilterFields());
         $this->assertTrue($controller->hasMapFields());
+        $this->assertTrue($controller->hasOrderFields());
         $this->assertTrue($controller->hasSaveFields());
         $this->assertTrue($controller->hasSearchFields());
         $this->assertSame(['id'], $controller->getExposeFields()?->toArray());
         $this->assertSame(['status'], $controller->getFilterFields()?->toArray());
         $this->assertSame(['publicName' => 'name'], $controller->getMapFields()?->toArray());
+        $this->assertSame(['createdAt'], $controller->getOrderFields()?->toArray());
         $this->assertSame(['title'], $controller->getSaveFields()?->toArray());
         $this->assertSame(['body'], $controller->getSearchFields()?->toArray());
     }
@@ -228,6 +234,70 @@ class QueryStateTest extends AbstractUnit
         $this->assertSame([
             'name' => '[FooModel].[name] desc',
             'id' => '[FooModel].[id] asc',
+        ], $controller->getOrder()?->toArray());
+    }
+
+    public function testOrderFieldsAllowConfiguredStringAndArrayDefinitions(): void
+    {
+        $controller = $this->newQueryController([
+            'order' => 'title desc, ownerEmail asc',
+        ]);
+        $controller->setOrderFields(new Collection([
+            'title',
+            'ownerEmail' => 'Owner.email',
+        ]));
+
+        $controller->initializeOrder();
+
+        $this->assertSame([
+            'title' => '[FooModel].[title] desc',
+            'ownerEmail' => '[Owner].[email] asc',
+        ], $controller->getOrder()?->toArray());
+
+        $controller = $this->newQueryController([
+            'order' => [
+                'createdAt' => 'DESC',
+                'Owner.email' => 'asc',
+            ],
+        ]);
+        $controller->setOrderFields(new Collection([
+            'createdAt' => true,
+            'Owner.email',
+        ]));
+
+        $controller->initializeOrder();
+
+        $this->assertSame([
+            'createdAt' => '[FooModel].[createdAt] desc',
+            'Owner.email' => '[Owner].[email] asc',
+        ], $controller->getOrder()?->toArray());
+    }
+
+    public function testOrderRejectsUnauthorizedConfiguredField(): void
+    {
+        $controller = $this->newQueryController([
+            'order' => 'title desc, privateNote asc',
+        ]);
+        $controller->setOrderFields(new Collection(['title']));
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unauthorized order field "privateNote".');
+
+        $controller->initializeOrder();
+    }
+
+    public function testOrderAppliesConfiguredPolicyToDefaultOrder(): void
+    {
+        $controller = $this->newQueryController();
+        $controller->unitDefaultOrder = ['ownerEmail' => 'desc'];
+        $controller->setOrderFields(new Collection([
+            'ownerEmail' => 'Owner.email',
+        ]));
+
+        $controller->initializeOrder();
+
+        $this->assertSame([
+            'ownerEmail' => '[Owner].[email] desc',
         ], $controller->getOrder()?->toArray());
     }
 
@@ -2468,6 +2538,7 @@ class QueryStateTest extends AbstractUnit
             public array $unitCreatedByColumns = ['createdBy'];
             public ?string $unitSoftDeleteColumn = 'deleted';
             public array $unitIdentityColumns = ['id'];
+            public array|string|null $unitDefaultOrder = null;
 
             public function initialize(): void
             {
@@ -2495,6 +2566,11 @@ class QueryStateTest extends AbstractUnit
                 return array_key_exists($key, $params);
             }
 
+            public function initializeDefaultOrder(): void
+            {
+                $this->setDefaultOrder($this->unitDefaultOrder);
+            }
+
             public function getModelName(): ?string
             {
                 return 'FooModel';
@@ -2502,6 +2578,13 @@ class QueryStateTest extends AbstractUnit
 
             public function appendModelName(string $field, ?string $modelName = null): string
             {
+                $field = trim($field);
+
+                if (str_contains($field, '.')) {
+                    [$alias, $column] = explode('.', $field, 2);
+                    return '[' . $alias . '].[' . $column . ']';
+                }
+
                 return '[' . ($modelName ?? $this->getModelName()) . '].[' . $field . ']';
             }
 

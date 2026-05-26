@@ -38,7 +38,7 @@ deferred.
 
 ### REST Order Safety
 
-Status: Next
+Status: Done in the current `2.4.x` development line
 
 Why:
 
@@ -55,7 +55,9 @@ Scope:
 - Preserve current behavior for controllers that do not opt in to restricted
   ordering.
 - Reject unauthorized client-supplied order fields with a clear HTTP exception.
-- Keep framework-generated or application-set default ordering compatible.
+- Keep framework-generated or application-set default ordering compatible by
+  compiling defaults through the same parser and requiring allow-listed fields
+  only when a controller explicitly configured an order policy.
 - Allow applications to reuse filter fields as their order policy when that is
   what they want, but do not make filter fields an automatic fallback in the
   `2.x` line. A field can be safe to filter without being safe or efficient to
@@ -80,7 +82,7 @@ Validation:
 
 ### Embedded REST List Counts
 
-Status: Design
+Status: Done in the current `2.4.x` development line
 
 Why:
 
@@ -93,19 +95,23 @@ Why:
 
 Scope:
 
-- Define the frontend request parameter and response shape before
-  implementation.
-- Decide whether the count ignores pagination, honors filters/search/joins, and
-  how it behaves with grouped queries.
-- Require both a frontend request and a controller opt-in so count metadata is
-  not returned by accident.
-- Add tests for plain lists, filtered lists, grouped lists, and disabled count
-  requests.
+- Define `count` as the frontend request parameter for list-count metadata.
+- Support `count`, `groupedCount`, `bucketTotal`, and `totalCount` response
+  fields using the same semantics as `countAction()`.
+- Count metadata honors filters/search/joins/permissions and ignores
+  pagination through the shared count query helper. `totalCount` removes group
+  clauses like the count action extra field.
+- Require a frontend request so count metadata is not returned by accident.
+  Controllers can optionally restrict or block embedded counts; a null policy
+  stays unrestricted across supported framework count fields.
+- Add tests for plain lists, filtered lists, grouped lists, eager-loaded list
+  actions, rejected fields, and disabled count requests.
 
 Compatibility:
 
-- Do not change existing `findAction()` payloads unless the controller opts in
-  or the request asks for an allowed count field.
+- Do not change existing `findAction()` payloads unless the request asks for a
+  supported count field. Controllers that need a closed policy can pass an
+  empty collection to block every embedded count field.
 
 Validation:
 

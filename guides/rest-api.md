@@ -360,6 +360,39 @@ Keep `bucketTotal` and `totalCount` separate. On joined grouped endpoints, one
 root record can appear in more than one bucket, so the bucket sum can differ
 from the ungrouped total.
 
+## Embedded List Counts
+
+`findAction()` and `findWithAction()` can include count metadata in the normal
+list response when the client requests it with the `count` parameter. If a
+controller leaves the list-count policy as null, any supported framework count
+field can be requested. Controllers only need to configure a policy when they
+want to restrict or block embedded counts.
+
+```php
+use Phalcon\Support\Collection;
+
+public function initializeFindActionCountFields(): void
+{
+    $this->setFindActionCountFields(new Collection([
+        self::REST_VIEW_COUNT,
+        self::COUNT_RESPONSE_BUCKET_TOTAL,
+        self::COUNT_RESPONSE_TOTAL_COUNT,
+    ], false));
+}
+```
+
+Request `?count=1` or `?count=true` for the standard `count` field. Request
+named fields with `?count=count,totalCount`, `?count[]=count`, or enabled-map
+syntax such as `?count[totalCount]=1`.
+
+List counts use the prepared list query, including filters, search, joins,
+permissions, identity conditions, bind values, and cache options. Limit and
+offset are removed for count queries. Without a client `count` request, the
+legacy list payload is preserved and no count query is executed. Passing an
+empty collection to `setFindActionCountFields()` blocks every embedded count
+field, while unsupported field names are rejected instead of becoming dynamic
+response variables.
+
 ## Distinct Value Responses
 
 `distinctAction()` returns distinct scalar values for one controller-approved
