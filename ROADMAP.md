@@ -176,13 +176,14 @@ Scope:
   relations are present on a model. Done in the current `2.6.x` development
   line.
 - Relationship assignment strict mode should be designed before implementation.
+  Done in the current `2.6.x` development line as an opt-in per-model guard.
 - Model cache invalidation needs a key and whitelist strategy before changing
   the current coarse flush behavior.
 
 Next task:
 
-- Design relationship assignment strict mode from concrete assignment and eager
-  loading scenarios before changing runtime behavior.
+- Design a model cache invalidation policy with explicit keys and whitelist
+  rules before changing the current coarse flush behavior.
 
 ### Exception Taxonomy Cleanup
 

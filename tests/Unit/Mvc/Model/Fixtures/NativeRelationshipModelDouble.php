@@ -15,11 +15,16 @@ namespace PhalconKit\Tests\Unit\Mvc\Model\Fixtures;
 
 use Phalcon\Messages\MessageInterface;
 use Phalcon\Mvc\Model\MetaDataInterface;
+use Phalcon\Mvc\Model\Row;
 use Phalcon\Mvc\ModelInterface;
 use PhalconKit\Mvc\Model;
 
 class NativeRelationshipModelDouble extends Model
 {
+    public static ModelInterface|Row|false|null $findFirstResult = false;
+    public static ?FakeModelsManager $defaultModelsManager = null;
+    public static ?MetaDataInterface $defaultModelsMetaData = null;
+
     public mixed $id = null;
     public mixed $parentId = null;
     public mixed $name = null;
@@ -33,6 +38,12 @@ class NativeRelationshipModelDouble extends Model
     public function initialize(): void
     {
         $this->setSource('native_relationship_model_double');
+    }
+
+    #[\Override]
+    public static function findFirst(mixed $parameters = null): ModelInterface|Row|false|null
+    {
+        return self::$findFirstResult;
     }
 
     #[\Override]
@@ -68,12 +79,12 @@ class NativeRelationshipModelDouble extends Model
     #[\Override]
     public function getModelsManager(): \Phalcon\Mvc\Model\ManagerInterface
     {
-        return $this->fakeModelsManager ?? parent::getModelsManager();
+        return $this->fakeModelsManager ?? self::$defaultModelsManager ?? parent::getModelsManager();
     }
 
     #[\Override]
     public function getModelsMetaData(): MetaDataInterface
     {
-        return $this->fakeModelsMetaData ?? parent::getModelsMetaData();
+        return $this->fakeModelsMetaData ?? self::$defaultModelsMetaData ?? parent::getModelsMetaData();
     }
 }

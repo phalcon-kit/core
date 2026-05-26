@@ -21,10 +21,37 @@ use Phalcon\Mvc\ModelInterface;
 use Phalcon\Support\Collection\CollectionInterface;
 
 /**
- * Interface for model relationship management
+ * Defines PhalconKit's relationship assignment and export contract.
+ *
+ * Models use this interface to distinguish two kinds of related data:
+ * dirty relations that should be saved with the model, and loaded relations
+ * that were attached for read/export purposes by eager loading. Implementors
+ * may also opt into strict relationship assignment to convert malformed
+ * relation payloads into framework exceptions instead of silently ignoring
+ * them for legacy compatibility.
  */
 interface RelationshipInterface
 {
+    /**
+     * Enable or disable strict validation for relationship payloads.
+     *
+     * Strict mode is intentionally opt-in because `assignRelated()` receives the
+     * full model assignment payload, including scalar model columns. When
+     * enabled, relation-specific mistakes such as non-whitelisted relation
+     * aliases, unknown complex relation payloads, and unsupported payload types
+     * throw PhalconKit exceptions while normal scalar field assignment remains
+     * delegated to Phalcon.
+     */
+    public function setStrictRelatedAssignment(bool $strictRelatedAssignment): void;
+
+    /**
+     * Check whether strict relationship assignment is enabled.
+     *
+     * @return bool True when relation payload mistakes should throw exceptions
+     *     instead of using the legacy skip/ignore behavior.
+     */
+    public function isStrictRelatedAssignment(): bool;
+
     public function setKeepMissingRelated(array $keepMissingRelated): void;
     
     public function getKeepMissingRelated(): array;

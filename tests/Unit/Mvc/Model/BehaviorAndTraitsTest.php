@@ -73,6 +73,9 @@ class BehaviorAndTraitsTest extends AbstractUnit
         EventModelDouble::resetEvents();
         EventsTraitSubject::resetEvents();
         ModelBehaviorDouble::$findFirstResult = null;
+        NativeRelationshipModelDouble::$findFirstResult = false;
+        NativeRelationshipModelDouble::$defaultModelsManager = null;
+        NativeRelationshipModelDouble::$defaultModelsMetaData = null;
         IntermediateDeleteModelDouble::$findFirstResult = null;
         parent::tearDown();
     }
@@ -1497,6 +1500,147 @@ class BehaviorAndTraitsTest extends AbstractUnit
             $this->fail('Expected invalid traversed related model exception.');
         } catch (\Exception $exception) {
             $this->assertSame(400, $exception->getCode());
+        }
+    }
+
+    public function testRelationshipStrictAssignmentRejectsRelationPayloadMistakes(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->id = 9;
+        $model->fakeModelsManager = new FakeModelsManager();
+        $model->fakeModelsMetaData = new FakeMetaData();
+        $model->fakeModelsMetaData->attributes = ['id', 'name', 'payload'];
+        $model->fakeModelsMetaData->fakeColumnMap = [
+            'id' => 'id',
+            'name' => 'name',
+            'payload' => 'payload',
+        ];
+        $model->fakeModelsMetaData->fakeReverseColumnMap = [
+            'id' => 'id',
+            'name' => 'name',
+            'payload' => 'payload',
+        ];
+
+        $child = new Relation(Relation::HAS_ONE, ModelBehaviorDouble::class, 'id', 'parentId', [
+            'alias' => 'child',
+        ]);
+        $children = new Relation(Relation::HAS_MANY, ModelBehaviorDouble::class, 'id', 'parentId', [
+            'alias' => 'children',
+        ]);
+        $model->fakeModelsManager->setRelationByAlias(ModelBehaviorDouble::class, 'child', $child);
+        $model->fakeModelsManager->setRelationByAlias(ModelBehaviorDouble::class, 'children', $children);
+
+        $this->assertFalse($model->isStrictRelatedAssignment());
+        $model->setStrictRelatedAssignment(true);
+        $this->assertTrue($model->isStrictRelatedAssignment());
+
+        $model->assignRelated(['name' => 'scalar field']);
+        $model->assignRelated(['payload' => ['json' => true]]);
+        $model->assignRelated(['requestPayload' => ['json' => true]], null, ['requestPayload' => 'payload']);
+
+        $this->assertFalse($model->hasDirtyRelatedAlias('name'));
+        $this->assertFalse($model->hasDirtyRelatedAlias('payload'));
+        $this->assertFalse($model->hasDirtyRelatedAlias('requestPayload'));
+
+        try {
+            $model->assignRelated(['child' => ['parentId' => 1]], ['name']);
+            $this->fail('Expected non-whitelisted relation alias exception.');
+        } catch (\PhalconKit\Exception\InvalidArgumentException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Relationship alias `child` on model `' . ModelBehaviorDouble::class .
+                '` is not allowed by the current assignment whitelist.',
+                $exception->getMessage()
+            );
+        }
+
+        try {
+            $model->assignRelated(['missing' => ['id' => 1]]);
+            $this->fail('Expected unknown relation alias exception.');
+        } catch (\PhalconKit\Exception\InvalidArgumentException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Unknown relationship alias `missing` on model `' . ModelBehaviorDouble::class .
+                '` while strict relationship assignment is enabled.',
+                $exception->getMessage()
+            );
+        }
+
+        try {
+            $model->assignRelated(['child' => null]);
+            $this->fail('Expected unsupported relation payload exception.');
+        } catch (\PhalconKit\Exception\InvalidArgumentException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Unsupported relationship payload for alias `child` on model `' .
+                ModelBehaviorDouble::class .
+                '`. Expected model, array, traversable, integer, or string; received `null`.',
+                $exception->getMessage()
+            );
+        }
+
+        try {
+            $model->assignRelated(['children' => [null]]);
+            $this->fail('Expected unsupported relation payload item exception.');
+        } catch (\PhalconKit\Exception\InvalidArgumentException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Unsupported relationship payload item for alias `children` on model `' .
+                ModelBehaviorDouble::class .
+                '` at index `0`. Expected model, array, traversable, integer, string, or boolean keep-missing sentinel; received `null`.',
+                $exception->getMessage()
+            );
+        }
+    }
+
+    public function testRelationshipStrictAssignmentPropagatesToNestedEntities(): void
+    {
+        $manager = new FakeModelsManager();
+        $metaData = new FakeMetaData();
+        $metaData->attributes = ['id', 'parentId', 'name'];
+
+        NativeRelationshipModelDouble::$defaultModelsManager = $manager;
+        NativeRelationshipModelDouble::$defaultModelsMetaData = $metaData;
+
+        $parent = new NativeRelationshipModelDouble();
+        $parent->id = 9;
+        $parent->fakeModelsManager = $manager;
+        $parent->fakeModelsMetaData = $metaData;
+        $parent->setStrictRelatedAssignment(true);
+
+        $child = new Relation(Relation::HAS_ONE, NativeRelationshipModelDouble::class, 'id', 'parentId', [
+            'alias' => 'child',
+        ]);
+        $grandchildren = new Relation(Relation::HAS_MANY, NativeRelationshipModelDouble::class, 'id', 'parentId', [
+            'alias' => 'grandchildren',
+        ]);
+        $manager->setRelationByAlias(NativeRelationshipModelDouble::class, 'child', $child);
+        $manager->setRelationByAlias(NativeRelationshipModelDouble::class, 'grandchildren', $grandchildren);
+
+        try {
+            $parent->assignRelated(
+                [
+                    'child' => [
+                        'parentId' => 9,
+                        'grandchildren' => [null],
+                    ],
+                ],
+                [
+                    'child' => [
+                        'parentId',
+                        'grandchildren' => ['parentId'],
+                    ],
+                ]
+            );
+            $this->fail('Expected nested unsupported relation payload item exception.');
+        } catch (\PhalconKit\Exception\InvalidArgumentException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Unsupported relationship payload item for alias `grandchildren` on model `' .
+                NativeRelationshipModelDouble::class .
+                '` at index `0`. Expected model, array, traversable, integer, string, or boolean keep-missing sentinel; received `null`.',
+                $exception->getMessage()
+            );
         }
     }
 

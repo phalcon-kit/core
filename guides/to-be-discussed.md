@@ -89,9 +89,11 @@ Keep for discussion:
 - Relationship assignment:
   `src/Mvc/Model/Traits/Relationship.php`,
   `tests/Unit/Mvc/Model/ModelTest.php`.
-  Consider an opt-in strict mode for unknown aliases, a clearer replacement for
-  boolean keep-missing sentinels, and explicit rules for sparse payloads that
-  reactivate or update existing relation rows.
+  Opt-in strict relation assignment now covers non-whitelisted aliases, unknown
+  complex relation payloads, malformed relation values, and nested relation
+  assignment. Remaining design work: a clearer replacement for boolean
+  keep-missing sentinels, and explicit rules for sparse payloads that reactivate
+  or update existing relation rows.
 - Controller behavior merging:
   `src/Mvc/Controller/Traits/Behavior.php`.
   Define whether controller behaviors should collect multiple event responses

@@ -17,6 +17,13 @@ release notes.
 
 ## Unreleased
 
+### Added
+
+- Added opt-in strict relationship assignment for models so API/resource layers
+  can reject non-whitelisted relation aliases, unknown complex relation
+  payloads, and malformed nested relation values without changing the default
+  legacy assignment behavior.
+
 ### Fixed
 
 - Fixed audit `before` and `after` snapshots so assigned relationship or

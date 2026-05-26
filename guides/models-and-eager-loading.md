@@ -67,6 +67,45 @@ $this->setSaveFields(new Collection([
 Keep relation payloads explicit. Do not expose every nested field just because a
 relationship exists.
 
+## Strict Relationship Assignment
+
+Relationship assignment is permissive by default for backward compatibility.
+`assignRelated()` receives the full model payload before Phalcon assigns scalar
+columns, so unknown scalar keys must still pass through native model assignment.
+
+Enable strict relationship assignment on models or resource flows where the
+payload has already been normalized and relation aliases are expected to be
+exact:
+
+```php
+$project->setStrictRelatedAssignment(true);
+$project->assign([
+    'label' => 'Portal',
+    'UserNode' => [
+        ['userId' => 10, 'type' => 'owner'],
+    ],
+], [
+    'label',
+    'UserNode' => ['userId', 'type'],
+]);
+```
+
+When strict mode is enabled, PhalconKit throws a scoped exception for
+relationship-specific mistakes:
+
+- a real relation alias is blocked by the assignment whitelist
+- an unknown complex payload looks like a relation but is not a mapped model
+  column
+- a known relation receives an unsupported value or list item
+
+Strict mode also follows nested relation assignment. If a parent relation
+payload creates or updates a related PhalconKit model, that child receives the
+same strict setting before its own nested `assign()` call runs.
+
+Strict relationship assignment does not replace column validation, model
+validation, or REST save-field policies. It is a guard for nested relation
+payloads, not a general "reject every unknown scalar field" mode.
+
 ## Eager Loading
 
 Use eager loading when a response or workflow needs related data. This avoids

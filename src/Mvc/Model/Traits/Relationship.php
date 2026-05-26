@@ -33,7 +33,14 @@ use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractMetaData;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractModelsManager;
 
 /**
- * Allow to automagically save relationship
+ * Adds relationship-aware assignment, persistence, and export helpers.
+ *
+ * PhalconKit models call `assignRelated()` before native model assignment so
+ * request payloads can contain nested relationship data. The default behavior
+ * remains permissive for backward compatibility: unknown relation-looking
+ * payloads and non-whitelisted aliases are ignored so scalar model assignment
+ * can continue through Phalcon. Applications that validate request payloads
+ * more tightly can enable strict relationship assignment per model instance.
  */
 trait Relationship
 {
@@ -44,6 +51,16 @@ trait Relationship
     abstract public function appendMessage(\Phalcon\Messages\MessageInterface $message): ModelInterface;
     
     private array $keepMissingRelated = [];
+
+    /**
+     * Whether relation-specific assignment mistakes should throw exceptions.
+     *
+     * This flag does not make normal scalar model assignment strict. It only
+     * affects payloads that are clearly intended for relationship handling,
+     * such as known relation aliases, complex nested values, and relation list
+     * items.
+     */
+    private bool $strictRelatedAssignment = false;
     
     private string $relationshipContext = '';
     
@@ -59,6 +76,26 @@ trait Relationship
      * @var array<string, mixed>
      */
     protected array $loadedRelated = [];
+
+    /**
+     * Enable or disable strict validation for relationship payloads.
+     *
+     * Leave this disabled for legacy forms that may send extra nested data.
+     * Enable it in API/resource layers where relation aliases are controlled by
+     * explicit save-field policies and a malformed relation should fail loudly.
+     */
+    public function setStrictRelatedAssignment(bool $strictRelatedAssignment): void
+    {
+        $this->strictRelatedAssignment = $strictRelatedAssignment;
+    }
+
+    /**
+     * Return whether malformed relationship payloads should throw exceptions.
+     */
+    public function isStrictRelatedAssignment(): bool
+    {
+        return $this->strictRelatedAssignment;
+    }
 
     /**
      * Set the missing related configuration list
@@ -281,17 +318,39 @@ trait Relationship
                 throw new LogicException('Invalid relation alias `' . $alias . '` on model `' . $modelClass . '`', 400);
             }
 
+            $relation = $modelsManager->getRelationByAlias($modelClass, $alias);
+
             // Alias is not whitelisted. Keep permissive legacy behavior unless
-            // a future strict assignment mode explicitly opts into exceptions.
-            if (!is_null($whiteList) && (!isset($whiteList[$alias]) && !in_array($alias, $whiteList))) {
+            // strict relation assignment explicitly opts into exceptions.
+            if (!is_null($whiteList) && !$this->isRelatedAssignmentWhiteListed($alias, $whiteList)) {
+                if ($relation && $this->isStrictRelatedAssignment()) {
+                    throw new InvalidArgumentException(
+                        'Relationship alias `' . $alias . '` on model `' . $modelClass .
+                        '` is not allowed by the current assignment whitelist.',
+                        400
+                    );
+                }
+
                 continue;
             }
 
-            $relation = $modelsManager->getRelationByAlias($modelClass, $alias);
-
             // Unknown relationship aliases are skipped for backward
-            // compatibility. Strict-mode exceptions need an opt-in contract.
+            // compatibility. In strict mode, only complex payloads that are
+            // not known model columns are treated as relation mistakes because
+            // scalar keys still need to pass through native model assignment.
             if (!$relation) {
+                if (
+                    $this->isStrictRelatedAssignment()
+                    && $this->isRelationPayload($relationData)
+                    && !$this->isModelAssignmentField($alias, $dataColumnMap)
+                ) {
+                    throw new InvalidArgumentException(
+                        'Unknown relationship alias `' . $alias . '` on model `' . $modelClass .
+                        '` while strict relationship assignment is enabled.',
+                        400
+                    );
+                }
+
                 continue;
             }
 
@@ -376,6 +435,15 @@ trait Relationship
                             elseif (is_array($traversedData) || $traversedData instanceof \Traversable) {
                                 $entity = $this->getEntityFromData((array)$traversedData, $getEntityParams);
                             }
+                            elseif ($this->isStrictRelatedAssignment()) {
+                                throw new InvalidArgumentException(
+                                    'Unsupported relationship payload item for alias `' . $alias .
+                                    '` on model `' . $modelClass . '` at index `' . $traversedKey .
+                                    '`. Expected model, array, traversable, integer, string, or boolean keep-missing sentinel; received `' .
+                                    get_debug_type($traversedData) . '`.',
+                                    400
+                                );
+                            }
 
                             if ($entity) {
                                 $assign [] = $entity;
@@ -389,6 +457,15 @@ trait Relationship
                         }
                     }
                 }
+            }
+            elseif ($this->isStrictRelatedAssignment()) {
+                throw new InvalidArgumentException(
+                    'Unsupported relationship payload for alias `' . $alias .
+                    '` on model `' . $modelClass .
+                    '`. Expected model, array, traversable, integer, or string; received `' .
+                    get_debug_type($relationData) . '`.',
+                    400
+                );
             }
 
             // we got something to assign
@@ -408,6 +485,64 @@ trait Relationship
         }
         
         return $this;
+    }
+
+    /**
+     * Check whether a relation alias is allowed by a nested assignment whitelist.
+     *
+     * The whitelist can contain relation aliases as plain values or as keys that
+     * point to nested allowed fields. This mirrors existing PhalconKit save-field
+     * payloads without forcing callers to choose one representation.
+     */
+    private function isRelatedAssignmentWhiteListed(string $alias, array $whiteList): bool
+    {
+        return array_key_exists($alias, $whiteList) || in_array($alias, $whiteList, true);
+    }
+
+    /**
+     * Determine whether an unknown key carries relationship-shaped data.
+     *
+     * Scalar unknown keys are left to native model assignment. Complex values
+     * are the only safe candidates for strict relationship-alias validation
+     * because they are how REST/save payloads express nested relations.
+     */
+    private function isRelationPayload(mixed $value): bool
+    {
+        return $value instanceof ModelInterface
+            || $value instanceof \Traversable
+            || is_array($value);
+    }
+
+    /**
+     * Check whether a non-relation assignment key is a known model field.
+     *
+     * Strict relationship assignment must not reject JSON/array columns or
+     * mapped model attributes just because their values look like nested
+     * relation payloads. The optional data column map is checked first because
+     * callers may use external request keys that Phalcon maps before writing.
+     */
+    private function isModelAssignmentField(string $field, ?array $dataColumnMap = null): bool
+    {
+        if ($dataColumnMap !== null) {
+            if (array_key_exists($field, $dataColumnMap) || in_array($field, $dataColumnMap, true)) {
+                return true;
+            }
+        }
+
+        assert($this instanceof ModelInterface);
+        $metaData = $this->getModelsMetaData();
+
+        if (in_array($field, $metaData->getAttributes($this), true)) {
+            return true;
+        }
+
+        $columnMap = $metaData->getColumnMap($this) ?? [];
+        if (array_key_exists($field, $columnMap) || in_array($field, $columnMap, true)) {
+            return true;
+        }
+
+        $reverseColumnMap = $metaData->getReverseColumnMap($this) ?? [];
+        return array_key_exists($field, $reverseColumnMap) || in_array($field, $reverseColumnMap, true);
     }
     
     /**
@@ -986,6 +1121,10 @@ trait Relationship
         // can be null to bypass, empty array for nothing or filled array
         $whiteListAlias = isset($whiteList, $alias) ? $whiteList[$alias] ?? [] : null;
         $dataColumnMapAlias = isset($dataColumnMap, $alias) ? $dataColumnMap[$alias] ?? [] : null;
+        if ($entity instanceof RelationshipInterface) {
+            $entity->setStrictRelatedAssignment($this->isStrictRelatedAssignment());
+        }
+
         $entity->assign($data, $whiteListAlias, $dataColumnMapAlias);
         
         return $entity;
