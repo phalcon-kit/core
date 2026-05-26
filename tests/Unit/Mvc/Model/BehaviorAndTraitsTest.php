@@ -585,19 +585,60 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
         $cache = $this->createMock(Cache::class);
         $cache
-            ->expects($this->once())
+            ->expects($this->exactly(5))
             ->method('clear')
             ->willReturn(true);
         $this->di->setShared('modelsCache', $cache);
 
-        $active = new ModelBehaviorDouble();
-        $active->hasSnapshotData = true;
-        $active->hasUpdated = false;
-        $active->hasChanged = false;
-        $active->addFlushCacheBehavior([]);
+        $unchanged = new ModelBehaviorDouble();
+        $unchanged->hasSnapshotData = true;
+        $unchanged->hasUpdated = false;
+        $unchanged->hasChanged = false;
+        $unchanged->addFlushCacheBehavior([]);
 
-        $this->assertCount(1, $active->addedBehaviors);
-        $active->addedBehaviors[0]->notify('afterSave', $active);
+        $changed = new ModelBehaviorDouble();
+        $changed->hasSnapshotData = true;
+        $changed->hasUpdated = true;
+        $changed->hasChanged = false;
+        $changed->addFlushCacheBehavior([]);
+
+        $created = new ModelBehaviorDouble();
+        $created->hasSnapshotData = false;
+        $created->hasUpdated = false;
+        $created->hasChanged = false;
+        $created->addFlushCacheBehavior([]);
+
+        $deleted = new ModelBehaviorDouble();
+        $deleted->hasSnapshotData = true;
+        $deleted->hasUpdated = false;
+        $deleted->hasChanged = false;
+        $deleted->addFlushCacheBehavior([]);
+
+        $restored = new ModelBehaviorDouble();
+        $restored->hasSnapshotData = true;
+        $restored->hasUpdated = false;
+        $restored->hasChanged = false;
+        $restored->addFlushCacheBehavior([]);
+
+        $reordered = new ModelBehaviorDouble();
+        $reordered->hasSnapshotData = true;
+        $reordered->hasUpdated = false;
+        $reordered->hasChanged = false;
+        $reordered->addFlushCacheBehavior([]);
+
+        $this->assertCount(1, $unchanged->addedBehaviors);
+        $this->assertCount(1, $changed->addedBehaviors);
+        $this->assertCount(1, $created->addedBehaviors);
+        $this->assertCount(1, $deleted->addedBehaviors);
+        $this->assertCount(1, $restored->addedBehaviors);
+        $this->assertCount(1, $reordered->addedBehaviors);
+
+        $unchanged->addedBehaviors[0]->notify('afterSave', $unchanged);
+        $changed->addedBehaviors[0]->notify('afterUpdate', $changed);
+        $created->addedBehaviors[0]->notify('afterCreate', $created);
+        $deleted->addedBehaviors[0]->notify('afterDelete', $deleted);
+        $restored->addedBehaviors[0]->notify('afterRestore', $restored);
+        $reordered->addedBehaviors[0]->notify('afterReorder', $reordered);
     }
 
     public function testCacheTraitRejectsInvalidModelsService(): void

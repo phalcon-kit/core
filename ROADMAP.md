@@ -177,8 +177,11 @@ Scope:
   line.
 - Relationship assignment strict mode should be designed before implementation.
   Done in the current `2.6.x` development line as an opt-in per-model guard.
-- Model cache invalidation needs a key and whitelist strategy before changing
-  the current coarse flush behavior.
+- Model cache invalidation needs a key and whitelist strategy before replacing
+  the current coarse flush behavior. The coarse flush predicate itself was fixed
+  in the current `2.6.x` development line so creates, deletes, restores,
+  reorders, and changed snapshots invalidate cache while unchanged snapshot
+  saves do not.
 
 Next task:
 

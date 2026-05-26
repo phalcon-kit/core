@@ -240,6 +240,27 @@ PhalconKit model traits and behaviors cover common persistence rules:
 Use generated defaults for schema-derived behavior and concrete models for
 business-specific behavior.
 
+## Model Cache Invalidation
+
+The model cache behavior currently uses a coarse invalidation strategy. Create,
+delete, restore, and reorder events clear the shared `modelsCache` service
+because they change record visibility or ordering. Save and update events clear
+the shared cache when either condition is true:
+
+- the model has no snapshot data, which covers new records and other writes
+  where Phalcon cannot compare an old row snapshot
+- the model has snapshot data and Phalcon reports changed or updated fields
+
+Unchanged snapshot-aware saves and updates do not clear the cache. Session and
+audit models are excluded from the default flush behavior during model
+initialization so high-volume infrastructure writes do not repeatedly clear
+application model query caches.
+
+Do not depend on targeted model cache keys yet. A future granular invalidation
+contract still needs explicit cache-key naming, model whitelist rules, relation
+invalidation rules, and optional pre-warming semantics before the framework can
+replace the shared-cache clear safely.
+
 ## Practical Rules
 
 - Treat the database schema as the source of truth for generated model shape.

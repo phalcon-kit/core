@@ -29,6 +29,9 @@ release notes.
 - Fixed audit `before` and `after` snapshots so assigned relationship or
   transient payloads from `toArray()` are excluded, keeping audit JSON limited
   to mapped model columns.
+- Fixed model cache invalidation so mutable model events clear the shared
+  model cache for creates, deletes, restores, reorders, or changed snapshots,
+  while unchanged snapshot saves no longer trigger a cache clear.
 
 ## 2.5.0 - 2026-05-26
 

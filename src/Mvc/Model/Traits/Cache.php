@@ -24,8 +24,9 @@ use PhalconKit\Support\Models;
 /**
  * Registers model-cache flushing behavior for mutable models.
  *
- * By default the trait installs an after-save/delete/restore/reorder action
- * that clears the shared `modelsCache` service when a model actually changed.
+ * By default the trait installs after-event actions that clear the shared
+ * `modelsCache` service when a save/update changed data, or when create,
+ * delete, restore, and reorder events change record visibility/order.
  * Session and audit models are blacklisted during initialization to avoid
  * flushing global model caches for high-volume infrastructure records.
  *
@@ -107,20 +108,21 @@ trait Cache
         }
         
         $modelsCache = $this->getModelsCache();
-        $flushAction = function (Model $model) use ($modelsCache): bool {
-            // Do not flush cache if nothing has changed
-            return ($model->hasSnapshotData() && !($model->hasUpdated() || $model->hasChanged()))
+        $flushWhenChanged = function (Model $model) use ($modelsCache): bool {
+            // New records have no old snapshot; existing records flush only
+            // when Phalcon reports changed or updated fields.
+            return (!$model->hasSnapshotData() || $model->hasUpdated() || $model->hasChanged())
                 && $modelsCache->clear();
         };
+        $flushAlways = static fn (Model $_model): bool => $modelsCache->clear();
         
-        $actions = ['flush' => $flushAction];
         $this->addBehavior(new Action([
-            'afterSave' => $actions,
-            'afterCreate' => $actions,
-            'afterUpdate' => $actions,
-            'afterDelete' => $actions,
-            'afterRestore' => $actions,
-            'afterReorder' => $actions,
+            'afterSave' => ['flush' => $flushWhenChanged],
+            'afterCreate' => ['flush' => $flushAlways],
+            'afterUpdate' => ['flush' => $flushWhenChanged],
+            'afterDelete' => ['flush' => $flushAlways],
+            'afterRestore' => ['flush' => $flushAlways],
+            'afterReorder' => ['flush' => $flushAlways],
         ]));
     }
     

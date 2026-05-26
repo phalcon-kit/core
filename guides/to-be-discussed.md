@@ -120,8 +120,11 @@ Keep for discussion:
   current load contract.
 - Model cache invalidation:
   `src/Mvc/Model/Traits/Cache.php`.
-  Design cache keys, whitelist rules, and pre-warming before replacing the
-  current coarse flush behavior.
+  The current coarse flush predicate now invalidates on creates, deletes,
+  restores, reorders, and changed snapshots while skipping unchanged snapshot
+  saves. Remaining design work: cache-key naming, model whitelist rules,
+  relation invalidation, and pre-warming before replacing the shared
+  `modelsCache->clear()` behavior.
 - Read/write replication listeners:
   `src/Mvc/Model/Traits/Replication.php`.
   Decide whether repeated initialization needs an idempotency guard or a
