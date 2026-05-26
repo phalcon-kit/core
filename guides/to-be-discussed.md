@@ -122,9 +122,11 @@ Keep for discussion:
   `src/Mvc/Model/Traits/Cache.php`.
   The current coarse flush predicate now invalidates on creates, deletes,
   restores, reorders, and changed snapshots while skipping unchanged snapshot
-  saves. Remaining design work: cache-key naming, model whitelist rules,
-  relation invalidation, and pre-warming before replacing the shared
-  `modelsCache->clear()` behavior.
+  saves. The minimum granular invalidation contract is documented in
+  [Models And Eager Loading](models-and-eager-loading.md#future-granular-cache-policy).
+  Keep targeted deletion parked until a real application needs key
+  registration, reverse indexes, relation invalidation, and pre-warming beyond
+  the shared `modelsCache->clear()` fallback.
 - Read/write replication listeners:
   `src/Mvc/Model/Traits/Replication.php`.
   Decide whether repeated initialization needs an idempotency guard or a

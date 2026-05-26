@@ -30,11 +30,11 @@ public changes in [CHANGELOG.md](CHANGELOG.md).
 
 Target: `2.6.x`
 
-Theme: Model correctness and low-risk framework diagnostics.
+Theme: Low-risk framework diagnostics and exception cleanup.
 
 Decision: REST request-surface work shipped in `2.4.x` and `2.5.x`. The next
-line should favor narrow correctness fixes with concrete regression tests over
-new broad API surface.
+line should favor narrow correctness fixes, clear failure modes, and concrete
+regression tests over new broad API surface.
 
 ### REST Order Safety
 
@@ -166,7 +166,7 @@ Validation:
 
 ### Model Correctness
 
-Status: Next
+Status: Done in the current `2.6.x` development line
 
 Target: `2.6.x`
 
@@ -181,18 +181,20 @@ Scope:
   the current coarse flush behavior. The coarse flush predicate itself was fixed
   in the current `2.6.x` development line so creates, deletes, restores,
   reorders, and changed snapshots invalidate cache while unchanged snapshot
-  saves do not.
+  saves do not. The future granular cache policy contract is documented in
+  [Models And Eager Loading](guides/models-and-eager-loading.md#future-granular-cache-policy).
 
-Next task:
+Follow-up:
 
-- Design a model cache invalidation policy with explicit keys and whitelist
-  rules before changing the current coarse flush behavior.
+- Keep targeted cache invalidation in the design backlog until key
+  registration, reverse indexes, relation invalidation, and pre-warming
+  semantics are backed by a real application use case.
 
 ### Exception Taxonomy Cleanup
 
-Status: Planned
+Status: Next
 
-Target: `2.5.x`
+Target: `2.6.x`
 
 Scope:
 
@@ -211,7 +213,7 @@ Non-goal:
 
 Status: Design
 
-Target: `2.5.x`
+Target: `2.6.x`
 
 Scope:
 
@@ -278,6 +280,8 @@ is a concrete application need and a compatible API shape.
 - Database logger correlation context.
 - CLI router interface compatibility.
 - Model setup defaults.
+- Model cache key registration, reverse indexes, relation invalidation, and
+  pre-warming.
 - Dynamic model metadata and dynamic record model identity.
 - Relationship assignment strictness and sparse payload behavior.
 - Controller behavior response and permission merging.

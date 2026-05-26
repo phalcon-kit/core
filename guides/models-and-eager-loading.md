@@ -261,6 +261,34 @@ contract still needs explicit cache-key naming, model whitelist rules, relation
 invalidation rules, and optional pre-warming semantics before the framework can
 replace the shared-cache clear safely.
 
+### Future Granular Cache Policy
+
+Any future targeted invalidation should be opt-in and policy-driven. The
+minimum safe contract should define:
+
+- cache-key ownership: whether keys are owned by the model class, repository,
+  controller query, or application service
+- key format: a stable namespace, model class/source identity, query signature,
+  identity/permission scope, locale/workspace scope, pagination scope, and a
+  version segment so old keys can be abandoned safely
+- whitelist rules: only explicitly opted-in model classes or cache groups can
+  use targeted deletion; all other model writes keep using the coarse shared
+  cache clear
+- reverse indexes: cached query keys must be discoverable by model class,
+  relation alias, and affected primary keys before the framework can delete
+  only selected entries
+- relation invalidation: parent and child relation caches need explicit rules
+  for belongs-to, has-one, has-many, and through relations
+- mutation events: create, update, delete, restore, reorder, and lifecycle
+  tasks must map to the same invalidation contract
+- pre-warming: any automatic cache refill must be an application callback or
+  queue job, not an implicit model-event side effect
+
+The migration path should add observation and key registration first, then
+allow specific models to opt into targeted invalidation. The framework should
+keep the coarse clear as the fallback whenever a policy is missing, ambiguous,
+or unable to find the affected cache keys.
+
 ## Practical Rules
 
 - Treat the database schema as the source of truth for generated model shape.
