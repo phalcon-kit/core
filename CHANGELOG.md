@@ -38,6 +38,8 @@ release notes.
   helpers, eager-loading helpers, and controller model lookup so invalid
   framework state now raises contextual PhalconKit exceptions even when PHP
   assertions are disabled.
+- Fixed replica read/write listener attachment so repeated replication
+  initialization does not register duplicate model write-event callbacks.
 - Fixed model cache invalidation so mutable model events clear the shared
   model cache for creates, deletes, restores, reorders, or changed snapshots,
   while unchanged snapshot saves no longer trigger a cache clear.

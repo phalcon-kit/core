@@ -1090,7 +1090,23 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame(50, $model::getReplicationLag());
         $this->assertSame('read-connection', $model->getReadConnectionService());
         $this->assertSame('write-connection', $model->getWriteConnectionService());
+        $this->assertCount(1, $model->getEventsManager()->getListeners('model:afterSave'));
         $this->assertTrue($model->isReplicationReady());
+
+        $model->initializeReplication([
+            'lag' => 50,
+            'connectionService' => 'write-connection',
+            'readConnectionService' => 'read-connection',
+            'writeConnectionService' => 'write-connection',
+        ]);
+
+        $this->assertCount(1, $model->getEventsManager()->getListeners('model:afterSave'));
+
+        $replacementEventsManager = new EventsManager();
+        $model->setEventsManager($replacementEventsManager);
+        $model->addReadWriteConnectionBehavior();
+
+        $this->assertCount(1, $replacementEventsManager->getListeners('model:afterSave'));
 
         $model::setReplicationReadyAt(null);
         $this->assertSame($write, $model->selectReadConnection());

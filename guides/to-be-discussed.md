@@ -127,10 +127,6 @@ Keep for discussion:
   Keep targeted deletion parked until a real application needs key
   registration, reverse indexes, relation invalidation, and pre-warming beyond
   the shared `modelsCache->clear()` fallback.
-- Read/write replication listeners:
-  `src/Mvc/Model/Traits/Replication.php`.
-  Decide whether repeated initialization needs an idempotency guard or a
-  behavior object before changing listener attachment.
 - Lifecycle query ownership:
   `src/Mvc/Model/Traits/LifeCycle.php`.
   Moving lifecycle helpers into a model manager would be cleaner, but requires a

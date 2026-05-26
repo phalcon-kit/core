@@ -183,6 +183,9 @@ Scope:
   reorders, and changed snapshots invalidate cache while unchanged snapshot
   saves do not. The future granular cache policy contract is documented in
   [Models And Eager Loading](guides/models-and-eager-loading.md#future-granular-cache-policy).
+- Read/write replication listener attachment now tracks the model events
+  manager that received the callbacks, so repeated replication initialization
+  does not duplicate write-event listeners.
 
 Follow-up:
 
@@ -311,7 +314,6 @@ is a concrete application need and a compatible API shape.
 - Additional `findIn*` helpers.
 - Soft-delete event-state configuration.
 - Eager-loading magic, option propagation, and limitation cleanup.
-- Read/write replication listener idempotency.
 - Lifecycle query ownership.
 - Dynamic join optimization and filter hoisting.
 - REST save initialization hooks.

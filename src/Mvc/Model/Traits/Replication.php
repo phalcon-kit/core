@@ -85,6 +85,16 @@ trait Replication
      * A null value means the replica is considered ready immediately.
      */
     protected static ?int $replicationReadyAt = null;
+
+    /**
+     * Events manager that already received the read/write replication listeners.
+     *
+     * Models can be initialized more than once in tests, long-running workers,
+     * or application code that refreshes feature options. Tracking the manager
+     * instance keeps listener attachment idempotent while still allowing a new
+     * manager to receive the listeners if the model swaps managers.
+     */
+    protected ?ManagerInterface $readWriteConnectionBehaviorEventsManager = null;
     
     /**
      * Return the configured replica lag window in milliseconds.
@@ -201,14 +211,6 @@ trait Replication
      */
     public function addReadWriteConnectionBehavior(): void
     {
-        $forceMasterConnectionService = function (): void {
-            $lag = self::getReplicationLag() ?? 0;
-            self::setReplicationReadyAt(self::nowMs() + $lag);
-        };
-        
-        // Direct listener attachment preserves existing behavior. A reusable
-        // behavior object or idempotency guard would need a public lifecycle
-        // contract for models that call this more than once.
         $eventsManager = $this->getEventsManager();
         if (!$eventsManager instanceof ManagerInterface) {
             throw new ServiceException(sprintf(
@@ -217,12 +219,23 @@ trait Replication
                 get_debug_type($eventsManager)
             ));
         }
+
+        if ($this->readWriteConnectionBehaviorEventsManager === $eventsManager) {
+            return;
+        }
+
+        $forceMasterConnectionService = function (): void {
+            $lag = self::getReplicationLag() ?? 0;
+            self::setReplicationReadyAt(self::nowMs() + $lag);
+        };
         
         $eventsManager->attach('model:afterSave', $forceMasterConnectionService);
         $eventsManager->attach('model:afterCreate', $forceMasterConnectionService);
         $eventsManager->attach('model:afterUpdate', $forceMasterConnectionService);
         $eventsManager->attach('model:afterDelete', $forceMasterConnectionService);
         $eventsManager->attach('model:afterRestore', $forceMasterConnectionService);
+
+        $this->readWriteConnectionBehaviorEventsManager = $eventsManager;
     }
     
     /**
