@@ -41,12 +41,12 @@ release notes.
 - Fixed REST count response and embedded list-count policy enabled maps so
   boolean-like config values such as `1`, `'1'`, `'yes'`, `0`, `'0'`, and
   `'off'` are interpreted consistently with request enabled-map values.
-- Fixed single-entity REST save failures so explicit HTTP error codes carried
-  by Phalcon messages, such as invalid create/update intent or missing update
-  targets, are preserved instead of always returning 422.
+- Fixed single-entity REST save failures so explicit HTTP client-error codes
+  carried by Phalcon messages, such as invalid create/update intent or missing
+  update targets, are preserved instead of always returning 422.
 - Fixed REST delete, restore, and reorder failures so unsuccessful model
-  operations return an error status derived from model messages instead of a
-  successful 200 response with a false body.
+  operations return an error response and preserve explicit 4xx model message
+  codes instead of returning a successful 200 response with a false body.
 - Fixed `Support\Options::removeOption()` so stored null-valued option keys can
   be removed from the raw option array.
 

@@ -175,9 +175,10 @@ trait SaveAction
      * Model, validation, and domain-rule failures normally include messages and
      * map to 422 Unprocessable Entity. Framework-generated REST failures use
      * Phalcon message codes for request problems such as invalid create/update
-     * intent or not-found identities; those explicit 4xx/5xx codes are
-     * preserved so the action layer does not collapse them into validation
-     * responses.
+     * intent, missing targets, forbidden operations, or conflicts; those
+     * explicit 4xx codes are preserved so the action layer does not collapse
+     * them into validation responses. 5xx responses should come from thrown
+     * exceptions or explicit controller error handling, not model messages.
      *
      * A failure without messages is treated as a malformed request because the
      * persistence layer could not provide a domain-specific reason for the

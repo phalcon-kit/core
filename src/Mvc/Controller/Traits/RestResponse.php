@@ -161,10 +161,11 @@ trait RestResponse
      *
      * Model, validation, and domain-rule failures normally include messages and
      * map to 422 Unprocessable Entity. Framework-generated REST failures can
-     * attach explicit HTTP codes to Phalcon messages; those 4xx/5xx codes are
-     * preserved so actions do not collapse invalid request intent, missing
-     * targets, conflicts, or server-side failures into generic validation
-     * responses.
+     * attach explicit client-error codes to Phalcon messages; those 4xx codes
+     * are preserved so actions do not collapse invalid request intent, missing
+     * targets, forbidden operations, or conflicts into generic validation
+     * responses. Server errors stay owned by thrown exceptions or explicit
+     * controller calls to {@see setRestErrorResponse()}.
      *
      * A failure without messages is treated as malformed input by default. The
      * defaults can be overridden for actions that need a different legacy or
@@ -233,13 +234,14 @@ trait RestResponse
     /**
      * Extract an explicit HTTP status code from one REST action message.
      *
-     * Only Phalcon message codes in the HTTP error range are considered. Normal
-     * validation messages often carry no code, or a non-HTTP code, and should
-     * continue to use the action's default failure response.
+     * Only Phalcon message codes in the HTTP client-error range are considered.
+     * Normal validation messages often carry no code, or a non-HTTP code, and
+     * server-error responses should come from exceptions or explicit controller
+     * error handling instead of model/domain message metadata.
      *
      * @param mixed $message Candidate message value from a model/action failure.
      *
-     * @return int|null Explicit HTTP status code when present and valid;
+     * @return int|null Explicit 4xx HTTP status code when present and valid;
      *     otherwise null.
      */
     protected function getRestActionMessageStatusCode(mixed $message): ?int
@@ -249,7 +251,7 @@ trait RestResponse
         }
 
         $code = $message->getCode();
-        return $code >= 400 && $code <= 599 ? $code : null;
+        return $code >= 400 && $code <= 499 ? $code : null;
     }
     
     /**

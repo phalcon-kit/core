@@ -38,6 +38,22 @@ final class MutableActionTest extends AbstractUnit
         $this->assertSame([$message], $controller->view->getVar(MutableActionControllerDouble::REST_VIEW_MESSAGES));
     }
 
+    public function testDeleteActionFailureIgnoresServerErrorMessageStatusCode(): void
+    {
+        $message = new Message('Delete failed.', 'id', 'DeleteFailed', 500);
+        $entity = new MutableActionModelDouble();
+        $entity->deleteResult = false;
+        $entity->messages = [$message];
+        $controller = $this->createController($entity);
+
+        $controller->deleteAction();
+
+        $this->assertSame(422, $controller->response->getStatusCode());
+        $this->assertFalse($controller->restResponse);
+        $this->assertFalse($controller->view->getVar(MutableActionControllerDouble::REST_VIEW_DELETED));
+        $this->assertSame([$message], $controller->view->getVar(MutableActionControllerDouble::REST_VIEW_MESSAGES));
+    }
+
     public function testRestoreActionFailureWithValidationMessagesReturnsUnprocessableEntity(): void
     {
         $entity = new MutableActionModelDouble();

@@ -333,15 +333,16 @@ returns `422 Unprocessable Entity`. A failed operation with no messages returns
 `400 Bad Request`, because the framework has no domain-specific reason to
 expose.
 
-PhalconKit also preserves explicit HTTP error codes attached to Phalcon
-messages when the code is in the `400-599` range. Framework paths use this for
+PhalconKit also preserves explicit HTTP client-error codes attached to Phalcon
+messages when the code is in the `400-499` range. Framework paths use this for
 request-shape failures such as invalid create/update intent, missing update
 targets, forbidden operations, or conflicts. Ordinary validation messages with
-code `0`, non-HTTP codes, strings, or arrays do not override the action's
-default status.
+code `0`, non-HTTP codes, server-error codes, strings, or arrays do not
+override the action's default status.
 
 Use this sparingly in application code. Message codes should represent real
-HTTP semantics, not arbitrary business error numbers.
+client-error HTTP semantics, not arbitrary business error numbers. Server-error
+responses should come from exceptions or explicit controller error handling.
 
 ## Advanced Conditions
 

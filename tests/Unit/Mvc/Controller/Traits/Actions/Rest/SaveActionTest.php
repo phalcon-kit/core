@@ -108,6 +108,21 @@ class SaveActionTest extends AbstractUnit
         $this->assertFalse($controller->restResponse);
     }
 
+    public function testSingleSaveFailureWithServerErrorMessageCodeReturnsUnprocessableEntity(): void
+    {
+        $controller = $this->createController();
+
+        $controller->exposeRespondFromSaveResult([
+            SaveActionControllerDouble::REST_VIEW_SAVED => false,
+            SaveActionControllerDouble::REST_VIEW_MESSAGES => [
+                new Message('Persistence failed.', 'id', 'PersistenceFailed', 500),
+            ],
+        ]);
+
+        $this->assertSame(422, $controller->response->getStatusCode());
+        $this->assertFalse($controller->restResponse);
+    }
+
     public function testBatchSaveStatusSemanticsArePreserved(): void
     {
         $controller = $this->createController();

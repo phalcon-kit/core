@@ -172,8 +172,9 @@ Rules for custom auth endpoints:
   core action pattern, so the token claim key exists.
 - Return core identity keys consistently; add a separate domain key if the UI
   needs to know that a participant login flow was used.
-- Use `Message` codes and HTTP-like status codes so REST responses stay
-  machine-readable.
+- Use `Message` codes with real `4xx` HTTP client-error semantics so REST
+  responses stay machine-readable without turning domain validation into
+  accidental server errors.
 
 ## JWT And Session Identity
 
