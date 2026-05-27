@@ -18,14 +18,22 @@ use PhalconKit\Support\CollectionPolicy;
 
 trait SearchFields
 {
+    /**
+     * Controller-owned search-field policy.
+     *
+     * Null means the search condition builder has no configured field list and
+     * will not add a search predicate. A non-null collection defines the fields
+     * considered by the public `search` request parameter.
+     */
     protected ?Collection $searchFields = null;
     
     /**
-     * Initializes the search fields.
+     * Initialize the full-text-like search field list.
      *
-     * This method is responsible for initializing the necessary search fields for the model
-     *
-     * @return void
+     * Concrete controllers should override this method and call
+     * {@see setSearchFields()} when a resource supports request-driven search.
+     * The default is null so search stays disabled unless a controller defines
+     * an explicit set of searchable fields.
      */
     public function initializeSearchFields(): void
     {
@@ -33,10 +41,11 @@ trait SearchFields
     }
     
     /**
-     * Sets the fields for searching data.
+     * Replace the fields used by the REST `search` parameter.
      *
-     * @param Collection|null $searchFields The array of search fields.
-     *                                      Pass null to allow searching all fields.
+     * Passing null disables search field configuration. Passing an empty
+     * collection keeps the policy explicit but gives the search builder no
+     * fields to compile.
      */
     public function setSearchFields(?Collection $searchFields): void
     {
@@ -44,15 +53,11 @@ trait SearchFields
     }
     
     /**
-     * Returns the search fields.
+     * Return the configured search-field policy.
      *
-     * This method retrieves the search fields for the model.
-     * If search fields have been set, it returns the collection of search fields.
-     * If no search fields have been set, it returns null.
-     *
-     * Note: The search fields are the fields that are used with the search queries.
-     *
-     * @return Collection|null The collection of search fields or null if no search fields have been set.
+     * A null return value means no search fields have been configured. A
+     * non-null collection is flattened by the search condition builder so nested
+     * field definitions can participate in the generated predicate.
      */
     public function getSearchFields(): ?Collection
     {
@@ -60,11 +65,10 @@ trait SearchFields
     }
 
     /**
-     * Determines if the search fields are defined.
+     * Check whether search-field configuration is present.
      *
-     * This method checks whether the search fields for the model have been set.
-     *
-     * @return bool True if search fields are defined, false otherwise.
+     * This reports policy presence only. An empty collection still means the
+     * controller made an explicit search-field decision.
      */
     public function hasSearchFields(): bool
     {
@@ -72,10 +76,11 @@ trait SearchFields
     }
 
     /**
-     * Merges the provided searchFields collection with the current searchFields property.
+     * Merge additional search-field entries into the current policy.
      *
-     * @param Collection $searchFields The collection of searchFields to merge with the current property.
-     * @return void
+     * Merge semantics are centralized in {@see CollectionPolicy}: null starts
+     * from the incoming collection, empty incoming collections leave an existing
+     * policy unchanged, and associative keys can override previous entries.
      */
     public function mergeSearchFields(Collection $searchFields): void
     {

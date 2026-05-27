@@ -36,6 +36,10 @@ trait OrderFields
      *   orders by a model-qualified or relationship-qualified query field.
      * - false, null, and empty-string values are ignored so inherited entries
      *   can be disabled through merge policy.
+     *
+     * String values are aliases, not boolean-like flags. For example,
+     * `['legacySort' => 'off']` maps `legacySort` to the query field `off`; it
+     * does not disable the entry.
      */
     protected ?Collection $orderFields = null;
 
@@ -58,6 +62,9 @@ trait OrderFields
      * behavior. Passing an empty collection enables allow-list mode but allows
      * no fields, which can be useful for controllers that must reject every
      * client-controlled sort key.
+     *
+     * @param Collection|null $orderFields Field policy collection, null for
+     *     unrestricted ordering, or an empty collection for a closed policy.
      */
     public function setOrderFields(?Collection $orderFields): void
     {
@@ -70,6 +77,9 @@ trait OrderFields
      * A null return value means unrestricted ordering. A non-null collection is
      * normalized by {@see getOrderFieldMap()} before the request `order`
      * parameter is accepted.
+     *
+     * @return Collection|null Field policy collection or null for unrestricted
+     *     ordering.
      */
     public function getOrderFields(): ?Collection
     {
@@ -94,6 +104,8 @@ trait OrderFields
      * Merge semantics match the other REST field-policy collections: null
      * starts from the incoming collection, string keys can override previous
      * entries, and false/null values can disable inherited entries.
+     *
+     * @param Collection $orderFields Additional field policy entries.
      */
     public function mergeOrderFields(Collection $orderFields): void
     {

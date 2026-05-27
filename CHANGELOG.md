@@ -31,6 +31,8 @@ release notes.
   guide, and shipped-skill updates.
 - Centralized optional database and Redis test preflight skips so local and CI
   output distinguishes unavailable infrastructure from real test failures.
+- Expanded REST field-policy documentation and no-database regression coverage
+  for save, map, expose, filter, search, and order policy semantics.
 
 ### Fixed
 

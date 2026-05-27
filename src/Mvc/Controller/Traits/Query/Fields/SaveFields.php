@@ -18,14 +18,21 @@ use PhalconKit\Support\CollectionPolicy;
 
 trait SaveFields
 {
+    /**
+     * Controller-owned save-field policy.
+     *
+     * Null delegates writable-field decisions to Phalcon's normal model assign
+     * behavior. A non-null collection is passed to `ModelInterface::assign()`
+     * so REST payloads can write only explicitly configured fields.
+     */
     protected ?Collection $saveFields = null;
     
     /**
-     * Initializes the save fields.
+     * Initialize the writable field list for REST save/create/update actions.
      *
-     * This method is responsible for initializing the necessary save fields for the model
-     *
-     * @return void
+     * Concrete controllers should override this method and call
+     * {@see setSaveFields()} when a resource needs mass-assignment protection
+     * at the controller layer. The default is null for backward compatibility.
      */
     public function initializeSaveFields(): void
     {
@@ -33,10 +40,11 @@ trait SaveFields
     }
     
     /**
-     * Sets the fields for saving data.
+     * Replace the fields clients may write through REST persistence actions.
      *
-     * @param Collection|null $saveFields The array of save fields.
-     *                                    Pass null to allow saving all fields.
+     * Passing null leaves assign unrestricted. Passing an empty collection makes
+     * the policy explicit but gives `assign()` no allowed fields, which is a
+     * useful closed default for read-only resources.
      */
     public function setSaveFields(?Collection $saveFields): void
     {
@@ -44,15 +52,11 @@ trait SaveFields
     }
     
     /**
-     * Returns the save fields.
+     * Return the configured save-field policy.
      *
-     * This method retrieves the save fields for the model.
-     * If save fields have been set, it returns the collection of save fields.
-     * If no save fields have been set, it returns null.
-     *
-     * Note: The save fields are the fields that are allowed to be saved in the database for the model.
-     *
-     * @return Collection|null The collection of save fields or null if no save fields have been set.
+     * The save query trait converts the collection to an array and passes it to
+     * Phalcon's model assignment API together with the optional map-field
+     * policy.
      */
     public function getSaveFields(): ?Collection
     {
@@ -60,11 +64,10 @@ trait SaveFields
     }
 
     /**
-     * Checks if the save fields are set.
+     * Check whether save-field configuration is present.
      *
-     * This method determines whether the save fields have been initialized.
-     *
-     * @return bool True if save fields are set, otherwise false.
+     * This reports policy presence only. An empty collection still means the
+     * controller intentionally configured a closed writable-field policy.
      */
     public function hasSaveFields(): bool
     {
@@ -72,10 +75,11 @@ trait SaveFields
     }
 
     /**
-     * Merges the provided saveFields collection with the current saveFields property.
+     * Merge additional save-field entries into the current policy.
      *
-     * @param Collection $saveFields The collection of saveFields to merge with the current property.
-     * @return void
+     * Merge semantics are centralized in {@see CollectionPolicy}: null starts
+     * from the incoming collection, empty incoming collections leave an existing
+     * policy unchanged, and associative keys can override previous entries.
      */
     public function mergeSaveFields(Collection $saveFields): void
     {

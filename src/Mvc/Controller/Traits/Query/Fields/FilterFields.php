@@ -18,14 +18,22 @@ use PhalconKit\Support\CollectionPolicy;
 
 trait FilterFields
 {
+    /**
+     * Controller-owned filter-field policy.
+     *
+     * Null means unrestricted filtering and preserves legacy controller
+     * behavior. A non-null collection enables allow-list mode; an empty
+     * collection is therefore a closed policy that rejects every client filter.
+     */
     protected ?Collection $filterFields = null;
     
     /**
-     * Initializes the filter fields.
+     * Initialize the filter-field allow-list.
      *
-     * This method is responsible for initializing the necessary filter fields for the model
-     *
-     * @return void
+     * Concrete controllers can override this method and call
+     * {@see setFilterFields()} to define which fields the public `filter`
+     * request parameter may target. The default is null so existing resources
+     * keep accepting any normalized field until they opt in to restrictions.
      */
     public function initializeFilterFields(): void
     {
@@ -33,10 +41,12 @@ trait FilterFields
     }
     
     /**
-     * Sets the fields for filtering data.
+     * Replace the fields clients may use in the REST `filter` parameter.
      *
-     * @param Collection|null $filterFields The array of filter fields.
-     *                                      Pass null to allow filtering all fields.
+     * Supported collection shapes follow the filter compiler contract and may
+     * include nested arrays for relation-aware filters. Passing null disables
+     * allow-list enforcement; passing an empty collection keeps allow-list mode
+     * active but allows no client-supplied filters.
      */
     public function setFilterFields(?Collection $filterFields): void
     {
@@ -44,15 +54,11 @@ trait FilterFields
     }
     
     /**
-     * Returns the filter fields.
+     * Return the configured filter-field policy.
      *
-     * This method retrieves the filter fields for the model.
-     * If filter fields have been set, it returns the collection of filter fields.
-     * If no filter fields have been set, it returns null.
-     *
-     * Note: The filter fields are the fields that are allowed to be used within database queries.
-     *
-     * @return Collection|null The collection of filter fields or null if no filter fields have been set.
+     * A null return value means unrestricted filtering. A non-null collection is
+     * consumed by the filter condition builder before client filters are
+     * accepted.
      */
     public function getFilterFields(): ?Collection
     {
@@ -60,12 +66,10 @@ trait FilterFields
     }
 
     /**
-     * Determines if filter fields are set.
+     * Check whether filter-field allow-list mode is configured.
      *
-     * This method checks whether the filter fields have been initialized
-     * or are set to a non-null value.
-     *
-     * @return bool True if filter fields are set, false otherwise.
+     * This reports policy presence, not whether at least one field is enabled.
+     * An empty collection still means filtering is intentionally closed.
      */
     public function hasFilterFields(): bool
     {
@@ -73,10 +77,11 @@ trait FilterFields
     }
 
     /**
-     * Merges the provided filterFields collection with the current filterFields property.
+     * Merge additional filter-field entries into the current policy.
      *
-     * @param Collection $filterFields The collection of filterFields to merge with the current property.
-     * @return void
+     * Merge semantics are centralized in {@see CollectionPolicy}: null starts
+     * from the incoming collection, empty incoming collections leave an existing
+     * policy unchanged, and associative keys can override previous entries.
      */
     public function mergeFilterFields(Collection $filterFields): void
     {

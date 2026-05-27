@@ -18,14 +18,21 @@ use PhalconKit\Support\CollectionPolicy;
 
 trait ExposeFields
 {
+    /**
+     * Controller-owned response exposure policy.
+     *
+     * Null lets the exposer use its default behavior for the current item. A
+     * non-null collection constrains the fields or nested relation paths that
+     * standard REST responses expose to clients.
+     */
     protected ?Collection $exposeFields = null;
     
     /**
-     * Initializes the expose fields.
+     * Initialize the response exposure field list.
      *
-     * This method is responsible for initializing the necessary expose fields for the model
-     *
-     * @return void
+     * Concrete controllers can override this method and call
+     * {@see setExposeFields()} to define the public response shape for standard
+     * REST actions. The default remains null for backward compatibility.
      */
     public function initializeExposeFields(): void
     {
@@ -33,10 +40,11 @@ trait ExposeFields
     }
     
     /**
-     * Sets the fields for exposing data.
+     * Replace the fields standard REST actions may expose.
      *
-     * @param Collection|null $exposeFields The array of expose fields.
-     *                                      Pass null to allow exposing all fields.
+     * Passing null leaves exposure unrestricted/defaulted. Passing an empty
+     * collection is a closed response policy and can be useful when a custom
+     * transformer owns the complete payload.
      */
     public function setExposeFields(?Collection $exposeFields): void
     {
@@ -44,15 +52,10 @@ trait ExposeFields
     }
     
     /**
-     * Returns the expose fields.
+     * Return the configured response exposure policy.
      *
-     * This method retrieves the expose fields for the model.
-     * If expose fields have been set, it returns the collection of expose fields.
-     * If no expose fields have been set, it returns null.
-     *
-     * Note: The expose fields are the fields that are exposed with the response.
-     *
-     * @return Collection|null The collection of expose fields or null if no expose fields have been set.
+     * The expose trait converts this collection to an array when listing or
+     * exposing records for standard REST responses.
      */
     public function getExposeFields(): ?Collection
     {
@@ -60,9 +63,10 @@ trait ExposeFields
     }
 
     /**
-     * Determines if the exposeFields property is set to a non-null value.
+     * Check whether response exposure configuration is present.
      *
-     * @return bool True if exposeFields is not null, false otherwise.
+     * This reports policy presence only. An empty collection still means the
+     * controller explicitly configured exposure.
      */
     public function hasExposeFields(): bool
     {
@@ -70,10 +74,11 @@ trait ExposeFields
     }
 
     /**
-     * Merges the provided exposeFields collection with the current exposeFields property.
+     * Merge additional response exposure entries into the current policy.
      *
-     * @param Collection $exposeFields The collection of exposeFields to merge with the current property.
-     * @return void
+     * Merge semantics are centralized in {@see CollectionPolicy}: null starts
+     * from the incoming collection, empty incoming collections leave an existing
+     * policy unchanged, and associative keys can override previous entries.
      */
     public function mergeExposeFields(Collection $exposeFields): void
     {
