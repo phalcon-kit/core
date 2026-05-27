@@ -413,15 +413,19 @@ trait FilterSemantics
      * matches dynamic join criteria, or is configured within the allowed filters.
      *
      * @param string $field The field to be checked for filter permission.
-     * @param array|null $allowedFilters An array of explicitly allowed filters or
-     *                                    filter configurations. Null or empty array
-     *                                    implies no filters are allowed.
+     * @param array|null $allowedFilters An array of explicitly allowed filters
+     *     or filter configurations. Null preserves legacy unrestricted
+     *     filtering; an empty array denies every field.
      * @return bool Returns true if the field is allowed to be used as a filter,
      *              otherwise false.
      */
     public function isFilterAllowed(string $field, ?array $allowedFilters): bool
     {
-        if (empty($allowedFilters)) {
+        if ($allowedFilters === null) {
+            return true;
+        }
+
+        if ($allowedFilters === []) {
             return false;
         }
 

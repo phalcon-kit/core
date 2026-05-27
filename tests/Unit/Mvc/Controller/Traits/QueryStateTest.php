@@ -1027,8 +1027,42 @@ class QueryStateTest extends AbstractUnit
         $this->assertTrue($controller->isFilterAllowed('status', ['status' => true]));
         $this->assertTrue($controller->isFilterAllowed('Author[primary].email', ['Author.email']));
         $this->assertTrue($controller->isFilterAllowed('Author[primary].email', ['Author.email' => true]));
+        $this->assertTrue($controller->isFilterAllowed('status', null));
         $this->assertFalse($controller->isFilterAllowed('status', []));
         $this->assertFalse($controller->isJoinFilterAllowed('Author[primary].email', ['Author.name']));
+    }
+
+    public function testFilterCompilerPreservesNullPolicyAsUnrestrictedAndEmptyPolicyAsClosed(): void
+    {
+        $filters = [
+            [
+                'field' => 'status',
+                'operator' => '=',
+                'value' => 'active',
+            ],
+        ];
+
+        $controller = $this->newQueryController([
+            'filters' => $filters,
+        ]);
+        $controller->initializeFilterFields();
+
+        $compiled = $controller->defaultFilterCondition();
+
+        $this->assertIsArray($compiled);
+        $this->assertStringContainsString('[FooModel].[status] = :_', $compiled[0]);
+        $this->assertSame(['active'], array_values($compiled[1]));
+        $this->assertSame([Column::BIND_PARAM_STR], array_values($compiled[2]));
+
+        $controller = $this->newQueryController([
+            'filters' => $filters,
+        ]);
+        $controller->setFilterFields(new Collection([], false));
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unauthorized filter field "status".');
+
+        $controller->defaultFilterCondition();
     }
 
     public function testFilterCompilerBuildsSelfConditionsAndValidatesInput(): void

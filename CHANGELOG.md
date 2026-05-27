@@ -41,6 +41,9 @@ release notes.
 - Fixed REST count response and embedded list-count policy enabled maps so
   boolean-like config values such as `1`, `'1'`, `'yes'`, `0`, `'0'`, and
   `'off'` are interpreted consistently with request enabled-map values.
+- Fixed REST filter-field policy handling so null/unconfigured policies remain
+  unrestricted for legacy controllers while empty policies still reject every
+  client filter.
 - Fixed single-entity REST save failures so explicit HTTP client-error codes
   carried by Phalcon messages, such as invalid create/update intent or missing
   update targets, are preserved instead of always returning 422.

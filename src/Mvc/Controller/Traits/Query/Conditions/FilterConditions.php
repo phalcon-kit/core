@@ -95,9 +95,9 @@ trait FilterConditions
      *                             Each filter should include keys like 'field', 'operator',
      *                             and optionally 'value' or 'subquery'. Nested groups can
      *                             also be specified.
-     * @param array|null $allowedFilters An optional array of allowed filter fields
-     *                                    for validation. If not provided, defaults to
-     *                                    the fields obtained from the model's configuration.
+     * @param array|null $allowedFilters Optional allowed filter fields for
+     *     validation. Null preserves legacy unrestricted filtering; an empty
+     *     array denies every field.
      * @param ?string $aliasContext Optional alias context for join-based filters
      * @param bool $or A flag indicating whether the filters should be combined using OR
      *                 (true) or AND (false) logic. Defaults to false.
@@ -129,7 +129,9 @@ trait FilterConditions
          *   - join-based filters
          */
         $allowedFilters ??= $this->getFilterFields()?->toArray();
-        $allowedFilters = FlattenKeys::process($allowedFilters ?? []) ?? [];
+        $allowedFilters = $allowedFilters === null
+            ? null
+            : FlattenKeys::process($allowedFilters) ?? [];
 
         /*
          * Compile entire filter tree in one pass.
@@ -189,14 +191,15 @@ trait FilterConditions
      * @param array $filters Group payload
      * @param bool $or Current alternation mode (flipped per nesting)
      * @param int $level Recursion depth (0 = root)
-     * @param array $allowedFilters Allowed filter fields
+     * @param array|null $allowedFilters Allowed filter fields. Null preserves
+     *     legacy unrestricted filtering; an empty array denies every field.
      * @param ?string $aliasContext Optional alias context
      *
      * @return array|null ['sql'=>string,'bind'=>array,'bindTypes'=>array]
      *
      * @throws HttpException|LogicException
      */
-    protected function compileGroup(array $filters, bool $or, int $level, array $allowedFilters, ?string $aliasContext = null): ?array
+    protected function compileGroup(array $filters, bool $or, int $level, ?array $allowedFilters, ?string $aliasContext = null): ?array
     {
         $fragments = [];  // each fragment is either "and <expr>" / "or <expr>" / "xor <expr>" OR a nested group's normalized SQL
         $bind = [];

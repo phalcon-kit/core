@@ -112,6 +112,11 @@ rules:
 
 This keeps public API behavior explicit and reviewable.
 
+For legacy compatibility, a null filter-field policy keeps request filters
+unrestricted. Passing an empty filter-field collection is different: it keeps
+the policy explicit but rejects every client filter. New resources should define
+filter fields instead of relying on unrestricted filtering.
+
 ## Response Relationships On Demand
 
 `findAction()` never eager-loads relationships. Use it for plain lists where

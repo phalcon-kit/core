@@ -380,7 +380,9 @@ Guidelines:
 - Include nested relation arrays in save fields only when the app's REST save
   flow supports relation payloads for that relation.
 - Use `initializeFilterFields()` for client-queryable fields, including nested
-  relation fields when the app allows relation filters.
+  relation fields when the app allows relation filters. Leaving filter fields
+  null preserves unrestricted legacy filtering; an empty collection closes
+  filtering entirely.
 - Use `initializeSearchFields()` for broad text search; keep it smaller than
   filter fields.
 - Set `limit` or `maxLimit` explicitly on high-volume resources.

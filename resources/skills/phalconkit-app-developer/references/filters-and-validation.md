@@ -128,6 +128,10 @@ creates bind keys, and builds conditions. It supports relationship-aware fields
 and can generate correlated `EXISTS` or `NOT EXISTS` subqueries for relationship
 filters.
 
+For legacy compatibility, a null filter-field policy is unrestricted. An empty
+collection is a closed policy that rejects every client filter. Prefer explicit
+filter fields for new resources instead of relying on unrestricted filtering.
+
 Rules:
 
 - Add fields to `filterFields` before accepting them from requests.
