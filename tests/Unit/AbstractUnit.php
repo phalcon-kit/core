@@ -40,14 +40,110 @@ abstract class AbstractUnit extends TestCase
     
     protected string $mode = Bootstrap::MODE_MVC;
     
+    /**
+     * Return the configured database adapter or skip the test with context.
+     *
+     * Database-backed tests are valuable when MySQL is available, but local
+     * development and some CI jobs intentionally run without it. Centralizing
+     * the preflight keeps those skips distinguishable from assertion failures
+     * and keeps each database test focused on the behavior it is protecting.
+     */
     public function getDb(): Mysql
     {
         try {
-            return $this->di->get('db');
+            $database = $this->di?->get('db');
         } catch (\Throwable $e) {
-            $this->markTestSkipped('Database service is not available: ' . $e->getMessage());
+            $this->skipUnavailableService('Database', $e);
             throw $e;
         }
+
+        if (!$database instanceof Mysql) {
+            $this->skipUnavailableService(
+                'Database',
+                detail: sprintf('expected "%s", got "%s".', Mysql::class, get_debug_type($database))
+            );
+        }
+
+        return $database;
+    }
+
+    /**
+     * Open a short-lived Redis probe connection or skip with a clear reason.
+     *
+     * Provider tests use this before asserting behavior that requires a real
+     * Redis server. The caller owns the returned connection and should close it
+     * once the preflight has succeeded.
+     */
+    protected function getLocalRedisProbe(
+        string $host = '127.0.0.1',
+        int $port = 6379,
+        float $timeout = 0.01
+    ): \Redis {
+        $this->requireExtensionForOptionalService(\Redis::class, 'Redis');
+
+        $probe = new \Redis();
+        try {
+            $connected = $probe->connect($host, $port, $timeout);
+        }
+        catch (\RedisException $exception) {
+            $this->skipUnavailableService('Redis', $exception);
+        }
+
+        if (!$connected) {
+            $this->skipUnavailableService('Redis', detail: 'connection attempt returned false.');
+        }
+
+        return $probe;
+    }
+
+    /**
+     * Skip an optional-service test when the required PHP extension is missing.
+     */
+    protected function requireExtensionForOptionalService(string $className, string $extensionName): void
+    {
+        if (!class_exists($className)) {
+            $this->skipUnavailableExtension($extensionName, sprintf('PHP class "%s" is not available.', $className));
+        }
+    }
+
+    /**
+     * Mark an optional PHP extension as unavailable with consistent text.
+     */
+    protected function skipUnavailableExtension(string $extensionName, ?string $detail = null): never
+    {
+        $message = sprintf('%s extension is not available.', $extensionName);
+        $detail = trim($detail ?? '');
+
+        if ($detail !== '') {
+            $message = sprintf('%s extension is not available: %s', $extensionName, $detail);
+        }
+
+        $this->markTestSkipped($message);
+    }
+
+    /**
+     * Mark an optional service as unavailable with consistent CI-facing text.
+     *
+     * @param string $serviceName Human-readable service name, for example
+     *     `Database` or `Redis`.
+     * @param \Throwable|null $exception Optional exception raised by the
+     *     service preflight.
+     * @param string|null $detail Optional explicit detail when no exception was
+     *     thrown.
+     */
+    protected function skipUnavailableService(
+        string $serviceName,
+        ?\Throwable $exception = null,
+        ?string $detail = null
+    ): never {
+        $message = sprintf('%s service is not available.', $serviceName);
+        $reason = trim($detail ?? $exception?->getMessage() ?? '');
+
+        if ($reason !== '') {
+            $message = sprintf('%s service is not available: %s', $serviceName, $reason);
+        }
+
+        $this->markTestSkipped($message);
     }
     
     public function getConfig(): Config

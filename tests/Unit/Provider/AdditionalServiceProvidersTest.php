@@ -889,25 +889,8 @@ class AdditionalServiceProvidersTest extends AbstractUnit
 
     public function testRedisProviderRegistersSharedRedisInstance(): void
     {
-        if (!class_exists(Redis::class)) {
-            $this->markTestSkipped('Redis extension is not available.');
-        }
-
-        $probe = new Redis();
-        try {
-            $connected = $probe->connect('127.0.0.1', 6379, 0.01);
-        }
-        catch (\RedisException $exception) {
-            $this->markTestSkipped('Redis service is not available: ' . $exception->getMessage());
-        }
-
-        if (!$connected) {
-            $this->markTestSkipped('Redis service is not available.');
-        }
-
-        if ($probe->isConnected()) {
-            $probe->close();
-        }
+        $probe = $this->getLocalRedisProbe();
+        $probe->close();
 
         $di = $this->createDi([
             'redis' => [
@@ -937,9 +920,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
 
     public function testRedisProviderAttemptsConfiguredAuth(): void
     {
-        if (!class_exists(Redis::class)) {
-            $this->markTestSkipped('Redis extension is not available.');
-        }
+        $this->requireExtensionForOptionalService(Redis::class, 'Redis');
 
         $di = $this->createDi([
             'redis' => [
@@ -963,9 +944,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
 
     public function testRedisProviderAttemptsConfiguredDatabaseSelection(): void
     {
-        if (!class_exists(Redis::class)) {
-            $this->markTestSkipped('Redis extension is not available.');
-        }
+        $this->requireExtensionForOptionalService(Redis::class, 'Redis');
 
         $di = $this->createDi([
             'redis' => [
