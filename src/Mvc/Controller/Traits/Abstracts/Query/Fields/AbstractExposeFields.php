@@ -17,21 +17,32 @@ use Phalcon\Support\Collection;
 
 /**
  * Abstract contract for list/detail exposure field policies.
+ *
+ * Exposure fields shape standard REST responses. Null preserves the current
+ * exposer default, while a non-null collection explicitly controls which
+ * fields or nested paths may be serialized.
  */
 trait AbstractExposeFields
 {
     /**
-     * Initialize exposure field policy.
+     * Initialize the exposure-field policy for standard REST responses.
      */
     abstract public function initializeExposeFields(): void;
     
     /**
-     * Replace exposure field policy.
+     * Replace the exposure-field policy.
+     *
+     * @param Collection|null $exposeFields Field policy collection, null for
+     *     default exposure behavior, or an empty collection for a closed
+     *     response policy.
      */
     abstract public function setExposeFields(?Collection $exposeFields): void;
     
     /**
-     * Return exposure field policy.
+     * Return the configured exposure-field policy.
+     *
+     * @return Collection|null Field policy collection or null for default
+     *     exposure behavior.
      */
     abstract public function getExposeFields(): ?Collection;
 }

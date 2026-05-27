@@ -17,21 +17,31 @@ use Phalcon\Support\Collection;
 
 /**
  * Abstract contract for fields that may be assigned during save operations.
+ *
+ * Save fields protect mass assignment at the REST controller layer. Null keeps
+ * Phalcon model assignment unrestricted, while an empty collection is an
+ * explicit read-only/closed writable-field policy.
  */
 trait AbstractSaveFields
 {
     /**
-     * Initialize save field policy.
+     * Initialize the save-field policy for REST persistence actions.
      */
     abstract public function initializeSaveFields(): void;
     
     /**
-     * Replace save field policy.
+     * Replace the save-field policy.
+     *
+     * @param Collection|null $saveFields Field policy collection, null for
+     *     unrestricted assignment, or an empty collection for a closed policy.
      */
     abstract public function setSaveFields(?Collection $saveFields): void;
     
     /**
-     * Return save field policy.
+     * Return the configured save-field policy.
+     *
+     * @return Collection|null Field policy collection or null for unrestricted
+     *     assignment.
      */
     abstract public function getSaveFields(): ?Collection;
 }

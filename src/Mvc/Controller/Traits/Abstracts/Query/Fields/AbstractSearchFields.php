@@ -17,21 +17,31 @@ use Phalcon\Support\Collection;
 
 /**
  * Abstract contract for fields that may participate in text search.
+ *
+ * Search fields are opt-in: null means no search field list was configured,
+ * while a non-null collection defines exactly which fields the public `search`
+ * request parameter can target.
  */
 trait AbstractSearchFields
 {
     /**
-     * Initialize search field policy.
+     * Initialize the search-field policy for the current controller/action.
      */
     abstract public function initializeSearchFields(): void;
     
     /**
-     * Replace search field policy.
+     * Replace the search-field policy.
+     *
+     * @param Collection|null $searchFields Field policy collection or null when
+     *     search should remain unconfigured.
      */
     abstract public function setSearchFields(?Collection $searchFields): void;
     
     /**
-     * Return search field policy.
+     * Return the configured search-field policy.
+     *
+     * @return Collection|null Field policy collection or null when search is
+     *     unconfigured.
      */
     abstract public function getSearchFields(): ?Collection;
 }
