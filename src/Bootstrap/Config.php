@@ -70,6 +70,7 @@ use PhalconKit\Support\Version;
  * @property PhalconConfig $mailer
  * @property PhalconConfig $cookies
  * @property PhalconConfig $oauth2
+ * @property PhalconConfig $openai
  * @property PhalconConfig $dotenv
  * @property PhalconConfig $client
  * @property PhalconConfig $permissions
@@ -289,8 +290,12 @@ class Config extends \PhalconKit\Config\Config
                         'OAUTH2_FACEBOOK_CLIENT_SECRET',
                         'OAUTH2_GOOGLE_CLIENT_ID',
                         'OAUTH2_GOOGLE_CLIENT_SECRET',
+                        'OPENAI_API_KEY',
                         'OPENAI_SECRET_KEY',
+                        'OPENAI_ORGANIZATION',
                         'OPENAI_ORGANIZATION_ID',
+                        'OPENAI_PROJECT',
+                        'OPENAI_PROJECT_ID',
                         'IMAP_LOGIN',
                         'IMAP_PASSWORD',
                         'REDIS_AUTH',
@@ -1379,8 +1384,13 @@ class Config extends \PhalconKit\Config\Config
              * OpenAI
              */
             'openai' => [
-                'secretKey' => Env::get('OPENAI_SECRET_KEY'),
-                'organizationId' => Env::get('OPENAI_ORGANIZATION_ID'),
+                'apiKey' => Env::get('OPENAI_API_KEY', Env::get('OPENAI_SECRET_KEY')),
+                'secretKey' => Env::get('OPENAI_SECRET_KEY', Env::get('OPENAI_API_KEY')),
+                'organization' => Env::get('OPENAI_ORGANIZATION', Env::get('OPENAI_ORGANIZATION_ID')),
+                'organizationId' => Env::get('OPENAI_ORGANIZATION_ID', Env::get('OPENAI_ORGANIZATION')),
+                'project' => Env::get('OPENAI_PROJECT', Env::get('OPENAI_PROJECT_ID')),
+                'projectId' => Env::get('OPENAI_PROJECT_ID', Env::get('OPENAI_PROJECT')),
+                'baseUri' => Env::get('OPENAI_BASE_URI', 'api.openai.com/v1'),
             ],
             
             /**

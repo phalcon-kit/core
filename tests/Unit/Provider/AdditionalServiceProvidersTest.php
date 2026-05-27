@@ -872,6 +872,51 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertInstanceOf(ClientContract::class, $di->get('openAi'));
     }
 
+    public function testOpenAiProviderNormalizesCanonicalAndLegacyConfigKeys(): void
+    {
+        $di = $this->createDi();
+        $provider = new class ($di) extends OpenAiProvider {
+            /**
+             * @param array<string, mixed> $config
+             * @return array{apiKey: string, organization: string|null, project: string|null, baseUri: string}
+             */
+            public function exposeNormalizeOpenAiConfig(array $config): array
+            {
+                return self::normalizeOpenAiConfig($config);
+            }
+        };
+
+        $this->assertSame([
+            'apiKey' => 'canonical-key',
+            'organization' => 'canonical-org',
+            'project' => 'canonical-project',
+            'baseUri' => 'https://api.openai.test/v1',
+        ], $provider->exposeNormalizeOpenAiConfig([
+            'apiKey' => ' canonical-key ',
+            'secretKey' => 'legacy-secret',
+            'organization' => 'canonical-org',
+            'organizationId' => 'legacy-org',
+            'project' => 'canonical-project',
+            'projectId' => 'legacy-project',
+            'baseUri' => 'https://api.openai.test/v1',
+        ]));
+
+        $this->assertSame([
+            'apiKey' => 'legacy-secret',
+            'organization' => 'legacy-org',
+            'project' => 'legacy-project',
+            'baseUri' => 'api.openai.com/v1',
+        ], $provider->exposeNormalizeOpenAiConfig([
+            'apiKey' => ' ',
+            'secretKey' => 'legacy-secret',
+            'organization' => '',
+            'organizationId' => 'legacy-org',
+            'project' => null,
+            'projectId' => 'legacy-project',
+            'baseUri' => '',
+        ]));
+    }
+
     public function testReCaptchaProviderRegistersVerifier(): void
     {
         $di = $this->createDi([

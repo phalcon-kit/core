@@ -57,7 +57,7 @@ use Phalcon\Di\DiInterface;
  * @property \PhalconKit\Provider\Jwt\Jwt $jwt
  * @property \PhalconKit\Support\Models $models
  *
- * @property \Orhanerday\OpenAi\OpenAi $openAi
+ * @property \OpenAI\Contracts\ClientContract $openAi
  * @property joshtronic\LoremIpsum $loremIpsum
  */
 trait AbstractInjectable

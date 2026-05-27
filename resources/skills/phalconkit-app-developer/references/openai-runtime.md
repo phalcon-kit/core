@@ -46,15 +46,10 @@ The current provider reads these keys from `openai`:
 ],
 ```
 
-Important: core bootstrap config currently defines `secretKey` and
-`organizationId`, while the provider reads `apiKey` and `organization`. Until
-that runtime contract is aligned in code, apps should either:
-
-- provide the provider-read keys in app config, or
-- override the OpenAI provider and translate app config keys there.
-
-Do not document `secretKey`/`organizationId` as sufficient for the current core
-provider unless the provider has been changed to read them.
+The provider also accepts older bootstrap aliases as fallbacks:
+`secretKey` for `apiKey`, `organizationId` for `organization`, and `projectId`
+for `project`. Prefer the canonical keys in new app config and keep the aliases
+only while migrating existing applications.
 
 ## Dependency Boundary
 

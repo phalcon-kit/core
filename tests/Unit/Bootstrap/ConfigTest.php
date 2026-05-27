@@ -139,6 +139,64 @@ class ConfigTest extends AbstractUnit
         }
     }
 
+    public function testOpenAiConfigExposesCanonicalKeysWithLegacyAliases(): void
+    {
+        $keys = [
+            'OPENAI_API_KEY',
+            'OPENAI_SECRET_KEY',
+            'OPENAI_ORGANIZATION',
+            'OPENAI_ORGANIZATION_ID',
+            'OPENAI_PROJECT',
+            'OPENAI_PROJECT_ID',
+            'OPENAI_BASE_URI',
+        ];
+        $previous = [];
+        foreach ($keys as $key) {
+            $previous[$key] = Env::get($key);
+            Env::set($key, null);
+        }
+
+        try {
+            Env::set('OPENAI_API_KEY', 'canonical-key');
+            Env::set('OPENAI_SECRET_KEY', 'legacy-secret');
+            Env::set('OPENAI_ORGANIZATION', 'canonical-org');
+            Env::set('OPENAI_ORGANIZATION_ID', 'legacy-org');
+            Env::set('OPENAI_PROJECT', 'canonical-project');
+            Env::set('OPENAI_PROJECT_ID', 'legacy-project');
+            Env::set('OPENAI_BASE_URI', 'https://api.openai.test/v1');
+
+            $config = new Config();
+            $openAiConfig = $config->pathToArray('openai') ?? [];
+
+            $this->assertSame('canonical-key', $openAiConfig['apiKey'] ?? null);
+            $this->assertSame('legacy-secret', $openAiConfig['secretKey'] ?? null);
+            $this->assertSame('canonical-org', $openAiConfig['organization'] ?? null);
+            $this->assertSame('legacy-org', $openAiConfig['organizationId'] ?? null);
+            $this->assertSame('canonical-project', $openAiConfig['project'] ?? null);
+            $this->assertSame('legacy-project', $openAiConfig['projectId'] ?? null);
+            $this->assertSame('https://api.openai.test/v1', $openAiConfig['baseUri'] ?? null);
+
+            foreach ($keys as $key) {
+                Env::set($key, null);
+            }
+            Env::set('OPENAI_SECRET_KEY', 'legacy-only-key');
+            Env::set('OPENAI_ORGANIZATION_ID', 'legacy-only-org');
+            Env::set('OPENAI_PROJECT_ID', 'legacy-only-project');
+
+            $config = new Config();
+            $openAiConfig = $config->pathToArray('openai') ?? [];
+
+            $this->assertSame('legacy-only-key', $openAiConfig['apiKey'] ?? null);
+            $this->assertSame('legacy-only-org', $openAiConfig['organization'] ?? null);
+            $this->assertSame('legacy-only-project', $openAiConfig['project'] ?? null);
+            $this->assertSame('api.openai.com/v1', $openAiConfig['baseUri'] ?? null);
+        } finally {
+            foreach ($previous as $key => $value) {
+                Env::set($key, $value);
+            }
+        }
+    }
+
     public function testIdentityStatelessConfigUsesEnvironmentFlag(): void
     {
         $previous = Env::get('IDENTITY_STATELESS');

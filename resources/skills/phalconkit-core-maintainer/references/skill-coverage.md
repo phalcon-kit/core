@@ -99,16 +99,14 @@ The full codebase scan has now been converted into app-facing references:
   permission tests, REST smoke tests, model/scaffold tests, eager-loading
   tests, long-running job tests, and documentation claim checks.
 - `openai-runtime.md`: current `openAi` provider contract, dependency boundary,
-  app service boundaries, secret/data handling, tests, and the known config-key
-  alignment issue.
+  app service boundaries, secret/data handling, tests, and canonical/legacy
+  config key handling.
 - `phalcon-baseline.md`: official native Phalcon documentation map and compact
   native filter/validator lists for places where PhalconKit extends framework
   behavior.
 
 ## Remaining Follow-Up
 
-- Keep `openai-runtime.md` synchronized when the OpenAI provider/config key
-  contract is aligned in code.
 - Add more app-level test fixture examples when real applications expose stable
   reusable patterns.
 - Revisit integration provider catalog entries when service names, config
@@ -147,10 +145,8 @@ Prefer:
 
 ## Next Pass Priority
 
-1. Align the OpenAI bootstrap config keys with the provider-read keys, or keep
-   the mismatch explicitly documented until code changes.
-2. Add narrow example tests for provider overrides, REST permission behavior,
+1. Add narrow example tests for provider overrides, REST permission behavior,
    relationship assignment, and OAuth2 callback policy when a stable example
    app is available for extraction.
-3. Keep README and skill copy focused on supportable claims: tested baseline,
+2. Keep README and skill copy focused on supportable claims: tested baseline,
    convention-driven defaults, and predictable extension points.

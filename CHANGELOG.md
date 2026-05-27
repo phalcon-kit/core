@@ -38,6 +38,9 @@ release notes.
 
 ### Fixed
 
+- Fixed OpenAI provider configuration drift by exposing canonical bootstrap
+  keys (`apiKey`, `organization`, `project`, `baseUri`) while preserving
+  legacy `secretKey`, `organizationId`, and `projectId` aliases as fallbacks.
 - Fixed REST filter and search enabled-map policies so boolean-like config
   values such as `'off'`, `'false'`, and `'0'` disable fields instead of being
   treated as truthy PHP strings.

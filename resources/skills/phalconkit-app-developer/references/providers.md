@@ -495,7 +495,7 @@ unless a row says otherwise. The service name is the DI key.
 | `Aws` | `aws` | `aws` | AWS SDK. Use `$this->aws->createS3()` or other SDK factory methods after credentials/region are configured. |
 | `OCR` | `ocr` | binary/environment | Tesseract OCR wrapper. Use `$this->ocr->image($path)->run()` when OCR dependencies are installed on the host. |
 | `Clamav` | `clamav` | `clamav` | ClamAV client over the configured socket/address. Use `$this->clamav` to scan uploaded files before processing them. |
-| `OpenAi` | `openAi` | `openai` | OpenAI PHP client. Current provider reads `openai.apiKey`, `organization`, `project`, and `baseUri`; align app config before use. Use `$this->openAi` for API calls from services, not directly from controllers when domain logic belongs elsewhere. |
+| `OpenAi` | `openAi` | `openai` | OpenAI PHP client. Use canonical `apiKey`, `organization`, `project`, and `baseUri` config keys; legacy `secretKey`, `organizationId`, and `projectId` aliases are fallback-only. Use `$this->openAi` for API calls from services, not directly from controllers when domain logic belongs elsewhere. |
 | `Oauth2Client` | `oauth2Client` | `oauth2.client` | Generic OAuth2 client provider. Use `$this->oauth2Client` for custom OAuth2 authorize/token/resource-owner flows. |
 | `Oauth2Facebook` | `oauth2Facebook` | `oauth2.facebook` | Facebook OAuth2 provider. Use `$this->oauth2Facebook` for Facebook login/link flows. |
 | `Oauth2Google` | `oauth2Google` | `oauth2.google` | Google OAuth2 provider. Use `$this->oauth2Google` for Google login/link flows. |

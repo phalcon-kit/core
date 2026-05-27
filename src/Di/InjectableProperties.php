@@ -67,7 +67,7 @@ namespace PhalconKit\Di;
  * @property \League\OAuth2\Client\Provider\Facebook $oauth2Facebook
  * @property \League\OAuth2\Client\Provider\Google $oauth2Google
  * @property \joshtronic\LoremIpsum $loremIpsum
- * @property \Orhanerday\OpenAi\OpenAi $openAi
+ * @property \OpenAI\Contracts\ClientContract $openAi
  * @property \PhpImap\Mailbox $imap
  * @property \ReCaptcha\ReCaptcha $reCaptcha
  * @property \thiagoalessio\TesseractOCR\TesseractOCR $ocr
