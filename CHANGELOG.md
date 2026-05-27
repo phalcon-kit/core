@@ -59,6 +59,10 @@ release notes.
 - Fixed eager-loading finder parameter normalization so native Phalcon string
   `columns` selections are expanded with the root `*` column instead of causing
   a PHP `TypeError`.
+- Fixed eager loading for custom traversable `ResultsetInterface`
+  implementations so `findWith()` and `Loader::fromResultset()` honor the
+  public resultset contract instead of requiring Phalcon's concrete resultset
+  classes.
 - Fixed REST filter-field policy handling so null/unconfigured policies remain
   unrestricted for legacy controllers while empty policies still reject every
   client filter.

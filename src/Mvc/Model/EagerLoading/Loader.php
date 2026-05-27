@@ -35,14 +35,14 @@ final class Loader
     
     public array $options = [];
     
-    private const string E_INVALID_SUBJECT = 'Expected value of `subject` to be either a ModelInterface object, a Simple object or an array of ModelInterface objects.';
+    private const string E_INVALID_SUBJECT = 'Expected value of `subject` to be either a ModelInterface object, a traversable ResultsetInterface object, or an array of ModelInterface objects.';
     private const string E_INVALID_CLASSNAME = 'Expected value of `className` to be either an existing class name.';
     
     /**
      * Constructs a new instance of the class.
      *
      * @param mixed $from The data source from which to load the data. Can be an instance of ModelInterface,
-     *                    Simple, array, null, or boolean.
+     *                    a traversable ResultsetInterface, array, null, or boolean.
      * @param array ...$arguments Optional arguments for eager loading. Each argument should be an array
      *                            specifying the relationships to eager load.
      *
@@ -52,6 +52,7 @@ final class Loader
     {
         $error = false;
         $className = null;
+        $allowEmptySubject = false;
         $this->singleModel = false;
         
         // Handle Model Interface
@@ -69,6 +70,7 @@ final class Loader
             }
             else {
                 $from = null;
+                $allowEmptySubject = true;
             }
         }
         
@@ -88,6 +90,24 @@ final class Loader
             }
             else {
                 $from = null;
+                $allowEmptySubject = true;
+            }
+        }
+
+        // Handle other traversable ResultsetInterface implementations
+        elseif ($from instanceof ResultsetInterface) {
+            if (!$from instanceof \Traversable) {
+                $error = true;
+            }
+            else {
+                $from = array_values(iterator_to_array($from));
+                if (isset($from[0])) {
+                    $className = get_class($from[0]);
+                }
+                else {
+                    $from = null;
+                    $allowEmptySubject = true;
+                }
             }
         }
         
@@ -129,12 +149,12 @@ final class Loader
         if ($error) {
             throw new InvalidArgumentException(self::E_INVALID_SUBJECT);
         }
-        if (!isset($className) || !class_exists($className)) {
+        if (!$allowEmptySubject && (!isset($className) || !class_exists($className))) {
             throw new InvalidArgumentException(self::E_INVALID_CLASSNAME);
         }
         
         $this->subject = $from;
-        $this->className = $className;
+        $this->className = $className ?? '';
         $this->eagerLoads = ($from === null || empty($arguments)) ? [] : self::parseArguments($arguments);
     }
     

@@ -13,13 +13,21 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc\Model\Fixtures;
 
+use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 
 class EventsTraitResultsetDouble implements \IteratorAggregate, ResultsetInterface
 {
+    /**
+     * @param list<mixed> $rows Rows returned by the synthetic resultset.
+     */
+    public function __construct(private readonly array $rows = [])
+    {
+    }
+
     public function getIterator(): \Traversable
     {
-        return new \ArrayIterator([]);
+        return new \ArrayIterator($this->rows);
     }
 
     public function delete(?\Closure $conditionCallback = null): bool
@@ -39,7 +47,7 @@ class EventsTraitResultsetDouble implements \IteratorAggregate, ResultsetInterfa
 
     public function getFirst(): mixed
     {
-        return null;
+        return $this->rows[0] ?? null;
     }
 
     public function getHydrateMode(): int
@@ -47,9 +55,14 @@ class EventsTraitResultsetDouble implements \IteratorAggregate, ResultsetInterfa
         return 0;
     }
 
-    public function getLast(): ?\Phalcon\Mvc\ModelInterface
+    public function getLast(): ?ModelInterface
     {
-        return null;
+        if ($this->rows === []) {
+            return null;
+        }
+
+        $last = $this->rows[array_key_last($this->rows)];
+        return $last instanceof ModelInterface ? $last : null;
     }
 
     public function getMessages(): array
@@ -79,7 +92,11 @@ class EventsTraitResultsetDouble implements \IteratorAggregate, ResultsetInterfa
 
     public function toArray(): array
     {
-        return [];
+        return array_map(static function (mixed $row): mixed {
+            return is_object($row) && method_exists($row, 'toArray')
+                ? $row->toArray()
+                : $row;
+        }, $this->rows);
     }
 
     public function update($data, ?\Closure $conditionCallback = null): bool

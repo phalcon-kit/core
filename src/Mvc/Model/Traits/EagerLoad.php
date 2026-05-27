@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Model\Traits;
 
 use JetBrains\PhpStorm\Deprecated;
-use Phalcon\Mvc\Model\Resultset;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\ModelInterface;
 use PhalconKit\Exception\LogicException;
@@ -82,11 +81,11 @@ trait EagerLoad
         $parameters = static::getParametersFromArguments($arguments);
         $list = static::find($parameters);
         
-        if ($list instanceof Resultset && $list->count()) {
-            return Loader::fromResultset($list, ...$arguments);
+        if (is_countable($list) && $list->count() === 0) {
+            return [];
         }
         
-        return [];
+        return Loader::fromResultset($list, ...$arguments);
     }
     
     /**

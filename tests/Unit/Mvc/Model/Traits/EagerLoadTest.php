@@ -17,11 +17,14 @@ use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use PhalconKit\Exception\LogicException;
 use PhalconKit\Exception\RuntimeException;
+use PhalconKit\Mvc\Model\EagerLoading\Loader;
 use PhalconKit\Mvc\Model\Traits\EagerLoad;
 use PhalconKit\Mvc\Model\Traits\Events;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidForwardDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidHostDouble;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EventsTraitResultsetDouble;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\RelatedDeleteModelDouble;
 use ReflectionClass;
 use ReflectionNamedType;
 
@@ -109,6 +112,31 @@ class EagerLoadTest extends AbstractUnit
         $parameters = EagerLoadInvalidForwardDouble::getParametersFromArguments($arguments);
 
         $this->assertSame('*, id, name', $parameters['columns']);
+    }
+
+    public function testFindWithAcceptsTraversableResultsetInterface(): void
+    {
+        $first = new RelatedDeleteModelDouble();
+        $second = new RelatedDeleteModelDouble();
+        RelatedDeleteModelDouble::$findResult = new EventsTraitResultsetDouble([$first, $second]);
+
+        $this->assertSame([$first, $second], RelatedDeleteModelDouble::findWith());
+
+        RelatedDeleteModelDouble::$findResult = new EventsTraitResultsetDouble();
+
+        $this->assertSame([], RelatedDeleteModelDouble::findWith());
+    }
+
+    public function testLoaderFromResultsetAcceptsTraversableResultsetInterface(): void
+    {
+        $first = new RelatedDeleteModelDouble();
+        $second = new RelatedDeleteModelDouble();
+
+        $this->assertSame(
+            [$first, $second],
+            Loader::fromResultset(new EventsTraitResultsetDouble([$first, $second]))
+        );
+        $this->assertSame([], Loader::fromResultset(new EventsTraitResultsetDouble()));
     }
 
     public function testLoadRejectsInvalidTraitHost(): void
