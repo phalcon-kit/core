@@ -34,6 +34,11 @@ unless the task explicitly asks for regenerated docs.
 - Update `CHANGELOG.md` under the current unreleased version section when a
   change affects public behavior, compatibility, security posture, tooling, or
   maintainer workflow.
+- Keep `ROADMAP.md` focused on active, schedulable release blocks. Move shipped
+  outcomes to `CHANGELOG.md` and durable usage notes to the relevant guide or
+  shipped skill; do not leave completed historical blocks in the roadmap.
+- Keep unresolved design questions in `guides/to-be-discussed.md` until the
+  expected behavior, compatibility risk, and validation plan are concrete.
 - Keep public package behavior stable unless the task explicitly asks for a
   breaking change.
 

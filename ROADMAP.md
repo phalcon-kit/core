@@ -1,21 +1,27 @@
 # Roadmap
 
-This file is the repository-owned replacement for the retired GitHub Project
-board. It tracks actionable release work for Phalcon Kit Core.
+This file is the active release roadmap for Phalcon Kit Core. It replaced the
+retired GitHub Project board, but it should not become an archive of finished
+work.
 
-Use this file for work that is concrete enough to schedule. Keep open design
-questions in [To Be Discussed](guides/to-be-discussed.md), and keep completed
-public changes in [CHANGELOG.md](CHANGELOG.md).
+Use this file for deliverables that are concrete enough to schedule and test.
+Keep design questions in [To Be Discussed](guides/to-be-discussed.md), keep
+completed public changes in [CHANGELOG.md](CHANGELOG.md), and keep durable usage
+guidance in the relevant guide or shipped skill reference.
 
 ## How To Use This File
 
-- Keep roadmap entries scoped to a deliverable that can be tested and released.
-- Promote a design question only when the problem, compatibility risk, and
-  validation plan are clear.
+- Keep entries scoped to a deliverable that can be implemented, tested, and
+  released.
+- Promote a design question only when the problem, compatibility risk, expected
+  behavior, and validation plan are clear.
 - Prefer opt-in behavior for new framework capabilities unless a breaking
   release explicitly changes the default.
-- Update the target version when a block moves between release trains.
-- Move completed public work to the changelog when the release is prepared.
+- Keep `Current Focus` short enough that the next block is obvious.
+- Remove completed blocks after the changelog and user-facing docs capture the
+  result. Do not leave historical `Done` sections here.
+- Keep cancelled or speculative ideas out of the roadmap unless they prevent a
+  likely future misstep; otherwise track them in To Be Discussed.
 
 ## Status Values
 
@@ -23,291 +29,141 @@ public changes in [CHANGELOG.md](CHANGELOG.md).
 - `Planned`: valuable, but should wait until the current focus is stable.
 - `Design`: needs an API contract, migration plan, or application use case.
 - `Parking Lot`: valid idea, but not worth scheduling yet.
-- `Done`: shipped or otherwise fully handled.
-- `Cancelled`: intentionally not planned.
 
 ## Current Focus
 
-Target: `2.6.x`
+Target: `2.7.x`
 
-Theme: Low-risk framework diagnostics and runtime assertion cleanup.
+Theme: regression hardening and test architecture for the public APIs added in
+the `2.x` line.
 
-Decision: REST request-surface work shipped in `2.4.x` and `2.5.x`. The next
-line should favor narrow correctness fixes, clear failure modes, and concrete
-regression tests over new broad API surface.
+Decision:
 
-### REST Order Safety
+- `2.4.x`, `2.5.x`, and `2.6.x` already shipped the REST request-surface,
+  relationship, diagnostics, exception, and event-listener work.
+- The current unreleased line has started with
+  `Model::getSnapshotChangedFields()`. Track that public change in the
+  changelog; do not keep the shipped implementation plan here.
+- The next work should make recent framework behavior easier to trust before
+  adding broad scaffolding or another large public surface.
 
-Status: Done in the current `2.4.x` development line
+Release principles:
 
-Why:
-
-- REST controllers already expose client-controlled ordering.
-- Filters, search, expose, save, distinct, and response fields have explicit
-  policy surfaces; ordering should have the same framework-level clarity.
-- This is a small, testable hardening block before more dynamic request
-  features are added.
-
-Scope:
-
-- Add an allowed-order-fields policy, initializer, abstract contract, and
-  getter/setter pair that match the existing controller query patterns.
-- Preserve current behavior for controllers that do not opt in to restricted
-  ordering.
-- Reject unauthorized client-supplied order fields with a clear HTTP exception.
-- Keep framework-generated or application-set default ordering compatible by
-  compiling defaults through the same parser and requiring allow-listed fields
-  only when a controller explicitly configured an order policy.
-- Allow applications to reuse filter fields as their order policy when that is
-  what they want, but do not make filter fields an automatic fallback in the
-  `2.x` line. A field can be safe to filter without being safe or efficient to
-  sort, and automatic fallback would silently tighten existing controllers that
-  already define filter fields.
-- Add unit coverage for string order syntax, array order syntax, default order,
-  empty order input, allowed fields, and rejected fields.
-- Update REST documentation and changelog notes when behavior changes.
-
-Compatibility:
-
-- Existing controllers must keep working unless they opt in to an allowed-order
-  policy.
-- The policy must support model-qualified and relationship-qualified order
-  fields consistently with filter/search field naming.
-
-Validation:
-
-- Targeted query/order tests.
-- `composer phpunit`.
-- Full QA before release tagging.
-
-### Embedded REST List Counts
-
-Status: Done in the current `2.4.x` development line
-
-Why:
-
-- Some API clients need a count with list responses without calling a separate
-  endpoint.
-- `countAction()` already exists, and grouped count responses already have
-  explicit opt-in response fields. The remaining question is whether
-  `findAction()` should optionally embed count metadata when the frontend asks
-  for it.
-
-Scope:
-
-- Define `count` as the frontend request parameter for list-count metadata.
-- Support `count`, `groupedCount`, `bucketTotal`, and `totalCount` response
-  fields using the same semantics as `countAction()`.
-- Count metadata honors filters/search/joins/permissions and ignores
-  pagination through the shared count query helper. `totalCount` removes group
-  clauses like the count action extra field.
-- Require a frontend request so count metadata is not returned by accident.
-  Controllers can optionally restrict or block embedded counts; a null policy
-  stays unrestricted across supported framework count fields.
-- Add tests for plain lists, filtered lists, grouped lists, eager-loaded list
-  actions, rejected fields, and disabled count requests.
-
-Compatibility:
-
-- Do not change existing `findAction()` payloads unless the request asks for a
-  supported count field. Controllers that need a closed policy can pass an
-  empty collection to block every embedded count field.
-
-Validation:
-
-- REST action unit tests.
-- Response contract documentation.
-
-### Response Relationships On Demand
-
-Status: Done in the current `2.5.x` development line
-
-Why:
-
-- Clients often need different relation graphs for list and detail views.
-- Arbitrary request-driven eager loading can expose too much data, so it must
-  be explicitly controlled.
-- Dynamic joins already cover request-driven relationship joins for filtering
-  and search. This item is only about choosing response eager-loading graphs at
-  request time.
-
-Scope:
-
-- Define `with` as the request parameter for response relation selection.
-- Keep `findAction()` relation-free; only `findWithAction()` and
-  `findFirstWithAction()` read the request-time relation parameter.
-- Reuse the existing controller `with` collection as both the default eager-load
-  graph and the allow-list for request-time subsets.
-- Treat a missing `with` request parameter as "use the configured defaults" and
-  a present parameter as "load only this allowed subset."
-- Support direct nested requests such as `Author.Profile.Avatar`; the eager
-  loader builds required parent paths internally, and configured parent
-  constraints are preserved when the requested child path needs them.
-- Reject requested child paths outside the configured graph instead of letting
-  arbitrary relationship aliases reach the eager loader.
-- Add tests for default behavior, no-relationship `findAction()`, allowed
-  aliases, nested aliases, parent-of-configured nested aliases, rejected aliases,
-  and `findFirstWithAction()`.
-
-Compatibility:
-
-- Existing default eager-loading behavior is unchanged when the request does
-  not include `with`.
-- Applications can deny all request-driven relations by leaving `with` null or
-  setting an empty collection.
-
-Validation:
-
-- Query state tests.
-- REST `find` and `findFirst` action tests.
-- Eager-loading regression tests when relation graphs are executed.
+- Add focused regression tests before changing framework defaults.
+- Keep no-database harnesses available for REST policy and model trait behavior.
+- Run full QA before any tag, and document skipped integration prerequisites
+  when optional services are unavailable.
+- Public API additions need PHPDoc, guide updates, changelog entries, and tests
+  that show the compatibility path.
 
 ## Next Blocks
 
-### Model Correctness
+### Testing Architecture And Regression Harnesses
 
-Status: Done in the current `2.6.x` development line
+Status: Next
 
-Target: `2.6.x`
+Target: `2.7.x`
 
-Scope:
+Why:
 
-- Audit snapshots should include only scalar mapped columns when assigned
-  relations are present on a model. Done in the current `2.6.x` development
-  line.
-- Relationship assignment strict mode should be designed before implementation.
-  Done in the current `2.6.x` development line as an opt-in per-model guard.
-- Model cache invalidation needs a key and whitelist strategy before replacing
-  the current coarse flush behavior. The coarse flush predicate itself was fixed
-  in the current `2.6.x` development line so creates, deletes, restores,
-  reorders, and changed snapshots invalidate cache while unchanged snapshot
-  saves do not. The future granular cache policy contract is documented in
-  [Models And Eager Loading](guides/models-and-eager-loading.md#future-granular-cache-policy).
-- Read/write replication listener attachment now tracks the model events
-  manager that received the callbacks, so repeated replication initialization
-  does not duplicate write-event listeners.
-
-Follow-up:
-
-- Keep targeted cache invalidation in the design backlog until key
-  registration, reverse indexes, relation invalidation, and pre-warming
-  semantics are backed by a real application use case.
-
-### Exception Taxonomy Cleanup
-
-Status: Done in the current `2.6.x` development line
-
-Target: `2.6.x`
+- Recent work added several opt-in REST policies and model helpers. The public
+  contracts are clearer now, but the long-term win is making regressions cheap
+  to catch.
+- A stronger test harness lets future changes stay small instead of requiring a
+  database or full HTTP stack for every controller policy case.
 
 Scope:
 
-- Replace generic public/framework exceptions with scoped PhalconKit exceptions
-  where doing so improves developer experience.
-- Keep native SPL exceptions where they are precise and internal.
-- Clean stale broad `@throws` docblocks when they no longer describe real
-  behavior.
-- REST CSV exports now wrap invalid League CSV options in `HttpException` and
-  writer failures in scoped runtime exceptions while preserving the original
-  vendor exception as `previous`.
-- Native Phalcon MVC/bootstrap failures are documented as intentionally
-  propagated unchanged so application HTTP/domain exceptions keep their original
-  type and status semantics.
+- Audit the existing unit suite against
+  [Testing Roadmap](guides/testing-roadmap.md) and mark the highest-value gaps.
+- Add or improve no-database harness fixtures for REST controller policy state:
+  order fields, embedded counts, request-time `with`, distinct fields, response
+  fields, save fields, and permission/filter/search interactions.
+- Add model trait regression fixtures for snapshot diffs, strict relationship
+  assignment, cache invalidation predicates, replication listener idempotency,
+  nullable SQL `"NULL"` normalization, and runtime exception paths.
+- Normalize optional-service skip messages for database and Redis tests so CI
+  output distinguishes missing infrastructure from real regressions.
+- Keep every new test tied to an observable behavior or a known bug shape; do
+  not chase coverage percentage alone.
 
 Validation:
 
-- Runtime source now has no native generic `throw new \Exception`,
-  `\RuntimeException`, `\LogicException`, or `\InvalidArgumentException` sites,
-  and no stale broad `@throws \Exception` annotations.
+- Focused PHPUnit targets for each harness or regression file.
+- `composer phpunit` before merging each batch.
+- `composer phpcs`, `composer psalm`, and `composer phpstan` when PHP code or
+  public contracts change.
+- `git diff --check` for documentation-only batches.
 
-Non-goal:
+### REST Controller Scaffold Readiness
 
-- Do not wrap every exception just to make it framework-scoped. The new
-  exception must make the failure clearer or more stable for consumers.
+Status: Planned
 
-### Runtime Assert Review
+Target: `2.8.x` candidate after the `2.7.x` test pass
 
-Status: Done
+Why:
 
-Target: `2.6.x`
+- Scaffolding REST controllers can save application work, but it can also
+  freeze bad defaults or overwrite application-owned decisions if started too
+  early.
+- The REST controller contracts are much more stable after the `2.4.x` and
+  `2.5.x` policy work, but generated output still needs a precise ownership
+  model.
 
 Scope:
 
-- Separate static-analysis narrowing asserts from runtime validation.
-- Replace only public or runtime-critical assertions with explicit exceptions.
-- Leave narrow local asserts in place when they are only used to help static
-  analysis and the surrounding code already guarantees the type.
+- Inventory the stable controller extension points: permissions, filters,
+  search fields, save fields, order fields, distinct fields, response fields,
+  `with` graphs, transformers, and action enablement.
+- Define which files are generated once, which files are regenerated, and which
+  files are app-owned.
+- Decide whether scaffolded controllers are abstract bases, concrete shells, or
+  an opt-in pair similar to model abstract/concrete scaffolding.
+- Add scaffold tests in temporary directories before generating any real
+  application-facing controller output.
+- Align generated controller comments with the existing model/scaffolder
+  documentation style.
 
 Validation:
 
-- Search `assert(` before starting the block.
-- Add tests only for assertions that become public runtime failures.
+- Scaffold output assertions against temporary directories.
+- No hand edits to generated API documentation.
+- Full QA before release because scaffolding changes can affect package
+  consumers even when runtime code is untouched.
 
-Outcome:
-
-- Converted runtime-sensitive model behavior, metadata helper, controller model
-  lookup, string formatting, and eager-loading assertions into contextual
-  PhalconKit exceptions.
-- Added focused unit coverage for behavior registry, behavior option, metadata
-  host, controller loader, and eager-loading contract failures.
-- Left dense relationship, eager-loading internals, and CLI scaffolder asserts
-  in place where reviewed code uses them as local static-analysis narrowing
-  after Phalcon or reflection APIs already constrain the value shape.
-
-### Configurable Event Attachments
-
-Status: Done in the current `2.6.x` development line
-
-Target: `2.6.x`
-
-Scope:
-
-- Added opt-in `eventsManager.listeners` configuration for the shared Phalcon
-  events manager used by database, dispatcher, model, view, and application
-  services.
-- Listener definitions support class names, DI service names, explicit
-  priorities, constructor arguments, and `enabled => false` for merged config.
-- Bootstrap attaches configured listeners after providers are registered and
-  before modules/router setup, with idempotency for repeated `bootServices()`
-  calls in tests or custom bootstraps.
-
-Non-goal:
-
-- Do not introduce per-service event-manager replacement in `2.6.x`. Existing
-  providers already share the main manager, and replacing service-owned managers
-  needs a separate compatibility plan.
-
-### REST API Controller Scaffolding
+### Relationship And Eager-Loading Correctness
 
 Status: Planned
 
-Target: Unscheduled
+Target: `2.7.x` or `2.8.x`, depending on the testing batch
+
+Why:
+
+- Request-time response relationships are now supported for `findWithAction()`
+  and `findFirstWithAction()`, including nested paths.
+- The remaining relationship backlog is mostly correctness and clarity:
+  sparse payload semantics, eager-loader option propagation, composite keys, and
+  through-relation edge cases.
 
 Scope:
 
-- Generate concrete or abstract REST API controller layers only after the
-  controller contract is stable.
-- Include permission, filter, search, save, order, with, response-field, and
-  transformer placeholders without overwriting application-owned code.
-- Align with the database scaffolder and TypeScript scaffold defaults.
+- Start with regression tests for existing behavior rather than new APIs.
+- Cover nested eager-loading path selection, parent-path expansion, configured
+  relation constraints, rejected aliases, and relation-free `findAction()`.
+- Document current limitations before changing them.
+- Promote a specific API change only after the test suite captures the current
+  compatibility boundary.
 
-### Testing Architecture
+Validation:
 
-Status: Planned
-
-Target: Ongoing
-
-Scope:
-
-- Continue adding regression tests with each bug fix.
-- Use [Testing Roadmap](guides/testing-roadmap.md) for unit, component,
-  integration, database, and REST-flow test tiers.
-- Keep test additions tied to behavior risk rather than chasing coverage
-  percentage alone.
+- Query-state and eager-loading unit tests.
+- Database-backed relationship tests only when native Phalcon relation behavior
+  must be exercised.
 
 ## Design Backlog
 
 These areas remain in [To Be Discussed](guides/to-be-discussed.md) until there
-is a concrete application need and a compatible API shape.
+is a concrete application need and a compatible API shape:
 
 - Identity password reset notifications.
 - Impersonation authorization.
@@ -319,7 +175,7 @@ is a concrete application need and a compatible API shape.
 - Model cache key registration, reverse indexes, relation invalidation, and
   pre-warming.
 - Dynamic model metadata and dynamic record model identity.
-- Relationship assignment strictness and sparse payload behavior.
+- Relationship sparse payload behavior.
 - Controller behavior response and permission merging.
 - Additional `findIn*` helpers.
 - Soft-delete event-state configuration.
@@ -363,73 +219,22 @@ Scope:
 
 ### OpenAPI Generation
 
-Status: Cancelled
+Status: Parking Lot
 
-Reason:
+Scope:
 
-- The old OpenAPI card never had a working implementation in this repository.
-- Do not revive it as controller introspection. REST policies can be dynamic,
-  identity-aware, and action-specific, so generated OpenAPI should come from an
-  explicit resource metadata contract if it is ever reintroduced.
-- Revisit only after REST request/response contracts stabilize and there is a
-  clear consumer for generated OpenAPI output.
+- Do not revive the old controller-introspection idea. REST policies can be
+  dynamic, identity-aware, and action-specific.
+- Revisit only as an explicit resource metadata contract after REST request and
+  response contracts stabilize and a real consumer needs generated OpenAPI
+  output.
 
 ### Dynamic Expose Property Creation
 
-Status: Cancelled
+Status: Parking Lot
 
-Reason:
+Scope:
 
-- Automatically creating undefined expose properties was cancelled on the old
-  project board.
+- Do not automatically create undefined expose properties.
 - Revisit only if an application has a concrete, safe use case that cannot be
   solved with explicit exposer configuration.
-
-## GitHub Project 5 Migration Snapshot
-
-Reviewed: 2026-05-26
-
-This snapshot preserves the retired GitHub Project 5 cards so closing the
-project does not lose planning context.
-
-### Active Cards Migrated
-
-- RESTful API System: Add new allowed order fields definitions.
-- RESTful API System: Allow request-time count during `find`.
-- RESTful API System: Allow request-time relationships during `find` and
-  `findFirst`.
-- Refactor thrown exceptions into clearer contextual PhalconKit exceptions.
-- Add JetBrains attributes where they provide real IDE value.
-- Allow configuration-backed event listener attachment.
-- Add complete scaffolding for RESTful API controllers.
-- Create more unit tests and clarify unit, functional, integration, and
-  end-to-end test boundaries.
-- Review runtime `assert()` usage and replace public/runtime validations with
-  clearer exceptions where appropriate.
-- Create CMS models and controllers.
-
-### Cards Already Handled
-
-- Improve PHP documentation parameter typing and returns.
-- Update license stamps everywhere.
-- Add typed class constants.
-- Switch support models and model maps to use DI.
-- Add interfaces for REST and RESTful controllers.
-- Change static helper classes to use services where possible.
-- Create permission configs for models and controllers.
-- Refactor the identity service into smaller components.
-- Allow REST filters to specify `and`, `or`, and `xor` without extra nesting.
-- Clarify stateless identity behavior. Broad stateless session work is not
-  planned because applications can choose the noop session service when needed.
-- Re-integrate multi-entry save behavior.
-- Integrate the dynamic join system.
-- Clarify that request-time relationship joins for filtering already belong to
-  dynamic joins; only request-time response eager-loading remains a design
-  question.
-- Review inline TODO and commented code markers, with remaining design value
-  captured in [To Be Discussed](guides/to-be-discussed.md).
-
-### Cards Closed Without Planned Work
-
-- Generate OpenAPI config from RESTful controllers.
-- Improve expose behavior by creating undefined properties on the fly.

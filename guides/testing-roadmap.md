@@ -274,17 +274,23 @@ Exit criteria:
 7. Update `CHANGELOG.md` only when the batch changes public behavior, docs,
    tooling, or maintainer workflow.
 
-## Near-Term Backlog
+## Current 2.7.x Priorities
+
+The next testing pass should protect the contracts added in the recent `2.x`
+line before broadening the framework surface again. Prefer small harnesses that
+exercise controller/model policy state without a database, then add database
+integration only when native Phalcon behavior is part of the contract.
 
 | Priority | Area | Suggested Tests |
 | --- | --- | --- |
-| P0 | `Support\Helper\Arr` | Direct tests for flattening, recursive mapping, and recursive replacement edge cases |
-| P0 | `Support\Helper\Str` | Empty pattern handling, invalid encoding cleanup, printable character filtering |
-| P0 | `Support\Options` | Merge, reset, removal, and null-value behavior |
-| P1 | `Support\Exposer` | Builder key context, callback value processing, visibility flags |
+| P0 | REST controller policy harnesses | No-database tests for order fields, embedded counts, request-time `with`, distinct fields, response fields, save fields, and permission/filter/search interactions |
+| P0 | Model trait regression harnesses | Snapshot changed fields, nullable SQL `"NULL"` normalization, strict relationship assignment, cache invalidation predicates, replication listener idempotency, and runtime exception paths |
+| P0 | Optional-service skips | Shared skip/preflight helpers or clearer messages for database and Redis tests so CI failures are not confused with missing infrastructure |
+| P1 | Relationship and eager loading | Nested path selection, parent-path expansion, configured constraints, rejected aliases, and relation-free `findAction()` behavior |
+| P1 | `Mvc\Controller\Behavior\Query` | Add/remove condition behavior, event payload handling, and invalid configuration messages |
 | P1 | `Filter` | Sanitizer wrappers, validator options, invalid JSON/color cases |
-| P1 | `Mvc\Controller\Behavior\Query` | Add/remove condition behavior and event payload handling |
-| P2 | `Provider` | Registration idempotence and override points |
-| P2 | `Mvc\Router` and `Dispatcher` | Route defaults and action normalization |
-| P3 | REST controller harnesses | Policy collection initialization and response shape |
-| P4 | Models and relationships | Generated model contracts, database-backed behavior, eager loading |
+| P2 | `Provider` | Registration idempotence, configured listener attachment, aliases, and override points |
+| P2 | `Support\Options` and `Support\CollectionPolicy` | Merge, reset, removal, replacement, and null-value behavior |
+| P2 | `Support\Helper\Arr` and `Support\Helper\Str` | Flattening, recursive mapping, recursive replacement, empty pattern handling, invalid encoding cleanup, and printable character filtering |
+| P3 | `Mvc\Router`, CLI router, and dispatcher | Route defaults, action normalization, module namespace registration, and documented native Phalcon interface limits |
+| P4 | Scaffolding output | Temporary-directory tests for generated models, interfaces, future controller shells, TypeScript output, and skeleton validation |

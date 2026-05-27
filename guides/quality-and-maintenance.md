@@ -78,3 +78,20 @@ public behavior, compatibility, security posture, generated output, QA tooling,
 or maintainer workflow.
 
 Use [Release Process](release.md) when preparing a tag.
+
+## Planning Discipline
+
+Keep planning documents separated by purpose:
+
+- `ROADMAP.md` tracks active, schedulable release blocks only.
+- `guides/to-be-discussed.md` tracks design questions that are not ready for a
+  release block.
+- `CHANGELOG.md` tracks completed public behavior, compatibility, security,
+  tooling, and maintainer workflow changes.
+- User-facing guides and shipped skills keep durable usage guidance after a
+  feature ships.
+
+After a release, refresh the roadmap target and remove completed blocks once
+the changelog and relevant guides contain the outcome. Avoid keeping historical
+`Done` sections in the roadmap; they make the next actionable block harder to
+see.
