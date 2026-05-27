@@ -112,6 +112,10 @@ Graph rules:
 - Numeric array values are relation aliases: `'LocationEntity'`.
 - String keys with callable values add constraints:
   `'DocumentList' => function (QueryBuilder $query) { ... }`.
+- Controller `initializeWith()` collections may also use enabled-map values,
+  such as `'DocumentList' => false` or `'DocumentList' => 'off'`, to disable a
+  relation after config merging. Direct model `findWith()` calls should prefer
+  relation lists and callable constraints rather than enabled-map flags.
 - Dotted aliases load nested relations:
   `'EventParticipantList.ParticipantEntity.UserEntity.RoleList'`.
 - Constraints apply to the final relation path where they are attached.

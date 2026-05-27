@@ -293,7 +293,8 @@ trait Query
      * Find records in the database using the specified criteria and include related records.
      *
      * @param array|null $with Optional. An array of related models to include
-     *                         with the found records. Defaults to `null`.
+     *                         with the found records. Passing null uses the
+     *                         controller's normalized default `with` graph.
      * @param array|null $find Optional. An array of criteria to determine the records to find.
      *                         If not provided, the default criteria from `getFind()` method
      *                         will be used. Defaults to `null`.
@@ -305,7 +306,7 @@ trait Query
     public function findWith(?array $with = null, ?array $find = null): array
     {
         $find ??= $this->prepareFind();
-        $with ??= $this->getWith()?->toArray() ?? [];
+        $with ??= $this->getDefaultWithRelations();
         $model = $this->requireEagerLoadModel($this->loadModel(), 'findWith');
         return $model::findWith($with, $find);
     }
@@ -332,8 +333,8 @@ trait Query
      * Find the first record in the database using the specified criteria and relations.
      *
      * @param array|null $with Optional. An array of relations to eager load for the record.
-     *                         If not provided, the default relations from `getWith()` method
-     *                         will be used. Defaults to `null`.
+     *                         Passing null uses the controller's normalized
+     *                         default `with` graph.
      * @param array|null $find Optional. An array of criteria to determine the records to find.
      *                         If not provided, the default criteria from `getFind()` method
      *                         will be used. Defaults to `null`.
@@ -345,7 +346,7 @@ trait Query
     public function findFirstWith(?array $with = null, ?array $find = null): ?ModelInterface
     {
         $find ??= $this->prepareFind();
-        $with ??= $this->getWith()?->toArray() ?? [];
+        $with ??= $this->getDefaultWithRelations();
         $model = $this->requireEagerLoadModel($this->loadModel(), 'findFirstWith');
         return $model::findFirstWith($with, $find);
     }

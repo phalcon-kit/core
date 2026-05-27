@@ -631,6 +631,12 @@ parameter. If the parameter is absent, the configured `initializeWith()` graph
 is loaded exactly as before. If the parameter is present, the configured graph
 becomes the allow-list and only the requested subset is loaded.
 
+Configured relation graphs accept the same enabled-map disabling convention as
+other REST policies. Use value-list entries for normal relations, callable
+string-key entries for relation constraints, and boolean-like false values such
+as `false`, `0`, `'0'`, or `'off'` when merged config should remove a relation
+from both the default graph and the request allow-list.
+
 Supported request shapes:
 
 - `?with=OwnerEntity,StatusEntity`

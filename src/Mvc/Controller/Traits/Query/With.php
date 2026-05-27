@@ -59,6 +59,9 @@ trait With
      * - `['Author', 'Author.Profile']` loads those relation paths by default.
      * - `['Author' => $callable]` applies a constraint callback to that
      *   relation when the default eager-load graph is used.
+     * - `['Author' => false]` or `['Author' => 'off']` keeps the key in
+     *   merged configuration but disables the relation, matching other
+     *   REST enabled-map policies.
      *
      * When a client sends a `with` request parameter, the same collection
      * becomes the allow-list. A client may request any configured relation path
@@ -222,7 +225,9 @@ trait With
      *
      * The returned map intentionally follows the current eager loader contract:
      * string keys are relation paths, callable values are constraints, and list
-     * values are plain relation paths.
+     * values are plain relation paths. Non-callable string-key values use
+     * PhalconKit's enabled-map normalization so merged configuration can disable
+     * a relation with values such as `false`, `0`, `'0'`, or `'off'`.
      *
      * @return array<string, callable|null>
      */
@@ -233,7 +238,7 @@ trait With
         foreach ($this->getWith()?->toArray() ?? [] as $key => $value) {
             if (is_string($key)) {
                 $key = trim($key);
-                if ($key !== '') {
+                if ($key !== '' && (is_callable($value) || $this->isWithRelationEnabledValue($value))) {
                     $relations[$key] = is_callable($value) ? $value : null;
                 }
                 continue;
@@ -248,6 +253,22 @@ trait With
         }
 
         return $relations;
+    }
+
+    /**
+     * Return the configured eager-load graph in loader-ready form.
+     *
+     * `findWith()` and `findFirstWith()` call this when no request-specific
+     * subset is supplied. Normalizing through {@see getWithRelationMap()} keeps
+     * default relationship loading aligned with request-time `with[Relation]`
+     * enabled-map behavior, while still preserving callable constraints on the
+     * exact configured relation paths.
+     *
+     * @return array<string|int, mixed>
+     */
+    protected function getDefaultWithRelations(): array
+    {
+        return $this->normalizeWithRelationMap($this->getWithRelationMap());
     }
 
     /**

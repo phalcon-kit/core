@@ -132,6 +132,11 @@ the response should contain only the exposed root records.
 frontend does send `with`, PhalconKit treats the configured collection as an
 allow-list and loads only the requested subset.
 
+Configured `with` collections accept normal relation lists, callable relation
+constraints, and enabled-map entries. Enabled-map values use the same
+boolean-like normalization as field policies, so a merged config can disable a
+relation with values such as `false`, `0`, `'0'`, or `'off'`.
+
 ```text
 GET /api/projects/find-with
 GET /api/projects/find-with?with=OwnerEntity,StatusEntity

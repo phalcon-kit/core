@@ -2053,6 +2053,42 @@ class QueryStateTest extends AbstractUnit
         $controller->findWith();
     }
 
+    public function testWithQueriesNormalizeConfiguredEnabledMapDefaults(): void
+    {
+        QueryModelDouble::reset();
+        QueryModelDouble::$resultset = $this->createStub(ResultsetInterface::class);
+
+        $model = new QueryModelDouble();
+        QueryModelDouble::$first = $model;
+
+        $constraint = static fn(): null => null;
+        $controller = $this->newStaticQueryController();
+        $controller->unitModel = $model;
+        $controller->setWith(new Collection([
+            'Author' => $constraint,
+            'Author.Profile' => true,
+            'Comments' => 'off',
+            'Audit' => 0,
+            'Hidden' => false,
+            'Blank' => '',
+            'Legacy',
+        ], false));
+
+        $expectedWith = [
+            'Author' => $constraint,
+            'Author.Profile',
+            'Legacy',
+        ];
+
+        $this->assertSame(['with' => [$expectedWith, ['conditions' => 'with = 1']]], $controller->findWith(null, [
+            'conditions' => 'with = 1',
+        ]));
+        $this->assertSame([$expectedWith, ['conditions' => 'with = 1']], QueryModelDouble::$calls['findWith']);
+
+        $this->assertSame($model, $controller->findFirstWith(null, ['conditions' => 'first = 1']));
+        $this->assertSame([$expectedWith, ['conditions' => 'first = 1']], QueryModelDouble::$calls['findFirstWith']);
+    }
+
     public function testCountUsesDistinctPrimaryKeyWhenJoinsWouldDuplicateRows(): void
     {
         QueryModelDouble::reset();

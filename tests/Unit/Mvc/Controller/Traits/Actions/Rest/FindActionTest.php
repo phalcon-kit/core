@@ -261,6 +261,21 @@ class FindActionTest extends AbstractUnit
         ], $controller->findWithArguments);
     }
 
+    public function testFindWithActionRejectsRequestForDisabledConfiguredRelationship(): void
+    {
+        $controller = $this->createController(['with' => 'Comments']);
+        $controller->setWith(new Collection([
+            'Author',
+            'Comments' => 'off',
+            'Audit' => 0,
+        ], false));
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unauthorized relationship "Comments".');
+
+        $controller->findWithAction();
+    }
+
     public function testFindWithActionAllowsParentOfConfiguredNestedRelationship(): void
     {
         $controller = $this->createController(['with' => 'Author.Profile']);
