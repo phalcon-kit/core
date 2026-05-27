@@ -15,6 +15,7 @@ namespace PhalconKit\Tests\Unit\Mvc\Model\Traits;
 
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
+use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Exception\LogicException;
 use PhalconKit\Exception\RuntimeException;
 use PhalconKit\Mvc\Model\EagerLoading\Loader;
@@ -24,6 +25,7 @@ use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidForwardDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidHostDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EventsTraitResultsetDouble;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\IntermediateDeleteModelDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\RelatedDeleteModelDouble;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -137,6 +139,29 @@ class EagerLoadTest extends AbstractUnit
             Loader::fromResultset(new EventsTraitResultsetDouble([$first, $second]))
         );
         $this->assertSame([], Loader::fromResultset(new EventsTraitResultsetDouble()));
+    }
+
+    public function testLoaderFromResultsetRejectsNonModelRows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Expected value of `subject` to be either a ModelInterface object'
+        );
+
+        Loader::fromResultset(new EventsTraitResultsetDouble([new \stdClass()]));
+    }
+
+    public function testLoaderFromResultsetRejectsMixedModelClasses(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Expected value of `subject` to be either a ModelInterface object'
+        );
+
+        Loader::fromResultset(new EventsTraitResultsetDouble([
+            new RelatedDeleteModelDouble(),
+            new IntermediateDeleteModelDouble(),
+        ]));
     }
 
     public function testLoaderFromArrayAcceptsKeyedAndSparseModelArrays(): void

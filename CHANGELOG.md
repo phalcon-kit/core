@@ -63,6 +63,8 @@ release notes.
   implementations so `findWith()` and `Loader::fromResultset()` honor the
   public resultset contract instead of requiring Phalcon's concrete resultset
   classes.
+- Fixed eager-loading resultset subject validation so custom resultsets reject
+  non-model rows and mixed model classes consistently with array subjects.
 - Fixed eager-loading array subjects so keyed, sparse, or empty model arrays
   passed to `Loader::fromArray()` normalize correctly instead of failing class
   inference.

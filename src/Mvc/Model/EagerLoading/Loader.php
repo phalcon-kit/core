@@ -64,14 +64,11 @@ final class Loader
         
         // Handle Simple Resultset
         elseif ($from instanceof Simple) {
-            $from = iterator_to_array($from);
-            if (isset($from[0])) {
-                $className = get_class($from[0]);
-            }
-            else {
-                $from = null;
-                $allowEmptySubject = true;
-            }
+            [
+                'subject' => $from,
+                'className' => $className,
+                'allowEmptySubject' => $allowEmptySubject,
+            ] = self::normalizeModelSubject($from);
         }
         
         // Handle Complex Resultset
@@ -84,14 +81,11 @@ final class Loader
                 $firstModel = reset($array);
                 $tmp [] = $firstModel;
             }
-            $from = $tmp;
-            if (isset($from[0])) {
-                $className = get_class($from[0]);
-            }
-            else {
-                $from = null;
-                $allowEmptySubject = true;
-            }
+            [
+                'subject' => $from,
+                'className' => $className,
+                'allowEmptySubject' => $allowEmptySubject,
+            ] = self::normalizeModelSubject($tmp);
         }
 
         // Handle other traversable ResultsetInterface implementations
@@ -100,41 +94,21 @@ final class Loader
                 $error = true;
             }
             else {
-                $from = array_values(iterator_to_array($from));
-                if (isset($from[0])) {
-                    $className = get_class($from[0]);
-                }
-                else {
-                    $from = null;
-                    $allowEmptySubject = true;
-                }
+                [
+                    'subject' => $from,
+                    'className' => $className,
+                    'allowEmptySubject' => $allowEmptySubject,
+                ] = self::normalizeModelSubject($from);
             }
         }
         
         // Handle array
         elseif (is_array($from)) {
-            $from = array_values(array_filter($from));
-            if ($from !== [] && $from[0] instanceof ModelInterface) {
-                $className = get_class($from[0]);
-            }
-            foreach ($from as $el) {
-                if ($el instanceof ModelInterface) {
-                    // elements must be all the same model class
-                    if ($className !== get_class($el)) {
-                        $error = true;
-                        break;
-                    }
-                }
-                else {
-                    // element must be a ModelInterface
-                    $error = true;
-                    break;
-                }
-            }
-            if (empty($from)) {
-                $from = null;
-                $allowEmptySubject = true;
-            }
+            [
+                'subject' => $from,
+                'className' => $className,
+                'allowEmptySubject' => $allowEmptySubject,
+            ] = self::normalizeModelSubject($from);
         }
         
         // Handle null or empty
@@ -157,6 +131,76 @@ final class Loader
         $this->subject = $from;
         $this->className = $className ?? '';
         $this->eagerLoads = ($from === null || empty($arguments)) ? [] : self::parseArguments($arguments);
+    }
+
+    /**
+     * Normalize model collections accepted by the eager-loading loader.
+     *
+     * Phalcon's concrete resultsets, custom traversable resultsets, and plain
+     * arrays all eventually become a list of root models. Keeping that
+     * validation in one place prevents different entry points from accepting
+     * different shapes: every non-empty element must implement
+     * `ModelInterface`, and every model must be the same concrete class so the
+     * loader can safely resolve one root relationship graph.
+     *
+     * Null and otherwise empty values are discarded for compatibility with the
+     * historical array path, where sparse controller/model collections were
+     * often normalized through PHP's default `array_filter()` behavior.
+     *
+     * @param iterable<mixed, mixed> $records Raw records from an array or an
+     *     iterable Phalcon resultset.
+     *
+     * @return array{
+     *     subject: list<ModelInterface>|null,
+     *     className: class-string<ModelInterface>|null,
+     *     allowEmptySubject: bool
+     * }
+     *
+     * @throws InvalidArgumentException When any non-empty record is not a
+     *     Phalcon model, or when the collection mixes more than one model class.
+     */
+    private static function normalizeModelSubject(iterable $records): array
+    {
+        $subject = [];
+        foreach ($records as $record) {
+            if (empty($record)) {
+                continue;
+            }
+
+            $subject[] = $record;
+        }
+
+        if ($subject === []) {
+            return [
+                'subject' => null,
+                'className' => null,
+                'allowEmptySubject' => true,
+            ];
+        }
+
+        $className = null;
+        foreach ($subject as $record) {
+            if (!$record instanceof ModelInterface) {
+                throw new InvalidArgumentException(self::E_INVALID_SUBJECT);
+            }
+
+            $recordClassName = get_class($record);
+            if ($className === null) {
+                /** @var class-string<ModelInterface> $recordClassName */
+                $className = $recordClassName;
+                continue;
+            }
+
+            if ($className !== $recordClassName) {
+                throw new InvalidArgumentException(self::E_INVALID_SUBJECT);
+            }
+        }
+
+        return [
+            'subject' => $subject,
+            'className' => $className,
+            'allowEmptySubject' => false,
+        ];
     }
     
     /**
