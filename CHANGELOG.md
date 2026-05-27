@@ -56,6 +56,9 @@ release notes.
 - Fixed model cache blacklist checks so malformed application-provided values
   are ignored instead of causing PHP `instanceof` errors during cache behavior
   setup.
+- Fixed eager-loading finder parameter normalization so native Phalcon string
+  `columns` selections are expanded with the root `*` column instead of causing
+  a PHP `TypeError`.
 - Fixed REST filter-field policy handling so null/unconfigured policies remain
   unrestricted for legacy controllers while empty policies still reject every
   client filter.

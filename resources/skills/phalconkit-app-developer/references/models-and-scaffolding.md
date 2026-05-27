@@ -489,8 +489,10 @@ Common APIs:
   the native `findFirstBy...` or `findBy...` method, then eager-load the
   requested relations.
 
-Keep full model hydration when using eager loading. If custom `columns` are
-needed, include `*` as the first column so relation keys remain available.
+Keep full model hydration when using eager loading. If custom root-query
+`columns` are needed, PhalconKit prepends `*` for array and string column
+definitions so relation keys remain available. Avoid narrowing relation-level
+queries with `columns()`.
 
 ## Domain Validation Pattern
 

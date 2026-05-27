@@ -77,6 +77,40 @@ class EagerLoadTest extends AbstractUnit
         EagerLoadInvalidForwardDouble::exposeFindWithByBroken();
     }
 
+    public function testGetParametersFromArgumentsNormalizesColumnSelections(): void
+    {
+        $arguments = [
+            ['Author'],
+            ['columns' => ['id', 'name'], 'conditions' => 'active = 1'],
+        ];
+
+        $parameters = EagerLoadInvalidForwardDouble::getParametersFromArguments($arguments);
+
+        $this->assertSame([['Author']], $arguments);
+        $this->assertSame([
+            'columns' => ['*', 'id', 'name'],
+            'conditions' => 'active = 1',
+        ], $parameters);
+
+        $arguments = [
+            ['Author'],
+            ['columns' => 'id, name'],
+        ];
+
+        $parameters = EagerLoadInvalidForwardDouble::getParametersFromArguments($arguments);
+
+        $this->assertSame('*, id, name', $parameters['columns']);
+
+        $arguments = [
+            ['Author'],
+            ['columns' => '*, id, name'],
+        ];
+
+        $parameters = EagerLoadInvalidForwardDouble::getParametersFromArguments($arguments);
+
+        $this->assertSame('*, id, name', $parameters['columns']);
+    }
+
     public function testLoadRejectsInvalidTraitHost(): void
     {
         $this->expectException(LogicException::class);

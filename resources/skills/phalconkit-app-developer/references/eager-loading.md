@@ -144,6 +144,10 @@ Do not use relation-level `columns()` or `distinct()`. They throw intentionally
 because eager-loaded relation queries must return full model entities that can
 be attached back onto the parent model.
 
+Root finder parameters may still include custom `columns`. PhalconKit prepends
+`*` for array and string column definitions before calling the native finder so
+the root model keeps the keys needed for relation loading.
+
 When conditions reference a model class or alias, prefer bracketed PHQL names:
 
 ```php

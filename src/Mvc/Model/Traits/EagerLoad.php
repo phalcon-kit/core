@@ -241,6 +241,15 @@ trait EagerLoad
     
     /**
      * Get the query parameters from a list of arguments
+     *
+     * The final argument is treated as the native Phalcon finder parameters
+     * when at least two arguments were passed. Eager loading needs complete
+     * parent models so relation keys are available, therefore custom `columns`
+     * selections are expanded to include `*` before the parameters are passed
+     * to `find()` or `findFirst()`. Native Phalcon accepts both array and
+     * string column definitions, so both shapes are normalized without changing
+     * any other finder options.
+     *
      * @param array $arguments
      * @return mixed
      */
@@ -256,10 +265,12 @@ trait EagerLoad
                 $parameters = $arguments[$lastArg];
                 unset($arguments[$lastArg]);
                 
-                if (isset($parameters['columns'])) {
-                    // the first columns should be * so we can have the main model and all the necessary fields for eager loading
-                    if ($parameters['columns'][0] !== '*') {
+                if (is_array($parameters) && array_key_exists('columns', $parameters)) {
+                    if (is_array($parameters['columns']) && reset($parameters['columns']) !== '*') {
                         array_unshift($parameters['columns'], '*');
+                    }
+                    elseif (is_string($parameters['columns']) && !str_starts_with(ltrim($parameters['columns']), '*')) {
+                        $parameters['columns'] = '*, ' . $parameters['columns'];
                     }
                 }
             }
