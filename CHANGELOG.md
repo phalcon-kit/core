@@ -33,8 +33,8 @@ release notes.
   output distinguishes unavailable infrastructure from real test failures.
 - Expanded REST field-policy documentation and no-database regression coverage
   for save, map, expose, filter, search, and order policy semantics.
-- Clarified the `Support\Options` interface contracts for merge and presence
-  checks so the interfaces match the existing trait and manager behavior.
+- Clarified `Support\Options` null-value behavior without widening the public
+  interfaces, keeping third-party option implementers compatible.
 
 ### Fixed
 

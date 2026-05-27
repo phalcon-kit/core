@@ -28,11 +28,6 @@ interface ManagerInterface
     public function get(string $key, mixed $default = null): mixed;
 
     /**
-     * Return true when an option is present and not null.
-     */
-    public function has(string $key): bool;
-
-    /**
      * Store or replace an option value.
      */
     public function set(string $key, mixed $value = null): void;
