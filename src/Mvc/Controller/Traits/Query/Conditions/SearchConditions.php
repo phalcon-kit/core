@@ -20,6 +20,7 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields\AbstractSearchFields;
+use PhalconKit\Support\CollectionPolicy;
 use PhalconKit\Support\Helper\Arr\FlattenKeys;
 
 /**
@@ -212,8 +213,14 @@ trait SearchConditions
         // Flatten nested field definitions into dot-notation keys
         $flattened = FlattenKeys::process($searchFields) ?? [];
         foreach ($flattened as $fieldName => $enabled) {
-            // Skip disabled or malformed entries
-            if (!$enabled || !is_string($fieldName) || $fieldName === '') {
+            // Skip disabled or malformed entries. Use the shared policy helper
+            // so config/request-shaped maps interpret "off", "false", and "0"
+            // the same way as count and on-demand relationship policies.
+            if (
+                !is_string($fieldName)
+                || $fieldName === ''
+                || !CollectionPolicy::isEnabledValue($enabled)
+            ) {
                 continue;
             }
 

@@ -117,6 +117,11 @@ unrestricted. Passing an empty filter-field collection is different: it keeps
 the policy explicit but rejects every client filter. New resources should define
 filter fields instead of relying on unrestricted filtering.
 
+Filter and search field policies accept value-list entries and enabled-map
+entries. Enabled maps use boolean-like normalization consistently across REST
+policies: `true`, `1`, `'1'`, `'yes'`, and `'on'` enable a key, while `false`,
+`0`, `'0'`, `'false'`, `'no'`, and `'off'` disable it.
+
 ## Response Relationships On Demand
 
 `findAction()` never eager-loads relationships. Use it for plain lists where

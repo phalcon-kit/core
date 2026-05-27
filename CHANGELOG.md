@@ -38,6 +38,9 @@ release notes.
 
 ### Fixed
 
+- Fixed REST filter and search enabled-map policies so boolean-like config
+  values such as `'off'`, `'false'`, and `'0'` disable fields instead of being
+  treated as truthy PHP strings.
 - Fixed REST count response and embedded list-count policy enabled maps so
   boolean-like config values such as `1`, `'1'`, `'yes'`, `0`, `'0'`, and
   `'off'` are interpreted consistently with request enabled-map values.

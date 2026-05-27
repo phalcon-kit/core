@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits\Query\Conditions;
 
+use PhalconKit\Support\CollectionPolicy;
+
 trait FilterSemantics
 {
     /* =============================================================
@@ -434,7 +436,10 @@ trait FilterSemantics
             return true;
         }
 
-        if ($allowedFilters[$field] ?? false) {
+        if (
+            array_key_exists($field, $allowedFilters)
+            && CollectionPolicy::isEnabledValue($allowedFilters[$field])
+        ) {
             return true;
         }
 
@@ -451,6 +456,9 @@ trait FilterSemantics
      *
      * This method checks the provided field against the allowed filters, optionally
      * normalizing the field by removing segments wrapped in square brackets.
+     * Associative map entries use the same boolean-like enabled semantics as
+     * other REST collection policies, so config values such as "off", "false",
+     * and "0" disable the key instead of being treated as truthy PHP strings.
      *
      * @param string $field The field to be checked, potentially including syntax for joins
      *                      or relationships (e.g., dot notation or square bracket syntax).
@@ -472,6 +480,8 @@ trait FilterSemantics
             return true;
         }
 
-        return is_string($filteredField) && ($allowedFilters[$filteredField] ?? false);
+        return is_string($filteredField)
+            && array_key_exists($filteredField, $allowedFilters)
+            && CollectionPolicy::isEnabledValue($allowedFilters[$filteredField]);
     }
 }

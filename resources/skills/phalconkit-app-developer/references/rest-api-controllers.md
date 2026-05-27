@@ -384,7 +384,8 @@ Guidelines:
   null preserves unrestricted legacy filtering; an empty collection closes
   filtering entirely.
 - Use `initializeSearchFields()` for broad text search; keep it smaller than
-  filter fields.
+  filter fields. Filter/search enabled-map values are boolean-normalized, so
+  config values like `off`, `false`, and `0` disable keys.
 - Set `limit` or `maxLimit` explicitly on high-volume resources.
 
 For very large import/export/review resources, override `initializeLimit()` only

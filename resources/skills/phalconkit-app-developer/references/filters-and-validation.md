@@ -131,6 +131,9 @@ filters.
 For legacy compatibility, a null filter-field policy is unrestricted. An empty
 collection is a closed policy that rejects every client filter. Prefer explicit
 filter fields for new resources instead of relying on unrestricted filtering.
+Filter/search enabled maps use boolean-like normalization: `yes`, `on`, and
+`1` enable a key, while `off`, `false`, `no`, and `0` disable it. This matters
+when policy values come from config or environment-driven merges.
 
 Rules:
 
