@@ -104,4 +104,30 @@ class OptionsTest extends AbstractUnit
             'second' => 'kept',
         ], $this->options->getOptions());
     }
+
+    public function testNullOptionsUseDefaultsButCanBeRemoved(): void
+    {
+        $this->options = new class ([
+            'nullable' => null,
+            'kept' => 'value',
+        ]) implements OptionsInterface {
+            use Options;
+        };
+
+        $this->assertFalse($this->options->hasOption('nullable'));
+        $this->assertSame('fallback', $this->options->getOption('nullable', 'fallback'));
+        $this->assertArrayHasKey('nullable', $this->options->getOptions());
+
+        $this->options->removeOption('nullable');
+
+        $this->assertSame([
+            'kept' => 'value',
+        ], $this->options->getOptions());
+
+        $this->options->resetOptions();
+
+        $this->assertArrayHasKey('nullable', $this->options->getOptions());
+        $this->assertFalse($this->options->hasOption('nullable'));
+        $this->assertSame('fallback', $this->options->getOption('nullable', 'fallback'));
+    }
 }

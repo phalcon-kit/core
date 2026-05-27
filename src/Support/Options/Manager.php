@@ -34,8 +34,9 @@ class Manager implements ManagerInterface, OptionsInterface
     }
 
     /**
-     * Return true when an option is present.
+     * Return true when an option is present and not null.
      */
+    #[\Override]
     public function has(string $key): bool
     {
         return $this->hasOption($key);

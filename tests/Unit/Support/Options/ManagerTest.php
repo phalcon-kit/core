@@ -93,4 +93,18 @@ class ManagerTest extends AbstractUnit
         $this->assertSame('fallback', $this->manager->get('nullable', 'fallback'));
         $this->assertArrayHasKey('nullable', $this->manager->getOptions());
     }
+
+    public function testRemoveDeletesNullValuedOptions(): void
+    {
+        $this->manager = new Manager([
+            'nullable' => null,
+            'kept' => 'value',
+        ]);
+
+        $this->manager->remove('nullable');
+
+        $this->assertSame([
+            'kept' => 'value',
+        ], $this->manager->getOptions());
+    }
 }

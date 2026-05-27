@@ -33,6 +33,8 @@ release notes.
   output distinguishes unavailable infrastructure from real test failures.
 - Expanded REST field-policy documentation and no-database regression coverage
   for save, map, expose, filter, search, and order policy semantics.
+- Clarified the `Support\Options` interface contracts for merge and presence
+  checks so the interfaces match the existing trait and manager behavior.
 
 ### Fixed
 
@@ -45,6 +47,8 @@ release notes.
 - Fixed REST delete, restore, and reorder failures so unsuccessful model
   operations return an error status derived from model messages instead of a
   successful 200 response with a false body.
+- Fixed `Support\Options::removeOption()` so stored null-valued option keys can
+  be removed from the raw option array.
 
 ## 2.6.0 - 2026-05-26
 

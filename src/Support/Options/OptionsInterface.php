@@ -43,11 +43,16 @@ interface OptionsInterface
     public function initialize(): void;
 
     /**
-     * Replace the current option set.
+     * Replace or merge the current option set.
      *
-     * @param array<string, mixed> $options
+     * Null-valued entries remain present in the raw option array but are read
+     * as missing by {@see getOption()} and {@see hasOption()}.
+     *
+     * @param array<string, mixed> $options Options to apply.
+     * @param bool $merge Whether to merge into existing options instead of
+     *     replacing them.
      */
-    public function setOptions(array $options): void;
+    public function setOptions(array $options, bool $merge = false): void;
 
     /**
      * Return the current option set.
@@ -58,16 +63,24 @@ interface OptionsInterface
 
     /**
      * Store or replace one option value.
+     *
+     * Passing null stores the key in the raw option array, but public lookups
+     * treat that key as missing.
      */
-    public function setOption(string $key, mixed $value = null): void;
+    public function setOption(string $key, mixed $value = null, bool $merge = false): void;
 
     /**
-     * Return one option value or a default when it is missing.
+     * Return one option value or a default when it is missing or null.
      */
     public function getOption(string $key, mixed $default = null): mixed;
 
     /**
-     * Remove one option value when it exists.
+     * Return true when an option is present and not null.
+     */
+    public function hasOption(string $key): bool;
+
+    /**
+     * Remove one option key when it exists in the raw option array.
      */
     public function removeOption(string $key): void;
 

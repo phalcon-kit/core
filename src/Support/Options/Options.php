@@ -73,6 +73,11 @@ trait Options
     /**
      * Replace or merge the current option set.
      *
+     * Options intentionally use PHP's null-coalescing read semantics: a key
+     * stored with a null value remains present in the raw option array, but
+     * {@see getOption()} returns the caller default and {@see hasOption()}
+     * reports false for that key.
+     *
      * @param array<string, mixed> $options Options to apply.
      * @param bool $merge Whether to merge into existing options instead of
      *     replacing them.
@@ -95,6 +100,11 @@ trait Options
     /**
      * Store or replace one option value.
      *
+     * Passing null stores the key in the raw option array, but the key still
+     * reads as missing through {@see getOption()} and {@see hasOption()}. This
+     * preserves the historical contract where null means "fall back to the
+     * caller default" while still allowing callers to inspect raw options.
+     *
      * @param bool $merge Whether to merge the key/value pair into the existing
      *     option array.
      */
@@ -108,7 +118,7 @@ trait Options
     }
     
     /**
-     * Return one option value or a default when it is missing.
+     * Return one option value or a default when it is missing or null.
      *
      * @param mixed $default Default returned when the option is not set.
      */
@@ -118,7 +128,11 @@ trait Options
     }
     
     /**
-     * Return true when an option is present.
+     * Return true when an option is present and not null.
+     *
+     * This intentionally mirrors {@see getOption()} rather than
+     * `array_key_exists()`: null-valued options are stored in the raw option
+     * array but are treated as absent by the public lookup helpers.
      */
     public function hasOption(string $key): bool
     {
@@ -126,11 +140,14 @@ trait Options
     }
     
     /**
-     * Remove one option value when it exists.
+     * Remove one option key when it exists in the raw option array.
+     *
+     * Removal uses `array_key_exists()` instead of `isset()` so callers can
+     * delete a key even when it currently stores null.
      */
     public function removeOption(string $key): void
     {
-        if (isset($this->options[$key])) {
+        if (array_key_exists($key, $this->options)) {
             unset($this->options[$key]);
         }
     }
