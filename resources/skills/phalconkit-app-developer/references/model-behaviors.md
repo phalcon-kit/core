@@ -256,7 +256,9 @@ Replication behavior activates when
 - lag window in milliseconds
 
 After writes, reads are forced to the write connection until the lag window
-expires. This avoids stale reads immediately after create/update/delete/restore.
+expires. After the lag window expires, model reads use the configured read
+connection service again. This avoids stale reads immediately after
+create/update/delete/restore without disabling replicas for normal reads.
 
 ## Snapshot And Change Helpers
 

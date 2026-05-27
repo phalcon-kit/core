@@ -172,27 +172,26 @@ trait Replication
     /**
      * Select the connection used for model reads.
      *
-     * When the replica delay has elapsed, the method validates that the read
-     * connection service can be resolved. The returned connection remains the
-     * write connection to preserve the existing consistency-first behavior.
+     * When there is no active replica-cooldown window, the configured read
+     * connection service is returned. Immediately after write-like events,
+     * reads are pinned back to the write connection until the lag window
+     * expires, which avoids stale reads from asynchronous replicas.
      *
-     * @return AdapterInterface Write database connection service.
+     * @return AdapterInterface Read connection when replicas are ready; write
+     *     connection while reads are pinned after a mutation.
      * @throws ServiceException When the read or write connection service cannot
      *     be resolved through the PhalconKit DI contract.
      */
     public function selectReadConnection(): AdapterInterface
     {
-        // Check if the replication is ready
         if ($this->isReplicationReady()) {
-            // Use the read connection service
-            $this->getTypedService(
+            return $this->getTypedService(
                 $this->getReadConnectionService(),
                 AdapterInterface::class,
                 'model replication helpers'
             );
         }
         
-        // Use write connection service
         return $this->getTypedService(
             $this->getWriteConnectionService(),
             AdapterInterface::class,

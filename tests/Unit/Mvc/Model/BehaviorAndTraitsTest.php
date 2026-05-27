@@ -74,6 +74,8 @@ class BehaviorAndTraitsTest extends AbstractUnit
         EventModelDouble::resetEvents();
         EventsTraitSubject::resetEvents();
         ModelBehaviorDouble::$findFirstResult = null;
+        ModelBehaviorDouble::setReplicationLag(null);
+        ModelBehaviorDouble::setReplicationReadyAt(null);
         NativeRelationshipModelDouble::$findFirstResult = false;
         NativeRelationshipModelDouble::$defaultModelsManager = null;
         NativeRelationshipModelDouble::$defaultModelsMetaData = null;
@@ -1170,7 +1172,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertCount(1, $replacementEventsManager->getListeners('model:afterSave'));
 
         $model::setReplicationReadyAt(null);
-        $this->assertSame($write, $model->selectReadConnection());
+        $this->assertSame($read, $model->selectReadConnection());
 
         $model->getEventsManager()->fire('model:afterSave', $model);
         $this->assertNotNull($model::getReplicationReadyAt());
@@ -1193,7 +1195,24 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $model->initializeReplication();
     }
 
-    public function testReplicationTraitRejectsInvalidConnectionService(): void
+    public function testReplicationTraitRejectsInvalidReadConnectionServiceWhenReplicaIsReady(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->setReadConnectionService('read-connection');
+        $model->setWriteConnectionService('write-connection');
+        $this->di->setShared('read-connection', new \stdClass());
+        $this->di->setShared('write-connection', $this->createStub(AdapterInterface::class));
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Expected DI service "read-connection" to be an instance of "Phalcon\Db\Adapter\AdapterInterface"; got "stdClass".'
+        );
+
+        $model::setReplicationReadyAt(null);
+        $model->selectReadConnection();
+    }
+
+    public function testReplicationTraitRejectsInvalidWriteConnectionServiceDuringReplicaCooldown(): void
     {
         $model = new ModelBehaviorDouble();
         $model->setReadConnectionService('read-connection');
@@ -1206,7 +1225,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
             'Expected DI service "write-connection" to be an instance of "Phalcon\Db\Adapter\AdapterInterface"; got "stdClass".'
         );
 
-        $model::setReplicationReadyAt(null);
+        $model::setReplicationReadyAt(PHP_INT_MAX);
         $model->selectReadConnection();
     }
 
