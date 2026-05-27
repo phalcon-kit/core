@@ -15,13 +15,21 @@ namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures;
 
 use Phalcon\Http\Response;
 use Phalcon\Http\ResponseInterface;
+use Phalcon\Mvc\ModelInterface;
 use PhalconKit\Mvc\Controller\Restful;
 
-final class SaveActionControllerDouble extends Restful
+final class MutableActionControllerDouble extends Restful
 {
     public Response $response;
 
     public DistinctActionViewDouble $view;
+
+    public ?ModelInterface $entity = null;
+
+    /**
+     * @var array<string, mixed>
+     */
+    public array $params = [];
 
     public mixed $restResponse = null;
 
@@ -30,6 +38,36 @@ final class SaveActionControllerDouble extends Restful
      */
     public function initialize(): void
     {
+    }
+
+    /**
+     * Return the configured entity without preparing a database query.
+     */
+    public function findFirst(?array $find = null): ModelInterface|false|null
+    {
+        return $this->entity;
+    }
+
+    /**
+     * Return deterministic exposed data without depending on model metadata.
+     */
+    public function expose(mixed $item, ?array $expose = null): array
+    {
+        return ['entity' => true];
+    }
+
+    /**
+     * Return one synthetic request parameter.
+     */
+    public function getParam(
+        string $key,
+        array|string|null $filters = null,
+        mixed $default = null,
+        ?array $params = null
+    ): mixed {
+        $params ??= $this->params;
+
+        return array_key_exists($key, $params) ? $params[$key] : $default;
     }
 
     /**
@@ -47,16 +85,5 @@ final class SaveActionControllerDouble extends Restful
         $this->response->setStatusCode($code, $status ?? '');
 
         return $this->response;
-    }
-
-    /**
-     * Expose save response normalization for focused status-code tests.
-     *
-     * @param array<string, mixed> $ret Result returned by save(), create(), or
-     *     update().
-     */
-    public function exposeRespondFromSaveResult(array $ret): ResponseInterface
-    {
-        return $this->respondFromSaveResult($ret);
     }
 }

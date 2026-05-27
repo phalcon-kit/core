@@ -150,7 +150,10 @@ trait CountAction
      *
      * Collections can be configured either as value lists, for example
      * `[self::COUNT_RESPONSE_TOTAL_COUNT]`, or as enabled maps, for example
-     * `[self::COUNT_RESPONSE_TOTAL_COUNT => true]`.
+     * `[self::COUNT_RESPONSE_TOTAL_COUNT => true]`. Enabled-map values are
+     * interpreted with {@see CollectionPolicy::isEnabledValue()}, so config
+     * values such as `1`, `'1'`, and `'yes'` enable the key while `0`, `'0'`,
+     * `'false'`, `'no'`, and `'off'` disable it.
      *
      * @return list<string>
      */
@@ -159,12 +162,10 @@ trait CountAction
         $fields = [];
 
         foreach ($this->getCountActionResponseFields()?->toArray() ?? [] as $key => $value) {
-            if ($value === false || $value === null || $value === '') {
-                continue;
-            }
-
-            if (is_string($key) && $value === true) {
-                $fields[] = $key;
+            if (is_string($key)) {
+                if ($key !== '' && CollectionPolicy::isEnabledValue($value)) {
+                    $fields[] = $key;
+                }
                 continue;
             }
 

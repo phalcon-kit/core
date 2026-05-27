@@ -16,9 +16,41 @@ namespace PhalconKit\Tests\Unit\Support;
 use Phalcon\Support\Collection;
 use PhalconKit\Support\CollectionPolicy;
 use PhalconKit\Tests\Unit\AbstractUnit;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CollectionPolicyTest extends AbstractUnit
 {
+    #[DataProvider('enabledValueProvider')]
+    public function testIsEnabledValueNormalizesBooleanLikeMapValues(mixed $value, bool $expected): void
+    {
+        $this->assertSame($expected, CollectionPolicy::isEnabledValue($value));
+    }
+
+    /**
+     * @return iterable<string, array{mixed, bool}>
+     */
+    public static function enabledValueProvider(): iterable
+    {
+        yield 'null' => [null, false];
+        yield 'false' => [false, false];
+        yield 'zero int' => [0, false];
+        yield 'zero float' => [0.0, false];
+        yield 'empty string' => ['', false];
+        yield 'blank string' => ['   ', false];
+        yield 'zero string' => ['0', false];
+        yield 'false string' => ['false', false];
+        yield 'no string' => ['no', false];
+        yield 'off string' => ['off', false];
+        yield 'true' => [true, true];
+        yield 'one int' => [1, true];
+        yield 'one float' => [1.0, true];
+        yield 'true string' => ['true', true];
+        yield 'yes string' => ['yes', true];
+        yield 'on string' => ['on', true];
+        yield 'arbitrary string' => ['enabled', true];
+        yield 'array' => [['enabled'], true];
+    }
+
     public function testMergeNullableUsesIncomingWhenBaseIsNull(): void
     {
         $incoming = new Collection([

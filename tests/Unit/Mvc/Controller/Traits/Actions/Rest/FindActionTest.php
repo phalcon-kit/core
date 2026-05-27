@@ -213,6 +213,54 @@ class FindActionTest extends AbstractUnit
         $this->assertSame(['with' => ['Author.Profile'], 'find' => null], $controller->findWithArguments);
     }
 
+    public function testFindWithActionTreatsPresentEmptyWithAsNoRelationships(): void
+    {
+        $controller = $this->createController(['with' => '']);
+        $controller->setWith(new Collection(['Author', 'Author.Profile'], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame(['with' => [], 'find' => null], $controller->findWithArguments);
+
+        $controller = $this->createController(['with' => false]);
+        $controller->setWith(new Collection(['Author'], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame(['with' => [], 'find' => null], $controller->findWithArguments);
+    }
+
+    public function testFindWithActionNormalizesEnabledMapSyntax(): void
+    {
+        $constraint = static fn(): null => null;
+        $controller = $this->createController([
+            'with' => [
+                'Author.Profile' => 'yes',
+                'Comments' => 'off',
+                'Audit' => 0,
+            ],
+        ]);
+        $controller->setWith(new Collection([
+            'Author' => $constraint,
+            'Author.Profile',
+            'Comments',
+            'Audit',
+        ], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame([
+            'with' => [
+                'Author' => $constraint,
+                'Author.Profile',
+            ],
+            'find' => null,
+        ], $controller->findWithArguments);
+    }
+
     public function testFindWithActionAllowsParentOfConfiguredNestedRelationship(): void
     {
         $controller = $this->createController(['with' => 'Author.Profile']);
@@ -271,6 +319,39 @@ class FindActionTest extends AbstractUnit
         $controller->findWithAction();
     }
 
+    public function testFindWithActionRejectsInvalidWithParameterShapes(): void
+    {
+        $controller = $this->createController(['with' => true]);
+        $controller->setWith(new Collection(['Author'], false));
+
+        try {
+            $controller->findWithAction();
+            $this->fail('Expected invalid scalar with parameter type.');
+        }
+        catch (HttpException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Invalid type for "with" parameter: expected null, bool, string, or array, got boolean.',
+                $exception->getMessage()
+            );
+        }
+
+        $controller = $this->createController(['with' => [['Author']]]);
+        $controller->setWith(new Collection(['Author'], false));
+
+        try {
+            $controller->findWithAction();
+            $this->fail('Expected invalid list with parameter value.');
+        }
+        catch (HttpException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Invalid value for "with" parameter at index 0: expected relationship path string.',
+                $exception->getMessage()
+            );
+        }
+    }
+
     public function testFindFirstWithActionUsesRequestedRelationshipSubset(): void
     {
         $controller = $this->createController(['with' => 'Author.Profile']);
@@ -302,6 +383,41 @@ class FindActionTest extends AbstractUnit
         $this->assertSame(7, $controller->view->getVar(FindActionControllerDouble::REST_VIEW_COUNT));
         $this->assertSame(9, $controller->view->getVar(FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
         $this->assertSame([[], []], $controller->countFinds);
+    }
+
+    public function testFindActionCountRequestIgnoresDisabledMapEntries(): void
+    {
+        $controller = $this->createController([
+            'count' => [
+                FindActionControllerDouble::REST_VIEW_COUNT => 'off',
+                FindActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL => 0,
+                FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => 'yes',
+            ],
+        ], [9], [
+            FindActionControllerDouble::REST_VIEW_COUNT,
+            FindActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL,
+            FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT,
+        ]);
+
+        $controller->findAction();
+
+        $this->assertNull($controller->view->getVar(FindActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertNull($controller->view->getVar(FindActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
+        $this->assertSame(9, $controller->view->getVar(FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
+        $this->assertSame([[]], $controller->countFinds);
+    }
+
+    public function testFindActionRejectsInvalidCountParameterType(): void
+    {
+        $controller = $this->createController(['count' => new \stdClass()], [7]);
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionCode(400);
+        $this->expectExceptionMessage(
+            'Invalid type for "count" parameter: expected null, bool, string, or array, got object.'
+        );
+
+        $controller->findAction();
     }
 
     public function testFindActionCountFieldsUseCollectionPolicy(): void
@@ -340,6 +456,25 @@ class FindActionTest extends AbstractUnit
         ], false));
 
         $this->assertTrue($controller->hasFindActionCountFields());
+    }
+
+    public function testFindActionCountFieldPolicyNormalizesEnabledMapValues(): void
+    {
+        $controller = $this->createController([
+            'count' => 'totalCount',
+        ], [9]);
+        $controller->setFindActionCountFields(new Collection([
+            FindActionControllerDouble::REST_VIEW_COUNT => 'off',
+            FindActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL => 0,
+            FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => 'yes',
+        ], false));
+
+        $controller->findAction();
+
+        $this->assertNull($controller->view->getVar(FindActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertNull($controller->view->getVar(FindActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
+        $this->assertSame(9, $controller->view->getVar(FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
+        $this->assertSame([[]], $controller->countFinds);
     }
 
     /**

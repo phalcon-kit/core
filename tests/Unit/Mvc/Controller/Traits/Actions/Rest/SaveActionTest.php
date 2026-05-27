@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits\Actions\Rest;
 
 use Phalcon\Http\Response;
+use Phalcon\Messages\Message;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\DistinctActionViewDouble;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\SaveActionControllerDouble;
@@ -47,6 +48,63 @@ class SaveActionTest extends AbstractUnit
         ]);
 
         $this->assertSame(400, $controller->response->getStatusCode());
+        $this->assertFalse($controller->restResponse);
+    }
+
+    public function testSingleSaveFailureWithHttpMessageCodePreservesStatusCode(): void
+    {
+        foreach ([400, 404, 409] as $statusCode) {
+            $controller = $this->createController();
+            $message = new Message('Save failure.', 'id', 'SaveFailure', $statusCode);
+
+            $controller->exposeRespondFromSaveResult([
+                SaveActionControllerDouble::REST_VIEW_SAVED => false,
+                SaveActionControllerDouble::REST_VIEW_MESSAGES => [$message],
+            ]);
+
+            $this->assertSame($statusCode, $controller->response->getStatusCode());
+            $this->assertFalse($controller->restResponse);
+            $this->assertSame(
+                [$message],
+                $controller->view->getVar(SaveActionControllerDouble::REST_VIEW_MESSAGES)
+            );
+        }
+    }
+
+    public function testSingleSaveFailureScansForExplicitHttpMessageCode(): void
+    {
+        $controller = $this->createController();
+        $validationMessage = new Message('Validation failed.', 'name', 'PresenceOf', 0);
+        $conflictMessage = new Message('Save conflict.', 'id', 'Conflict', 409);
+
+        $controller->exposeRespondFromSaveResult([
+            SaveActionControllerDouble::REST_VIEW_SAVED => false,
+            SaveActionControllerDouble::REST_VIEW_MESSAGES => [
+                $validationMessage,
+                $conflictMessage,
+            ],
+        ]);
+
+        $this->assertSame(409, $controller->response->getStatusCode());
+        $this->assertFalse($controller->restResponse);
+        $this->assertSame(
+            [$validationMessage, $conflictMessage],
+            $controller->view->getVar(SaveActionControllerDouble::REST_VIEW_MESSAGES)
+        );
+    }
+
+    public function testSingleSaveFailureWithNonHttpMessageCodeReturnsUnprocessableEntity(): void
+    {
+        $controller = $this->createController();
+
+        $controller->exposeRespondFromSaveResult([
+            SaveActionControllerDouble::REST_VIEW_SAVED => false,
+            SaveActionControllerDouble::REST_VIEW_MESSAGES => [
+                new Message('Validation failed.', 'name', 'PresenceOf', 0),
+            ],
+        ]);
+
+        $this->assertSame(422, $controller->response->getStatusCode());
         $this->assertFalse($controller->restResponse);
     }
 

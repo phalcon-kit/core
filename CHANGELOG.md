@@ -24,6 +24,26 @@ release notes.
   ignore-list support for lifecycle fields, and native `getChangedFields()`
   fallback when no snapshot exists.
 
+### Changed
+
+- Refocused the repository roadmap on active `2.7.x` release blocks and
+  clarified maintainer planning discipline for roadmap, discussion, changelog,
+  guide, and shipped-skill updates.
+- Centralized optional database and Redis test preflight skips so local and CI
+  output distinguishes unavailable infrastructure from real test failures.
+
+### Fixed
+
+- Fixed REST count response and embedded list-count policy enabled maps so
+  boolean-like config values such as `1`, `'1'`, `'yes'`, `0`, `'0'`, and
+  `'off'` are interpreted consistently with request enabled-map values.
+- Fixed single-entity REST save failures so explicit HTTP error codes carried
+  by Phalcon messages, such as invalid create/update intent or missing update
+  targets, are preserved instead of always returning 422.
+- Fixed REST delete, restore, and reorder failures so unsuccessful model
+  operations return an error status derived from model messages instead of a
+  successful 200 response with a false body.
+
 ## 2.6.0 - 2026-05-26
 
 ### Added

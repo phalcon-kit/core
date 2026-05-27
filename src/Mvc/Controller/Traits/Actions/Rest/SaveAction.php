@@ -142,46 +142,51 @@ trait SaveAction
                 }
             }
 
-            if ($hasSuccess && $hasFailure) {
-                // Partial success is NOT an error
-                $this->response->setStatusCode(207, 'Multi-Status');
-            } elseif ($hasFailure) {
-                // All entities failed validation / save
-                $this->response->setStatusCode(422, 'Unprocessable Entity');
-            } else {
-                // All entities saved
-                $this->response->setStatusCode(200, 'OK');
-            }
-
             $this->setRestViewVars($ret);
 
-            // REST success only if no failures
-            return $this->setRestResponse($hasFailure === false);
+            if ($hasSuccess && $hasFailure) {
+                // Partial success is not an error, but the envelope response is
+                // false so clients can detect that not every row persisted.
+                return $this->setRestResponse(false, 207, 'Multi-Status');
+            }
+
+            if ($hasFailure) {
+                // All entities failed validation or persistence.
+                return $this->setRestErrorResponse(422, response: false);
+            }
+
+            return $this->setRestResponse(true, 200);
         }
 
         /* ---------- Single entity ---------- */
 
-        if ($ret[self::REST_VIEW_SAVED] !== true) {
-            $this->response->setStatusCode($this->getSaveActionFailureStatusCode($ret));
-        }
-
         $this->setRestViewVars($ret);
 
-        return $this->setRestResponse($ret[self::REST_VIEW_SAVED] === true);
+        if ($ret[self::REST_VIEW_SAVED] !== true) {
+            return $this->setRestErrorResponse($this->getSaveActionFailureStatusCode($ret), response: false);
+        }
+
+        return $this->setRestResponse(true);
     }
 
     /**
      * Resolve the HTTP status code for a failed single-entity save.
      *
      * Model, validation, and domain-rule failures normally include messages and
-     * map to 422 Unprocessable Entity. A failure without messages is treated as
-     * a malformed request because the persistence layer could not provide a
-     * domain-specific reason for the rejection.
+     * map to 422 Unprocessable Entity. Framework-generated REST failures use
+     * Phalcon message codes for request problems such as invalid create/update
+     * intent or not-found identities; those explicit 4xx/5xx codes are
+     * preserved so the action layer does not collapse them into validation
+     * responses.
+     *
+     * A failure without messages is treated as a malformed request because the
+     * persistence layer could not provide a domain-specific reason for the
+     * rejection.
      *
      * @param array $ret Single-entity save result.
      */
     protected function getSaveActionFailureStatusCode(array $ret): int
     {
-        return empty($ret[self::REST_VIEW_MESSAGES] ?? null) ? 400 : 422;
+        return $this->getRestActionFailureStatusCode($ret[self::REST_VIEW_MESSAGES] ?? null);
     }
 }

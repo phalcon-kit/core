@@ -283,20 +283,7 @@ trait With
      */
     protected function isWithRelationEnabledValue(mixed $value): bool
     {
-        if ($value === null || $value === false) {
-            return false;
-        }
-
-        if (is_int($value) || is_float($value)) {
-            return $value !== 0 && $value !== 0.0;
-        }
-
-        if (!is_string($value)) {
-            return true;
-        }
-
-        $value = strtolower(trim($value));
-        return !in_array($value, ['', '0', 'false', 'no', 'off'], true);
+        return CollectionPolicy::isEnabledValue($value);
     }
 
     /**

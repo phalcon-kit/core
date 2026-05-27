@@ -325,6 +325,24 @@ The standard view keys include `REST_VIEW_DATA`, `REST_VIEW_MESSAGES`,
 The helpers do not change the payload shape. They make response contracts
 discoverable and keep string literals out of framework and app controllers.
 
+## REST Failure Status Codes
+
+Standard REST actions use error responses for failed saves, deletes, restores,
+and reorders. A failed operation with validation or domain messages normally
+returns `422 Unprocessable Entity`. A failed operation with no messages returns
+`400 Bad Request`, because the framework has no domain-specific reason to
+expose.
+
+PhalconKit also preserves explicit HTTP error codes attached to Phalcon
+messages when the code is in the `400-599` range. Framework paths use this for
+request-shape failures such as invalid create/update intent, missing update
+targets, forbidden operations, or conflicts. Ordinary validation messages with
+code `0`, non-HTTP codes, strings, or arrays do not override the action's
+default status.
+
+Use this sparingly in application code. Message codes should represent real
+HTTP semantics, not arbitrary business error numbers.
+
 ## Advanced Conditions
 
 For set logic, `EXISTS` often avoids duplicate rows from joins:
@@ -375,6 +393,12 @@ public function initializeCountActionResponseFields(): void
     ], false));
 }
 ```
+
+Collection policies accept either value-list entries or enabled-map entries.
+For count field policies, enabled-map values use boolean-like normalization:
+`true`, `1`, `'1'`, and `'yes'` enable the key, while `false`, `0`, `'0'`,
+`'false'`, `'no'`, and `'off'` disable it. Alias-capable policies such as
+distinct fields keep string map values as aliases instead.
 
 `Restful::initialize()` calls this initializer after the query policy setup, so
 count response metadata follows the same controller initialization pattern as

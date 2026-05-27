@@ -147,6 +147,24 @@ class CountActionTest extends AbstractUnit
         $this->assertFalse($controller->hasCountActionResponseFields());
     }
 
+    public function testCountActionResponseFieldsNormalizeEnabledMapValues(): void
+    {
+        $controller = $this->createController([7, 11]);
+        $controller->setCountActionResponseFields(new Collection([
+            CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT => 'off',
+            CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL => 0,
+            CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => 'yes',
+        ], false));
+
+        $controller->countAction();
+
+        $this->assertSame(7, $controller->view->getVar(CountActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
+        $this->assertSame(11, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
+        $this->assertSame([null, []], $controller->countFinds);
+    }
+
     public function testCountActionBucketTotalRefusesAmbiguousGroupedRows(): void
     {
         $groupedCount = $this->createGroupedCountResultset([

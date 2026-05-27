@@ -299,6 +299,12 @@ trait FindAction
     /**
      * Normalize the controller allow-list to count response field names.
      *
+     * Count-field policies do not support public-to-query aliases, so string
+     * keys are treated as enabled-map entries. This keeps PHP config,
+     * environment-derived config, and request-map semantics aligned for count
+     * fields without changing alias-capable policies such as distinct/order
+     * fields.
+     *
      * @return list<string>
      */
     protected function getFindActionCountFieldNames(): array
@@ -306,12 +312,10 @@ trait FindAction
         $fields = [];
 
         foreach ($this->getFindActionCountFields()?->toArray() ?? [] as $key => $value) {
-            if ($value === false || $value === null || $value === '') {
-                continue;
-            }
-
-            if (is_string($key) && $value === true) {
-                $fields[] = $key;
+            if (is_string($key)) {
+                if ($key !== '' && CollectionPolicy::isEnabledValue($value)) {
+                    $fields[] = $key;
+                }
                 continue;
             }
 
@@ -400,20 +404,7 @@ trait FindAction
      */
     protected function isFindActionCountEnabledValue(mixed $value): bool
     {
-        if ($value === null || $value === false) {
-            return false;
-        }
-
-        if (is_int($value) || is_float($value)) {
-            return $value !== 0 && $value !== 0.0;
-        }
-
-        if (!is_string($value)) {
-            return true;
-        }
-
-        $value = strtolower(trim($value));
-        return !in_array($value, ['', '0', 'false', 'no', 'off'], true);
+        return CollectionPolicy::isEnabledValue($value);
     }
 
     /**

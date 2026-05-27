@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits;
 
 use Phalcon\Http\ResponseInterface;
+use Phalcon\Messages\MessageInterface;
 use Phalcon\Mvc\Dispatcher;
 use PhalconKit\Http\StatusCode as HttpStatusCode;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractDebug;
@@ -31,12 +32,21 @@ trait RestResponse
     use AbstractParams;
     
     /**
-     * Set the REST response error
+     * Return a normalized REST error response.
      *
-     * @param int $code The HTTP status code (default: 400)
-     * @param ?string $status The status message (default: 'Bad Request')
-     * @param mixed $response The response body (default: null)
-     * @return ResponseInterface The REST response object
+     * This is the preferred exit path for controller failures that should use
+     * the standard JSON envelope but carry a non-2xx HTTP status. The response
+     * body remains caller-controlled so legacy actions can keep returning
+     * `false`, `null`, or a custom payload while the envelope status and code
+     * are still set consistently by {@see setRestResponse()}.
+     *
+     * @param int $code HTTP status code to expose in the response and payload.
+     * @param string|null $status Optional status text; when null, the status is
+     *     resolved from the current response or {@see HttpStatusCode}.
+     * @param mixed $response Response body stored under the REST `response`
+     *     envelope key.
+     *
+     * @return ResponseInterface The finalized Phalcon response instance.
      */
     public function setRestErrorResponse(int $code = 400, ?string $status = null, mixed $response = null): ResponseInterface
     {
@@ -144,6 +154,102 @@ trait RestResponse
         }
 
         return $payload;
+    }
+
+    /**
+     * Resolve an HTTP status code for REST action failures carrying messages.
+     *
+     * Model, validation, and domain-rule failures normally include messages and
+     * map to 422 Unprocessable Entity. Framework-generated REST failures can
+     * attach explicit HTTP codes to Phalcon messages; those 4xx/5xx codes are
+     * preserved so actions do not collapse invalid request intent, missing
+     * targets, conflicts, or server-side failures into generic validation
+     * responses.
+     *
+     * A failure without messages is treated as malformed input by default. The
+     * defaults can be overridden for actions that need a different legacy or
+     * protocol-specific response.
+     *
+     * @param mixed $messages A Phalcon messages collection, iterable list,
+     *     single message, or any legacy message payload returned by model/action
+     *     code.
+     * @param int $emptyStatusCode Status code used when no message payload is
+     *     available.
+     * @param int $defaultStatusCode Status code used when messages exist but no
+     *     explicit HTTP status code is attached.
+     */
+    protected function getRestActionFailureStatusCode(
+        mixed $messages,
+        int $emptyStatusCode = 400,
+        int $defaultStatusCode = 422
+    ): int {
+        if (empty($messages)) {
+            return $emptyStatusCode;
+        }
+
+        foreach (is_iterable($messages) ? $messages : [$messages] as $message) {
+            $statusCode = $this->getRestActionMessageStatusCode($message);
+            if ($statusCode !== null) {
+                return $statusCode;
+            }
+        }
+
+        return $defaultStatusCode;
+    }
+
+    /**
+     * Return a normalized REST error response for an action failure.
+     *
+     * This helper keeps REST actions from pre-mutating the response status and
+     * then relying on {@see setRestResponse()} to pick that status back up. The
+     * action still owns its public view fields; this method only resolves the
+     * HTTP failure code from explicit message metadata and delegates the final
+     * envelope to {@see setRestErrorResponse()}.
+     *
+     * @param mixed $messages A Phalcon messages collection, iterable list,
+     *     single message, or any legacy message payload returned by model/action
+     *     code.
+     * @param mixed $response Response body stored under the REST `response`
+     *     envelope key. Standard framework actions usually pass `false`.
+     * @param int $emptyStatusCode Status code used when no message payload is
+     *     available.
+     * @param int $defaultStatusCode Status code used when messages exist but no
+     *     explicit HTTP status code is attached.
+     *
+     * @return ResponseInterface The finalized Phalcon response instance.
+     */
+    protected function setRestActionFailureResponse(
+        mixed $messages,
+        mixed $response = false,
+        int $emptyStatusCode = 400,
+        int $defaultStatusCode = 422
+    ): ResponseInterface {
+        return $this->setRestErrorResponse(
+            $this->getRestActionFailureStatusCode($messages, $emptyStatusCode, $defaultStatusCode),
+            response: $response
+        );
+    }
+
+    /**
+     * Extract an explicit HTTP status code from one REST action message.
+     *
+     * Only Phalcon message codes in the HTTP error range are considered. Normal
+     * validation messages often carry no code, or a non-HTTP code, and should
+     * continue to use the action's default failure response.
+     *
+     * @param mixed $message Candidate message value from a model/action failure.
+     *
+     * @return int|null Explicit HTTP status code when present and valid;
+     *     otherwise null.
+     */
+    protected function getRestActionMessageStatusCode(mixed $message): ?int
+    {
+        if (!$message instanceof MessageInterface) {
+            return null;
+        }
+
+        $code = $message->getCode();
+        return $code >= 400 && $code <= 599 ? $code : null;
     }
     
     /**
