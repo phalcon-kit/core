@@ -139,6 +139,29 @@ class EagerLoadTest extends AbstractUnit
         $this->assertSame([], Loader::fromResultset(new EventsTraitResultsetDouble()));
     }
 
+    public function testLoaderFromArrayAcceptsKeyedAndSparseModelArrays(): void
+    {
+        $first = new RelatedDeleteModelDouble();
+        $second = new RelatedDeleteModelDouble();
+
+        $this->assertSame(
+            [$first, $second],
+            Loader::fromArray([
+                10 => $first,
+                30 => $second,
+            ])
+        );
+        $this->assertSame(
+            [$first, $second],
+            Loader::fromArray([
+                'first' => $first,
+                'empty' => null,
+                'second' => $second,
+            ])
+        );
+        $this->assertSame([], Loader::fromArray([]));
+    }
+
     public function testLoadRejectsInvalidTraitHost(): void
     {
         $this->expectException(LogicException::class);

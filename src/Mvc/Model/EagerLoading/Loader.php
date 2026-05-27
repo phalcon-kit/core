@@ -113,8 +113,8 @@ final class Loader
         
         // Handle array
         elseif (is_array($from)) {
-            $from = array_filter($from);
-            if (isset($from[0])) {
+            $from = array_values(array_filter($from));
+            if ($from !== [] && $from[0] instanceof ModelInterface) {
                 $className = get_class($from[0]);
             }
             foreach ($from as $el) {
@@ -133,6 +133,7 @@ final class Loader
             }
             if (empty($from)) {
                 $from = null;
+                $allowEmptySubject = true;
             }
         }
         

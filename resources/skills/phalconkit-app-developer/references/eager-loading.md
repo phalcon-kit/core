@@ -41,6 +41,8 @@ Model APIs:
 - `Model::findFirstWith($with, $parameters)` returns one model or null with
   relations loaded.
 - `$model->load($with)` loads relations onto an existing model.
+- `Loader::fromArray($models, $with)` accepts normal lists and arrays keyed by
+  id or alias, as long as every non-empty element is the same model class.
 - Custom `find()` overrides used with `findWith()` must return a traversable
   `ResultsetInterface`, matching Phalcon's normal model resultsets.
 - Dynamic helpers such as `findFirstWithById($with, $id)` and
