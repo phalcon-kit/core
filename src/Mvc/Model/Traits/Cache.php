@@ -130,11 +130,13 @@ trait Cache
      * Check whether a model instance belongs to any configured class.
      *
      * This helper supports cache blacklist checks while allowing tests or
-     * callers to pass an explicit instance. Values that are not valid class
-     * names simply fail the `instanceof` check.
+     * callers to pass an explicit instance. Invalid values are ignored instead
+     * of being passed to `instanceof`, because a malformed application-provided
+     * blacklist entry should not turn cache-behavior initialization into a PHP
+     * fatal error.
      *
-     * @param array<int, class-string|object|string> $classes Class names to
-     *     compare against.
+     * @param array<int, mixed> $classes Class names, objects, or ignored
+     *     malformed values to compare against.
      * @param ModelInterface|null $that Optional model instance to inspect.
      *     Defaults to the current model.
      * @return bool True when the model is an instance of at least one class.
@@ -145,6 +147,10 @@ trait Cache
         
         // Prevent adding behavior to whiteListed models
         foreach ($classes as $class) {
+            if (!is_string($class) && !is_object($class)) {
+                continue;
+            }
+
             if ($that instanceof $class) {
                 return true;
             }

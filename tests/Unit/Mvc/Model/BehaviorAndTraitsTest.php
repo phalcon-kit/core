@@ -756,6 +756,23 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $reordered->addedBehaviors[0]->notify('afterReorder', $reordered);
     }
 
+    public function testCacheTraitIgnoresMalformedBlacklistEntries(): void
+    {
+        $model = new ModelBehaviorDouble();
+
+        $this->assertFalse($model->isInstanceOf([null, false, 0, [], 'missing-class']));
+
+        $cache = $this->createMock(Cache::class);
+        $cache
+            ->expects($this->never())
+            ->method('clear');
+        $this->di->setShared('modelsCache', $cache);
+
+        $model->addFlushCacheBehavior([null, false, 0, [], 'missing-class']);
+
+        $this->assertCount(1, $model->addedBehaviors);
+    }
+
     public function testCacheTraitRejectsInvalidModelsService(): void
     {
         $this->di->setShared('models', new \stdClass());

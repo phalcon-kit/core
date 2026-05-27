@@ -53,6 +53,9 @@ release notes.
 - Fixed model replication read selection so an enabled read replica is returned
   after the lag window expires, while recent writes still pin reads to the write
   connection.
+- Fixed model cache blacklist checks so malformed application-provided values
+  are ignored instead of causing PHP `instanceof` errors during cache behavior
+  setup.
 - Fixed REST filter-field policy handling so null/unconfigured policies remain
   unrestricted for legacy controllers while empty policies still reject every
   client filter.
