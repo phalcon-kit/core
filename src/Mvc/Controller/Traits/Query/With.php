@@ -148,11 +148,15 @@ trait With
      */
     protected function normalizeRequestedWith(mixed $requested): array
     {
-        if ($requested === null || $requested === false) {
+        if ($requested === null || $requested === false || $requested === 0) {
             return [];
         }
 
         if (is_string($requested)) {
+            if (!CollectionPolicy::isEnabledValue($requested)) {
+                return [];
+            }
+
             return $this->normalizeWithRelationList(explode(',', $requested));
         }
 

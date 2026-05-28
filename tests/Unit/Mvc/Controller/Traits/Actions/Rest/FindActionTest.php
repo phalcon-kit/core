@@ -230,6 +230,22 @@ class FindActionTest extends AbstractUnit
         $controller->findWithAction();
 
         $this->assertSame(['with' => [], 'find' => null], $controller->findWithArguments);
+
+        $controller = $this->createController(['with' => 0]);
+        $controller->setWith(new Collection(['Author'], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame(['with' => [], 'find' => null], $controller->findWithArguments);
+
+        $controller = $this->createController(['with' => 'false']);
+        $controller->setWith(new Collection(['Author'], false));
+        $controller->findWithResult = [['model' => 'loaded']];
+
+        $controller->findWithAction();
+
+        $this->assertSame(['with' => [], 'find' => null], $controller->findWithArguments);
     }
 
     public function testFindWithActionNormalizesEnabledMapSyntax(): void

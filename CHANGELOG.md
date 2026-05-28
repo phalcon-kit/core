@@ -50,6 +50,9 @@ release notes.
 - Fixed embedded REST list-count requests so an integer `0` disables count
   metadata consistently with string `'0'` and boolean `false` instead of being
   rejected as an invalid request type.
+- Fixed REST eager-load request selection so scalar disabled values such as
+  integer `0`, string `'0'`, and string `'false'` request no relations instead
+  of producing invalid-type or unauthorized-relationship errors.
 - Fixed REST configured `with` enabled maps so disabled relation values are
   removed from default eager-load graphs and request allow-lists before they
   reach the eager loader.

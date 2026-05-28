@@ -644,6 +644,7 @@ Supported request shapes:
 - `?with[]=OwnerEntity&with[]=StatusEntity`
 - `?with[OwnerEntity.ProfileEntity]=1`
 - `?with=OwnerEntity.ProfileEntity.AvatarFile`
+- `?with=0`, `?with=false`, or an empty `with` parameter loads no relations.
 
 Nested paths can be requested directly. The eager loader already resolves
 required parent paths, so the client does not need to send both
