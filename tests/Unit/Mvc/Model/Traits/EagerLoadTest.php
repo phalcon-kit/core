@@ -22,6 +22,7 @@ use PhalconKit\Mvc\Model\EagerLoading\Loader;
 use PhalconKit\Mvc\Model\Traits\EagerLoad;
 use PhalconKit\Mvc\Model\Traits\Events;
 use PhalconKit\Tests\Unit\AbstractUnit;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadForwardDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidForwardDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidHostDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EventsTraitResultsetDouble;
@@ -80,6 +81,19 @@ class EagerLoadTest extends AbstractUnit
         );
 
         EagerLoadInvalidForwardDouble::exposeFindWithByBroken();
+    }
+
+    public function testFindWithByAcceptsTraversableResultsetInterface(): void
+    {
+        $first = new RelatedDeleteModelDouble();
+        $second = new RelatedDeleteModelDouble();
+        EagerLoadForwardDouble::$findByCustomResult = new EventsTraitResultsetDouble([$first, $second]);
+
+        $this->assertSame([$first, $second], EagerLoadForwardDouble::exposeFindWithByCustom());
+
+        EagerLoadForwardDouble::$findByCustomResult = new EventsTraitResultsetDouble();
+
+        $this->assertSame([], EagerLoadForwardDouble::exposeFindWithByCustom());
     }
 
     public function testGetParametersFromArgumentsNormalizesColumnSelections(): void

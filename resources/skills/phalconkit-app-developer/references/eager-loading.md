@@ -48,7 +48,8 @@ Model APIs:
   Phalcon's normal model resultsets.
 - Dynamic helpers such as `findFirstWithById($with, $id)` and
   `findWithByStatus($with, $status)` call the native `findFirstBy...` or
-  `findBy...` method, then load relations.
+  `findBy...` method, then load relations. Custom `findBy...` overrides follow
+  the same traversable `ResultsetInterface` contract as `find()`.
 - Deprecated aliases `with()` and `firstWith()` exist, but prefer
   `findWith()` and `findFirstWith()`.
 

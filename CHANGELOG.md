@@ -65,6 +65,9 @@ release notes.
   classes.
 - Fixed eager-loading resultset subject validation so custom resultsets reject
   non-model rows and mixed model classes consistently with array subjects.
+- Fixed dynamic eager-loading `findWithBy*()` helpers so custom traversable
+  `ResultsetInterface` results are loaded instead of being treated as empty
+  because they are not countable.
 - Fixed eager-loading array subjects so keyed, sparse, or empty model arrays
   passed to `Loader::fromArray()` normalize correctly instead of failing class
   inference.

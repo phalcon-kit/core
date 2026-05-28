@@ -202,11 +202,11 @@ trait EagerLoad
             ));
         }
         
-        if (is_countable($list) && $list->count()) {
-            return Loader::fromResultset($list, ...$arguments);
+        if (is_countable($list) && $list->count() === 0) {
+            return [];
         }
-    
-        return [];
+
+        return Loader::fromResultset($list, ...$arguments);
     }
     
     /**
