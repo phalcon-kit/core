@@ -29,6 +29,10 @@ release notes.
 - Refocused the repository roadmap on active `2.7.x` release blocks and
   clarified maintainer planning discipline for roadmap, discussion, changelog,
   guide, and shipped-skill updates.
+- Added SonarQube Cloud project-scope configuration so the external Quality
+  Gate analyzes runtime framework code under `src/`, while tests, workflow
+  hardening, dependency audit, and package metadata stay covered by their
+  dedicated local and GitHub checks.
 - Centralized optional database and Redis test preflight skips so local and CI
   output distinguishes unavailable infrastructure from real test failures.
 - Expanded REST field-policy documentation and no-database regression coverage
