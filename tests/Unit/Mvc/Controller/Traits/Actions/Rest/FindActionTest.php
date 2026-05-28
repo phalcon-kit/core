@@ -422,6 +422,18 @@ class FindActionTest extends AbstractUnit
         $this->assertSame([[]], $controller->countFinds);
     }
 
+    public function testFindActionTreatsIntegerZeroCountRequestAsDisabled(): void
+    {
+        $controller = $this->createController(['count' => 0], [7]);
+
+        $controller->findAction();
+
+        $this->assertSame([['id' => 1]], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
+        $this->assertNull($controller->view->getVar(FindActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertSame([], $controller->countFinds);
+        $this->assertTrue($controller->restResponse);
+    }
+
     public function testFindActionRejectsInvalidCountParameterType(): void
     {
         $controller = $this->createController(['count' => new \stdClass()], [7]);

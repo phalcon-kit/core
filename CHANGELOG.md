@@ -47,6 +47,9 @@ release notes.
 - Fixed REST count response and embedded list-count policy enabled maps so
   boolean-like config values such as `1`, `'1'`, `'yes'`, `0`, `'0'`, and
   `'off'` are interpreted consistently with request enabled-map values.
+- Fixed embedded REST list-count requests so an integer `0` disables count
+  metadata consistently with string `'0'` and boolean `false` instead of being
+  rejected as an invalid request type.
 - Fixed REST configured `with` enabled maps so disabled relation values are
   removed from default eager-load graphs and request allow-lists before they
   reach the eager loader.

@@ -254,6 +254,7 @@ public function initializeFindActionCountFields(): void
 Request examples:
 
 - `?count=1` or `?count=true` requests the standard `count` field.
+- `?count=0`, `?count=false`, or omitting `count` runs no count query.
 - `?count=count,totalCount` requests named fields.
 - `?count[]=count&count[]=totalCount` requests named fields as a list.
 - `?count[totalCount]=1` requests named fields as an enabled map.

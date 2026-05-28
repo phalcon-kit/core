@@ -342,11 +342,11 @@ trait FindAction
      */
     protected function normalizeFindActionRequestedCountFields(mixed $requested): array
     {
-        if ($requested === null || $requested === false) {
+        if ($requested === null || $requested === false || $requested === 0) {
             return [];
         }
 
-        if ($requested === true || (is_int($requested) && $requested !== 0)) {
+        if ($requested === true || is_int($requested)) {
             return [self::REST_VIEW_COUNT];
         }
 
