@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Modules\Cli;
 
 use Phalcon\Cli\Dispatcher;
+use Phalcon\Messages\MessageInterface;
 use PhalconKit\Exception\CliException;
 use PhalconKit\Support\Helper;
 use PhalconKit\Support\Utils;
@@ -66,7 +67,7 @@ DOC;
     public function afterExecuteRoute(Dispatcher $dispatcher): void
     {
         // Merge response into view variables
-        $payload = $dispatcher->getReturnedValue();
+        $payload = $this->normalizeCliPayload($dispatcher->getReturnedValue());
         
         // Quiet output
         $quiet = $this->dispatcher->getParam('quiet');
@@ -131,5 +132,103 @@ DOC;
             default:
                 throw new CliException('Unknown output format `' . $format . '` expected one of the string value: `json` `serialize` `dump` `raw`');
         }
+    }
+
+    /**
+     * Normalize values before CLI output serializers see them.
+     *
+     * Phalcon message objects are useful inside the framework but are opaque for
+     * JSON automation. This helper recursively converts them into scalar arrays
+     * while leaving other payload values unchanged.
+     */
+    protected function normalizeCliPayload(mixed $payload): mixed
+    {
+        if ($payload instanceof MessageInterface) {
+            return $this->normalizeCliMessage($payload);
+        }
+
+        if (is_array($payload)) {
+            foreach ($payload as $key => $value) {
+                $payload[$key] = $this->normalizeCliPayload($value);
+            }
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Normalize a list of model messages and optionally add a fallback entry.
+     *
+     * @param iterable<mixed> $messages Messages returned by a model or resultset.
+     *
+     * @return list<array{message: string, field: string|null, type: string|null, code: int|null}>
+     */
+    protected function normalizeCliMessages(iterable $messages, ?string $fallbackMessage = null): array
+    {
+        $normalized = [];
+        foreach ($messages as $message) {
+            if ($message instanceof MessageInterface) {
+                $normalized[] = $this->normalizeCliMessage($message);
+                continue;
+            }
+
+            $normalized[] = [
+                'message' => $this->stringifyCliMessage($message),
+                'field' => null,
+                'type' => get_debug_type($message),
+                'code' => null,
+            ];
+        }
+
+        if ($normalized === [] && $fallbackMessage !== null) {
+            $normalized[] = [
+                'message' => $fallbackMessage,
+                'field' => null,
+                'type' => 'SaveFailed',
+                'code' => null,
+            ];
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Convert one Phalcon message object to JSON-safe scalar fields.
+     *
+     * @return array{message: string, field: string|null, type: string|null, code: int|null}
+     */
+    private function normalizeCliMessage(MessageInterface $message): array
+    {
+        return [
+            'message' => (string) $message->getMessage(),
+            'field' => $this->normalizeCliMessageValue($message->getField()),
+            'type' => $this->normalizeCliMessageValue($message->getType()),
+            'code' => is_numeric($message->getCode()) ? (int) $message->getCode() : null,
+        ];
+    }
+
+    /**
+     * Convert optional Phalcon message fields and types to JSON-safe strings.
+     */
+    private function normalizeCliMessageValue(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_scalar($value) ? (string) $value : get_debug_type($value);
+    }
+
+    /**
+     * Convert non-standard message values to a concise CLI-safe string.
+     */
+    private function stringifyCliMessage(mixed $message): string
+    {
+        if ($message instanceof \Stringable || is_scalar($message)) {
+            return (string) $message;
+        }
+
+        $json = json_encode($message, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return is_string($json) ? $json : get_debug_type($message);
     }
 }

@@ -20,6 +20,7 @@
       <exclude>tests/Unit/Db/Fixtures</exclude>
       <exclude>tests/Unit/Events/Fixtures</exclude>
       <exclude>tests/Unit/Identity/Fixtures</exclude>
+      <exclude>tests/Unit/Modules/Cli/Tasks/Fixtures</exclude>
       <exclude>tests/Unit/Mvc/Controller/Traits/Fixtures</exclude>
       <exclude>tests/Unit/Mvc/Model/Fixtures</exclude>
     </testsuite>

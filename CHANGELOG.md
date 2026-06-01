@@ -63,6 +63,12 @@ release notes.
 - Fixed POST/PATCH REST parameter collection so numeric-list request bodies are
   not duplicated by merging method-specific body sources, preventing one-row
   batch saves from being persisted twice.
+- Fixed CLI output so nested Phalcon model messages serialize as JSON-safe
+  arrays, and user password updates now report targeted misses with a matched
+  count instead of an ambiguous empty-error save failure.
+- Fixed user CLI create operations to instantiate the configured user model and
+  left user CLI actions overridable so apps can extend core behavior without
+  copying the full task implementation.
 - Fixed model replication read selection so an enabled read replica is returned
   after the lag window expires, while recent writes still pin reads to the write
   connection.
