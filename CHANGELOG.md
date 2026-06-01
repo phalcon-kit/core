@@ -60,6 +60,9 @@ release notes.
 - Fixed REST configured `with` enabled maps so disabled relation values are
   removed from default eager-load graphs and request allow-lists before they
   reach the eager loader.
+- Fixed POST/PATCH REST parameter collection so numeric-list request bodies are
+  not duplicated by merging method-specific body sources, preventing one-row
+  batch saves from being persisted twice.
 - Fixed model replication read selection so an enabled read replica is returned
   after the lag window expires, while recent writes still pin reads to the write
   connection.

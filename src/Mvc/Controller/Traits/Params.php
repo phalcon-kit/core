@@ -134,10 +134,8 @@ trait Params
     private function collectRequestParams(): array
     {
         $params = match (true) {
-            $this->request->isPost() || $this->request->isPatch() => array_merge(
-                $this->request->getPost(),
-                $this->request->getPatch()
-            ),
+            $this->request->isPost() => $this->request->getPost(),
+            $this->request->isPatch() => $this->request->getPatch(),
             $this->request->isPut() => $this->request->getPut(),
             default => $this->request->getQuery(),
         };
