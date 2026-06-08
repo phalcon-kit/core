@@ -79,6 +79,33 @@ PHP;
     {
         return $this->isNoStrictTypes() ? '' : $this->strictTypes;
     }
+
+    /**
+     * Builds the normalized opening PHP header for scaffolded files.
+     *
+     * Optional fragments, such as the license stamp and strict-types
+     * declaration, are trimmed before joining so disabled fragments do not
+     * leave extra blank lines in generated files.
+     *
+     * @return string Header text ending with exactly one blank line before the
+     *     next top-level statement, typically a namespace declaration.
+     */
+    public function getPhpFileHeader(): string
+    {
+        $parts = array_filter(
+            array_map(
+                static fn (?string $part): string => trim((string) $part),
+                [
+                    '<?php',
+                    $this->getLicenseStamp(),
+                    $this->getStrictTypes(),
+                ]
+            ),
+            static fn (string $part): bool => $part !== ''
+        );
+
+        return implode("\n\n", $parts) . "\n\n";
+    }
     
     /**
      * Checks if the given table is whitelisted.

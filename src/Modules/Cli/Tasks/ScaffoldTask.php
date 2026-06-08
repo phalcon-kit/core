@@ -223,11 +223,7 @@ DOC;
     public function createControllerOutput(array $definitions, array $columns, array $relationships): string
     {
         return <<<PHP
-<?php
-
-{$this->getLicenseStamp()}
-{$this->getStrictTypes()}
-namespace {$this->getAbstractsInterfacesNamespace()};
+{$this->getPhpFileHeader()}namespace {$this->getAbstractsInterfacesNamespace()};
 
 use Phalcon\Db\RawValue;
 use PhalconKit\Modules\Api\Controller\ControllerAbstract;
@@ -252,11 +248,7 @@ PHP;
     public function createModelInterfaceOutput(array $definitions): string
     {
         return <<<PHP
-<?php
-
-{$this->getLicenseStamp()}
-{$this->getStrictTypes()}
-namespace {$this->getModelsInterfacesNamespace()};
+{$this->getPhpFileHeader()}namespace {$this->getModelsInterfacesNamespace()};
 
 use {$this->getAbstractsInterfacesNamespace()}\\{$definitions['abstractInterface']['name']};
 
@@ -280,11 +272,7 @@ PHP;
     {
         $getSetInterfaceItems = $this->getGetSetMethods($columns, 'interface');
         return <<<PHP
-<?php
-
-{$this->getLicenseStamp()}
-{$this->getStrictTypes()}
-namespace {$this->getAbstractsInterfacesNamespace()};
+{$this->getPhpFileHeader()}namespace {$this->getAbstractsInterfacesNamespace()};
 
 use Phalcon\Db\RawValue;
 use PhalconKit\Mvc\ModelInterface;
@@ -323,11 +311,7 @@ PHP;
         }
         
         return <<<PHP
-<?php
-
-{$this->getLicenseStamp()}
-{$this->getStrictTypes()}
-namespace {$this->getAbstractsNamespace()};
+{$this->getPhpFileHeader()}namespace {$this->getAbstractsNamespace()};
 
 use Phalcon\Db\RawValue;
 use PhalconKit\Filter\Validation;
@@ -388,11 +372,7 @@ PHP;
         }
         $enumValues = implode(PHP_EOL, $enumValues);
         return <<<PHP
-<?php
-
-{$this->getLicenseStamp()}
-{$this->getStrictTypes()}
-namespace {$this->getEnumsNamespace()};
+{$this->getPhpFileHeader()}namespace {$this->getEnumsNamespace()};
 
 enum {$enumName}: string
 {
@@ -411,11 +391,7 @@ PHP;
     public function createModelOutput(array $definitions): string
     {
         return <<<PHP
-<?php
-
-{$this->getLicenseStamp()}
-{$this->getStrictTypes()}
-namespace {$this->getModelsNamespace()};
+{$this->getPhpFileHeader()}namespace {$this->getModelsNamespace()};
 
 use {$this->getAbstractsNamespace()}\\{$definitions['abstract']['name']};
 use {$this->getModelsInterfacesNamespace()}\\{$definitions['modelInterface']['name']};
@@ -445,11 +421,7 @@ PHP;
         $source = Helper::uncamelize($definitions['model']['name']);
         $getSetTestItems = $this->getGetSetMethods($columns, 'test', $property);
         return <<<PHP
-<?php
-
-{$this->getLicenseStamp()}
-{$this->getStrictTypes()}
-namespace {$this->getModelsTestsNamespace()};
+{$this->getPhpFileHeader()}namespace {$this->getModelsTestsNamespace()};
 
 use {$this->getAbstractsNamespace()}\\{$definitions['abstract']['name']};
 use {$this->getAbstractsInterfacesNamespace()}\\{$definitions['abstractInterface']['name']};

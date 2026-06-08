@@ -42,6 +42,10 @@ release notes.
 
 ### Fixed
 
+- Fixed scaffolded PHP file headers so `--no-license` and `--no-strict-types`
+  combinations keep normalized spacing before namespace declarations.
+- Fixed REST filter field-splitting PHPDoc so PHPStan can infer joined-field
+  aliases without false-positive mixed-type errors.
 - Fixed OpenAI provider configuration drift by exposing canonical bootstrap
   keys (`apiKey`, `organization`, `project`, `baseUri`) while preserving
   legacy `secretKey`, `organizationId`, and `projectId` aliases as fallbacks.

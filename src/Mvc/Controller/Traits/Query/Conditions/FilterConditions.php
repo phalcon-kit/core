@@ -1424,7 +1424,7 @@ trait FilterConditions
      *   - fieldName:     portion after last dot (or whole)
      *   - joinAlias:     mapped alias (dynamicJoinsMapping), or joinName
      * @param string $field
-     * @return array
+     * @return array{0: string, 1: string|null, 2: string, 3: string|null}
      */
     protected function splitField(string $field): array
     {
