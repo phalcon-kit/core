@@ -342,42 +342,7 @@ trait FindAction
      */
     protected function normalizeFindActionRequestedCountFields(mixed $requested): array
     {
-        if ($requested === null || $requested === false || $requested === 0) {
-            return [];
-        }
-
-        if ($requested === true || is_int($requested)) {
-            return [self::REST_VIEW_COUNT];
-        }
-
-        if (is_string($requested)) {
-            return $this->normalizeFindActionRequestedCountString($requested);
-        }
-
-        if (!is_array($requested)) {
-            throw new HttpException(sprintf('Invalid type for "count" parameter: expected null, bool, string, or array, got %s.', gettype($requested)), 400);
-        }
-
-        $fields = [];
-        foreach ($requested as $key => $value) {
-            if (is_string($key)) {
-                if ($this->isFindActionCountEnabledValue($value)) {
-                    $fields[] = trim($key);
-                }
-                continue;
-            }
-
-            if ($value === true || (is_int($value) && $value !== 0)) {
-                $fields[] = self::REST_VIEW_COUNT;
-                continue;
-            }
-
-            if (is_string($value)) {
-                $fields = array_merge($fields, $this->normalizeFindActionRequestedCountString($value));
-            }
-        }
-
-        return $this->normalizeFindActionCountFieldList($fields);
+        return $this->normalizeCountActionRequestedCountFields($requested);
     }
 
     /**
@@ -387,16 +352,7 @@ trait FindAction
      */
     protected function normalizeFindActionRequestedCountString(string $requested): array
     {
-        $requested = trim($requested);
-        if ($requested === '' || !$this->isFindActionCountEnabledValue($requested)) {
-            return [];
-        }
-
-        if ($this->isFindActionCountTruthyString($requested)) {
-            return [self::REST_VIEW_COUNT];
-        }
-
-        return $this->normalizeFindActionCountFieldList(explode(',', $requested));
+        return $this->normalizeCountActionRequestedCountString($requested);
     }
 
     /**
@@ -404,7 +360,7 @@ trait FindAction
      */
     protected function isFindActionCountEnabledValue(mixed $value): bool
     {
-        return CollectionPolicy::isEnabledValue($value);
+        return $this->isCountActionCountEnabledValue($value);
     }
 
     /**
@@ -412,7 +368,7 @@ trait FindAction
      */
     protected function isFindActionCountTruthyString(string $value): bool
     {
-        return in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], true);
+        return $this->isCountActionCountTruthyString($value);
     }
 
     /**
@@ -423,19 +379,6 @@ trait FindAction
      */
     protected function normalizeFindActionCountFieldList(array $fields): array
     {
-        $normalized = [];
-
-        foreach ($fields as $field) {
-            if (!is_scalar($field)) {
-                continue;
-            }
-
-            $field = trim((string)$field);
-            if ($field !== '') {
-                $normalized[] = $field;
-            }
-        }
-
-        return array_values(array_unique($normalized));
+        return $this->normalizeCountActionCountFieldList($fields);
     }
 }

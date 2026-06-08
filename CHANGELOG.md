@@ -26,6 +26,8 @@ release notes.
 
 ### Changed
 
+- Added count-action request support for `?count=groupedCount,bucketTotal,totalCount`
+  style metadata selection, matching list and find-with embedded count syntax.
 - Refocused the repository roadmap on active `2.7.x` release blocks and
   clarified maintainer planning discipline for roadmap, discussion, changelog,
   guide, and shipped-skill updates.

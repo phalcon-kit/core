@@ -394,8 +394,20 @@ readable.
 When a controller has a `group` clause, that value can be a grouped count
 result instead of a scalar total.
 
-Controllers that need dashboard or facet metadata can opt into explicit extra
-fields:
+By default, `countAction()` still returns only `count`. Clients can request
+optional metadata with the same `count` parameter syntax used by list endpoints:
+
+```http
+GET /resources/count?count=totalCount
+GET /resources/count?count=groupedCount,bucketTotal,totalCount
+GET /resources/count?count[totalCount]=1
+```
+
+`?count=1` and `?count=true` are valid but only request the native `count`
+field, which the count action already returns.
+
+Controllers that need to always emit dashboard or facet metadata, or restrict
+which optional fields clients may request, can configure explicit extra fields:
 
 ```php
 use Phalcon\Support\Collection;
@@ -415,6 +427,11 @@ For count field policies, enabled-map values use boolean-like normalization:
 `true`, `1`, `'1'`, and `'yes'` enable the key, while `false`, `0`, `'0'`,
 `'false'`, `'no'`, and `'off'` disable it. Alias-capable policies such as
 distinct fields keep string map values as aliases instead.
+
+When this policy is null, clients may request any supported count metadata
+field. When it is non-null, requested metadata is restricted to the configured
+field names. Passing an empty collection blocks every optional requested count
+metadata field while still returning the native `count` field.
 
 `Restful::initialize()` calls this initializer after the query policy setup, so
 count response metadata follows the same controller initialization pattern as

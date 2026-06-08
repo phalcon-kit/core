@@ -24,6 +24,11 @@ final class CountActionControllerDouble extends Restful
     public CountActionViewDouble $view;
 
     /**
+     * @var array<string, mixed>
+     */
+    public array $unitParams = [];
+
+    /**
      * @var list<ResultsetInterface|int|false>
      */
     public array $countResults = [];
@@ -40,6 +45,20 @@ final class CountActionControllerDouble extends Restful
      */
     public function initialize(): void
     {
+    }
+
+    /**
+     * Return one synthetic request parameter.
+     */
+    public function getParam(
+        string $key,
+        array|string|null $filters = null,
+        mixed $default = null,
+        ?array $params = null
+    ): mixed {
+        $params ??= $this->unitParams;
+
+        return array_key_exists($key, $params) ? $params[$key] : $default;
     }
 
     /**

@@ -15,6 +15,7 @@ namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits\Actions\Rest;
 
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Support\Collection;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Restful;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\CountActionControllerDouble;
@@ -70,6 +71,129 @@ class CountActionTest extends AbstractUnit
                 'bindTypes' => ['active' => 5],
             ],
         ], $controller->countFinds);
+    }
+
+    public function testCountActionCanRequestTotalCountWhenPolicyIsUnrestricted(): void
+    {
+        $controller = $this->createController([7, 11], params: [
+            'count' => 'totalCount',
+        ]);
+
+        $controller->countAction();
+
+        $this->assertSame(7, $controller->view->getVar(CountActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
+        $this->assertSame(11, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
+        $this->assertSame([null, []], $controller->countFinds);
+    }
+
+    public function testCountActionCanRequestGroupedBucketAndTotalCounts(): void
+    {
+        $groupedCount = $this->createGroupedCountResultset([
+            ['status' => 'open', 'rowcount' => 3],
+            ['status' => 'closed', 'rowcount' => '4'],
+        ]);
+        $controller = $this->createController([$groupedCount, 5], params: [
+            'count' => 'count,groupedCount,bucketTotal,totalCount',
+        ]);
+        $controller->setFind(new Collection([
+            'conditions' => 'active = 1',
+            'bind' => ['active' => 1],
+            'bindTypes' => ['active' => 5],
+            'group' => new Collection(['status']),
+            'limit' => 10,
+            'offset' => 20,
+        ]));
+
+        $controller->countAction();
+
+        $this->assertSame($groupedCount, $controller->view->getVar(CountActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertSame($groupedCount, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT));
+        $this->assertSame(7, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
+        $this->assertSame(5, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
+        $this->assertSame([
+            null,
+            [
+                'conditions' => '(active = 1)',
+                'bind' => ['active' => 1],
+                'bindTypes' => ['active' => 5],
+            ],
+        ], $controller->countFinds);
+    }
+
+    public function testCountActionRequestUsesListAndEnabledMapSyntax(): void
+    {
+        $controller = $this->createController([7, 11], params: [
+            'count' => [
+                CountActionControllerDouble::REST_VIEW_COUNT,
+                CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL => 0,
+                CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => '1',
+                CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT => 'off',
+                'ignored-empty' => false,
+            ],
+        ]);
+
+        $controller->countAction();
+
+        $this->assertSame(7, $controller->view->getVar(CountActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
+        $this->assertSame(11, $controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
+        $this->assertSame([null, []], $controller->countFinds);
+    }
+
+    public function testCountActionTruthyCountRequestDoesNotAddExtraFields(): void
+    {
+        $controller = $this->createController([7], params: [
+            'count' => '1',
+        ]);
+
+        $controller->countAction();
+
+        $this->assertSame(7, $controller->view->getVar(CountActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL));
+        $this->assertNull($controller->view->getVar(CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT));
+        $this->assertSame([null], $controller->countFinds);
+    }
+
+    public function testCountActionRejectsDisallowedRequestedResponseField(): void
+    {
+        $controller = $this->createController([7], [
+            CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL,
+        ], [
+            'count' => 'totalCount',
+        ]);
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unauthorized count response field "totalCount".');
+
+        $controller->countAction();
+    }
+
+    public function testCountActionRejectsUnsupportedRequestedResponseField(): void
+    {
+        $controller = $this->createController([7], params: [
+            'count' => 'unknownCount',
+        ]);
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unauthorized count response field "unknownCount".');
+
+        $controller->countAction();
+    }
+
+    public function testCountActionRejectsInvalidCountParameterType(): void
+    {
+        $controller = $this->createController([7], params: [
+            'count' => new \stdClass(),
+        ]);
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Invalid type for "count" parameter: expected null, bool, string, or array, got object.');
+
+        $controller->countAction();
     }
 
     public function testRestfulInitializeIncludesRestActionInitialization(): void
@@ -200,12 +324,17 @@ class CountActionTest extends AbstractUnit
      *     by each call to count().
      * @param list<string> $responseFields Extra count fields enabled by the
      *     concrete controller.
+     * @param array<string, mixed> $params Synthetic request params.
      */
-    private function createController(array $countResults, array $responseFields = []): CountActionControllerDouble
-    {
+    private function createController(
+        array $countResults,
+        array $responseFields = [],
+        array $params = []
+    ): CountActionControllerDouble {
         $controller = new CountActionControllerDouble();
         $controller->view = new CountActionViewDouble();
         $controller->countResults = $countResults;
+        $controller->unitParams = $params;
         $controller->setUnitCountActionResponseFields($responseFields);
 
         return $controller;

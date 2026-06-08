@@ -16,7 +16,9 @@ namespace PhalconKit\Mvc\Controller\Traits\Actions\Rest;
 use Phalcon\Http\ResponseInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Support\Collection;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
+use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractRestResponse;
 use PhalconKit\Support\CollectionPolicy;
@@ -24,8 +26,14 @@ use PhalconKit\Support\CollectionPolicy;
 trait CountAction
 {
     use AbstractInjectable;
+    use AbstractParams;
     use AbstractQuery;
     use AbstractRestResponse;
+
+    /**
+     * Request parameter used by count actions to opt into count metadata.
+     */
+    public const string COUNT_ACTION_COUNT_PARAMETER = 'count';
 
     /**
      * Response field containing the raw grouped count result.
@@ -127,10 +135,13 @@ trait CountAction
      * runs a second count query with the group clause removed. Keeping these as
      * separate names prevents bucket totals from being mistaken for unique root
      * record totals on joined/grouped endpoints.
+     *
+     * @throws HttpException When the client requests an unsupported or
+     *     disallowed count field.
      */
     protected function setCountActionResponseFieldValues(ResultsetInterface|int|false $count): void
     {
-        $fields = array_fill_keys($this->getCountActionResponseFieldNames(), true);
+        $fields = array_fill_keys($this->getCountActionSelectedResponseFieldNames(), true);
 
         if (isset($fields[self::COUNT_RESPONSE_GROUPED_COUNT])) {
             $this->setRestViewVar(self::COUNT_RESPONSE_GROUPED_COUNT, $count);
@@ -175,6 +186,202 @@ trait CountAction
         }
 
         return array_values(array_unique($fields));
+    }
+
+    /**
+     * Return the configured and requested extra count response fields.
+     *
+     * The native `count` field is always emitted by {@see countAction()}, so
+     * client requests for `count` are valid but do not add another response
+     * field. Requests for optional metadata are checked against the configured
+     * policy. A null policy is unrestricted across supported count fields,
+     * while an empty collection blocks every optional requested field.
+     *
+     * @return list<string>
+     *
+     * @throws HttpException When the client requests a disallowed count field.
+     */
+    protected function getCountActionSelectedResponseFieldNames(): array
+    {
+        $fields = $this->getCountActionResponseFieldNames();
+        $requestedFields = $this->getCountActionRequestedResponseFieldNames();
+
+        if ($requestedFields === []) {
+            return $fields;
+        }
+
+        $allowedFields = array_fill_keys($this->getCountActionAllowedResponseFieldNames(), true);
+        foreach ($requestedFields as $field) {
+            if (!isset($allowedFields[$field])) {
+                throw new HttpException(sprintf('Unauthorized count response field "%s".', $field), 403);
+            }
+        }
+
+        return $this->normalizeCountActionCountFieldList(array_merge(
+            $fields,
+            array_values(array_filter(
+                $requestedFields,
+                static fn (string $field): bool => $field !== self::REST_VIEW_COUNT
+            ))
+        ));
+    }
+
+    /**
+     * Return count fields accepted by the current count-action policy.
+     *
+     * @return list<string>
+     */
+    protected function getCountActionAllowedResponseFieldNames(): array
+    {
+        if ($this->getCountActionResponseFields() === null) {
+            return $this->getCountActionSupportedResponseFieldNames();
+        }
+
+        return $this->normalizeCountActionCountFieldList(array_merge(
+            [self::REST_VIEW_COUNT],
+            $this->getCountActionResponseFieldNames()
+        ));
+    }
+
+    /**
+     * Return the built-in count response field names that can be requested.
+     *
+     * @return list<string>
+     */
+    protected function getCountActionSupportedResponseFieldNames(): array
+    {
+        return [
+            self::REST_VIEW_COUNT,
+            self::COUNT_RESPONSE_GROUPED_COUNT,
+            self::COUNT_RESPONSE_BUCKET_TOTAL,
+            self::COUNT_RESPONSE_TOTAL_COUNT,
+        ];
+    }
+
+    /**
+     * Return count response fields requested through the `count` parameter.
+     *
+     * Supported request shapes:
+     * - `?count=1` or `?count=true` requests the native `count` field.
+     * - `?count=count,totalCount` requests named fields.
+     * - `?count[]=count&count[]=totalCount` requests named fields as a list.
+     * - `?count[totalCount]=1` requests named fields as an enabled map.
+     *
+     * @return list<string>
+     *
+     * @throws HttpException When the parameter has an unsupported type.
+     */
+    protected function getCountActionRequestedResponseFieldNames(): array
+    {
+        return $this->normalizeCountActionRequestedCountFields(
+            $this->getParam(self::COUNT_ACTION_COUNT_PARAMETER)
+        );
+    }
+
+    /**
+     * Normalize a client `count` request value to field names.
+     *
+     * @return list<string>
+     *
+     * @throws HttpException When the parameter has an unsupported type.
+     */
+    protected function normalizeCountActionRequestedCountFields(mixed $requested): array
+    {
+        if ($requested === null || $requested === false || $requested === 0) {
+            return [];
+        }
+
+        if ($requested === true || is_int($requested)) {
+            return [self::REST_VIEW_COUNT];
+        }
+
+        if (is_string($requested)) {
+            return $this->normalizeCountActionRequestedCountString($requested);
+        }
+
+        if (!is_array($requested)) {
+            throw new HttpException(sprintf('Invalid type for "count" parameter: expected null, bool, string, or array, got %s.', gettype($requested)), 400);
+        }
+
+        $fields = [];
+        foreach ($requested as $key => $value) {
+            if (is_string($key)) {
+                if ($this->isCountActionCountEnabledValue($value)) {
+                    $fields[] = trim($key);
+                }
+                continue;
+            }
+
+            if ($value === true || (is_int($value) && $value !== 0)) {
+                $fields[] = self::REST_VIEW_COUNT;
+                continue;
+            }
+
+            if (is_string($value)) {
+                $fields = array_merge($fields, $this->normalizeCountActionRequestedCountString($value));
+            }
+        }
+
+        return $this->normalizeCountActionCountFieldList($fields);
+    }
+
+    /**
+     * Normalize a scalar `count` request value.
+     *
+     * @return list<string>
+     */
+    protected function normalizeCountActionRequestedCountString(string $requested): array
+    {
+        $requested = trim($requested);
+        if ($requested === '' || !$this->isCountActionCountEnabledValue($requested)) {
+            return [];
+        }
+
+        if ($this->isCountActionCountTruthyString($requested)) {
+            return [self::REST_VIEW_COUNT];
+        }
+
+        return $this->normalizeCountActionCountFieldList(explode(',', $requested));
+    }
+
+    /**
+     * Check whether an enabled-map `count[field]` value should request a field.
+     */
+    protected function isCountActionCountEnabledValue(mixed $value): bool
+    {
+        return CollectionPolicy::isEnabledValue($value);
+    }
+
+    /**
+     * Check whether a scalar string requests the default native count field.
+     */
+    protected function isCountActionCountTruthyString(string $value): bool
+    {
+        return in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    /**
+     * Trim, de-duplicate, and drop empty count field names.
+     *
+     * @param array<int, mixed> $fields Raw field fragments.
+     * @return list<string>
+     */
+    protected function normalizeCountActionCountFieldList(array $fields): array
+    {
+        $normalized = [];
+
+        foreach ($fields as $field) {
+            if (!is_scalar($field)) {
+                continue;
+            }
+
+            $field = trim((string)$field);
+            if ($field !== '') {
+                $normalized[] = $field;
+            }
+        }
+
+        return array_values(array_unique($normalized));
     }
 
     /**
