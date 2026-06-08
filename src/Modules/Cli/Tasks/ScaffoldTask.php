@@ -94,6 +94,7 @@ DOC;
         
         $tableName = $this->getTableName($name);
         $definitions['table'] = $tableName;
+        $definitions['source'] = $name;
         $definitions['slug'] = Slug::generate(Helper::uncamelize($name));
         
         // enums
@@ -175,17 +176,17 @@ DOC;
             }
 
             // Model Enums
-            foreach ($columns as $column) {
-                assert($column instanceof Column);
-                if ($column->getType() === Column::TYPE_ENUM) {
-                    $enumValues = $column->getSize();
-                    
-                    $enumName = $definitions['enums']['name'] . Helper::camelize($column->getName());
-                    $definitionsEnumFile = $enumName . '.php';
-                    $savePath = $this->getEnumsDirectory($definitionsEnumFile);
-                    if (!file_exists($savePath) || $force) {
-                        $this->saveFile($savePath, $this->createEnumOutput($enumName, $column), $force);
-                        $ret [] = 'Enum `' . $definitionsEnumFile . '` created at `' . $savePath . '`';
+            if (!$this->isNoEnums()) {
+                foreach ($columns as $column) {
+                    assert($column instanceof Column);
+                    if ($column->getType() === Column::TYPE_ENUM) {
+                        $enumName = $definitions['enums']['name'] . Helper::camelize($column->getName());
+                        $definitionsEnumFile = $enumName . '.php';
+                        $savePath = $this->getEnumsDirectory($definitionsEnumFile);
+                        if (!file_exists($savePath) || $force) {
+                            $this->saveFile($savePath, $this->createEnumOutput($enumName, $column), $force);
+                            $ret [] = 'Enum `' . $definitionsEnumFile . '` created at `' . $savePath . '`';
+                        }
                     }
                 }
             }
@@ -210,10 +211,12 @@ DOC;
 
             
             // Model Test
-            $savePath = $this->getModelsTestsDirectory($definitions['modelTest']['file']);
-            if (!file_exists($savePath) || $force) {
-                $this->saveFile($savePath, $this->createModelTestOutput($definitions, $columns), $force);
-                $ret [] = 'Model Test `' . $definitions['modelTest']['file'] . '` created at `' . $savePath . '`';
+            if (!$this->isNoTests()) {
+                $savePath = $this->getModelsTestsDirectory($definitions['modelTest']['file']);
+                if (!file_exists($savePath) || $force) {
+                    $this->saveFile($savePath, $this->createModelTestOutput($definitions, $columns), $force);
+                    $ret [] = 'Model Test `' . $definitions['modelTest']['file'] . '` created at `' . $savePath . '`';
+                }
             }
         }
         
@@ -305,6 +308,22 @@ PHP;
         $validationItems = $this->getValidationItems($columns, $indexes);
         $modelsExtend = ltrim($this->getModelsExtend(), '\\');
         $modelsExtendBaseName = basename(str_replace('\\', '/', $modelsExtend));
+        $sourceMethod = '';
+        if (!$this->isNoSetSource()) {
+            $source = var_export($definitions['source'], true);
+            $sourceMethod = <<<PHP
+
+    /**
+     * Initialize method for model.
+     */
+    public function initialize(): void
+    {
+        parent::initialize();
+        \$this->setSource({$source});
+    }
+
+PHP;
+        }
         $relationshipUseItems = trim($relationships['useItems']);
         if ($relationshipUseItems !== '') {
             $relationshipUseItems .= "\n";
@@ -331,6 +350,7 @@ abstract class {$definitions['abstract']['name']} extends {$modelsExtendBaseName
     {$propertyItems}
     
     {$getSetMethods}
+{$sourceMethod}
 
     /**
      * Adds the default relationships to the model.
@@ -418,7 +438,7 @@ PHP;
     public function createModelTestOutput(array $definitions, array $columns): string
     {
         $property = lcfirst($definitions['model']['name']);
-        $source = Helper::uncamelize($definitions['model']['name']);
+        $source = $definitions['source'] ?? Helper::uncamelize($definitions['model']['name']);
         $getSetTestItems = $this->getGetSetMethods($columns, 'test', $property);
         return <<<PHP
 {$this->getPhpFileHeader()}namespace {$this->getModelsTestsNamespace()};
@@ -958,6 +978,10 @@ PHP;
      */
     public function getGetSetMethods(array $columns, string $type = 'default', string $property = 'model'): string
     {
+        if ($this->isNoGetSetMethods()) {
+            return '';
+        }
+
         $propertyItems = [];
         foreach ($columns as $column) {
             assert($column instanceof ColumnInterface);
@@ -1171,8 +1195,13 @@ PHP;
             return false; // Failed to create directory
         }
         
+        $normalizedText = preg_replace('/[ \t]+$/m', '', $text);
+        if ($normalizedText === null) {
+            $normalizedText = $text;
+        }
+
         // Convert text to UTF-8
-        $utf8Text = mb_convert_encoding($text, 'UTF-8');
+        $utf8Text = mb_convert_encoding($normalizedText, 'UTF-8');
         if ($utf8Text === false) {
             return false; // Failed to convert to UTF-8
         }

@@ -163,6 +163,12 @@ PHP;
         return $this->dispatcher->getParameter('noEnums');
     }
     
+    // Method for --no-tests
+    public function isNoTests(): bool
+    {
+        return $this->dispatcher->getParameter('noTests');
+    }
+
     // Method for --no-strict-types
     public function isNoStrictTypes(): bool
     {

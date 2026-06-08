@@ -15,7 +15,7 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## Unreleased
+## 3.0.1 - 2026-06-08
 
 ### Fixed
 
@@ -25,6 +25,10 @@ release notes.
 - Fixed SonarQube Cloud automatic-analysis scope by adding the
   `.sonarcloud.properties` file that Autoscan reads, keeping the external
   Quality Gate focused on runtime framework code under `src/`.
+- Fixed scaffold generation flags so `--no-tests`, `--no-enums`,
+  `--no-get-set-methods`, and `--no-set-source` consistently affect generated
+  model artifacts, while abstract models now set the original database table
+  source by default.
 
 ## 3.0.0 - 2026-06-08
 
