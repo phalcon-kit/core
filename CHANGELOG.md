@@ -17,6 +17,12 @@ release notes.
 
 ## Unreleased
 
+### Fixed
+
+- Fixed GitHub Actions bootstrapping for Phalcon 5.14.1 by installing the
+  upstream release PECL asset when the setup action resolves the still-current
+  PECL package as Phalcon 5.14.0.
+
 ## 3.0.0 - 2026-06-08
 
 ### Upgrade Notes
