@@ -22,8 +22,8 @@ env:
   PHALCON_VERSION: 5.14.1
   PHALCON_PECL_URL: https://github.com/phalcon/cphalcon/releases/download/v5.14.1/phalcon-pecl.tgz
   # PHP extensions required by Composer
-  EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, phalcon-5.14.1, swoole, :memcache, :psr
-  EXTENSIONS_CACHE_KEY: php-ext-v3-php8.5-phalcon-5.14.1
+  EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, swoole, :memcache, :psr
+  EXTENSIONS_CACHE_KEY: php-ext-v4-php8.5-phalcon-helper-5.14.1
 
 permissions:
   contents: read

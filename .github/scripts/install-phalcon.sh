@@ -11,9 +11,20 @@ if [[ "${installed_version}" != "${required_version}" ]]; then
   echo "Installing Phalcon ${required_version} from ${pecl_package_url}"
   echo "Current Phalcon version: ${installed_version:-not installed}"
 
-  printf "\n" | sudo pecl install -f "${pecl_package_url}"
+  if ! pecl_bin="$(command -v pecl)"; then
+    echo "::error::pecl is required to install Phalcon ${required_version}"
+    exit 1
+  fi
 
-  scan_dir="$(php -r '$dirs = explode(PATH_SEPARATOR, PHP_CONFIG_FILE_SCAN_DIR); echo $dirs[0] ?? "";')"
+  downloaded_package="${RUNNER_TEMP:-/tmp}/phalcon-pecl-${required_version}.tgz"
+
+  curl --fail --location --show-error --silent --retry 3 --retry-delay 2 \
+    --output "${downloaded_package}" \
+    "${pecl_package_url}"
+
+  sudo "${pecl_bin}" install -f "${downloaded_package}"
+
+  scan_dir="$(php -r '$dirs = array_values(array_filter(explode(PATH_SEPARATOR, PHP_CONFIG_FILE_SCAN_DIR))); echo $dirs[0] ?? "";')"
   if [[ -n "${scan_dir}" ]]; then
     echo "extension=phalcon.so" | sudo tee "${scan_dir%/}/35-phalcon.ini" > /dev/null
   fi
