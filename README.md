@@ -155,7 +155,7 @@ services, transformers, and tasks remain application-owned.
 ## Requirements
 
 - PHP `>= 8.5`
-- Phalcon `^5.13`
+- Phalcon `^5.14.1`
 - Composer
 - A PDO-compatible database supported by Phalcon
 - MySQL 8+ for the core test/scaffold baseline

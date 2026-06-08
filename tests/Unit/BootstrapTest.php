@@ -125,7 +125,7 @@ class BootstrapTest extends AbstractUnit
         $this->assertInstanceOf(Bootstrap::class, $bootstrap->di->get('bootstrap'));
         $this->assertInstanceOf(ConfigInterface::class, $bootstrap->di->get('config'));
         $this->assertInstanceOf(AbstractApplication::class, $bootstrap->di->get('console'));
-        $this->assertNotInstanceOf(CliRouterInterface::class, $bootstrap->di->get('router'));
+        $this->assertInstanceOf(CliRouterInterface::class, $bootstrap->di->get('router'));
         $this->assertInstanceOf(CliRouter::class, $bootstrap->di->get('router'));
     }
     

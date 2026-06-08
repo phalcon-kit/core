@@ -24,7 +24,7 @@ use PhalconKit\Support\Slug;
  * Phalcon. `getContent()` can also perform lightweight HTML output minification
  * for applications that opt in through `setMinify()`.
  *
- * @see https://docs.phalcon.io/5.13/views/
+ * @see https://docs.phalcon.io/5.14/views/
  */
 class View extends \Phalcon\Mvc\View
 {
@@ -65,10 +65,10 @@ class View extends \Phalcon\Mvc\View
      * @param string $actionName Action name selected by the dispatcher.
      * @param array<array-key, mixed> $params View parameters.
      *
-     * @return \Phalcon\Mvc\View|bool Native Phalcon render result.
+     * @return static|false Native Phalcon render result.
      */
     #[\Override]
-    public function render(string $controllerName, string $actionName, array $params = []): \Phalcon\Mvc\View|bool
+    public function render(string $controllerName, string $actionName, array $params = []): static|false
     {
         if (!$this->has($controllerName . (empty($actionName) ? null : '/' . $actionName))) {
             $controllerName = Slug::generate(Helper::uncamelize($controllerName));

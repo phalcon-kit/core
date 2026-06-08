@@ -40,9 +40,9 @@ class FakeModelsManager extends Manager
     }
 
     #[\Override]
-    public function getRelationByAlias(string $modelName, string $alias): ?RelationInterface
+    public function getRelationByAlias(string $modelName, string $alias): RelationInterface|bool
     {
-        return $this->relations[strtolower($modelName) . ':' . strtolower($alias)] ?? null;
+        return $this->relations[strtolower($modelName) . ':' . strtolower($alias)] ?? false;
     }
 
     public function setRelationByAlias(string $modelName, string $alias, RelationInterface $relation): void

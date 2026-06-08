@@ -20,8 +20,8 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # PHP extensions required by Composer
-  EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, phalcon-5.13.0, swoole, :memcache, :psr
-  EXTENSIONS_CACHE_KEY: php-ext-v3-php8.5-phalcon-5.13.0
+  EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, phalcon-5.14.1, swoole, :memcache, :psr
+  EXTENSIONS_CACHE_KEY: php-ext-v3-php8.5-phalcon-5.14.1
 
 permissions:
   contents: read

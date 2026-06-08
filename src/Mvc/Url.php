@@ -26,7 +26,7 @@ class Url extends \Phalcon\Mvc\Url
      * Generate a URL and normalize local results to absolute paths.
      *
      * @param array|string|null $uri Phalcon route name/path input.
-     * @param mixed $args Route or query arguments passed to Phalcon.
+     * @param mixed $arguments Route or query arguments passed to Phalcon.
      * @param bool|null $local Whether Phalcon should treat the URL as local.
      * @param mixed $baseUri Optional base URI override.
      * @param bool $replaceArgs Whether route placeholders should be replaced.
@@ -34,9 +34,9 @@ class Url extends \Phalcon\Mvc\Url
      * @return string Generated URL with local paths normalized.
      */
     #[\Override]
-    public function get($uri = null, $args = null, ?bool $local = null, $baseUri = null, bool $replaceArgs = false): string
+    public function get($uri = null, $arguments = null, ?bool $local = null, $baseUri = null, bool $replaceArgs = false): string
     {
-        return self::getAbsolutePath(parent::get($uri, $args, $local, $baseUri, $replaceArgs));
+        return self::getAbsolutePath(parent::get($uri, $arguments, $local, $baseUri, $replaceArgs));
     }
     
     /**

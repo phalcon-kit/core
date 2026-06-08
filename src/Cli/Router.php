@@ -22,13 +22,11 @@ use PhalconKit\Router\RouterInterface;
  * applications and modules expect that concrete runtime behavior. It also
  * implements PhalconKit's shared router interface for typed DI lookups.
  *
- * It intentionally does not declare `Phalcon\Cli\RouterInterface`: in Phalcon
- * 5.13 the native `Phalcon\Cli\Router` method signatures are incompatible with
- * that interface, so a subclass cannot implement both without a PHP fatal
- * error. Tests guard this constraint so the class can be updated if upstream
- * Phalcon aligns the signatures later.
+ * Phalcon 5.14 aligns the native CLI router with `Phalcon\Cli\RouterInterface`,
+ * so this wrapper now satisfies both the native router interface inherited from
+ * the parent and PhalconKit's shared router interface.
  *
- * @see https://docs.phalcon.io/5.13/application-cli/
+ * @see https://docs.phalcon.io/5.14/application-cli/
  */
 class Router extends \Phalcon\Cli\Router implements RouterInterface
 {

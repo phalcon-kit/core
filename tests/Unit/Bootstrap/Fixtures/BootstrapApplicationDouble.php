@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Bootstrap\Fixtures;
 
 use Phalcon\Http\Response;
+use Phalcon\Http\ResponseInterface;
 use PhalconKit\Mvc\Application;
 
 class BootstrapApplicationDouble extends Application
 {
     public ?string $handledUri = null;
 
-    public function handle(string $uri)
+    public function handle(string $uri): ResponseInterface|bool
     {
         $this->handledUri = $uri;
 

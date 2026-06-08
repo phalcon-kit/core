@@ -5,10 +5,9 @@
       *
       * @param array $parameters
 -     * @return float | ResultsetInterface
-+     * @return ResultsetInterface|float|false
++     * @return ResultsetInterface|float
       */
--    public static function average(array $parameters = []): ResultsetInterface|float
-+    public static function average(array $parameters = []): ResultsetInterface|float|false
+     public static function average(array $parameters = []): ResultsetInterface|float
      {
      }
  
@@ -17,10 +16,10 @@
       *
       * @param array|string|null $parameters
 -     * @return int|ResultsetInterface
-+     * @return ResultsetInterface|int|false
++     * @return ResultsetInterface|int
       */
 -    public static function count($parameters = null): ResultsetInterface|int
-+    public static function count(mixed $parameters = null): ResultsetInterface|int|false
++    public static function count(mixed $parameters = null): ResultsetInterface|int
      {
      }
  
@@ -72,9 +71,9 @@
       *
       * @param array $parameters
 -     * @return double | ResultsetInterface
-+     * @return ResultsetInterface|float|false
++     * @return ResultsetInterface|float
       */
 -    public static function sum($parameters = null): ResultsetInterface|float
-+    public static function sum(mixed $parameters = null): ResultsetInterface|float|false
++    public static function sum(mixed $parameters = null): ResultsetInterface|float
      {
      }

@@ -1,26 +1,14 @@
 --- a/src/Mvc/ModelInterface.php
 +++ b/src/Mvc/ModelInterface.php
-@@ -51,9 +51,9 @@
-      * conditions
-      *
-      * @param array $parameters
--     * @return ResultsetInterface|float
-+     * @return ResultsetInterface|float|false
-      */
--    public static function average(array $parameters = []): ResultsetInterface|float;
-+    public static function average(array $parameters = []): ResultsetInterface|float|false;
- 
-     /**
-      * Assigns values to a model from an array returning a new model
 @@ -94,9 +94,9 @@
       * contain the count of each group.
       *
       * @param array|string|null $parameters
 -     * @return int|ResultsetInterface
-+     * @return ResultsetInterface|int|false
++     * @return ResultsetInterface|int
       */
 -    public static function count($parameters = null): ResultsetInterface|int;
-+    public static function count(mixed $parameters = null): ResultsetInterface|int|false;
++    public static function count(mixed $parameters = null): ResultsetInterface|int;
  
      /**
       * Inserts a model instance. If the instance already exists in the
@@ -67,15 +55,15 @@
  
      /**
       * Create a criteria for a specific model
-@@ -338,9 +338,9 @@
+@@ -339,9 +339,9 @@
       * Allows to calculate a sum on a column that match the specified conditions
       *
       * @param array $parameters
 -     * @return float|ResultsetInterface
-+     * @return float|ResultsetInterface|false
++     * @return ResultsetInterface|float
       */
 -    public static function sum($parameters = null): ResultsetInterface|float;
-+    public static function sum(mixed $parameters = null): ResultsetInterface|float|false;
++    public static function sum(mixed $parameters = null): ResultsetInterface|float;
  
      /**
-      * Check whether validation process has generated any messages
+      * Updates a model instance. If the instance does not exist in the

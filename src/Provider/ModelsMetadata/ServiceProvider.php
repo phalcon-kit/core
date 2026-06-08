@@ -60,8 +60,12 @@ class ServiceProvider extends AbstractServiceProvider
                 $adapter = Memory::class;
             }
 
-            if (in_array($adapter, [Memory::class, Stream::class])) {
-                return new $adapter($options);
+            if ($adapter === Memory::class) {
+                return new Memory();
+            }
+
+            if ($adapter === Stream::class) {
+                return new Stream($options);
             }
 
             $serializerFactory = new SerializerFactory();

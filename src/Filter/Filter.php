@@ -31,7 +31,7 @@ use PhalconKit\Filter\Sanitize\Md5;
  * `null` as `null`, invalid JSON becomes `null`, and invalid IP addresses become
  * an empty string so form/request sanitization can collapse them to "no value".
  *
- * @see https://docs.phalcon.io/5.13/filter/
+ * @see https://docs.phalcon.io/5.14/filter/
  *
  * @method string|null md5(string $input)
  * @method string|null json(?string $input = null)

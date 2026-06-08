@@ -203,7 +203,7 @@ DOC;
             'message' => (string) $message->getMessage(),
             'field' => $this->normalizeCliMessageValue($message->getField()),
             'type' => $this->normalizeCliMessageValue($message->getType()),
-            'code' => is_numeric($message->getCode()) ? (int) $message->getCode() : null,
+            'code' => $message->getCode(),
         ];
     }
 

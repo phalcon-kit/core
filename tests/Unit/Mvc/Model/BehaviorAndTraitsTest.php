@@ -1395,11 +1395,18 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertInstanceOf(\Phalcon\Mvc\Model\ResultsetInterface::class, EventModelDouble::find());
         $this->assertSame(['beforeFind'], EventModelDouble::$firedEvents);
 
-        foreach (['findFirst', 'count', 'sum', 'average', 'minimum', 'maximum'] as $method) {
+        foreach ([
+            'findFirst' => false,
+            'count' => 0,
+            'sum' => 0.0,
+            'average' => 0.0,
+            'minimum' => false,
+            'maximum' => false,
+        ] as $method => $expected) {
             $events = ['before' . ucfirst(\PhalconKit\Support\Helper::camelize($method))];
             EventModelDouble::resetEvents();
             EventModelDouble::$cancelEvents = $events;
-            $this->assertFalse(EventModelDouble::$method([]));
+            $this->assertSame($expected, EventModelDouble::$method([]));
             $this->assertSame($events, EventModelDouble::$firedEvents);
         }
 

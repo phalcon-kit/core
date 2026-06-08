@@ -5,10 +5,10 @@ controller permissions, model permissions, CLI tasks, and WebSocket tasks.
 
 Official Phalcon references:
 
-- ACL: https://docs.phalcon.io/5.13/acl/
-- Security: https://docs.phalcon.io/5.13/encryption-security/
-- JWT: https://docs.phalcon.io/5.13/encryption-security-jwt/
-- Sessions: https://docs.phalcon.io/5.13/session/
+- ACL: https://docs.phalcon.io/5.14/acl/
+- Security: https://docs.phalcon.io/5.14/encryption-security/
+- JWT: https://docs.phalcon.io/5.14/encryption-security-jwt/
+- Sessions: https://docs.phalcon.io/5.14/session/
 
 ## Identity Responsibilities
 

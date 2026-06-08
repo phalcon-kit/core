@@ -33,7 +33,7 @@ use PhalconKit\Support\Options\Options;
  * formatter/adapter options consistently across default and logger-specific
  * configuration.
  *
- * @see https://docs.phalcon.io/5.13/logger/
+ * @see https://docs.phalcon.io/5.14/logger/
  */
 class Loggers
 {

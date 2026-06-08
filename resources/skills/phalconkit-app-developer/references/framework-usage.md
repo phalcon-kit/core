@@ -8,12 +8,12 @@ new, sparse, or inconsistent.
 
 Native Phalcon references:
 
-- MVC overview: https://docs.phalcon.io/5.13/mvc/
-- Application API: https://docs.phalcon.io/5.13/api/phalcon_mvc/#mvcapplication
-- Dependency injection: https://docs.phalcon.io/5.13/di/
-- Loader/autoloading: https://docs.phalcon.io/5.13/autoload/
-- Controllers: https://docs.phalcon.io/5.13/controllers/
-- CLI applications: https://docs.phalcon.io/5.13/cli/
+- MVC overview: https://docs.phalcon.io/5.14/mvc/
+- Application API: https://docs.phalcon.io/5.14/api/phalcon_mvc/#mvcapplication
+- Dependency injection: https://docs.phalcon.io/5.14/di/
+- Loader/autoloading: https://docs.phalcon.io/5.14/autoload/
+- Controllers: https://docs.phalcon.io/5.14/controllers/
+- CLI applications: https://docs.phalcon.io/5.14/cli/
 
 PhalconKit applications keep Phalcon MVC, DI, loader, controller, and CLI
 semantics, then add convention-driven bootstrap, modules, providers, REST

@@ -26,7 +26,7 @@ use PhalconKit\Exception\InvalidArgumentException;
  * - append-aware recursive merge support for config fragments.
  * - `getDateTime()` for lifecycle/retention config that stores date modifiers.
  *
- * @see https://docs.phalcon.io/5.13/config/
+ * @see https://docs.phalcon.io/5.14/config/
  */
 class Config extends \Phalcon\Config\Config implements ConfigInterface
 {

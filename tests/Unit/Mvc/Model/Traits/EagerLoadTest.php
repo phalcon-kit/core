@@ -64,9 +64,9 @@ class EagerLoadTest extends AbstractUnit
     {
         $trait = new ReflectionClass(Events::class);
 
-        $this->assertModelAggregateSignature($trait, 'count', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|int|false');
-        $this->assertModelAggregateSignature($trait, 'sum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
-        $this->assertModelAggregateSignature($trait, 'average', 'array', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
+        $this->assertModelAggregateSignature($trait, 'count', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|int');
+        $this->assertModelAggregateSignature($trait, 'sum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float');
+        $this->assertModelAggregateSignature($trait, 'average', 'array', 'Phalcon\Mvc\Model\ResultsetInterface|float');
         $this->assertModelAggregateSignature($trait, 'minimum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
         $this->assertModelAggregateSignature($trait, 'maximum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
     }

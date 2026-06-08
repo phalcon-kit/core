@@ -29,7 +29,7 @@ class BehaviorTest extends AbstractUnit
         $eventsManager = new Manager();
         $controller = $this->newController($eventsManager);
         
-        $this->assertNull($controller->getEventsManager());
+        $this->assertSame($eventsManager, $controller->getEventsManager());
         
         $controller->beforeExecuteRoute();
         

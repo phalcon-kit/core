@@ -57,39 +57,42 @@ class QueryModelDouble extends Model implements EagerLoadInterface
         self::$aggregateResults = [];
     }
 
-    public static function find($parameters = null): ResultsetInterface
+    public static function find(mixed $parameters = null): ResultsetInterface
     {
         self::$calls['find'] = $parameters;
 
         return self::$resultset ?? throw new \LogicException('No resultset configured.');
     }
 
-    public static function findFirst($parameters = null)
+    public static function findFirst(mixed $parameters = null)
     {
         self::$calls['findFirst'] = $parameters;
 
         return self::$first;
     }
 
-    public static function average(array $parameters = [])
+    public static function average(array $parameters = []): ResultsetInterface|float
     {
         self::$calls['average'] = $parameters;
+        $result = self::$aggregateResults['average'] ?? 0.0;
 
-        return self::$aggregateResults['average'] ?? false;
+        return $result instanceof ResultsetInterface ? $result : (float)$result;
     }
 
-    public static function count($parameters = null)
+    public static function count(mixed $parameters = null): ResultsetInterface|int
     {
         self::$calls['count'] = $parameters;
+        $result = self::$aggregateResults['count'] ?? 0;
 
-        return self::$aggregateResults['count'] ?? false;
+        return $result instanceof ResultsetInterface ? $result : (int)$result;
     }
 
-    public static function sum($parameters = null)
+    public static function sum(mixed $parameters = null): ResultsetInterface|float
     {
         self::$calls['sum'] = $parameters;
+        $result = self::$aggregateResults['sum'] ?? 0.0;
 
-        return self::$aggregateResults['sum'] ?? false;
+        return $result instanceof ResultsetInterface ? $result : (float)$result;
     }
 
     public static function maximum($parameters = null)

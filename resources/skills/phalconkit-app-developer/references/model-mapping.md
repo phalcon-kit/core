@@ -8,9 +8,9 @@ tests model replacement behavior.
 
 Native Phalcon references:
 
-- Models: https://docs.phalcon.io/5.13/db-models/
-- Column mapping: https://docs.phalcon.io/5.13/db-models/#column-mapping
-- Dependency injection: https://docs.phalcon.io/5.13/di/
+- Models: https://docs.phalcon.io/5.14/db-models/
+- Column mapping: https://docs.phalcon.io/5.14/db-models/#column-mapping
+- Dependency injection: https://docs.phalcon.io/5.14/di/
 
 PhalconKit model mapping complements native Phalcon model classes and column
 maps. Use native docs for ORM model behavior and this file for replacing core

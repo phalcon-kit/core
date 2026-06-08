@@ -8,10 +8,10 @@ For general identity/session behavior, also read `identity-and-security.md`.
 
 Native Phalcon references:
 
-- Sessions: https://docs.phalcon.io/5.13/session/
-- Request: https://docs.phalcon.io/5.13/request/
-- Response redirects: https://docs.phalcon.io/5.13/response/
-- Dependency injection: https://docs.phalcon.io/5.13/di/
+- Sessions: https://docs.phalcon.io/5.14/session/
+- Request: https://docs.phalcon.io/5.14/request/
+- Response redirects: https://docs.phalcon.io/5.14/response/
+- Dependency injection: https://docs.phalcon.io/5.14/di/
 
 Phalcon does not provide OAuth2 as a native business component here; PhalconKit
 wires OAuth2 providers through DI and uses native sessions, requests, and

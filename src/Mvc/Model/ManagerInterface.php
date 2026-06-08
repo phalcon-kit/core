@@ -29,5 +29,6 @@ interface ManagerInterface extends PhalconModelsManagerInterface
     
     public function hasBehavior(ModelInterface $model, string $behaviorName): bool;
     
-    public function removeBehavior(ModelInterface $model, string $behaviorName): void;
+    #[\Override]
+    public function removeBehavior(ModelInterface $model, string $behaviorClass): void;
 }

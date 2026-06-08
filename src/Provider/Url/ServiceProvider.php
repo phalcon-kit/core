@@ -25,7 +25,7 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * preserves native route generation while normalizing local paths. Configuration
  * is read from `url.staticBaseUri`, `url.baseUri`, and `url.basePath`.
  *
- * @see https://docs.phalcon.io/5.13/url/
+ * @see https://docs.phalcon.io/5.14/url/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

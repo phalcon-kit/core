@@ -75,15 +75,15 @@ class Manager extends PhalconModelsManager implements ManagerInterface
     }
     
     /**
-     * Removes a behavior associated with the given model and behavior name.
+     * Removes a behavior associated with the given model and behavior class/name.
      */
     #[\Override]
-    public function removeBehavior(ModelInterface $model, string $behaviorName): void
+    public function removeBehavior(ModelInterface $model, string $behaviorClass): void
     {
         $entityName = strtolower(get_class($model));
         
-        if (isset($this->behaviors[$entityName][$behaviorName])) {
-            unset($this->behaviors[$entityName][$behaviorName]);
+        if (isset($this->behaviors[$entityName][$behaviorClass])) {
+            unset($this->behaviors[$entityName][$behaviorClass]);
         }
     }
 }

@@ -17,6 +17,21 @@ release notes.
 
 ## Unreleased
 
+## 3.0.0 - 2026-06-08
+
+### Upgrade Notes
+
+- Compatibility break: requires Phalcon 5.14.1 or newer on the 5.x line.
+- Compatibility break: cancellable model aggregate event fallbacks now return
+  native-contract-safe neutral values for canceled `count()`, `sum()`, and
+  `average()` calls (`0` or `0.0`) instead of `false`.
+
+### Changed
+
+- Raised the Phalcon runtime baseline to 5.14.1, updated CI to install the
+  matching extension, refreshed current Phalcon documentation references to
+  5.14, and moved development stubs to `phalcon/ide-stubs` 5.14.x.
+
 ## 2.7.0 - 2026-06-08
 
 ### Added

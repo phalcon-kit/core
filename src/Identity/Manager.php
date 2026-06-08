@@ -162,8 +162,20 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
         if (!$messages->count()) {
             $user = !empty($params['email']) ? $this->findUserByEmail($params['email']) : null;
             
-            $loginFailedMessage = new Message('Login Failed', ['email', 'password'], 'LoginFailed', 401);
-            $loginForbiddenMessage = new Message('Login Forbidden', ['email', 'password'], 'LoginForbidden', 403);
+            $loginFailedMessage = new Message(
+                'Login Failed',
+                'email',
+                'LoginFailed',
+                401,
+                ['fields' => ['email', 'password']]
+            );
+            $loginForbiddenMessage = new Message(
+                'Login Forbidden',
+                'email',
+                'LoginForbidden',
+                403,
+                ['fields' => ['email', 'password']]
+            );
             
             if (!isset($user)) {
                 // user isn't found, login failed

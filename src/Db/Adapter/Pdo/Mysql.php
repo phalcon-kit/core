@@ -28,7 +28,7 @@ class Mysql extends \Phalcon\Db\Adapter\Pdo\Mysql
      * @return \PDOStatement
      */
     #[\Override]
-    public function executePrepared(\PDOStatement $statement, array $placeholders, $dataTypes): \PDOStatement
+    public function executePrepared(\PDOStatement $statement, array $placeholders, array $dataTypes = []): \PDOStatement
     {
         // Get the original SQL from the statement.
         $sql = $statement->queryString;

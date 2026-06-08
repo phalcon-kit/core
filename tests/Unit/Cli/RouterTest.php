@@ -32,23 +32,26 @@ class RouterTest extends AbstractUnit
     public function testRouterFromDi(): void
     {
         $this->assertInstanceOf(\PhalconKit\Router\RouterInterface::class, $this->router);
-        $this->assertNotInstanceOf(\Phalcon\Cli\RouterInterface::class, $this->router);
+        $this->assertInstanceOf(\Phalcon\Cli\RouterInterface::class, $this->router);
         $this->assertInstanceOf(\Phalcon\Cli\Router::class, $this->router);
         $this->assertInstanceOf(\PhalconKit\Cli\Router::class, $this->router);
     }
 
-    public function testNativeCliRouterInterfaceIsIncompatibleWithNativeCliRouter(): void
+    public function testNativeCliRouterInterfaceIsAlignedWithNativeCliRouter(): void
     {
         $nativeSetDefaultAction = new \ReflectionMethod(\Phalcon\Cli\Router::class, 'setDefaultAction');
         $interfaceSetDefaultAction = new \ReflectionMethod(\Phalcon\Cli\RouterInterface::class, 'setDefaultAction');
         $nativeGetRouteById = new \ReflectionMethod(\Phalcon\Cli\Router::class, 'getRouteById');
         $interfaceGetRouteById = new \ReflectionMethod(\Phalcon\Cli\RouterInterface::class, 'getRouteById');
 
-        $this->assertSame(\Phalcon\Cli\Router::class, (string) $nativeSetDefaultAction->getReturnType());
-        $this->assertSame('void', (string) $interfaceSetDefaultAction->getReturnType());
-        $this->assertNull($nativeGetRouteById->getReturnType());
+        $this->assertSame('static', (string) $nativeSetDefaultAction->getReturnType());
+        $this->assertSame(\Phalcon\Cli\RouterInterface::class, (string) $interfaceSetDefaultAction->getReturnType());
         $this->assertSame(
-            \Phalcon\Cli\Router\RouteInterface::class,
+            \Phalcon\Cli\Router\RouteInterface::class . '|bool',
+            (string) $nativeGetRouteById->getReturnType()
+        );
+        $this->assertSame(
+            \Phalcon\Cli\Router\RouteInterface::class . '|bool',
             (string) $interfaceGetRouteById->getReturnType()
         );
     }

@@ -8,11 +8,11 @@ maintenance mode, request helpers, response headers, or route-related errors.
 
 Native Phalcon references:
 
-- Routing: https://docs.phalcon.io/5.13/routing/
-- Controllers: https://docs.phalcon.io/5.13/controllers/
-- Dispatcher API: https://docs.phalcon.io/5.13/api/phalcon_mvc/#mvcdispatcher
-- Request: https://docs.phalcon.io/5.13/request/
-- Response: https://docs.phalcon.io/5.13/response/
+- Routing: https://docs.phalcon.io/5.14/routing/
+- Controllers: https://docs.phalcon.io/5.14/controllers/
+- Dispatcher API: https://docs.phalcon.io/5.14/api/phalcon_mvc/#mvcdispatcher
+- Request: https://docs.phalcon.io/5.14/request/
+- Response: https://docs.phalcon.io/5.14/response/
 
 PhalconKit configures and extends native Phalcon routing and dispatcher
 behavior. Use native docs for route matching, dispatcher parameters, forwards,

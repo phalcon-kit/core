@@ -119,7 +119,7 @@ trait Oauth2
             
             // user not found, login failed
             if (!isset($user)) {
-                $validation->appendMessage(new Message('Login Failed', ['id'], 'LoginFailed', 401));
+                $validation->appendMessage(new Message('Login Failed', 'id', 'LoginFailed', 401));
             }
             
             // access forbidden, login failed

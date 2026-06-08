@@ -443,10 +443,20 @@ trait Save
         int $code,
         string|array|null $field = null
     ): array {
+        $fields = is_array($field)
+            ? array_values(array_filter(array_map(
+                static fn(mixed $value): ?string => is_scalar($value) || $value instanceof \Stringable
+                    ? (string)$value
+                    : null,
+                $field
+            )))
+            : [];
+        $fieldName = is_array($field) ? implode(',', $fields) : ($field ?? '');
+
         return [
             'saved' => false,
             'messages' => [
-                new Message($message, $field, $type, $code),
+                new Message($message, $fieldName, $type, $code, $fields === [] ? [] : ['fields' => $fields]),
             ],
         ];
     }

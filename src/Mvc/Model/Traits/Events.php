@@ -83,16 +83,21 @@ trait Events
      * Counts the number of records that match the given parameters.
      *
      * This method wraps the core static `count` model call with beforeCount/afterCount cancellable events.
-     * The "beforeCount" event can cancel the operation by returning false.
+     * The "beforeCount" event can cancel the operation. Since Phalcon 5.14's
+     * native contract cannot return false for count(), cancellation returns 0.
      *
      * @see \Phalcon\Mvc\Model::count()
      * @param mixed $parameters Optional native Phalcon count parameters.
-     * @return ResultsetInterface|int|false The count result or a ResultsetInterface, depending on the implementation.
+     * @return ResultsetInterface|int The count result or a ResultsetInterface, depending on the implementation.
      */
     #[\Override]
-    public static function count(mixed $parameters = null): ResultsetInterface|int|false
+    public static function count(mixed $parameters = null): ResultsetInterface|int
     {
         $count = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::count($parameters));
+
+        if ($count === false) {
+            return 0;
+        }
         
         if (is_string($count)) {
             return (int)$count;
@@ -104,16 +109,21 @@ trait Events
     /**
      * Executes a sum operation on the underlying data with optional parameters.
      * This method supports cancellable events triggered before and after execution.
-     * If the "beforeSum" event cancels the operation, this method returns false.
+     * If the "beforeSum" event cancels the operation, this method returns 0.0
+     * to satisfy Phalcon 5.14's native return contract.
      *
      * @see \Phalcon\Mvc\Model::sum()
      * @param mixed $parameters Optional native Phalcon sum parameters.
-     * @return ResultsetInterface|float|false Returns the sum result as a float, a result set interface, or false if the operation is canceled.
+     * @return ResultsetInterface|float Returns the sum result as a float or a result set interface.
      */
     #[\Override]
-    public static function sum(mixed $parameters = null): ResultsetInterface|float|false
+    public static function sum(mixed $parameters = null): ResultsetInterface|float
     {
         $sum = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::sum($parameters));
+
+        if ($sum === false) {
+            return 0.0;
+        }
         
         if (is_string($sum)) {
             return floatval($sum);
@@ -130,15 +140,20 @@ trait Events
      * - beforeAverage()
      * - afterAverage()
      *
-     * If the "beforeAverage" event cancels the operation, false is returned.
+     * If the "beforeAverage" event cancels the operation, 0.0 is returned to
+     * satisfy Phalcon 5.14's native return contract.
      * @see \Phalcon\Mvc\Model::average()
      * @param array $parameters Parameters to define the criteria for calculating the average.
-     * @return ResultsetInterface|float|false The calculated average or a ResultsetInterface, depending on the implementation.
+     * @return ResultsetInterface|float The calculated average or a ResultsetInterface, depending on the implementation.
      */
     #[\Override]
-    public static function average(array $parameters = []): ResultsetInterface|float|false
+    public static function average(array $parameters = []): ResultsetInterface|float
     {
         $average = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::average($parameters));
+
+        if ($average === false) {
+            return 0.0;
+        }
         
         if (is_string($average)) {
             return (float)$average;
@@ -201,7 +216,9 @@ trait Events
      *  - afterFind()
      *  - afterFindFirst()
      *
-     *  Returns false if the "beforeX" event cancels the operation.
+     *  Returns false if the "beforeX" event cancels the operation. Callers
+     *  whose native Phalcon contracts cannot return false must normalize this
+     *  sentinel before returning.
      *
      * @param string $method
      * @param callable $callable

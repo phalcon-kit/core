@@ -6,11 +6,11 @@ focus on its models, API resources, workflows, and permissions.
 
 Official Phalcon references:
 
-- MVC: https://docs.phalcon.io/5.13/mvc/
-- Dependency injection: https://docs.phalcon.io/5.13/di/
-- Loader/autoloading: https://docs.phalcon.io/5.13/autoload/
-- Routing: https://docs.phalcon.io/5.13/routing/
-- Models: https://docs.phalcon.io/5.13/db-models/
+- MVC: https://docs.phalcon.io/5.14/mvc/
+- Dependency injection: https://docs.phalcon.io/5.14/di/
+- Loader/autoloading: https://docs.phalcon.io/5.14/autoload/
+- Routing: https://docs.phalcon.io/5.14/routing/
+- Models: https://docs.phalcon.io/5.14/db-models/
 
 ## Request Flow
 

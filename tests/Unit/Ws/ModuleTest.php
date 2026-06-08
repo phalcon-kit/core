@@ -33,7 +33,7 @@ class ModuleTest extends AbstractUnit
         $this->assertInstanceOf(Router::class, $module->router);
         $this->assertInstanceOf(\Phalcon\Cli\Router::class, $module->router);
         $this->assertInstanceOf(\PhalconKit\Router\RouterInterface::class, $module->router);
-        $this->assertNotInstanceOf(\Phalcon\Cli\RouterInterface::class, $module->router);
+        $this->assertInstanceOf(\Phalcon\Cli\RouterInterface::class, $module->router);
         $this->assertInstanceOf(Dispatcher::class, $module->dispatcher);
     }
 

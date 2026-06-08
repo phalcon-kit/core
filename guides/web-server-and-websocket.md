@@ -6,9 +6,9 @@ Nginx, Caddy, containerized proxies, or platform web servers are also valid.
 
 Official Phalcon references:
 
-- Web server setup: https://docs.phalcon.io/5.13/webserver-setup/
-- CLI applications: https://docs.phalcon.io/5.13/cli/
-- Dependency injection: https://docs.phalcon.io/5.13/di/
+- Web server setup: https://docs.phalcon.io/5.14/webserver-setup/
+- CLI applications: https://docs.phalcon.io/5.14/cli/
+- Dependency injection: https://docs.phalcon.io/5.14/di/
 
 ## Built-In PHP Server
 
