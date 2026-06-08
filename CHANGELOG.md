@@ -17,6 +17,8 @@ release notes.
 
 ## Unreleased
 
+## 2.7.0 - 2026-06-08
+
 ### Added
 
 - Added `Model::getSnapshotChangedFields()` for snapshot-based changed-field
