@@ -15,6 +15,13 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.0.2 - 2026-06-09
+
+### Fixed
+
+- Fixed the default MySQL PDO init command so configured session `sql_mode` and
+  `block_encryption_mode` values are applied when the database connection opens.
+
 ## 3.0.1 - 2026-06-08
 
 ### Fixed

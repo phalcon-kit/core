@@ -233,6 +233,30 @@ class ConfigTest extends AbstractUnit
         );
     }
 
+    public function testDefaultDatabaseInitCommandIncludesSessionSqlSettings(): void
+    {
+        $previous = Env::get('DATABASE_SQL_MODE');
+        $method = new \ReflectionMethod(Config::class, 'pdoMysqlAttribute');
+        $initCommandAttribute = $method->invoke(null, 'ATTR_INIT_COMMAND', 'MYSQL_ATTR_INIT_COMMAND');
+
+        try {
+            Env::set('DATABASE_SQL_MODE', null);
+
+            $options = (new Config())->pathToArray('database.drivers.mysql.options') ?? [];
+
+            $this->assertArrayHasKey($initCommandAttribute, $options);
+            $this->assertIsString($options[$initCommandAttribute]);
+            $this->assertStringStartsWith('SET NAMES ', $options[$initCommandAttribute]);
+            $this->assertStringContainsString(', sql_mode = ', $options[$initCommandAttribute]);
+            $this->assertStringContainsString('STRICT_TRANS_TABLES', $options[$initCommandAttribute]);
+            $this->assertStringNotContainsString('ONLY_FULL_GROUP_BY', $options[$initCommandAttribute]);
+            $this->assertStringContainsString(', block_encryption_mode = ', $options[$initCommandAttribute]);
+            $this->assertArrayNotHasKey(0, $options);
+        } finally {
+            Env::set('DATABASE_SQL_MODE', $previous);
+        }
+    }
+
     public function testGetModelClass(): void
     {
         $config = new \PhalconKit\Bootstrap\Config();
