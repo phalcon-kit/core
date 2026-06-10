@@ -257,54 +257,57 @@ class EagerLoadTest extends AbstractUnit
     {
         $db = $this->getDb();
 
-        $db->execute('DROP TEMPORARY TABLE IF EXISTS eager_load_through_model_double');
-        $db->execute('DROP TEMPORARY TABLE IF EXISTS eager_load_target_model_double');
-        $db->execute('DROP TEMPORARY TABLE IF EXISTS eager_load_parent_model_double');
+        $this->dropEagerLoadTables($db);
 
-        $db->execute('
-            CREATE TEMPORARY TABLE eager_load_parent_model_double (
-                id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-                PRIMARY KEY (id)
-            )
-        ');
-        $db->execute('
-            CREATE TEMPORARY TABLE eager_load_target_model_double (
-                id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                label VARCHAR(64) NOT NULL,
-                deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-                PRIMARY KEY (id)
-            )
-        ');
-        $db->execute('
-            CREATE TEMPORARY TABLE eager_load_through_model_double (
-                id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                parentId INT UNSIGNED NOT NULL,
-                targetId INT UNSIGNED NOT NULL,
-                deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-                PRIMARY KEY (id)
-            )
-        ');
+        try {
+            $db->execute('
+                CREATE TABLE eager_load_parent_model_double (
+                    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                    deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+                    PRIMARY KEY (id)
+                )
+            ');
+            $db->execute('
+                CREATE TABLE eager_load_target_model_double (
+                    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                    label VARCHAR(64) NOT NULL,
+                    deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+                    PRIMARY KEY (id)
+                )
+            ');
+            $db->execute('
+                CREATE TABLE eager_load_through_model_double (
+                    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                    parentId INT UNSIGNED NOT NULL,
+                    targetId INT UNSIGNED NOT NULL,
+                    deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+                    PRIMARY KEY (id)
+                )
+            ');
 
-        $db->execute('INSERT INTO eager_load_parent_model_double (id) VALUES (1)');
-        $db->execute("INSERT INTO eager_load_target_model_double (id, label) VALUES (1, 'first'), (2, 'second')");
-        $db->execute('
-            INSERT INTO eager_load_through_model_double (parentId, targetId)
-            VALUES (1, 1), (1, 1), (1, 2)
-        ');
+            $db->execute('INSERT INTO eager_load_parent_model_double (id) VALUES (1)');
+            $db->execute("INSERT INTO eager_load_target_model_double (id, label) VALUES (1, 'first'), (2, 'second')");
+            $db->execute('
+                INSERT INTO eager_load_through_model_double (parentId, targetId)
+                VALUES (1, 1), (1, 1), (1, 2)
+            ');
 
-        $parent = EagerLoadParentModelDouble::findFirstWith(['TargetList'], [
-            'id = :id:',
-            'bind' => ['id' => 1],
-            'bindTypes' => ['id' => \Phalcon\Db\Column::BIND_PARAM_INT],
-        ]);
+            $parent = EagerLoadParentModelDouble::findFirstWith(['TargetList'], [
+                'id = :id:',
+                'bind' => ['id' => 1],
+                'bindTypes' => ['id' => \Phalcon\Db\Column::BIND_PARAM_INT],
+            ]);
 
-        $this->assertInstanceOf(EagerLoadParentModelDouble::class, $parent);
-        $this->assertCount(2, $parent->targetlist);
-        $this->assertSame([1, 2], array_map(
-            static fn ($target): int => (int)$target->readAttribute('id'),
-            $parent->targetlist
-        ));
+            $this->assertInstanceOf(EagerLoadParentModelDouble::class, $parent);
+            $this->assertCount(2, $parent->targetlist);
+            $this->assertSame([1, 2], array_map(
+                static fn ($target): int => (int)$target->readAttribute('id'),
+                $parent->targetlist
+            ));
+        }
+        finally {
+            $this->dropEagerLoadTables($db);
+        }
     }
 
     public function testLoadRejectsInvalidTraitHost(): void
@@ -356,6 +359,13 @@ class EagerLoadTest extends AbstractUnit
         $reflectionProperty = new \ReflectionProperty($node, $property);
 
         return $reflectionProperty->getValue($node);
+    }
+
+    private function dropEagerLoadTables(\Phalcon\Db\Adapter\Pdo\Mysql $db): void
+    {
+        $db->execute('DROP TABLE IF EXISTS eager_load_through_model_double');
+        $db->execute('DROP TABLE IF EXISTS eager_load_target_model_double');
+        $db->execute('DROP TABLE IF EXISTS eager_load_parent_model_double');
     }
 
     private function newEagerLoadModelsManager(bool $registerGrandchildren = true): FakeModelsManager

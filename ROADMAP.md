@@ -32,26 +32,20 @@ guidance in the relevant guide or shipped skill reference.
 
 ## Current Focus
 
-Target: `3.0.x`
+Target: `3.0.4` release readiness, then `3.1.x` planning
 
-Theme: regression hardening and test architecture for the current `3.x` public
-API surface.
+Theme: keep the completed `3.0.4` coverage pass releasable, then start the
+next development block with a clear scaffold ownership contract.
 
 Decision:
 
-- Recent `2.x` releases shipped the REST request-surface, relationship,
-  diagnostics, exception, and event-listener work.
-- `3.0.x` raised the runtime baseline and has shipped focused maintenance fixes
-  for scaffolding, database initialization, relationship aliases, and eager
-  loading. Keep those shipped outcomes in the changelog, not in this roadmap.
-- The `3.0.4` testing batch completes the current P0 through P4 coverage pass
-  for REST controller policies, model trait regressions, optional-service
-  skips, relationship/eager-loading correctness, controller query behavior, and
-  filter wrappers, provider/support contracts, router/dispatcher contracts, and
-  scaffold output.
-- The next active work is REST controller scaffold readiness, starting with a
-  precise generated-file ownership model before adding new public scaffolding
-  behavior.
+- The `3.0.4` coverage batch is complete and belongs in the changelog, not in
+  active roadmap blocks.
+- Do not add broad runtime behavior to `3.0.4`; keep remaining work limited to
+  QA fixes, release notes, and release mechanics.
+- After `3.0.4`, the next development block is REST controller scaffold
+  readiness. Start with generated-file ownership before adding public
+  scaffolding behavior.
 
 Release principles:
 
@@ -64,11 +58,41 @@ Release principles:
 
 ## Next Blocks
 
-### REST Controller Scaffold Readiness
+### 3.0.4 Release Readiness
 
 Status: Next
 
-Target: `3.1.x` candidate after the `3.0.x` coverage pass
+Target: `3.0.4`
+
+Why:
+
+- The testing coverage pass is complete, but the release should not ship with a
+  failing database-backed unit or stale planning docs.
+- The release should preserve the current public behavior and avoid mixing
+  scaffolding feature work into the patch train.
+
+Scope:
+
+- Keep `composer qa:test`, style, package skeleton, and practical static checks
+  green for the release environment.
+- Keep the changelog focused on shipped behavior and maintainer workflow
+  changes.
+- Remove completed testing-priority inventories from active planning docs.
+- Cut and publish the release only after the local release gate is clean.
+
+Validation:
+
+- `composer qa:test`.
+- `composer phpcs`.
+- `composer skeleton`.
+- `composer phpstan`.
+- `git diff --check`.
+
+### REST Controller Scaffold Readiness
+
+Status: Planned
+
+Target: `3.1.x`
 
 Why:
 

@@ -38,8 +38,8 @@ with Phalcon Kit. Start with the task you are trying to complete.
    CI expectations.
 3. [Project Roadmap](../ROADMAP.md): release blocks, priorities, retired
    GitHub Project items, and maintainer planning rules.
-4. [Testing Roadmap](testing-roadmap.md): phased unit, component, integration,
-   model, eager-loading, and REST API test coverage plan.
+4. [Testing Strategy](testing-roadmap.md): phased unit, component,
+   integration, model, eager-loading, and REST API coverage approach.
 5. [To Be Discussed](to-be-discussed.md): open maintainer design questions that
    need a concrete use case before behavior changes.
 6. [Release Process](release.md): release checklist and package-history notes.

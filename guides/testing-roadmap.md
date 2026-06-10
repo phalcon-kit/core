@@ -1,10 +1,16 @@
-# Testing Roadmap
+# Testing Strategy
 
-This roadmap turns full-package coverage into small slices that can be merged
-without blocking application work. The order is intentional: start with
-deterministic units that do not need a database, router, or running HTTP stack;
-then move outward toward controllers, models, relationships, eager loading, and
-full REST API flows.
+This guide describes how to grow package coverage without blocking application
+work. It is not the active release backlog. Use [ROADMAP.md](../ROADMAP.md) for
+schedulable work, and use [CHANGELOG.md](../CHANGELOG.md) for completed
+coverage batches.
+
+The original `3.0.4` P0 through P4 testing pass is complete. Its results are
+recorded in the changelog, so this guide now keeps only durable testing
+strategy: tiers, phases, and the working pattern for future batches.
+
+The phases below are a coverage model, not a live completion board. Track active
+release work in the roadmap and move completed outcomes to the changelog.
 
 ## Goals
 
@@ -273,24 +279,3 @@ Exit criteria:
 6. Run `git diff --check`.
 7. Update `CHANGELOG.md` only when the batch changes public behavior, docs,
    tooling, or maintainer workflow.
-
-## Current 3.0.x Priorities
-
-The next testing pass should protect the contracts carried into the current
-`3.x` line before broadening the framework surface again. Prefer small harnesses
-that exercise controller/model policy state without a database, then add
-database integration only when native Phalcon behavior is part of the contract.
-
-| Priority | Status | Area | Coverage Or Next Tests |
-| --- | --- | --- | --- |
-| P0 | Complete for `3.0.4` | REST controller policy harnesses | Covered by `FieldPolicyTest`, `QueryStateTest`, `FindActionTest`, `CountActionTest`, `DistinctActionTest`, and `RestResponseTest` for order fields, embedded counts, request-time `with`, distinct fields, response fields, save fields, and permission/filter/search interactions. |
-| P0 | Complete for `3.0.4` | Model trait regression harnesses | Covered by `BehaviorAndTraitsTest` and `ModelTest` for snapshot diffs, nullable SQL `"NULL"` normalization, strict relationship assignment, cache invalidation predicates, replication listener idempotency, and runtime exception paths. |
-| P0 | Complete for `3.0.4` | Optional-service skips | Covered by `AbstractUnitTest`, `AbstractUnit`, `ModelTest`, `ClamavTest`, and Redis provider preflights so missing database, Redis, and ClamAV infrastructure is reported separately from regressions. |
-| P1 | Complete for `3.0.4` | Relationship and eager loading | Covered by `FindActionTest` and `EagerLoadTest` for nested path selection, parent-path expansion, configured terminal constraints, rejected aliases, missing nested relation failures before query execution, and relation-free `findAction()` behavior. |
-| P1 | Complete for `3.0.4` | `Mvc\Controller\Behavior\Query` | Covered by `RemoveQueryBehaviorTest` for add/remove condition behavior, direct event payload handling, invalid configuration messages, and `rest` events-manager lifecycle execution. |
-| P1 | Complete for `3.0.4` | `Filter` | Covered by `FilterTest`, `FilterFactoryTest`, validator tests, sanitizer tests, and provider tests for sanitizer wrappers, validator options, invalid JSON/color cases, and DI/factory registration. |
-| P2 | Complete for `3.0.4` | `Provider` | Covered by provider catalog, bootstrap, configured event-listener, core provider, and additional provider tests for registration idempotence, configured listener attachment, aliases, shared services, and override points. |
-| P2 | Complete for `3.0.4` | `Support\Options` and `Support\CollectionPolicy` | Covered by options manager and collection policy tests for merge, reset, removal, replacement, shallow nested replacement, explicit empty policies, and null-value behavior. |
-| P2 | Complete for `3.0.4` | `Support\Helper\Arr` and `Support\Helper\Str` | Covered by helper tests for flattening, recursive mapping, recursive replacement, empty input/replacement handling, invalid encoding cleanup, and printable character filtering. |
-| P3 | Complete for `3.0.4` | `Mvc\Router`, CLI router, and dispatcher | Covered by MVC, CLI, WebSocket router, dispatcher, module-route, and provider tests for configured defaults, not-found routing, action normalization, module namespace registration, native Phalcon interface limits, and MVC-only listener boundaries. |
-| P4 | Complete for `3.0.4` | Scaffolding output | Covered by scaffold and TypeScript scaffold tests for generated model/interface/controller-helper output, temporary-directory TypeScript export generation, force-safe file writes, and package skeleton validation. |

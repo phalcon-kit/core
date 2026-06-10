@@ -35,6 +35,11 @@ release notes.
 - Added scaffold output coverage for the current controller helper contract,
   TypeScript interface/abstract/model/service output, TypeScript export index
   generation, and force-safe TypeScript file writes.
+- Cleaned completed P0 through P4 testing-priority inventory out of active docs
+  and refocused the roadmap on `3.0.4` release readiness.
+- Fixed the eager-load through-relation regression test setup so MySQL metadata
+  discovery uses regular throwaway tables instead of connection-scoped
+  temporary tables.
 - Added no-database REST regression coverage for `findWithAction()` prepared
   find/count metadata reuse and unauthorized relationship short-circuiting.
 - Added no-database REST regression coverage for `findFirstWithAction()`
