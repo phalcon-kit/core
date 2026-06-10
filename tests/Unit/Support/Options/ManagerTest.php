@@ -84,6 +84,22 @@ class ManagerTest extends AbstractUnit
         ], $this->manager->getOptions());
     }
 
+    public function testSetOptionsWithoutMergeReplacesExistingOptions(): void
+    {
+        $this->manager = new Manager([
+            'first' => 'original',
+            'second' => 'removed',
+        ]);
+
+        $this->manager->setOptions([
+            'replacement' => true,
+        ]);
+
+        $this->assertSame([
+            'replacement' => true,
+        ], $this->manager->getOptions());
+    }
+
     public function testNullOptionUsesDefaultAndIsNotReportedAsPresent(): void
     {
         $this->manager = new Manager();

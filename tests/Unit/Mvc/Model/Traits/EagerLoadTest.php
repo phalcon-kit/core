@@ -13,21 +13,26 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc\Model\Traits;
 
+use Phalcon\Di\Di;
+use Phalcon\Mvc\Model\Relation;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Exception\LogicException;
 use PhalconKit\Exception\RuntimeException;
+use PhalconKit\Mvc\Model\EagerLoading\EagerLoad as EagerLoadNode;
 use PhalconKit\Mvc\Model\EagerLoading\Loader;
-use PhalconKit\Mvc\Model\Traits\EagerLoad;
+use PhalconKit\Mvc\Model\Traits\EagerLoad as EagerLoadTrait;
 use PhalconKit\Mvc\Model\Traits\Events;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadForwardDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidForwardDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadInvalidHostDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EagerLoadParentModelDouble;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\FakeModelsManager;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\EventsTraitResultsetDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\IntermediateDeleteModelDouble;
+use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\ModelBehaviorDouble;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\RelatedDeleteModelDouble;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -36,7 +41,7 @@ class EagerLoadTest extends AbstractUnit
 {
     public function testNativeFinderAbstractContractsMatchPatchedPhalconSignatures(): void
     {
-        $trait = new ReflectionClass(EagerLoad::class);
+        $trait = new ReflectionClass(EagerLoadTrait::class);
 
         $find = $trait->getMethod('find');
         $findParameters = $find->getParameters();
@@ -202,6 +207,52 @@ class EagerLoadTest extends AbstractUnit
         $this->assertSame([], Loader::fromArray([]));
     }
 
+    public function testLoaderBuildsNestedTreeAndAppliesOnlyTerminalConstraints(): void
+    {
+        $this->newEagerLoadModelsManager();
+        $root = new ModelBehaviorDouble();
+        $root->id = 1;
+
+        $constraint = static fn (mixed $builder): mixed => $builder;
+        $loader = new Loader($root, [
+            'Children.Grandchildren' => $constraint,
+        ]);
+
+        $tree = $this->buildEagerLoadTree($loader);
+
+        $this->assertSame(['Children', 'Children.Grandchildren'], array_keys($tree));
+        $this->assertSame($loader, $this->readEagerLoadNodeProperty($tree['Children'], 'parent'));
+        $this->assertNull($this->readEagerLoadNodeProperty($tree['Children'], 'constraints'));
+        $this->assertSame($tree['Children'], $this->readEagerLoadNodeProperty($tree['Children.Grandchildren'], 'parent'));
+        $this->assertSame(
+            $constraint,
+            $this->readEagerLoadNodeProperty($tree['Children.Grandchildren'], 'constraints')
+        );
+    }
+
+    public function testLoaderRejectsMissingNestedRelationBeforeQueryExecution(): void
+    {
+        $manager = $this->newEagerLoadModelsManager(registerGrandchildren: false);
+        $root = new ModelBehaviorDouble();
+        $root->id = 1;
+        $loader = new Loader($root, ['Children.Missing']);
+
+        try {
+            $this->buildEagerLoadTree($loader);
+            $this->fail('Expected missing nested eager-load relation.');
+        }
+        catch (RuntimeException $exception) {
+            $this->assertSame(
+                'There is no defined relation for the model `'
+                . ModelBehaviorDouble::class
+                . '` using alias `Missing`',
+                $exception->getMessage()
+            );
+        }
+
+        $this->assertSame([], $manager->executeQueryCalls);
+    }
+
     public function testFindFirstWithDeduplicatesThroughRelationTargets(): void
     {
         $db = $this->getDb();
@@ -288,5 +339,50 @@ class EagerLoadTest extends AbstractUnit
         }
 
         $this->assertSame($returnType, (string)$method->getReturnType());
+    }
+
+    /**
+     * @return array<string, EagerLoadNode>
+     */
+    private function buildEagerLoadTree(Loader $loader): array
+    {
+        $method = new \ReflectionMethod(Loader::class, 'buildTree');
+
+        return $method->invoke($loader);
+    }
+
+    private function readEagerLoadNodeProperty(EagerLoadNode $node, string $property): mixed
+    {
+        $reflectionProperty = new \ReflectionProperty($node, $property);
+
+        return $reflectionProperty->getValue($node);
+    }
+
+    private function newEagerLoadModelsManager(bool $registerGrandchildren = true): FakeModelsManager
+    {
+        $manager = new FakeModelsManager();
+
+        $manager->setRelationByAlias(
+            ModelBehaviorDouble::class,
+            'Children',
+            new Relation(Relation::HAS_MANY, ModelBehaviorDouble::class, 'id', 'parentId', [
+                'alias' => 'Children',
+            ])
+        );
+
+        if ($registerGrandchildren) {
+            $manager->setRelationByAlias(
+                ModelBehaviorDouble::class,
+                'Grandchildren',
+                new Relation(Relation::HAS_MANY, ModelBehaviorDouble::class, 'id', 'parentId', [
+                    'alias' => 'Grandchildren',
+                ])
+            );
+        }
+
+        $this->di->setShared('modelsManager', $manager);
+        Di::setDefault($this->di);
+
+        return $manager;
     }
 }

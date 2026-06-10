@@ -88,6 +88,57 @@ class OptionsTest extends AbstractUnit
         ], $this->options->getOptions());
     }
 
+    public function testSetOptionsWithoutMergeReplacesExistingOptionsAndResetRestoresDefaults(): void
+    {
+        $defaults = [
+            'first' => 'original',
+            'nested' => [
+                'default' => true,
+            ],
+        ];
+        $this->options = new class ($defaults) implements OptionsInterface {
+            use Options;
+        };
+
+        $this->options->setOptions([
+            'second' => 'replacement',
+        ]);
+
+        $this->assertSame([
+            'second' => 'replacement',
+        ], $this->options->getOptions());
+
+        $this->options->resetOptions();
+
+        $this->assertSame($defaults, $this->options->getOptions());
+    }
+
+    public function testSetOptionsMergeIsShallowForNestedArrays(): void
+    {
+        $this->options = new class ([
+            'nested' => [
+                'default' => true,
+                'keptOnlyBeforeMerge' => true,
+            ],
+            'kept' => 'value',
+        ]) implements OptionsInterface {
+            use Options;
+        };
+
+        $this->options->setOptions([
+            'nested' => [
+                'replacement' => true,
+            ],
+        ], true);
+
+        $this->assertSame([
+            'nested' => [
+                'replacement' => true,
+            ],
+            'kept' => 'value',
+        ], $this->options->getOptions());
+    }
+
     public function testSetOptionMergeKeepsOtherOptions(): void
     {
         $this->options = new class ([

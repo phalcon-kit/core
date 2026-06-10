@@ -455,6 +455,20 @@ class FindActionTest extends AbstractUnit
         $this->assertSame(['id' => 3], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
     }
 
+    public function testFindFirstWithActionAllowsParentOfConfiguredNestedRelationship(): void
+    {
+        $controller = $this->createController(['with' => 'Author.Profile']);
+        $controller->setWith(new Collection(['Author.Profile.Avatar'], false));
+        $controller->findFirstWithResult = $this->createStub(ModelInterface::class);
+        $controller->exposedData = [['id' => 4]];
+
+        $controller->findFirstWithAction();
+
+        $this->assertTrue($controller->findFirstWithCalled);
+        $this->assertSame(['with' => ['Author.Profile'], 'find' => null], $controller->findFirstWithArguments);
+        $this->assertSame(['id' => 4], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
+    }
+
     public function testFindActionAcceptsArrayCountRequestSyntax(): void
     {
         $controller = $this->createController([

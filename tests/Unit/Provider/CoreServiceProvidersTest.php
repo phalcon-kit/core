@@ -51,6 +51,7 @@ use PhalconKit\Provider\Version\ServiceProvider as VersionProvider;
 use PhalconKit\Provider\View\ServiceProvider as ViewProvider;
 use PhalconKit\Provider\WebSocket\ServiceProvider as WebSocketProvider;
 use PhalconKit\Support\HelperFactory;
+use PhalconKit\Support\Helper\Str\Slugify;
 use PhalconKit\Support\Models;
 use PhalconKit\Support\Utils;
 use PhalconKit\Support\Version;
@@ -69,6 +70,19 @@ class CoreServiceProvidersTest extends AbstractUnit
 
         $this->assertInstanceOf(Manager::class, $eventsManager);
         $this->assertTrue($eventsManager->arePrioritiesEnabled());
+    }
+
+    public function testSharedCoreProvidersReuseResolvedInstances(): void
+    {
+        $di = $this->createDi();
+
+        (new EventsManagerProvider($di))->register($di);
+        (new RequestProvider($di))->register($di);
+        (new ResponseProvider($di))->register($di);
+
+        $this->assertSame($di->get('eventsManager'), $di->get('eventsManager'));
+        $this->assertSame($di->get('request'), $di->get('request'));
+        $this->assertSame($di->get('response'), $di->get('response'));
     }
 
     public function testRequestProviderRegistersRequestWithDi(): void
@@ -231,6 +245,21 @@ class CoreServiceProvidersTest extends AbstractUnit
         $this->assertInstanceOf(Tag::class, $di->get('tag'));
         $this->assertInstanceOf(Utils::class, $di->get('utils'));
         $this->assertInstanceOf(Version::class, $di->get('version'));
+    }
+
+    public function testHelperProviderRegistersConfiguredHelperAliases(): void
+    {
+        $di = $this->createDi([
+            'helpers' => [
+                'unitSlug' => Slugify::class,
+            ],
+        ]);
+        (new HelperProvider($di))->register($di);
+
+        $helper = $di->get('helper');
+
+        $this->assertInstanceOf(HelperFactory::class, $helper);
+        $this->assertSame('hello-world', $helper->unitSlug('Hello World'));
     }
 
     public function testApplicationConsoleAndWebSocketProvidersRegisterApplications(): void

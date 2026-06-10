@@ -21,10 +21,29 @@ release notes.
 
 - Refocused the roadmap and testing priorities on the active `3.0.x` release
   train after the `3.0.3` maintenance release.
-- Marked the current P0 testing-roadmap pass complete and promoted relationship
-  and eager-loading correctness as the next active roadmap block.
+- Completed the current P0 testing-roadmap pass for REST controller policies,
+  model trait regressions, and optional-service skips.
+- Completed the current P1 testing-roadmap pass and promoted provider/support
+  contract tests as the next active roadmap block.
+- Completed the current P2 testing-roadmap pass and promoted router/dispatcher
+  contract tests as the next active roadmap block.
 - Added no-database REST regression coverage for `findWithAction()` prepared
   find/count metadata reuse and unauthorized relationship short-circuiting.
+- Added no-database REST regression coverage for `findFirstWithAction()`
+  parent-path expansion when a configured nested relationship allows the parent
+  request path.
+- Added no-database eager-loader regression coverage for nested tree
+  construction, terminal constraint placement, and missing nested relation
+  failures before query execution.
+- Added controller query-behavior coverage for `rest` events-manager lifecycle
+  execution.
+- Added provider contract coverage for configured provider catalog integrity,
+  shared core-provider resolution, and configured helper aliases.
+- Added support option and collection-policy coverage for replacement, shallow
+  nested merge boundaries, null-valued policy entries, and explicit empty
+  intersections.
+- Added support helper coverage for empty flatten/replacement inputs and
+  printable UTF-8 preservation during non-printable character filtering.
 - Added no-database REST save assignment coverage for `rest:beforeAssign`
   payload, save-field, and map-field mutations.
 - Added no-database REST query initialization coverage for permission, filter,

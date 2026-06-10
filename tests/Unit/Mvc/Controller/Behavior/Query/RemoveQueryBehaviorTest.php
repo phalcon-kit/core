@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Mvc\Controller\Behavior\Query;
 
 use Phalcon\Events\Event;
+use Phalcon\Events\Manager;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Behavior\Query\Conditions\RemoveDefaultFilterCondition;
 use PhalconKit\Mvc\Controller\Behavior\Query\Conditions\RemoveDefaultIdentityCondition;
@@ -214,6 +215,27 @@ class RemoveQueryBehaviorTest extends AbstractUnit
         (new RemoveOffset())->afterInitializeOffset($this->newEvent($controller), $controller);
 
         $this->assertSame(0, $controller->getOffset());
+    }
+
+    public function testBehaviorsRunThroughRestEventsManagerLifecycle(): void
+    {
+        $controller = $this->newController();
+        $controller->setExposeFields(new Collection(['id']));
+        $controller->setPermissionConditions(new Collection([
+            'default' => 'default-permission',
+            'custom' => 'custom-permission',
+        ], false));
+
+        $eventsManager = new Manager();
+        $eventsManager->attach('rest', new RemoveExposeFields());
+        $eventsManager->attach('rest', new RemoveDefaultPermissionCondition());
+
+        $eventsManager->fire('rest:afterInitializeFields', $controller);
+        $eventsManager->fire('rest:afterInitializeConditions', $controller);
+
+        $this->assertSame([], $controller->getExposeFields()->toArray());
+        $this->assertFalse($controller->getPermissionConditions()->has('default'));
+        $this->assertSame('custom-permission', $controller->getPermissionConditions()->get('custom'));
     }
 
     private function newController(): Restful

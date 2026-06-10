@@ -36,6 +36,14 @@ class FlattenKeysTest extends AbstractUnit
         ]));
     }
 
+    public function testInvokeReturnsEmptyArrayForEmptyInput(): void
+    {
+        $flattenKeys = new FlattenKeys();
+
+        $this->assertSame([], $flattenKeys());
+        $this->assertSame([], FlattenKeys::process([]));
+    }
+
     public function testProcessPreservesKeyCaseWhenRequested(): void
     {
         $this->assertSame([

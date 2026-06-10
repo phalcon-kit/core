@@ -44,10 +44,13 @@ Decision:
 - `3.0.x` raised the runtime baseline and has shipped focused maintenance fixes
   for scaffolding, database initialization, relationship aliases, and eager
   loading. Keep those shipped outcomes in the changelog, not in this roadmap.
-- The `3.0.4` testing batch completes the current P0 coverage pass for REST
-  controller policies, model trait regressions, and optional-service skips.
-- The next work should start with P1 relationship and eager-loading correctness
-  before adding broad scaffolding or another large public surface.
+- The `3.0.4` testing batch completes the current P0, P1, and P2 coverage pass
+  for REST controller policies, model trait regressions, optional-service
+  skips, relationship/eager-loading correctness, controller query behavior, and
+  filter wrappers, plus provider and support contracts.
+- The next work should start with P3 router, CLI router, and dispatcher
+  contract tests before adding broad scaffolding or another large public
+  surface.
 
 Release principles:
 
@@ -60,34 +63,36 @@ Release principles:
 
 ## Next Blocks
 
-### Relationship And Eager-Loading Correctness
+### Router CLI And Dispatcher Contracts
 
 Status: Next
 
-Target: `3.0.x` or `3.1.x`, depending on the testing batch
+Target: `3.0.x`
 
 Why:
 
-- Request-time response relationships are now supported for `findWithAction()`
-  and `findFirstWithAction()`, including nested paths.
-- The remaining relationship backlog is mostly correctness and clarity:
-  sparse payload semantics, eager-loader option propagation, composite keys, and
-  through-relation edge cases.
+- P0 through P2 now protect the recent REST, relationship, eager-loading,
+  query-behavior, filter, provider, and support maintenance surfaces.
+- Router and dispatcher behavior sits between bootstrap/provider wiring and
+  controller execution, so tightening it is the next useful layer before REST
+  flow or scaffolding work.
 
 Scope:
 
-- Start with regression tests for existing behavior rather than new APIs.
-- Cover nested eager-loading path selection, parent-path expansion, configured
-  relation constraints, rejected aliases, and relation-free `findAction()`.
-- Document current limitations before changing them.
-- Promote a specific API change only after the test suite captures the current
-  compatibility boundary.
+- Cover MVC router defaults, route normalization, hostname/base route setup, and
+  documented native Phalcon interface limits.
+- Cover CLI and WebSocket router/task parsing where it can be tested without a
+  live socket server.
+- Cover dispatcher module/controller/action resolution and listener attachment
+  boundaries across MVC, CLI, and WebSocket modes.
+- Keep changes behavior-preserving unless a failing test exposes a concrete bug.
 
 Validation:
 
-- Query-state and eager-loading unit tests.
-- Database-backed relationship tests only when native Phalcon relation behavior
-  must be exercised.
+- Focused PHPUnit runs for `Mvc\Router`, CLI router, WebSocket router, and
+  dispatcher namespaces.
+- `composer phpcs` for touched PHP files.
+- Full `composer phpunit` before release or tag.
 
 ### REST Controller Scaffold Readiness
 

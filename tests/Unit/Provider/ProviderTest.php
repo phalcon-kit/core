@@ -41,6 +41,26 @@ class ProviderTest extends AbstractUnit
             $this->assertInstanceOf(ServiceProviderInterface::class, $provider);
         }
     }
+
+    public function testConfiguredProvidersAdvertiseStableUniqueServiceNames(): void
+    {
+        $providers = $this->bootstrap->config->pathToArray('providers') ?? [];
+        $this->assertIsArray($providers);
+
+        $serviceNames = [];
+        foreach ($providers as $expectedProvider => $concreteProvider) {
+            $this->assertIsString($expectedProvider);
+            $this->assertIsString($concreteProvider);
+
+            $provider = new $concreteProvider($this->di);
+            $this->assertInstanceOf(ServiceProviderInterface::class, $provider);
+            $this->assertNotSame('', $provider->getName());
+
+            $serviceNames[$expectedProvider] = $provider->getName();
+        }
+
+        $this->assertSame(array_unique($serviceNames), $serviceNames);
+    }
     
     public function testFileSystemProvider(): void
     {

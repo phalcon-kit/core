@@ -25,6 +25,13 @@ class RemoveNonPrintableTest extends AbstractUnit
         $this->assertSame('abcdef', $remove("abc\x00\x1Fdef"));
     }
 
+    public function testInvokePreservesPrintableUtf8Characters(): void
+    {
+        $remove = new RemoveNonPrintable();
+
+        $this->assertSame("Caf\xC3\xA9 123", $remove("Caf\xC3\xA9 123"));
+    }
+
     public function testInvokeSupportsCustomReplacement(): void
     {
         $remove = new RemoveNonPrintable();

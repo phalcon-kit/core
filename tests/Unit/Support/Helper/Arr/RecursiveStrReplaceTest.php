@@ -58,4 +58,21 @@ class RecursiveStrReplaceTest extends AbstractUnit
             'list' => [1, 2],
         ], $result);
     }
+
+    public function testProcessWithEmptyReplacementMapLeavesStringsUntouched(): void
+    {
+        $result = RecursiveStrReplace::process([
+            'message' => 'Hello :name',
+            'nested' => [
+                'message' => ':name has :count items',
+            ],
+        ], []);
+
+        $this->assertSame([
+            'message' => 'Hello :name',
+            'nested' => [
+                'message' => ':name has :count items',
+            ],
+        ], $result);
+    }
 }
