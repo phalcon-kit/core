@@ -27,6 +27,14 @@ release notes.
   contract tests as the next active roadmap block.
 - Completed the current P2 testing-roadmap pass and promoted router/dispatcher
   contract tests as the next active roadmap block.
+- Completed the current P3 and P4 testing-roadmap passes and promoted REST
+  controller scaffold readiness as the next active roadmap block.
+- Added router and dispatcher contract coverage for MVC defaults and not-found
+  routing, CLI defaults, WebSocket task routing, dispatcher action
+  normalization, and MVC/CLI/WebSocket listener attachment boundaries.
+- Added scaffold output coverage for the current controller helper contract,
+  TypeScript interface/abstract/model/service output, TypeScript export index
+  generation, and force-safe TypeScript file writes.
 - Added no-database REST regression coverage for `findWithAction()` prepared
   find/count metadata reuse and unauthorized relationship short-circuiting.
 - Added no-database REST regression coverage for `findFirstWithAction()`

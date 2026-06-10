@@ -189,6 +189,31 @@ PHP,
         $this->assertStringNotContainsString('function setName(', $output);
     }
 
+    public function testControllerOutputDocumentsCurrentControllerShellContract(): void
+    {
+        $task = $this->createScaffoldTask([
+            'noLicense' => true,
+            'noStrictTypes' => true,
+        ]);
+        $definitions = $task->getDefinitionsAction('legacy_user_accounts');
+
+        $output = $task->createControllerOutput(
+            $definitions,
+            [$this->createIdColumn()],
+            $this->createEmptyRelationships()
+        );
+
+        $this->assertStringStartsWith("<?php\n\nnamespace App\\Models\\Abstracts\\Interfaces;\n\n", $output);
+        $this->assertStringContainsString(
+            "use PhalconKit\\Modules\\Api\\Controller\\ControllerAbstract;\n\n",
+            $output
+        );
+        $this->assertStringContainsString(
+            "interface LegacyUserAccountsController extends ControllerAbstract\n",
+            $output
+        );
+    }
+
     public function testNoTestsSkipsModelTestGeneration(): void
     {
         $directory = $this->createTemporaryDirectory();

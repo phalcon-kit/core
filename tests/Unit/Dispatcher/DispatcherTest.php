@@ -13,9 +13,14 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Dispatcher;
 
+use Phalcon\Events\Event;
 use PhalconKit\Bootstrap;
+use PhalconKit\Cli\Dispatcher as CliDispatcher;
 use PhalconKit\Dispatcher\AbstractDispatcher;
 use PhalconKit\Dispatcher\DispatcherInterface;
+use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
+use PhalconKit\Mvc\Dispatcher\Camelize;
+use PhalconKit\Support\HelperFactory;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class DispatcherTest extends AbstractUnit
@@ -176,6 +181,32 @@ class DispatcherTest extends AbstractUnit
         $this->assertEquals($forwardWithoutNullParts, $result, "unsetForwardNullParts() does not keep parts correctly!");
     }
 
+    public function testCamelizeNormalizesMvcControllerAndActionNames(): void
+    {
+        $dispatcher = new MvcDispatcher();
+        $dispatcher->setControllerName('api-record');
+        $dispatcher->setActionName('show-item');
+
+        $camelize = $this->newCamelizeListener();
+        $camelize->beforeDispatchLoop(new Event('beforeDispatchLoop', $camelize), $dispatcher);
+
+        $this->assertSame('ApiRecord', $dispatcher->getControllerName());
+        $this->assertSame('showItem', $dispatcher->getActionName());
+    }
+
+    public function testCamelizeNormalizesCliActionNameWithoutChangingTaskName(): void
+    {
+        $dispatcher = new CliDispatcher();
+        $dispatcher->setTaskName('queue-worker');
+        $dispatcher->setActionName('run-once');
+
+        $camelize = $this->newCamelizeListener();
+        $camelize->beforeDispatchLoop(new Event('beforeDispatchLoop', $camelize), $dispatcher);
+
+        $this->assertSame('queue-worker', $dispatcher->getTaskName());
+        $this->assertSame('runOnce', $dispatcher->getActionName());
+    }
+
     public function testMvcSecurityForwardsLeanForbiddenRouteWithoutWarnings(): void
     {
         [$security, $event, $dispatcher] = $this->createDeniedMvcSecurityFixture('index');
@@ -284,6 +315,17 @@ class DispatcherTest extends AbstractUnit
         $security->setDI($di);
 
         return [$security, new \Phalcon\Events\Event('beforeDispatchLoop', $security), $dispatcher];
+    }
+
+    private function newCamelizeListener(): Camelize
+    {
+        $di = new \Phalcon\Di\Di();
+        $di->set('helper', new HelperFactory());
+
+        $camelize = new Camelize();
+        $camelize->setDI($di);
+
+        return $camelize;
     }
 
     private function withoutPhpWarnings(\Closure $callback): void

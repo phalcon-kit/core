@@ -455,15 +455,19 @@ class AdditionalServiceProvidersTest extends AbstractUnit
             ],
         ]);
         $di->set('bootstrap', $this->bootstrap);
-        $di->set('eventsManager', new Manager());
+        $eventsManager = new Manager();
+        $di->set('eventsManager', $eventsManager);
         (new DispatcherProvider($di))->register($di);
 
         $dispatcher = $di->get('dispatcher');
+        $listenerClasses = $this->dispatchListenerClasses($eventsManager);
 
         $this->assertInstanceOf(MvcDispatcher::class, $dispatcher);
         $this->assertSame('Unit\\Controllers', $dispatcher->getDefaultNamespace());
         $this->assertSame($di, $dispatcher->getDI());
-        $this->assertGreaterThan(0, count($di->get('eventsManager')->getListeners('dispatch')));
+        $this->assertCommonDispatchListeners($listenerClasses);
+        $this->assertContains(\PhalconKit\Mvc\Dispatcher\Error::class, $listenerClasses);
+        $this->assertContains(\PhalconKit\Mvc\Dispatcher\Rest::class, $listenerClasses);
     }
 
     public function testDispatcherProviderRegistersCliDispatcherForCliBootstrapMode(): void
@@ -471,13 +475,18 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $di = $this->createDi();
         $this->bootstrap->mode = Bootstrap::MODE_CLI;
         $di->set('bootstrap', $this->bootstrap);
-        $di->set('eventsManager', new Manager());
+        $eventsManager = new Manager();
+        $di->set('eventsManager', $eventsManager);
         (new DispatcherProvider($di))->register($di);
 
         $dispatcher = $di->get('dispatcher');
+        $listenerClasses = $this->dispatchListenerClasses($eventsManager);
 
         $this->assertInstanceOf(CliDispatcher::class, $dispatcher);
         $this->assertSame($di, $dispatcher->getDI());
+        $this->assertCommonDispatchListeners($listenerClasses);
+        $this->assertNotContains(\PhalconKit\Mvc\Dispatcher\Error::class, $listenerClasses);
+        $this->assertNotContains(\PhalconKit\Mvc\Dispatcher\Rest::class, $listenerClasses);
     }
 
     public function testDispatcherProviderRegistersWsDispatcherForWsBootstrapMode(): void
@@ -485,13 +494,18 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $di = $this->createDi();
         $this->bootstrap->mode = Bootstrap::MODE_WS;
         $di->set('bootstrap', $this->bootstrap);
-        $di->set('eventsManager', new Manager());
+        $eventsManager = new Manager();
+        $di->set('eventsManager', $eventsManager);
         (new DispatcherProvider($di))->register($di);
 
         $dispatcher = $di->get('dispatcher');
+        $listenerClasses = $this->dispatchListenerClasses($eventsManager);
 
         $this->assertInstanceOf(WsDispatcher::class, $dispatcher);
         $this->assertSame($di, $dispatcher->getDI());
+        $this->assertCommonDispatchListeners($listenerClasses);
+        $this->assertNotContains(\PhalconKit\Mvc\Dispatcher\Error::class, $listenerClasses);
+        $this->assertNotContains(\PhalconKit\Mvc\Dispatcher\Rest::class, $listenerClasses);
     }
 
     public function testFilterProviderRegistersConfiguredFilterServices(): void
@@ -1321,6 +1335,29 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $di->set('config', new Config($config));
 
         return $di;
+    }
+
+    /**
+     * @return class-string[]
+     */
+    private function dispatchListenerClasses(Manager $eventsManager): array
+    {
+        return array_map(
+            static fn (object $listener): string => $listener::class,
+            $eventsManager->getListeners('dispatch')
+        );
+    }
+
+    /**
+     * @param class-string[] $listenerClasses
+     */
+    private function assertCommonDispatchListeners(array $listenerClasses): void
+    {
+        $this->assertContains(\PhalconKit\Mvc\Dispatcher\Preflight::class, $listenerClasses);
+        $this->assertContains(\PhalconKit\Mvc\Dispatcher\Security::class, $listenerClasses);
+        $this->assertContains(\PhalconKit\Mvc\Dispatcher\Maintenance::class, $listenerClasses);
+        $this->assertContains(\PhalconKit\Mvc\Dispatcher\Logger::class, $listenerClasses);
+        $this->assertContains(\PhalconKit\Mvc\Dispatcher\Module::class, $listenerClasses);
     }
 
     private function createBareDi(array $config = []): Di

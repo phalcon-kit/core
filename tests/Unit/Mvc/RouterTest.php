@@ -161,6 +161,39 @@ class RouterTest extends AbstractUnit
         ], $routerToArray['matched']['paths']);
     }
 
+    public function testDefaultRoutesApplyConfiguredDefaultsAndNotFoundRoute(): void
+    {
+        $router = new Router(true, new Config([
+            'router' => [
+                'defaults' => [
+                    'namespace' => 'App\\Modules\\Api\\Controllers',
+                    'module' => 'api',
+                    'controller' => 'index',
+                    'action' => 'index',
+                ],
+                'notFound' => [
+                    'controller' => 'error',
+                    'action' => 'notFound',
+                ],
+            ],
+        ]));
+        $router->setDI($this->di);
+
+        $this->assertSame([
+            'namespace' => 'App\\Modules\\Api\\Controllers',
+            'module' => 'api',
+            'controller' => 'index',
+            'action' => 'index',
+            'params' => [],
+        ], $router->getDefaults());
+
+        $router->handle('/missing');
+
+        $this->assertFalse($router->wasMatched());
+        $this->assertSame('error', $router->getControllerName());
+        $this->assertSame('notFound', $router->getActionName());
+    }
+
     public function testBootstrapBaseRoutesAllowsMissingLocaleConfigWithoutWarnings(): void
     {
         $router = new BootstrapRouter(false, new \PhalconKit\Config\Config([]));

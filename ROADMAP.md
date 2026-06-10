@@ -44,13 +44,14 @@ Decision:
 - `3.0.x` raised the runtime baseline and has shipped focused maintenance fixes
   for scaffolding, database initialization, relationship aliases, and eager
   loading. Keep those shipped outcomes in the changelog, not in this roadmap.
-- The `3.0.4` testing batch completes the current P0, P1, and P2 coverage pass
+- The `3.0.4` testing batch completes the current P0 through P4 coverage pass
   for REST controller policies, model trait regressions, optional-service
   skips, relationship/eager-loading correctness, controller query behavior, and
-  filter wrappers, plus provider and support contracts.
-- The next work should start with P3 router, CLI router, and dispatcher
-  contract tests before adding broad scaffolding or another large public
-  surface.
+  filter wrappers, provider/support contracts, router/dispatcher contracts, and
+  scaffold output.
+- The next active work is REST controller scaffold readiness, starting with a
+  precise generated-file ownership model before adding new public scaffolding
+  behavior.
 
 Release principles:
 
@@ -63,42 +64,11 @@ Release principles:
 
 ## Next Blocks
 
-### Router CLI And Dispatcher Contracts
+### REST Controller Scaffold Readiness
 
 Status: Next
 
-Target: `3.0.x`
-
-Why:
-
-- P0 through P2 now protect the recent REST, relationship, eager-loading,
-  query-behavior, filter, provider, and support maintenance surfaces.
-- Router and dispatcher behavior sits between bootstrap/provider wiring and
-  controller execution, so tightening it is the next useful layer before REST
-  flow or scaffolding work.
-
-Scope:
-
-- Cover MVC router defaults, route normalization, hostname/base route setup, and
-  documented native Phalcon interface limits.
-- Cover CLI and WebSocket router/task parsing where it can be tested without a
-  live socket server.
-- Cover dispatcher module/controller/action resolution and listener attachment
-  boundaries across MVC, CLI, and WebSocket modes.
-- Keep changes behavior-preserving unless a failing test exposes a concrete bug.
-
-Validation:
-
-- Focused PHPUnit runs for `Mvc\Router`, CLI router, WebSocket router, and
-  dispatcher namespaces.
-- `composer phpcs` for touched PHP files.
-- Full `composer phpunit` before release or tag.
-
-### REST Controller Scaffold Readiness
-
-Status: Planned
-
-Target: `3.1.x` candidate after the `3.0.x` test pass
+Target: `3.1.x` candidate after the `3.0.x` coverage pass
 
 Why:
 
