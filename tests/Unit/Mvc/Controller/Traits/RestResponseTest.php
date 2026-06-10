@@ -56,6 +56,24 @@ class RestResponseTest extends AbstractUnit
         ], $controller->exposeRestViewVars());
     }
 
+    public function testRestViewVarsCanReplaceExistingResponseFields(): void
+    {
+        $controller = $this->newController();
+        $controller->exposeSetRestViewVars([
+            $controller::REST_VIEW_DATA => ['id' => 789],
+            $controller::REST_VIEW_MESSAGES => ['before'],
+        ]);
+
+        $controller->exposeSetRestViewVars([
+            $controller::REST_VIEW_MESSAGES => ['after'],
+            $controller::REST_VIEW_INTERNAL => ['internal' => true],
+        ], false);
+
+        $this->assertSame([
+            $controller::REST_VIEW_MESSAGES => ['after'],
+        ], $controller->exposeRestViewVars());
+    }
+
     public function testRestResponseConstantsMatchPublicInterfaceContract(): void
     {
         $interface = new ReflectionClass(RestResponseInterface::class);

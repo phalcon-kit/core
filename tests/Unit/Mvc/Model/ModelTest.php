@@ -46,7 +46,10 @@ class ModelTest extends AbstractUnit
         }
         catch (\Throwable $e) {
             if (str_contains($e->getMessage(), 'Lock wait timeout')) {
-                self::$databaseLockSkipMessage = 'Database tables are locked: ' . $e->getMessage();
+                self::$databaseLockSkipMessage = $this->unavailableServiceSkipMessage(
+                    'Database',
+                    detail: 'tables are locked: ' . $e->getMessage()
+                );
                 $this->markTestSkipped(self::$databaseLockSkipMessage);
             }
 

@@ -44,8 +44,10 @@ Decision:
 - `3.0.x` raised the runtime baseline and has shipped focused maintenance fixes
   for scaffolding, database initialization, relationship aliases, and eager
   loading. Keep those shipped outcomes in the changelog, not in this roadmap.
-- The next work should make recent framework behavior easier to trust before
-  adding broad scaffolding or another large public surface.
+- The `3.0.4` testing batch completes the current P0 coverage pass for REST
+  controller policies, model trait regressions, and optional-service skips.
+- The next work should start with P1 relationship and eager-loading correctness
+  before adding broad scaffolding or another large public surface.
 
 Release principles:
 
@@ -58,42 +60,34 @@ Release principles:
 
 ## Next Blocks
 
-### Testing Architecture And Regression Harnesses
+### Relationship And Eager-Loading Correctness
 
 Status: Next
 
-Target: `3.0.x`
+Target: `3.0.x` or `3.1.x`, depending on the testing batch
 
 Why:
 
-- Recent work added several opt-in REST policies and model helpers. The public
-  contracts are clearer now, but the long-term win is making regressions cheap
-  to catch.
-- A stronger test harness lets future changes stay small instead of requiring a
-  database or full HTTP stack for every controller policy case.
+- Request-time response relationships are now supported for `findWithAction()`
+  and `findFirstWithAction()`, including nested paths.
+- The remaining relationship backlog is mostly correctness and clarity:
+  sparse payload semantics, eager-loader option propagation, composite keys, and
+  through-relation edge cases.
 
 Scope:
 
-- Audit the existing unit suite against
-  [Testing Roadmap](guides/testing-roadmap.md) and mark the highest-value gaps.
-- Add or improve no-database harness fixtures for REST controller policy state:
-  order fields, embedded counts, request-time `with`, distinct fields, response
-  fields, save fields, and permission/filter/search interactions.
-- Add model trait regression fixtures for snapshot diffs, strict relationship
-  assignment, cache invalidation predicates, replication listener idempotency,
-  nullable SQL `"NULL"` normalization, and runtime exception paths.
-- Normalize optional-service skip messages for database and Redis tests so CI
-  output distinguishes missing infrastructure from real regressions.
-- Keep every new test tied to an observable behavior or a known bug shape; do
-  not chase coverage percentage alone.
+- Start with regression tests for existing behavior rather than new APIs.
+- Cover nested eager-loading path selection, parent-path expansion, configured
+  relation constraints, rejected aliases, and relation-free `findAction()`.
+- Document current limitations before changing them.
+- Promote a specific API change only after the test suite captures the current
+  compatibility boundary.
 
 Validation:
 
-- Focused PHPUnit targets for each harness or regression file.
-- `composer phpunit` before merging each batch.
-- `composer phpcs`, `composer psalm`, and `composer phpstan` when PHP code or
-  public contracts change.
-- `git diff --check` for documentation-only batches.
+- Query-state and eager-loading unit tests.
+- Database-backed relationship tests only when native Phalcon relation behavior
+  must be exercised.
 
 ### REST Controller Scaffold Readiness
 
@@ -130,35 +124,6 @@ Validation:
 - No hand edits to generated API documentation.
 - Full QA before release because scaffolding changes can affect package
   consumers even when runtime code is untouched.
-
-### Relationship And Eager-Loading Correctness
-
-Status: Planned
-
-Target: `3.0.x` or `3.1.x`, depending on the testing batch
-
-Why:
-
-- Request-time response relationships are now supported for `findWithAction()`
-  and `findFirstWithAction()`, including nested paths.
-- The remaining relationship backlog is mostly correctness and clarity:
-  sparse payload semantics, eager-loader option propagation, composite keys, and
-  through-relation edge cases.
-
-Scope:
-
-- Start with regression tests for existing behavior rather than new APIs.
-- Cover nested eager-loading path selection, parent-path expansion, configured
-  relation constraints, rejected aliases, and relation-free `findAction()`.
-- Document current limitations before changing them.
-- Promote a specific API change only after the test suite captures the current
-  compatibility boundary.
-
-Validation:
-
-- Query-state and eager-loading unit tests.
-- Database-backed relationship tests only when native Phalcon relation behavior
-  must be exercised.
 
 ## Design Backlog
 

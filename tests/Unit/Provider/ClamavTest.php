@@ -24,8 +24,8 @@ class ClamavTest extends AbstractUnit
         parent::setUp();
         try {
             $clamav = $this->getClamav();
-        } catch (\Exception $e) {
-            $this->markTestSkipped('Failed to initialize clamav socket interaction, skipping tests');
+        } catch (\Throwable $e) {
+            $this->skipUnavailableService('ClamAV', $e);
         }
     }
     

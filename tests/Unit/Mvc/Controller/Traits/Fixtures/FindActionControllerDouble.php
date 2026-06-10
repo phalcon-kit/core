@@ -41,6 +41,11 @@ final class FindActionControllerDouble extends Restful
      */
     public ?array $findWithArguments = null;
 
+    /**
+     * @var array<string|int, mixed>|null
+     */
+    public ?array $preparedFindWithFind = null;
+
     public ?ModelInterface $findFirstWithResult = null;
 
     /**
@@ -112,6 +117,7 @@ final class FindActionControllerDouble extends Restful
             'with' => $with,
             'find' => $find,
         ];
+        $this->preparedFindWithFind = $find ?? $this->prepareFind();
 
         return $this->findWithResult;
     }

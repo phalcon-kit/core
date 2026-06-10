@@ -21,6 +21,22 @@ release notes.
 
 - Refocused the roadmap and testing priorities on the active `3.0.x` release
   train after the `3.0.3` maintenance release.
+- Marked the current P0 testing-roadmap pass complete and promoted relationship
+  and eager-loading correctness as the next active roadmap block.
+- Added no-database REST regression coverage for `findWithAction()` prepared
+  find/count metadata reuse and unauthorized relationship short-circuiting.
+- Added no-database REST save assignment coverage for `rest:beforeAssign`
+  payload, save-field, and map-field mutations.
+- Added no-database REST query initialization coverage for permission, filter,
+  and search condition composition.
+- Added no-database REST response-field coverage for view variable replacement
+  without leaking Phalcon internal view state.
+- Added no-database model cache invalidation coverage for unchanged and changed
+  snapshot saves.
+- Normalized optional-service skip messages for ClamAV startup and locked
+  database preflight failures, with direct coverage for the shared formatter.
+- Added a public independence disclaimer clarifying that Phalcon Kit is not
+  affiliated with, endorsed by, or sponsored by the official Phalcon project.
 
 ## 3.0.3 - 2026-06-10
 

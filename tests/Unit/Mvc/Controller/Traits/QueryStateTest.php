@@ -1003,6 +1003,51 @@ class QueryStateTest extends AbstractUnit
         $this->assertNull($controller->getDefaultOrder());
     }
 
+    public function testInitializeQueryComposesPermissionFilterAndSearchConditions(): void
+    {
+        $controller = $this->newQueryController([
+            'id' => 7,
+            'filters' => [
+                [
+                    'field' => 'status',
+                    'operator' => '=',
+                    'value' => 'active',
+                ],
+            ],
+            'search' => 'alpha',
+        ]);
+
+        $eventsManager = new \Phalcon\Events\Manager();
+        $eventsManager->attach(
+            'rest',
+            static function (\Phalcon\Events\Event $event, Restful $controller): void {
+                if ($event->getType() !== 'afterInitializeFields') {
+                    return;
+                }
+
+                $controller->setFilterFields(new Collection(['status'], false));
+                $controller->setSearchFields(new Collection(['title'], false));
+            }
+        );
+        $controller->setEventsManager($eventsManager);
+
+        $controller->initializeQuery();
+        $find = $controller->prepareFind();
+
+        $this->assertStringContainsString('[FooModel].[createdBy] = :_permission_', $find['conditions']);
+        $this->assertStringContainsString('[FooModel].[deleted] = :_deleted_', $find['conditions']);
+        $this->assertStringContainsString('[FooModel].[id] = :_identity_', $find['conditions']);
+        $this->assertStringContainsString('[FooModel].[status] = :_', $find['conditions']);
+        $this->assertStringContainsString('[FooModel].[title] LIKE :_search_', $find['conditions']);
+        $this->assertContains(42, $find['bind']);
+        $this->assertContains(0, $find['bind']);
+        $this->assertContains(7, $find['bind']);
+        $this->assertContains('active', $find['bind']);
+        $this->assertContains('%alpha%', $find['bind']);
+        $this->assertContains(Column::BIND_PARAM_INT, $find['bindTypes']);
+        $this->assertContains(Column::BIND_PARAM_STR, $find['bindTypes']);
+    }
+
     public function testFilterOperatorSemanticsAndFieldPolicy(): void
     {
         $controller = $this->newQueryController();
@@ -1682,6 +1727,43 @@ class QueryStateTest extends AbstractUnit
 
         $controller->exposeAssignModelFromPayload($model, $assignPayload);
         $this->assertSame(['name' => 'Alice'], $assignPayload);
+    }
+
+    public function testAssignModelFromPayloadAllowsBeforeAssignListenersToMutatePayloadAndPolicies(): void
+    {
+        $controller = $this->newQueryController();
+        $controller->setSaveFields(new Collection(['name'], false));
+        $controller->setMapFields(new Collection(['publicName' => 'name'], false));
+
+        $eventsManager = new \Phalcon\Events\Manager();
+        $eventsManager->attach(
+            'rest',
+            static function (\Phalcon\Events\Event $event, Restful $source, array $eventData): void {
+                if ($event->getType() !== 'beforeAssign') {
+                    return;
+                }
+
+                $eventData[1]['clientName'] = $eventData[1]['name'];
+                unset($eventData[1]['id'], $eventData[1]['name']);
+
+                $eventData[2] = ['clientName'];
+                $eventData[3] = ['clientName' => 'name'];
+            }
+        );
+        $controller->setEventsManager($eventsManager);
+
+        $model = new QueryModelDouble();
+        $assignPayload = [
+            'id' => 1,
+            'name' => 'Alice',
+        ];
+
+        $controller->exposeAssignModelFromPayload($model, $assignPayload);
+
+        $this->assertSame(['clientName' => 'Alice'], $assignPayload);
+        $this->assertSame(['clientName' => 'Alice'], $model->assignedData);
+        $this->assertSame(['clientName'], $model->assignedWhiteList);
+        $this->assertSame(['clientName' => 'name'], $model->assignedColumnMap);
     }
 
     public function testPersistAssignedModelAndSaveEntryPoints(): void

@@ -281,16 +281,16 @@ The next testing pass should protect the contracts carried into the current
 that exercise controller/model policy state without a database, then add
 database integration only when native Phalcon behavior is part of the contract.
 
-| Priority | Area | Suggested Tests |
-| --- | --- | --- |
-| P0 | REST controller policy harnesses | No-database tests for order fields, embedded counts, request-time `with`, distinct fields, response fields, save fields, and permission/filter/search interactions |
-| P0 | Model trait regression harnesses | Snapshot changed fields, nullable SQL `"NULL"` normalization, strict relationship assignment, cache invalidation predicates, replication listener idempotency, and runtime exception paths |
-| P0 | Optional-service skips | Shared skip/preflight helpers or clearer messages for database and Redis tests so CI failures are not confused with missing infrastructure |
-| P1 | Relationship and eager loading | Nested path selection, parent-path expansion, configured constraints, rejected aliases, and relation-free `findAction()` behavior |
-| P1 | `Mvc\Controller\Behavior\Query` | Add/remove condition behavior, event payload handling, and invalid configuration messages |
-| P1 | `Filter` | Sanitizer wrappers, validator options, invalid JSON/color cases |
-| P2 | `Provider` | Registration idempotence, configured listener attachment, aliases, and override points |
-| P2 | `Support\Options` and `Support\CollectionPolicy` | Merge, reset, removal, replacement, and null-value behavior |
-| P2 | `Support\Helper\Arr` and `Support\Helper\Str` | Flattening, recursive mapping, recursive replacement, empty pattern handling, invalid encoding cleanup, and printable character filtering |
-| P3 | `Mvc\Router`, CLI router, and dispatcher | Route defaults, action normalization, module namespace registration, and documented native Phalcon interface limits |
-| P4 | Scaffolding output | Temporary-directory tests for generated models, interfaces, future controller shells, TypeScript output, and skeleton validation |
+| Priority | Status | Area | Coverage Or Next Tests |
+| --- | --- | --- | --- |
+| P0 | Complete for `3.0.4` | REST controller policy harnesses | Covered by `FieldPolicyTest`, `QueryStateTest`, `FindActionTest`, `CountActionTest`, `DistinctActionTest`, and `RestResponseTest` for order fields, embedded counts, request-time `with`, distinct fields, response fields, save fields, and permission/filter/search interactions. |
+| P0 | Complete for `3.0.4` | Model trait regression harnesses | Covered by `BehaviorAndTraitsTest` and `ModelTest` for snapshot diffs, nullable SQL `"NULL"` normalization, strict relationship assignment, cache invalidation predicates, replication listener idempotency, and runtime exception paths. |
+| P0 | Complete for `3.0.4` | Optional-service skips | Covered by `AbstractUnitTest`, `AbstractUnit`, `ModelTest`, `ClamavTest`, and Redis provider preflights so missing database, Redis, and ClamAV infrastructure is reported separately from regressions. |
+| P1 | Next | Relationship and eager loading | Nested path selection, parent-path expansion, configured constraints, rejected aliases, and relation-free `findAction()` behavior. |
+| P1 | Next | `Mvc\Controller\Behavior\Query` | Add/remove condition behavior, event payload handling, and invalid configuration messages. |
+| P1 | Planned | `Filter` | Sanitizer wrappers, validator options, invalid JSON/color cases. |
+| P2 | Planned | `Provider` | Registration idempotence, configured listener attachment, aliases, and override points. |
+| P2 | Planned | `Support\Options` and `Support\CollectionPolicy` | Merge, reset, removal, replacement, and null-value behavior. |
+| P2 | Planned | `Support\Helper\Arr` and `Support\Helper\Str` | Flattening, recursive mapping, recursive replacement, empty pattern handling, invalid encoding cleanup, and printable character filtering. |
+| P3 | Planned | `Mvc\Router`, CLI router, and dispatcher | Route defaults, action normalization, module namespace registration, and documented native Phalcon interface limits. |
+| P4 | Planned | Scaffolding output | Temporary-directory tests for generated models, interfaces, future controller shells, TypeScript output, and skeleton validation. |

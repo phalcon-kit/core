@@ -21,6 +21,13 @@ You still write normal Phalcon/PHP. Phalcon Kit handles the repetitive structure
 so you can spend more time on the resource rules, business logic, and product
 behavior.
 
+## Project Independence
+
+Phalcon Kit is an independent open source project. It is not part of the
+official Phalcon PHP Framework project and is not affiliated with, endorsed by,
+or sponsored by the Phalcon project or its maintainers. References to Phalcon
+describe compatibility with the upstream framework.
+
 ## Quick Start
 
 Start a new application from the
@@ -188,6 +195,11 @@ No. Phalcon Kit extends Phalcon. You still use Phalcon models, controllers,
 services, DI, routing, validation, and events. Phalcon Kit adds application
 structure, scaffolding, REST conventions, identity, permissions, and reusable
 helpers around them.
+
+### Is Phalcon Kit part of the official Phalcon project?
+
+No. Phalcon Kit is independently maintained. It is not affiliated with,
+endorsed by, or sponsored by the official Phalcon PHP Framework project.
 
 ### Do I need to know Phalcon?
 

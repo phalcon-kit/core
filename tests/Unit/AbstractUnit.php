@@ -136,6 +136,20 @@ abstract class AbstractUnit extends TestCase
         ?\Throwable $exception = null,
         ?string $detail = null
     ): never {
+        $this->markTestSkipped($this->unavailableServiceSkipMessage($serviceName, $exception, $detail));
+    }
+
+    /**
+     * Build the standard skip message for an unavailable optional service.
+     *
+     * This is separated from {@see skipUnavailableService()} so tests that cache
+     * an infrastructure preflight result can reuse the exact same wording.
+     */
+    protected function unavailableServiceSkipMessage(
+        string $serviceName,
+        ?\Throwable $exception = null,
+        ?string $detail = null
+    ): string {
         $message = sprintf('%s service is not available.', $serviceName);
         $reason = trim($detail ?? $exception?->getMessage() ?? '');
 
@@ -143,7 +157,7 @@ abstract class AbstractUnit extends TestCase
             $message = sprintf('%s service is not available: %s', $serviceName, $reason);
         }
 
-        $this->markTestSkipped($message);
+        return $message;
     }
     
     public function getConfig(): Config

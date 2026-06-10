@@ -756,6 +756,31 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $reordered->addedBehaviors[0]->notify('afterReorder', $reordered);
     }
 
+    public function testCacheTraitSkipsUnchangedSnapshotSaveAndFlushesChangedSnapshotSave(): void
+    {
+        $cache = $this->createMock(Cache::class);
+        $cache
+            ->expects($this->once())
+            ->method('clear')
+            ->willReturn(true);
+        $this->di->setShared('modelsCache', $cache);
+
+        $unchanged = new ModelBehaviorDouble();
+        $unchanged->hasSnapshotData = true;
+        $unchanged->hasUpdated = false;
+        $unchanged->hasChanged = false;
+        $unchanged->addFlushCacheBehavior([]);
+
+        $changed = new ModelBehaviorDouble();
+        $changed->hasSnapshotData = true;
+        $changed->hasUpdated = true;
+        $changed->hasChanged = false;
+        $changed->addFlushCacheBehavior([]);
+
+        $unchanged->addedBehaviors[0]->notify('afterSave', $unchanged);
+        $changed->addedBehaviors[0]->notify('afterSave', $changed);
+    }
+
     public function testCacheTraitIgnoresMalformedBlacklistEntries(): void
     {
         $model = new ModelBehaviorDouble();

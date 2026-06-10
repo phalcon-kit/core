@@ -177,6 +177,43 @@ class FindActionTest extends AbstractUnit
         $this->assertSame([[]], $controller->countFinds);
     }
 
+    public function testFindWithActionUsesPreparedFindForDataAndCountMetadata(): void
+    {
+        $controller = $this->createController(['with' => 'Author.Profile', 'count' => 'count'], [12], [
+            FindActionControllerDouble::REST_VIEW_COUNT,
+        ]);
+        $controller->setWith(new Collection(['Author.Profile'], false));
+        $controller->setFind(new Collection([
+            'conditions' => 'active = 1',
+            'bind' => ['active' => 1],
+            'bindTypes' => ['active' => \Phalcon\Db\Column::BIND_PARAM_INT],
+            'limit' => 10,
+            'offset' => 20,
+        ]));
+        $controller->findWithResult = [['model' => 'loaded']];
+        $controller->exposedData = [['id' => 10]];
+
+        $controller->findWithAction();
+
+        $this->assertSame(['with' => ['Author.Profile'], 'find' => null], $controller->findWithArguments);
+        $this->assertSame([
+            'limit' => 10,
+            'offset' => 20,
+            'conditions' => '(active = 1)',
+            'bind' => ['active' => 1],
+            'bindTypes' => ['active' => \Phalcon\Db\Column::BIND_PARAM_INT],
+        ], $controller->preparedFindWithFind);
+        $this->assertSame(12, $controller->view->getVar(FindActionControllerDouble::REST_VIEW_COUNT));
+        $this->assertSame([
+            [
+                'conditions' => '(active = 1)',
+                'bind' => ['active' => 1],
+                'bindTypes' => ['active' => \Phalcon\Db\Column::BIND_PARAM_INT],
+            ],
+        ], $controller->countFinds);
+        $this->assertSame([['id' => 10]], $controller->view->getVar(FindActionControllerDouble::REST_VIEW_DATA));
+    }
+
     public function testFindActionNeverLoadsRequestedRelationships(): void
     {
         $controller = $this->createController(['with' => 'Author']);
@@ -338,6 +375,27 @@ class FindActionTest extends AbstractUnit
         $this->expectExceptionMessage('Unauthorized relationship "Author.Profile".');
 
         $controller->findWithAction();
+    }
+
+    public function testFindWithActionRejectsUnauthorizedRelationshipBeforeCountWork(): void
+    {
+        $controller = $this->createController(['with' => 'Comments', 'count' => 'count'], [7], [
+            FindActionControllerDouble::REST_VIEW_COUNT,
+        ]);
+        $controller->setWith(new Collection(['Author'], false));
+
+        try {
+            $controller->findWithAction();
+            $this->fail('Expected unauthorized relationship request.');
+        }
+        catch (HttpException $exception) {
+            $this->assertSame(403, $exception->getCode());
+            $this->assertSame('Unauthorized relationship "Comments".', $exception->getMessage());
+        }
+
+        $this->assertFalse($controller->findWithCalled);
+        $this->assertSame([], $controller->countFinds);
+        $this->assertNull($controller->view->getVar(FindActionControllerDouble::REST_VIEW_COUNT));
     }
 
     public function testFindWithActionRejectsRequestedRelationshipWithoutConfiguredGraph(): void

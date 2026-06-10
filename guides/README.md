@@ -58,6 +58,8 @@ controller, scaffolding, eager-loading, permission, and custom-action migration.
 
 Phalcon Kit extends Phalcon instead of replacing it. Use the official Phalcon
 docs for native framework behavior and these guides for PhalconKit conventions.
+Phalcon Kit is independently maintained and is not affiliated with, endorsed by,
+or sponsored by the official Phalcon PHP Framework project.
 
 - Phalcon docs: https://docs.phalcon.io/5.14/
 - Phalcon framework: https://phalcon.io
