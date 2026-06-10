@@ -129,7 +129,10 @@ The scaffolder tries to infer safe conventions:
 - Table and column names become camelCase model properties.
 - Column maps preserve database names while app code uses camelCase.
 - `_id` columns are candidates for `belongsTo` aliases such as `UserEntity`.
-- Link/node tables are candidates for many-to-many list aliases.
+- Link/node tables are candidates for many-to-many list aliases. Short target
+  aliases such as `RoleList` are generated only for canonical junction tables
+  named exactly like `user_role` or `role_user`; contextual intermediate tables
+  keep the intermediate model in the alias to avoid collisions.
 - Unique indexes become uniqueness validations.
 - DB enum columns can become PHP enum classes and inclusion validations.
 - Date, datetime, JSON, boolean, unsigned, numeric, string, and length metadata

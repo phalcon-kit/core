@@ -191,8 +191,9 @@ Supported relation types:
 - `hasManyToMany` / `hasManyThrough`
 
 For many-to-many relations, the loader queries the intermediate model and then
-the target model. When there are multiple parent models, it keeps an
-intermediate map so each parent receives only its own target models.
+the target model. Repeated intermediate rows that point to the same target
+model are de-duplicated by target key, and each parent receives only its own
+target models.
 
 Current implementation limits:
 

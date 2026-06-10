@@ -288,7 +288,7 @@ final class Loader
     /**
      * Create and get from an array
      *
-     * @param ModelInterface[] $subject
+     * @param array<array-key, ModelInterface|null> $subject
      * @param mixed ...$arguments
      * @return array
      */

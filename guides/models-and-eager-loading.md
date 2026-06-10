@@ -327,5 +327,7 @@ or unable to find the affected cache keys.
 - Keep custom relationships in concrete models when the scaffolder cannot infer
   them safely.
 - Prefer `findWith()` and `findFirstWith()` for known relation graphs.
+- Expect through relations to attach each target model once per parent, even
+  when repeated intermediate rows point to the same target key.
 - Use transformers for heavy nested API resources.
 - Keep model methods focused on domain behavior, not controller formatting.

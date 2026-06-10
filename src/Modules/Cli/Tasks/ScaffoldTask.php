@@ -638,10 +638,12 @@ PHP;
         $relationshipUseItems = [];
         $relationshipItems = [];
         $relationshipInjectableItems = [];
+        $relationshipAliases = [];
         
         $interfaceInjectableItems = [];
         $interfaceUseItems = [];
         $useInterfaces = [];
+        $directRelationshipAliases = $this->getDirectHasManyRelationshipAliases($table, $columns, $tables);
             
         // Has Many
         foreach ($tables as $otherTable) {
@@ -672,6 +674,9 @@ PHP;
                         // if the field is matching
                         if ($otherColumnName === $table . '_' . $columnName) {
                             $propertyName = $this->getPropertyName($columnName);
+                            if (!$this->reserveRelationshipAlias($relationshipAliases, $relationAlias)) {
+                                continue;
+                            }
                             
                             $useInterfaces[$relationInterface] = true;
                             $interfaceInjectableItems [] = <<<PHP
@@ -705,15 +710,6 @@ PHP;
                                     $manyManyTableName = $this->getTableName($manyManyTable);
                                     $manyManyTableInterface = $manyManyTableName . 'AbstractInterface';
                                     $manyManyTableClass = $manyManyTableName . '::class';
-                                    $manyManyTableAlias = $manyManyTableName . 'List';
-                                    
-                                    // to prevent duplicates in this specific scenario when we find many-to-many relationships
-                                    // that are not actually nodes, we will enforce the full many-to-many path alias
-                                    if (!(str_starts_with($otherTable, $table . '_') || str_ends_with($otherTable, '_' . $table))) {
-                                        $manyManyTableAlias = $relationName . $manyManyTableName . 'List';
-                                    }
-                                    
-                                    $manyManyTableEager = strtolower($manyManyTableAlias);
                                     
                                     if (str_starts_with($manyColumnName, $manyManyTable . '_')) {
                                         $manyManyTableColumns = $this->describeColumns($manyManyTable);
@@ -721,7 +717,21 @@ PHP;
                                             $manyManyColumnName = $manyManyTableColumn->getName();
                                             if ($manyColumnName === $manyManyTable . '_' . $manyManyColumnName) {
                                                 $manyManyPropertyName = $this->getPropertyName($manyManyColumnName);
-                                                
+                                                $manyManyTableAlias = $this->getManyToManyRelationshipAlias(
+                                                    $table,
+                                                    $otherTable,
+                                                    $manyManyTable,
+                                                    $relationName,
+                                                    $manyManyTableName,
+                                                    $directRelationshipAliases,
+                                                    $relationshipAliases
+                                                );
+                                                if (!$this->reserveRelationshipAlias($relationshipAliases, $manyManyTableAlias)) {
+                                                    continue;
+                                                }
+
+                                                $manyManyTableEager = strtolower($manyManyTableAlias);
+
                                                 $useInterfaces[$manyManyTableInterface] = true;
                                                 $interfaceInjectableItems [] = <<<PHP
  * @property {$manyManyTableInterface}[] \${$manyManyTableEager}
@@ -810,6 +820,9 @@ PHP;
                 $relationClass = $relationTableName . '::class';
                 $relationAlias = $relationName . 'Entity';
                 $relationEager = strtolower($relationAlias);
+                if (!$this->reserveRelationshipAlias($relationshipAliases, $relationAlias)) {
+                    continue;
+                }
                 
                 $useInterfaces[$relationTableInterface] = true;
                 $interfaceInjectableItems [] = <<<PHP
@@ -856,6 +869,104 @@ PHP;
             'interfaceUseItems' => trim(implode("\n", $interfaceUseItems)),
             'items' => trim(implode("\n" . "\n", $relationshipItems)),
         ];
+    }
+
+    /**
+     * Select a stable alias for generated many-to-many relationships.
+     *
+     * Short target aliases such as `RightList` are reserved for canonical
+     * two-table junctions like `left_right` or `right_left`. Contextual
+     * intermediate tables, such as `communication_update_user`, keep the
+     * intermediate model in the alias so they cannot shadow a direct relation.
+     *
+     * @param array<string, bool> $relationshipAliases
+     */
+    private function getManyToManyRelationshipAlias(
+        string $table,
+        string $intermediateTable,
+        string $targetTable,
+        string $intermediateName,
+        string $targetName,
+        array $directRelationshipAliases,
+        array $relationshipAliases
+    ): string {
+        $explicitAlias = $intermediateName . $targetName . 'List';
+        $targetAlias = $targetName . 'List';
+
+        if (
+            $this->isCanonicalManyToManyTable($table, $intermediateTable, $targetTable)
+            && !$this->hasRelationshipAlias($directRelationshipAliases, $targetAlias)
+            && !$this->hasRelationshipAlias($relationshipAliases, $targetAlias)
+        ) {
+            return $targetAlias;
+        }
+
+        return $explicitAlias;
+    }
+
+    /**
+     * @param array<int, ColumnInterface> $columns
+     * @param array<int, string> $tables
+     * @return array<string, bool>
+     */
+    private function getDirectHasManyRelationshipAliases(string $table, array $columns, array $tables): array
+    {
+        $aliases = [];
+
+        foreach ($tables as $otherTable) {
+            if ($otherTable === $table) {
+                continue;
+            }
+
+            $relationAlias = $this->getTableName($otherTable) . 'List';
+
+            foreach ($this->describeColumns($otherTable) as $otherTableColumn) {
+                assert($otherTableColumn instanceof ColumnInterface);
+                $otherColumnName = $otherTableColumn->getName();
+
+                if (!str_starts_with($otherColumnName, $table . '_')) {
+                    continue;
+                }
+
+                foreach ($columns as $column) {
+                    assert($column instanceof ColumnInterface);
+
+                    if ($otherColumnName === $table . '_' . $column->getName()) {
+                        $aliases[strtolower($relationAlias)] = true;
+                        continue 3;
+                    }
+                }
+            }
+        }
+
+        return $aliases;
+    }
+
+    private function isCanonicalManyToManyTable(string $table, string $intermediateTable, string $targetTable): bool
+    {
+        return $intermediateTable === $table . '_' . $targetTable
+            || $intermediateTable === $targetTable . '_' . $table;
+    }
+
+    /**
+     * @param array<string, bool> $relationshipAliases
+     */
+    private function reserveRelationshipAlias(array &$relationshipAliases, string $alias): bool
+    {
+        if ($this->hasRelationshipAlias($relationshipAliases, $alias)) {
+            return false;
+        }
+
+        $relationshipAliases[strtolower($alias)] = true;
+        return true;
+    }
+
+    /**
+     * @param array<string, bool> $relationshipAliases
+     */
+    private function hasRelationshipAlias(array $relationshipAliases, string $alias): bool
+    {
+        return isset($relationshipAliases[strtolower($alias)]);
     }
     
     public function getColumnMapMethod(array $columns): string

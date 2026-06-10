@@ -15,6 +15,16 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.0.3 - 2026-06-10
+
+### Fixed
+
+- Fixed scaffolded many-to-many relationship aliases so canonical junction
+  tables keep short target aliases while contextual intermediate tables use
+  explicit aliases that do not collide with direct `hasMany` relationships.
+- Fixed eager loading for single-parent through relations so repeated
+  intermediate rows attach each target model only once per parent.
+
 ## 3.0.2 - 2026-06-09
 
 ### Fixed

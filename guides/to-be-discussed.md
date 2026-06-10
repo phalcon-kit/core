@@ -115,9 +115,9 @@ Keep for discussion:
   `src/Mvc/Model/EagerLoading/Loader.php`,
   `src/Mvc/Model/EagerLoading/EagerLoad.php`.
   Loader options are captured but not passed into relation loading yet. Define
-  explicit options for soft-delete visibility, through-relation grouping,
-  duplicate-row handling, and per-relation constraints before changing the
-  current load contract.
+  explicit options for soft-delete visibility, intentional duplicate-row
+  preservation, and per-relation constraints before changing the current load
+  contract.
 - Model cache invalidation:
   `src/Mvc/Model/Traits/Cache.php`.
   The current coarse flush predicate now invalidates on creates, deletes,

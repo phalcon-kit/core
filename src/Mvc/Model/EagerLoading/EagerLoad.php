@@ -153,9 +153,10 @@ final class EagerLoad
                     ->inWhere("[{$relIrModel}].[{$relIrField}]", $bindValues)
                 ;
 
-                // Grouping by the intermediate referenced field may be useful,
-                // but should be an explicit option because it can affect
-                // ordering and duplicate rows.
+                // Keep the single-parent through-relation path consistent with
+                // the multi-parent path below: repeated intermediate rows can
+                // point to the same referenced model, but the relation should
+                // attach each referenced model only once.
             }
             else {
                 // The query is for many models, so it's needed to execute an
@@ -255,9 +256,23 @@ final class EagerLoad
             if ($subjectCount === 1) {
                 // Keep all records in memory
                 foreach ($builder->getQuery()->execute() as $record) {
+                    if ($isThrough) {
+                        assert($record instanceof EntityInterface);
+                        $referencedKey = $this->getRelationKey($record, $relReferencedField);
+
+                        if ($referencedKey === null) {
+                            continue;
+                        }
+
+                        $records[$referencedKey] = $record;
+                        continue;
+                    }
+
                     $records[] = $record;
                 }
                 unset($record);
+
+                $records = array_values($records);
 
                 $record = $parentSubject[0];
                 if ($isSingle) {

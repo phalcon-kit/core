@@ -218,6 +218,12 @@ The scaffold tries to infer every safe convention from the database:
   `<Name>Entity` alias, such as `user_id` to `UserEntity`.
 - `parent_id`, `child_id`, `left_id`, and `right_id` can become self-references
   when the target table can be inferred.
+- Direct `hasMany` aliases reserve their short `<Model>List` names first.
+  Many-to-many aliases use short target names such as `RoleList` only for
+  canonical two-table junctions named exactly like `user_role` or `role_user`.
+  Contextual intermediate tables, such as `communication_update_user`, keep the
+  intermediate model in the alias, for example
+  `CommunicationUpdateUserUserList`, so generated aliases do not collide.
 - Columns ending in `_by` or `_as` are treated as user references, producing
   aliases such as `CreatedByEntity` and `CreatedAsEntity`.
 - Tables with columns like `<current_table>_<current_column>` become
