@@ -32,18 +32,18 @@ guidance in the relevant guide or shipped skill reference.
 
 ## Current Focus
 
-Target: `2.7.x`
+Target: `3.0.x`
 
-Theme: regression hardening and test architecture for the public APIs added in
-the `2.x` line.
+Theme: regression hardening and test architecture for the current `3.x` public
+API surface.
 
 Decision:
 
-- `2.4.x`, `2.5.x`, and `2.6.x` already shipped the REST request-surface,
-  relationship, diagnostics, exception, and event-listener work.
-- The current unreleased line has started with
-  `Model::getSnapshotChangedFields()`. Track that public change in the
-  changelog; do not keep the shipped implementation plan here.
+- Recent `2.x` releases shipped the REST request-surface, relationship,
+  diagnostics, exception, and event-listener work.
+- `3.0.x` raised the runtime baseline and has shipped focused maintenance fixes
+  for scaffolding, database initialization, relationship aliases, and eager
+  loading. Keep those shipped outcomes in the changelog, not in this roadmap.
 - The next work should make recent framework behavior easier to trust before
   adding broad scaffolding or another large public surface.
 
@@ -62,7 +62,7 @@ Release principles:
 
 Status: Next
 
-Target: `2.7.x`
+Target: `3.0.x`
 
 Why:
 
@@ -99,15 +99,15 @@ Validation:
 
 Status: Planned
 
-Target: `2.8.x` candidate after the `2.7.x` test pass
+Target: `3.1.x` candidate after the `3.0.x` test pass
 
 Why:
 
 - Scaffolding REST controllers can save application work, but it can also
   freeze bad defaults or overwrite application-owned decisions if started too
   early.
-- The REST controller contracts are much more stable after the `2.4.x` and
-  `2.5.x` policy work, but generated output still needs a precise ownership
+- The REST controller contracts are much more stable after recent policy work,
+  but generated output still needs a precise ownership
   model.
 
 Scope:
@@ -135,7 +135,7 @@ Validation:
 
 Status: Planned
 
-Target: `2.7.x` or `2.8.x`, depending on the testing batch
+Target: `3.0.x` or `3.1.x`, depending on the testing batch
 
 Why:
 

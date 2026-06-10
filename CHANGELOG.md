@@ -15,6 +15,13 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.0.4 - Unreleased
+
+### Changed
+
+- Refocused the roadmap and testing priorities on the active `3.0.x` release
+  train after the `3.0.3` maintenance release.
+
 ## 3.0.3 - 2026-06-10
 
 ### Fixed

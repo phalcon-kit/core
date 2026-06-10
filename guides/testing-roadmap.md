@@ -274,12 +274,12 @@ Exit criteria:
 7. Update `CHANGELOG.md` only when the batch changes public behavior, docs,
    tooling, or maintainer workflow.
 
-## Current 2.7.x Priorities
+## Current 3.0.x Priorities
 
-The next testing pass should protect the contracts added in the recent `2.x`
-line before broadening the framework surface again. Prefer small harnesses that
-exercise controller/model policy state without a database, then add database
-integration only when native Phalcon behavior is part of the contract.
+The next testing pass should protect the contracts carried into the current
+`3.x` line before broadening the framework surface again. Prefer small harnesses
+that exercise controller/model policy state without a database, then add
+database integration only when native Phalcon behavior is part of the contract.
 
 | Priority | Area | Suggested Tests |
 | --- | --- | --- |
