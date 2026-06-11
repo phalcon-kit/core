@@ -32,24 +32,21 @@ guidance in the relevant guide or shipped skill reference.
 
 ## Current Focus
 
-Target: `3.1.0` REST API ergonomics, controller policy attributes, and scaffold
-readiness
+Target: `3.2.0` REST controller scaffold readiness
 
-Theme: keep REST controller declarations concise and predictable, then continue
-the scaffold work with a clear generated-file ownership contract.
+Theme: turn the now-stable REST controller policy surface into a cautious,
+tested scaffold contract without overwriting app-owned decisions.
 
 Decision:
 
 - Completed `3.0.4` coverage and maintenance work belongs in the changelog, not
   active roadmap blocks.
-- REST policy declaration ergonomics start the `3.1.0` development line:
-  collection-backed setters should accept arrays while storing normalized
-  collections internally.
-- Controller/action policy declarations can live beside controller code through
-  optional attributes, while the runtime still compiles them into the existing
-  permission config and ACL enforcement path.
+- The `3.1.x` REST policy ergonomics and controller-attribute work is shipped;
+  durable usage guidance belongs in the REST and identity guides.
 - The next schedulable block is REST controller scaffold readiness. Start with
   generated-file ownership before adding public scaffolding behavior.
+- Attribute and array-policy regressions should still be covered when scaffolded
+  controllers begin emitting those declarations.
 
 Release principles:
 
@@ -66,7 +63,7 @@ Release principles:
 
 Status: Next
 
-Target: `3.1.0`
+Target: `3.2.0`
 
 Why:
 

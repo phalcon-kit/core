@@ -15,6 +15,22 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.1.1 - 2026-06-11
+
+### Added
+
+- Added dispatcher security regression coverage confirming that
+  `acl.attributes=false` disables controller attribute scanning and leaves
+  config-only ACL applications on the legacy permission path.
+
+### Changed
+
+- Raised Composer suggested and development dependency floors for
+  `aws/aws-sdk-php`, `guzzlehttp/guzzle`, and `phalcon/ide-stubs` to the latest
+  compatible patch/minor releases validated against the `3.1.x` line.
+- Refocused the active roadmap on the next REST controller scaffold-readiness
+  block after the `3.1.0` REST ergonomics and policy-attribute work shipped.
+
 ## 3.1.0 - 2026-06-11
 
 ### Added

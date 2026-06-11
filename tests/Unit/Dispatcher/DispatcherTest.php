@@ -274,6 +274,18 @@ class DispatcherTest extends AbstractUnit
 
         $this->assertTrue($security->checkAcl($event, $dispatcher));
     }
+
+    public function testMvcSecuritySkipsControllerAttributesWhenDisabled(): void
+    {
+        [$security, $event, $dispatcher] = $this->createAttributeMvcSecurityFixture(['admin'], false);
+
+        $dispatcher->setActionName('findWith');
+
+        $this->withoutPhpWarnings(function () use ($security, $event, $dispatcher): void {
+            $this->assertFalse($security->checkAcl($event, $dispatcher));
+        });
+        $this->assertSame('not-found', $dispatcher->getActionName());
+    }
     
     public function testToArray(): void
     {
@@ -412,7 +424,7 @@ class DispatcherTest extends AbstractUnit
      *     2: \PhalconKit\Mvc\Dispatcher
      * }
      */
-    private function createAttributeMvcSecurityFixture(array $roles): array
+    private function createAttributeMvcSecurityFixture(array $roles, bool $attributes = true): array
     {
         $dispatcher = new \PhalconKit\Mvc\Dispatcher();
         $dispatcher->setNamespaceName('PhalconKit\\Tests\\Unit\\Mvc\\Controller\\Traits\\Fixtures');
@@ -421,6 +433,9 @@ class DispatcherTest extends AbstractUnit
 
         $di = new \Phalcon\Di\Di();
         $di->set('config', new Config([
+            'acl' => [
+                'attributes' => $attributes,
+            ],
             'permissions' => [],
             'router' => [
                 'notFound' => [
