@@ -58,13 +58,13 @@ trait Distinct
     /**
      * Sets the distinct collection.
      *
-     * @param Collection|null $distinct The distinct collection to set.
+     * @param array|Collection|null $distinct The distinct collection to set.
      *
      * @return void
      */
-    public function setDistinct(?Collection $distinct): void
+    public function setDistinct(array|Collection|null $distinct): void
     {
-        $this->distinct = $distinct;
+        $this->distinct = CollectionPolicy::normalizeNullable($distinct);
     }
     
     /**
@@ -80,14 +80,14 @@ trait Distinct
     /**
      * Merges the provided distinct collection with the current distinct property.
      *
-     * @param Collection $distinct The collection of distinct to merge with the current property.
+     * @param array|Collection $distinct The collection of distinct to merge with the current property.
      * @return void
      */
-    public function mergeDistinct(Collection $distinct): void
+    public function mergeDistinct(array|Collection $distinct): void
     {
         $this->distinct = CollectionPolicy::mergeNullable(
             $this->distinct,
-            $distinct
+            CollectionPolicy::normalize($distinct)
         );
     }
 }

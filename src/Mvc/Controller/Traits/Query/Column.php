@@ -36,12 +36,12 @@ trait Column
     /**
      * Sets the column collection.
      *
-     * @param Collection|null $column The collection to set, or null to unset the column collection.
+     * @param array|Collection|null $column The collection to set, or null to unset the column collection.
      * @return void
      */
-    public function setColumn(?Collection $column): void
+    public function setColumn(array|Collection|null $column): void
     {
-        $this->column = $column;
+        $this->column = CollectionPolicy::normalizeNullable($column);
     }
 
     /**
@@ -57,14 +57,14 @@ trait Column
     /**
      * Merges the provided column collection with the current column property.
      *
-     * @param Collection $column The collection of columns to merge with the current property.
+     * @param array|Collection $column The collection of columns to merge with the current property.
      * @return void
      */
-    public function mergeColumn(Collection $column): void
+    public function mergeColumn(array|Collection $column): void
     {
         $this->column = CollectionPolicy::mergeNullable(
             $this->column,
-            $column
+            CollectionPolicy::normalize($column)
         );
     }
 }

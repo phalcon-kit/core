@@ -49,6 +49,27 @@ final class FieldPolicyTest extends AbstractUnit
         }
     }
 
+    public function testFieldPolicySettersNormalizeArraysToCollections(): void
+    {
+        $controller = new FieldPolicyControllerDouble();
+        $policy = [
+            'label',
+            'usernode' => [
+                'userId',
+                'type',
+                'deleted',
+            ],
+        ];
+
+        foreach ($this->fieldPolicyMethods() as [$getter, $setter, $has]) {
+            $controller->{$setter}($policy);
+
+            $this->assertInstanceOf(Collection::class, $controller->{$getter}(), $getter);
+            $this->assertTrue($controller->{$has}(), $has);
+            $this->assertSame($policy, $controller->{$getter}()?->toArray(), $getter);
+        }
+    }
+
     public function testFieldPoliciesShareNullableMergeSemantics(): void
     {
         $controller = new FieldPolicyControllerDouble();
@@ -61,6 +82,22 @@ final class FieldPolicyTest extends AbstractUnit
             $this->assertSame(['id'], $controller->{$getter}()?->toArray(), $getter);
 
             $controller->{$merge}(new Collection(['status' => 'state'], false));
+            $this->assertSame([
+                'id',
+                'status' => 'state',
+            ], $controller->{$getter}()?->toArray(), $getter);
+        }
+    }
+
+    public function testFieldPolicyMergesAcceptArrays(): void
+    {
+        $controller = new FieldPolicyControllerDouble();
+
+        foreach ($this->fieldPolicyMethods() as [$getter, , , $merge]) {
+            $controller->{$merge}(['id']);
+            $this->assertSame(['id'], $controller->{$getter}()?->toArray(), $getter);
+
+            $controller->{$merge}(['status' => 'state']);
             $this->assertSame([
                 'id',
                 'status' => 'state',

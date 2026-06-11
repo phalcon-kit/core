@@ -58,7 +58,7 @@ trait AbstractCache
     /**
      * Replace the Phalcon `cache` find-option collection.
      */
-    abstract public function setCacheConfig(?Collection $cacheConfig): void;
+    abstract public function setCacheConfig(array|Collection|null $cacheConfig): void;
     
     /**
      * Return the Phalcon `cache` find-option collection.

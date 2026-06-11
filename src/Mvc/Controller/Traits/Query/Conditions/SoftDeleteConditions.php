@@ -17,6 +17,7 @@ use Phalcon\Db\Column;
 use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
+use PhalconKit\Support\CollectionPolicy;
 
 /**
  * Soft-delete query condition provider.
@@ -72,9 +73,9 @@ trait SoftDeleteConditions
     /**
      * Replace the soft-delete condition collection.
      */
-    public function setSoftDeleteConditions(?Collection $softDeleteConditions): void
+    public function setSoftDeleteConditions(array|Collection|null $softDeleteConditions): void
     {
-        $this->softDeleteConditions = $softDeleteConditions;
+        $this->softDeleteConditions = CollectionPolicy::normalizeNullable($softDeleteConditions);
     }
 
     /**

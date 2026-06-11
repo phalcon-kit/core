@@ -89,25 +89,25 @@ trait Group
     /**
      * Sets the group collection.
      *
-     * @param Collection|null $group The group collection to be set. Can be null.
+     * @param array|Collection|null $group The group collection to be set. Can be null.
      * @return void
      */
-    public function setGroup(?Collection $group): void
+    public function setGroup(array|Collection|null $group): void
     {
-        $this->group = $group;
+        $this->group = CollectionPolicy::normalizeNullable($group);
     }
 
     /**
      * Merges the provided group collection with the current group property.
      *
-     * @param Collection $group The collection of group to merge with the current property.
+     * @param array|Collection $group The collection of group to merge with the current property.
      * @return void
      */
-    public function mergeGroup(Collection $group): void
+    public function mergeGroup(array|Collection $group): void
     {
         $this->group = CollectionPolicy::mergeNullable(
             $this->group,
-            $group
+            CollectionPolicy::normalize($group)
         );
     }
 

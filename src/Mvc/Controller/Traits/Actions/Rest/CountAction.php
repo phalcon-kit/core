@@ -92,9 +92,9 @@ trait CountAction
      *
      * Passing null means no extra fields, preserving the legacy count response.
      */
-    public function setCountActionResponseFields(?Collection $countActionResponseFields): void
+    public function setCountActionResponseFields(array|Collection|null $countActionResponseFields): void
     {
-        $this->countActionResponseFields = $countActionResponseFields;
+        $this->countActionResponseFields = CollectionPolicy::normalizeNullable($countActionResponseFields);
     }
 
     /**
@@ -116,14 +116,14 @@ trait CountAction
     /**
      * Merge extra count response fields with the current field collection.
      *
-     * @param Collection $countActionResponseFields Collection containing field
+     * @param array|Collection $countActionResponseFields array or Collection containing field
      *     names, usually the `COUNT_RESPONSE_*` constants.
      */
-    public function mergeCountActionResponseFields(Collection $countActionResponseFields): void
+    public function mergeCountActionResponseFields(array|Collection $countActionResponseFields): void
     {
         $this->countActionResponseFields = CollectionPolicy::mergeNullable(
             $this->countActionResponseFields,
-            $countActionResponseFields
+            CollectionPolicy::normalize($countActionResponseFields)
         );
     }
 

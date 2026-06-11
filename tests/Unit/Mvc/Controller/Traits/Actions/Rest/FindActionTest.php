@@ -544,9 +544,9 @@ class FindActionTest extends AbstractUnit
         $this->assertFalse($controller->hasFindActionCountFields());
         $this->assertNull($controller->getFindActionCountFields());
 
-        $controller->setFindActionCountFields(new Collection([
+        $controller->setFindActionCountFields([
             FindActionControllerDouble::REST_VIEW_COUNT,
-        ], false));
+        ]);
 
         $this->assertTrue($controller->hasFindActionCountFields());
         $this->assertSame(
@@ -554,9 +554,9 @@ class FindActionTest extends AbstractUnit
             $controller->getFindActionCountFields()?->toArray()
         );
 
-        $controller->mergeFindActionCountFields(new Collection([
+        $controller->mergeFindActionCountFields([
             FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT,
-        ], false));
+        ]);
 
         $this->assertSame(
             [
@@ -566,9 +566,9 @@ class FindActionTest extends AbstractUnit
             $controller->getFindActionCountFields()?->toArray()
         );
 
-        $controller->setFindActionCountFields(new Collection([
+        $controller->setFindActionCountFields([
             FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => false,
-        ], false));
+        ]);
 
         $this->assertTrue($controller->hasFindActionCountFields());
     }
@@ -578,11 +578,11 @@ class FindActionTest extends AbstractUnit
         $controller = $this->createController([
             'count' => 'totalCount',
         ], [9]);
-        $controller->setFindActionCountFields(new Collection([
+        $controller->setFindActionCountFields([
             FindActionControllerDouble::REST_VIEW_COUNT => 'off',
             FindActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL => 0,
             FindActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => 'yes',
-        ], false));
+        ]);
 
         $controller->findAction();
 

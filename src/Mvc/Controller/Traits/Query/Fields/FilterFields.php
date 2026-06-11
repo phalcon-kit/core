@@ -48,9 +48,9 @@ trait FilterFields
      * allow-list enforcement; passing an empty collection keeps allow-list mode
      * active but allows no client-supplied filters.
      */
-    public function setFilterFields(?Collection $filterFields): void
+    public function setFilterFields(array|Collection|null $filterFields): void
     {
-        $this->filterFields = $filterFields;
+        $this->filterFields = CollectionPolicy::normalizeNullable($filterFields);
     }
     
     /**
@@ -83,11 +83,11 @@ trait FilterFields
      * from the incoming collection, empty incoming collections leave an existing
      * policy unchanged, and associative keys can override previous entries.
      */
-    public function mergeFilterFields(Collection $filterFields): void
+    public function mergeFilterFields(array|Collection $filterFields): void
     {
         $this->filterFields = CollectionPolicy::mergeNullable(
             $this->filterFields,
-            $filterFields
+            CollectionPolicy::normalize($filterFields)
         );
     }
 }

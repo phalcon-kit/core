@@ -68,9 +68,9 @@ trait With
      * or a parent path of one, so a configured `Author.Profile.Avatar` allows a
      * request for `Author.Profile` without also loading `Avatar`.
      */
-    public function setWith(?Collection $with): void
+    public function setWith(array|Collection|null $with): void
     {
-        $this->with = $with;
+        $this->with = CollectionPolicy::normalizeNullable($with);
     }
     
     /**
@@ -92,11 +92,11 @@ trait With
      * This is useful for base controllers that define common relations and
      * resource controllers that add their own nested paths.
      */
-    public function mergeWith(Collection $with): void
+    public function mergeWith(array|Collection $with): void
     {
         $this->with = CollectionPolicy::mergeNullable(
             $this->with,
-            $with
+            CollectionPolicy::normalize($with)
         );
     }
 

@@ -28,7 +28,7 @@ trait AbstractJoins
     /**
      * Replace join definitions.
      */
-    abstract public function setJoins(?Collection $joins): void;
+    abstract public function setJoins(array|Collection|null $joins): void;
     
     /**
      * Return join definitions.

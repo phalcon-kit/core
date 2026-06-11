@@ -32,10 +32,10 @@ trait AbstractMapFields
     /**
      * Replace the assignment field-map policy.
      *
-     * @param Collection|null $mapFields Field map collection or null to disable
+     * @param array|Collection|null $mapFields Field map collection or null to disable
      *     assignment mapping.
      */
-    abstract public function setMapFields(?Collection $mapFields): void;
+    abstract public function setMapFields(array|Collection|null $mapFields): void;
     
     /**
      * Return the configured assignment field-map policy.

@@ -18,6 +18,7 @@ use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
+use PhalconKit\Support\CollectionPolicy;
 
 /**
  * IdentityConditions
@@ -49,7 +50,7 @@ trait IdentityConditions
     use AbstractQuery;
 
     /**
-     * Collection of named identity conditions.
+     * array|Collection of named identity conditions.
      *
      * Shape:
      *  [
@@ -76,9 +77,9 @@ trait IdentityConditions
      *
      * Allows higher-level components to override identity semantics.
      */
-    public function setIdentityConditions(?Collection $identityConditions): void
+    public function setIdentityConditions(array|Collection|null $identityConditions): void
     {
-        $this->identityConditions = $identityConditions;
+        $this->identityConditions = CollectionPolicy::normalizeNullable($identityConditions);
     }
 
     /**

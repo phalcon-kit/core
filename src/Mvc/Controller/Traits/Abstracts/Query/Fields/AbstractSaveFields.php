@@ -32,10 +32,10 @@ trait AbstractSaveFields
     /**
      * Replace the save-field policy.
      *
-     * @param Collection|null $saveFields Field policy collection, null for
+     * @param array|Collection|null $saveFields Field policy collection, null for
      *     unrestricted assignment, or an empty collection for a closed policy.
      */
-    abstract public function setSaveFields(?Collection $saveFields): void;
+    abstract public function setSaveFields(array|Collection|null $saveFields): void;
     
     /**
      * Return the configured save-field policy.

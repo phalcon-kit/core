@@ -73,26 +73,24 @@ module API controller.
 ```php
 namespace App\Modules\Api\Controllers;
 
-use Phalcon\Support\Collection;
-
 final class InvoiceController extends AbstractController
 {
     public function initializeSaveFields(): void
     {
-        $this->setSaveFields(new Collection([
+        $this->setSaveFields([
             'customerId',
             'number',
             'date',
             'status',
-        ]));
+        ]);
     }
 
     public function initializeSearchFields(): void
     {
-        $this->setSearchFields(new Collection([
+        $this->setSearchFields([
             'number',
             'status',
-        ]));
+        ]);
     }
 }
 ```
@@ -141,9 +139,9 @@ abstract class AbstractController extends Controller
 
     public function initializeFindActionCountFields(): void
     {
-        $this->setFindActionCountFields(new Collection([
+        $this->setFindActionCountFields([
             self::REST_VIEW_COUNT,
-        ], false));
+        ]);
     }
 
     public function filterStatusOrAdminCondition(): array
@@ -207,15 +205,13 @@ total.
 Controllers that need count metadata can opt into explicit extra fields:
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeCountActionResponseFields(): void
 {
-    $this->setCountActionResponseFields(new Collection([
+    $this->setCountActionResponseFields([
         self::COUNT_RESPONSE_GROUPED_COUNT,
         self::COUNT_RESPONSE_BUCKET_TOTAL,
         self::COUNT_RESPONSE_TOTAL_COUNT,
-    ], false));
+    ]);
 }
 ```
 
@@ -239,15 +235,13 @@ unrestricted across the supported framework fields. Override
 block embedded counts.
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeFindActionCountFields(): void
 {
-    $this->setFindActionCountFields(new Collection([
+    $this->setFindActionCountFields([
         self::REST_VIEW_COUNT,
         self::COUNT_RESPONSE_BUCKET_TOTAL,
         self::COUNT_RESPONSE_TOTAL_COUNT,
-    ], false));
+    ]);
 }
 ```
 
@@ -263,8 +257,8 @@ List counts use the same prepared query as the list endpoint, so filters,
 search, joins, permissions, identity conditions, binds, and cache policy stay
 consistent. Limit and offset are removed for count queries. Without a client
 `count` request, no count query runs and the legacy list payload is preserved.
-Passing an empty collection to `setFindActionCountFields()` blocks every
-embedded count field, while unsupported request names are rejected.
+Passing an empty array or collection to `setFindActionCountFields()` blocks
+every embedded count field, while unsupported request names are rejected.
 
 ## Distinct Actions
 
@@ -276,15 +270,13 @@ cache policy.
 The default is closed. Configure fields during controller initialization:
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeDistinctActionFields(): void
 {
-    $this->setDistinctActionFields(new Collection([
+    $this->setDistinctActionFields([
         'status',
         'type',
         'ownerEmail' => 'Owner.email',
-    ], false));
+    ]);
 }
 ```
 
@@ -323,25 +315,23 @@ Use `Phalcon\Support\Collection` and override the narrow initializer for each
 policy.
 
 ```php
-use Phalcon\Support\Collection;
-
 final class FundraisingController extends AbstractController
 {
     protected ?int $maxLimit = 1000;
 
     public function initializeSaveFields(): void
     {
-        $this->setSaveFields(new Collection([
+        $this->setSaveFields([
             'eventId',
             'label',
             'goalValue',
             'date',
-        ]));
+        ]);
     }
 
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields(new Collection([
+        $this->setFilterFields([
             'id',
             'uuid',
             'eventId',
@@ -360,17 +350,17 @@ final class FundraisingController extends AbstractController
                 'date',
                 'deleted',
             ],
-        ]));
+        ]);
     }
 
     public function initializeSearchFields(): void
     {
-        $this->setSearchFields(new Collection([
+        $this->setSearchFields([
             'label',
             'goalValue',
             'currentValue',
             'date',
-        ]));
+        ]);
     }
 }
 ```
@@ -382,8 +372,8 @@ Guidelines:
   flow supports relation payloads for that relation.
 - Use `initializeFilterFields()` for client-queryable fields, including nested
   relation fields when the app allows relation filters. Leaving filter fields
-  null preserves unrestricted legacy filtering; an empty collection closes
-  filtering entirely.
+  null preserves unrestricted legacy filtering; an empty array or collection
+  closes filtering entirely.
 - Use `initializeSearchFields()` for broad text search; keep it smaller than
   filter fields. Filter/search enabled-map values are boolean-normalized, so
   config values like `off`, `false`, and `0` disable keys.
@@ -428,7 +418,7 @@ public function initializeSaveFields(): void
     $survey['surveygrouplist'] = $group;
     $survey['surveyquestionlist'] = $question;
 
-    $this->setSaveFields(new Collection($survey));
+    $this->setSaveFields($survey);
 }
 ```
 
@@ -491,9 +481,7 @@ Controller usage:
 ```php
 public function initializeExposeFields(): void
 {
-    $this->setExposeFields(new Collection(
-        $this->exposers->get('Fundraising')
-    ));
+    $this->setExposeFields($this->exposers->get('Fundraising'));
 }
 ```
 
@@ -511,10 +499,10 @@ public function initializeExposeFields(): void
         ];
     }
 
-    $this->setExposeFields(new Collection(array_merge(
+    $this->setExposeFields(array_merge(
         $this->exposers->get('Event'),
         $participantFields
-    )));
+    ));
 }
 ```
 
@@ -584,7 +572,7 @@ public function initializeWith(): void
 
     $relations[] = 'FileEntity';
 
-    $this->setWith(new Collection($relations));
+    $this->setWith($relations);
 }
 ```
 
@@ -605,20 +593,20 @@ For list/detail differences, prefer a clear early return:
 public function initializeWith(): void
 {
     if ($this->isListRequest()) {
-        $this->setWith(new Collection([
+        $this->setWith([
             'UserNode.UserEntity',
             'CategoryList',
-        ]));
+        ]);
         return;
     }
 
-    $this->setWith(new Collection([
+    $this->setWith([
         'UserNode.UserEntity',
         'CategoryList',
         'ExclusionReasonList',
         'SurveyList',
         ...$this->getSurveyEagerLoadingDefinition('SurveyList.'),
-    ]));
+    ]);
 }
 ```
 
@@ -670,18 +658,17 @@ use `initializeWith()` for response relation graphs.
 ```php
 use App\Models\Donation;
 use App\Models\Fundraising;
-use Phalcon\Support\Collection;
 
 public function initializeJoins(): void
 {
-    $this->setJoins(new Collection([
+    $this->setJoins([
         [
             Donation::class,
             '[' . Fundraising::class . '].[id] = [Donation].[fundraisingId]',
             'Donation',
             'left',
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -691,14 +678,14 @@ often clearer in large controllers:
 ```php
 public function initializeJoins(): void
 {
-    $this->setJoins(new Collection([
+    $this->setJoins([
         'UserNode' => [
             ProjectUser::class,
             '[' . $this->getModelName() . '].[id] = [UserNode].[projectId]',
             'UserNode',
             'left',
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -715,7 +702,7 @@ queries smaller while still supporting deep filters.
 ```php
 public function initializeDynamicJoins(): void
 {
-    $this->setDynamicJoins(new Collection([
+    $this->setDynamicJoins([
         'Comment' => [
             Comment::class,
             '[' . $this->getModelName() . '].[id] = [Comment].[recordId] ' .
@@ -731,7 +718,7 @@ public function initializeDynamicJoins(): void
             '[RecordTag].[tagId] = [RecordTag.Tag].[id] ' .
                 'and [RecordTag.Tag].[deleted] <> 1',
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -850,7 +837,7 @@ strict, then add privileged fields for specific roles.
 ```php
 public function initializeSaveFields(): void
 {
-    $this->setSaveFields(new Collection([
+    $this->setSaveFields([
         'UserEntity' => [
             'firstName',
             'lastName',
@@ -860,7 +847,7 @@ public function initializeSaveFields(): void
         'unionId',
         'identification',
         'pronoun',
-    ]));
+    ]);
 
     if ($this->identity->hasRole(['dev', 'admin'])) {
         $this->getSaveFields()->set('userId', true);
@@ -883,11 +870,10 @@ use App\Models\Council;
 use App\Models\Participant;
 use App\Models\Union;
 use App\Models\User;
-use Phalcon\Support\Collection;
 
 public function initializeSearchFields(): void
 {
-    $this->setSearchFields(new Collection([
+    $this->setSearchFields([
         'phone',
         'UserEntity' => [
             'firstName',
@@ -900,16 +886,16 @@ public function initializeSearchFields(): void
         'UnionEntity' => [
             'label',
         ],
-    ]));
+    ]);
 }
 
 public function initializeJoins(): void
 {
-    $this->setJoins(new Collection([
+    $this->setJoins([
         [User::class, '[' . Participant::class . '].[userId] = [UserEntity].[id]', 'UserEntity', 'left'],
         [Union::class, '[' . Participant::class . '].[unionId] = [UnionEntity].[id]', 'UnionEntity', 'left'],
         [Council::class, '[' . Participant::class . '].[councilId] = [CouncilEntity].[id]', 'CouncilEntity', 'left'],
-    ]));
+    ]);
 }
 ```
 
@@ -924,7 +910,7 @@ votes, documents, and fundraising donations.
 ```php
 public function initializeSaveFields(): void
 {
-    $this->setSaveFields(new Collection([
+    $this->setSaveFields([
         'eventId',
         'label',
         'status',
@@ -949,7 +935,7 @@ public function initializeSaveFields(): void
                 ],
             ],
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -1050,15 +1036,13 @@ new or security-sensitive resources, opt in to an explicit order policy so only
 known public sort keys can reach the query builder.
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeOrderFields(): void
 {
-    $this->setOrderFields(new Collection([
+    $this->setOrderFields([
         'createdAt',
         'status' => true,
         'ownerEmail' => 'Owner.email',
-    ]));
+    ]);
 }
 ```
 

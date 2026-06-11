@@ -46,25 +46,25 @@ trait Having
     /**
      * Sets the having property to the provided collection.
      *
-     * @param Collection|null $having The collection to set as the having property, or null to clear it.
+     * @param array|Collection|null $having The collection to set as the having property, or null to clear it.
      * @return void
      */
-    public function setHaving(?Collection $having): void
+    public function setHaving(array|Collection|null $having): void
     {
-        $this->having = $having;
+        $this->having = CollectionPolicy::normalizeNullable($having);
     }
 
     /**
      * Merges the provided having collection with the current having property.
      *
-     * @param Collection $having The collection of having to merge with the current property.
+     * @param array|Collection $having The collection of having to merge with the current property.
      * @return void
      */
-    public function mergeHaving(Collection $having): void
+    public function mergeHaving(array|Collection $having): void
     {
         $this->having = CollectionPolicy::mergeNullable(
             $this->having,
-            $having
+            CollectionPolicy::normalize($having)
         );
     }
 }

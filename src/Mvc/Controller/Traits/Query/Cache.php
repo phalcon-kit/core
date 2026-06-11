@@ -156,12 +156,12 @@ trait Cache
     /**
      * Set the cache config collection for the query.
      *
-     * @param Collection|null $cacheConfig The cache config collection, or null to disable.
+     * @param array|Collection|null $cacheConfig The cache config collection, or null to disable.
      * @return void
      */
-    public function setCacheConfig(?Collection $cacheConfig): void
+    public function setCacheConfig(array|Collection|null $cacheConfig): void
     {
-        $this->cacheConfig = $cacheConfig;
+        $this->cacheConfig = CollectionPolicy::normalizeNullable($cacheConfig);
     }
     
     /**
@@ -177,14 +177,14 @@ trait Cache
     /**
      * Merges the provided cacheConfig collection with the current cacheConfig property.
      *
-     * @param Collection $cacheConfig The collection of cacheConfig fields to merge with the current property.
+     * @param array|Collection $cacheConfig The collection of cacheConfig fields to merge with the current property.
      * @return void
      */
-    public function mergeCacheConfig(Collection $cacheConfig): void
+    public function mergeCacheConfig(array|Collection $cacheConfig): void
     {
         $this->cacheConfig = CollectionPolicy::mergeNullable(
             $this->cacheConfig,
-            $cacheConfig
+            CollectionPolicy::normalize($cacheConfig)
         );
     }
 }

@@ -102,9 +102,9 @@ trait SearchConditions
      * Used by consumers that want full control over
      * how search conditions are produced.
      */
-    public function setSearchConditions(?Collection $searchConditions): void
+    public function setSearchConditions(array|Collection|null $searchConditions): void
     {
-        $this->searchConditions = $searchConditions;
+        $this->searchConditions = CollectionPolicy::normalizeNullable($searchConditions);
     }
 
     /**

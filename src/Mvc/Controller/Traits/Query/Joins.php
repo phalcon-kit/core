@@ -39,12 +39,12 @@ trait Joins
     /**
      * Sets the joins for the find criteria.
      *
-     * @param Collection|null $joins The collection of joins.
+     * @param array|Collection|null $joins The collection of joins.
      *                               Pass null to disable joins.
      */
-    public function setJoins(?Collection $joins): void
+    public function setJoins(array|Collection|null $joins): void
     {
-        $this->joins = $joins;
+        $this->joins = CollectionPolicy::normalizeNullable($joins);
     }
     
     /**
@@ -66,13 +66,13 @@ trait Joins
     /**
      * Merges the provided joins with the existing joins in the find criteria.
      *
-     * @param Collection $joins The collection of joins to be merged.
+     * @param array|Collection $joins The collection of joins to be merged.
      */
-    public function mergeJoins(Collection $joins): void
+    public function mergeJoins(array|Collection $joins): void
     {
         $this->joins = CollectionPolicy::mergeNullable(
             $this->joins,
-            $joins
+            CollectionPolicy::normalize($joins)
         );
     }
 

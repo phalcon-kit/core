@@ -32,10 +32,10 @@ trait AbstractOrderFields
     /**
      * Replace the order-field policy.
      *
-     * @param Collection|null $orderFields Field policy collection, null for
+     * @param array|Collection|null $orderFields Field policy collection, null for
      *     unrestricted ordering, or an empty collection for a closed policy.
      */
-    abstract public function setOrderFields(?Collection $orderFields): void;
+    abstract public function setOrderFields(array|Collection|null $orderFields): void;
 
     /**
      * Return the configured order-field policy.
@@ -53,7 +53,7 @@ trait AbstractOrderFields
     /**
      * Merge additional order-field policy entries into the current policy.
      *
-     * @param Collection $orderFields Additional field policy entries.
+     * @param array|Collection $orderFields Additional field policy entries.
      */
-    abstract public function mergeOrderFields(Collection $orderFields): void;
+    abstract public function mergeOrderFields(array|Collection $orderFields): void;
 }

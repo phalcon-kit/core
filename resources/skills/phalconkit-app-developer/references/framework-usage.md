@@ -560,26 +560,25 @@ model namespaces. `InvoiceController` should have an `Invoice` model in one of
 the module/app model namespaces.
 
 ```php
-use Phalcon\Support\Collection;
 use PhalconKit\Modules\Api\Controller;
 
 final class InvoiceController extends Controller
 {
     public function initializeSearchFields(): void
     {
-        $this->setSearchFields(new Collection([
+        $this->setSearchFields([
             'id',
             'number',
             'customerName',
-        ]));
+        ]);
     }
 
     public function initializeExposeFields(): void
     {
-        $this->setExposeFields(new Collection([
+        $this->setExposeFields([
             true,
             'internalNotes' => false,
-        ]));
+        ]);
     }
 }
 ```

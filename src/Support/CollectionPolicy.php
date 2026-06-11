@@ -25,6 +25,42 @@ use Phalcon\Support\Collection;
 final class CollectionPolicy
 {
     /**
+     * Normalize REST/query policy input to the framework's internal collection.
+     *
+     * Public REST controllers may accept plain arrays for ergonomic
+     * initialization, but internal query compilation still works with
+     * `Collection` instances so null, empty, list, map, and enabled-map
+     * policies keep one consistent shape after assignment.
+     *
+     * @param array<array-key, mixed>|Collection $value Raw policy array or an
+     *     existing collection supplied by a controller.
+     *
+     * @return Collection Collection value ready for storage or merging.
+     */
+    public static function normalize(array|Collection $value): Collection
+    {
+        return $value instanceof Collection ? $value : new Collection($value);
+    }
+
+    /**
+     * Normalize nullable REST/query policy input.
+     *
+     * Null is intentionally preserved because REST policies use it as a
+     * distinct state from an explicit empty collection. For example, null may
+     * mean unrestricted filtering while an empty collection means filtering is
+     * configured but closed.
+     *
+     * @param array<array-key, mixed>|Collection|null $value Raw policy input or
+     *     null to keep the policy unset.
+     *
+     * @return Collection|null Normalized collection or null.
+     */
+    public static function normalizeNullable(array|Collection|null $value): ?Collection
+    {
+        return $value === null ? null : self::normalize($value);
+    }
+
+    /**
      * Interpret a collection map value as an enabled/disabled flag.
      *
      * Several public REST policies accept "enabled map" syntax where the array

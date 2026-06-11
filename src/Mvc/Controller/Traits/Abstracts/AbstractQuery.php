@@ -34,7 +34,7 @@ trait AbstractQuery
     /**
      * Replace the prepared find-option collection.
      */
-    abstract public function setFind(?Collection $find): void;
+    abstract public function setFind(array|Collection|null $find): void;
     
     /**
      * Return the prepared find-option collection.

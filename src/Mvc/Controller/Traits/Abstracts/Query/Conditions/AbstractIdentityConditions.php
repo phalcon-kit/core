@@ -56,7 +56,7 @@ trait AbstractIdentityConditions
      * Allows higher-level components to override
      * identity semantics entirely.
      */
-    abstract public function setIdentityConditions(?Collection $identityConditions): void;
+    abstract public function setIdentityConditions(array|Collection|null $identityConditions): void;
 
     /**
      * Retrieve the registered identity conditions.

@@ -47,9 +47,9 @@ trait SearchFields
      * collection keeps the policy explicit but gives the search builder no
      * fields to compile.
      */
-    public function setSearchFields(?Collection $searchFields): void
+    public function setSearchFields(array|Collection|null $searchFields): void
     {
-        $this->searchFields = $searchFields;
+        $this->searchFields = CollectionPolicy::normalizeNullable($searchFields);
     }
     
     /**
@@ -82,11 +82,11 @@ trait SearchFields
      * from the incoming collection, empty incoming collections leave an existing
      * policy unchanged, and associative keys can override previous entries.
      */
-    public function mergeSearchFields(Collection $searchFields): void
+    public function mergeSearchFields(array|Collection $searchFields): void
     {
         $this->searchFields = CollectionPolicy::mergeNullable(
             $this->searchFields,
-            $searchFields
+            CollectionPolicy::normalize($searchFields)
         );
     }
 }

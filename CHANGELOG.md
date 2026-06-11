@@ -15,6 +15,24 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.1.0 - Unreleased
+
+### Added
+
+- Added array-friendly REST/query policy setters and merge helpers. Controllers
+  can now pass plain arrays to field, condition, join, eager-loading, count,
+  distinct, cache, bind, group, having, column, order, and find policy methods;
+  PhalconKit normalizes them into internal `Collection` instances.
+
+### Changed
+
+- Updated REST examples, bundled API controllers, migration guidance, and
+  shipped app-developer skill references to document array-based policy
+  initialization while preserving `Collection` compatibility.
+- Documented that downstream controllers overriding REST/query policy setters
+  or merge helpers must widen their method signatures to the new
+  `array|Collection` input contracts.
+
 ## 3.0.4 - Unreleased
 
 ### Changed

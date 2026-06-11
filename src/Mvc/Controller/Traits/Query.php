@@ -38,6 +38,7 @@ use PhalconKit\Mvc\Controller\Traits\Query\Order;
 use PhalconKit\Mvc\Controller\Traits\Query\Save;
 use PhalconKit\Mvc\Controller\Traits\Query\With;
 use PhalconKit\Mvc\Model\Interfaces\EagerLoadInterface;
+use PhalconKit\Support\CollectionPolicy;
 use PhalconKit\Support\Helper;
 
 /**
@@ -176,12 +177,12 @@ trait Query
     /**
      * Sets the value of the `find` property.
      *
-     * @param Collection|null $find The new value for the `find` property.
+     * @param array|Collection|null $find The new value for the `find` property.
      * @return void
      */
-    public function setFind(?Collection $find): void
+    public function setFind(array|Collection|null $find): void
     {
-        $this->find = $find;
+        $this->find = CollectionPolicy::normalizeNullable($find);
     }
     
     /**

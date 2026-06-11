@@ -54,6 +54,86 @@ class QueryStateTest extends AbstractUnit
         $this->assertSame(['total > 0'], $controller->getHaving()?->toArray());
     }
 
+    public function testQueryPolicySettersNormalizeArraysToCollections(): void
+    {
+        $cases = [
+            ['setBind', 'getBind', ['id' => 123]],
+            ['setBindTypes', 'getBindTypes', ['id' => Column::BIND_PARAM_INT]],
+            ['setCacheConfig', 'getCacheConfig', ['lifetime' => 60]],
+            ['setColumn', 'getColumn', ['id']],
+            ['setConditions', 'getConditions', ['default' => '[FooModel].[deleted] <> 1']],
+            ['setDistinct', 'getDistinct', ['id' => true]],
+            ['setDynamicJoins', 'getDynamicJoins', [
+                'UserNode' => [
+                    QueryModelDouble::class,
+                    '[FooModel].[id] = [UserNode].[fooId]',
+                    'UserNode',
+                    'left',
+                ],
+            ]],
+            ['setFilterConditions', 'getFilterConditions', ['default' => '[FooModel].[deleted] <> 1']],
+            ['setFind', 'getFind', [
+                'conditions' => '[FooModel].[id] = :id:',
+                'bind' => ['id' => 123],
+            ]],
+            ['setGroup', 'getGroup', ['status' => '[FooModel].[status]']],
+            ['setHaving', 'getHaving', ['COUNT(id) > 0']],
+            ['setIdentityConditions', 'getIdentityConditions', ['default' => '[FooModel].[id] = :id:']],
+            ['setJoins', 'getJoins', [
+                'UserNode' => [
+                    QueryModelDouble::class,
+                    '[FooModel].[id] = [UserNode].[fooId]',
+                    'UserNode',
+                    'left',
+                ],
+            ]],
+            ['setOrder', 'getOrder', ['createdAt' => 'desc']],
+            ['setPermissionConditions', 'getPermissionConditions', ['default' => '[FooModel].[createdBy] = :userId:']],
+            ['setSearchConditions', 'getSearchConditions', ['default' => '[FooModel].[title] like :search:']],
+            ['setSoftDeleteConditions', 'getSoftDeleteConditions', ['default' => '[FooModel].[deleted] <> 1']],
+            ['setWith', 'getWith', ['Author.Profile']],
+        ];
+
+        foreach ($cases as [$setter, $getter, $policy]) {
+            $controller = $this->newQueryController();
+            $controller->{$setter}($policy);
+
+            $this->assertInstanceOf(Collection::class, $controller->{$getter}(), $getter);
+            $this->assertSame($policy, $controller->{$getter}()?->toArray(), $getter);
+        }
+    }
+
+    public function testQueryPolicyMergeHelpersAcceptArrays(): void
+    {
+        $controller = $this->newQueryController();
+
+        $controller->mergeBind(['id' => 123]);
+        $controller->mergeBind(['status' => 'active']);
+        $controller->mergeBindTypes(['id' => Column::BIND_PARAM_INT]);
+        $controller->mergeCacheConfig(['lifetime' => 60]);
+        $controller->mergeCacheConfig(['key' => 'cache-key']);
+        $controller->mergeColumn(['id']);
+        $controller->mergeConditions(['one' => 'a = 1']);
+        $controller->mergeDistinct(['id' => true]);
+        $controller->mergeDynamicJoins(['UserNode' => ['join definition']]);
+        $controller->mergeGroup(['status' => '[FooModel].[status]']);
+        $controller->mergeHaving(['COUNT(id) > 0']);
+        $controller->mergeJoins(['UserNode' => ['join definition']]);
+        $controller->mergeWith(['Author.Profile']);
+
+        $this->assertSame(['id' => 123, 'status' => 'active'], $controller->getBind()?->toArray());
+        $this->assertSame(['id' => Column::BIND_PARAM_INT], $controller->getBindTypes()?->toArray());
+        $this->assertSame(['lifetime' => 60, 'key' => 'cache-key'], $controller->getCacheConfig()?->toArray());
+        $this->assertSame(['id'], $controller->getColumn()?->toArray());
+        $this->assertSame(['one' => 'a = 1'], $controller->getConditions()?->toArray());
+        $this->assertSame(['id' => true], $controller->getDistinct()?->toArray());
+        $this->assertSame(['UserNode' => ['join definition']], $controller->getDynamicJoins()?->toArray());
+        $this->assertSame(['status' => '[FooModel].[status]'], $controller->getGroup()?->toArray());
+        $this->assertSame(['COUNT(id) > 0'], $controller->getHaving()?->toArray());
+        $this->assertSame(['UserNode' => ['join definition']], $controller->getJoins()?->toArray());
+        $this->assertSame(['Author.Profile'], $controller->getWith()?->toArray());
+    }
+
     public function testFieldCollectionsTrackPresenceAndMergeState(): void
     {
         $controller = $this->newQueryController();

@@ -130,9 +130,9 @@ trait FindAction
      * embedded list counts, which is useful for controllers that must reject
      * every client-requested list count.
      */
-    public function setFindActionCountFields(?Collection $findActionCountFields): void
+    public function setFindActionCountFields(array|Collection|null $findActionCountFields): void
     {
-        $this->findActionCountFields = $findActionCountFields;
+        $this->findActionCountFields = CollectionPolicy::normalizeNullable($findActionCountFields);
     }
 
     /**
@@ -168,11 +168,11 @@ trait FindAction
      * creates the first explicit allow-list; it does not need a separate setter
      * call in controller initialization.
      */
-    public function mergeFindActionCountFields(Collection $findActionCountFields): void
+    public function mergeFindActionCountFields(array|Collection $findActionCountFields): void
     {
         $this->findActionCountFields = CollectionPolicy::mergeNullable(
             $this->findActionCountFields,
-            $findActionCountFields
+            CollectionPolicy::normalize($findActionCountFields)
         );
     }
 

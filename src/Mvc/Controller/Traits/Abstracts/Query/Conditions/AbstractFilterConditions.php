@@ -32,7 +32,7 @@ trait AbstractFilterConditions
     /**
      * Replace filter-condition definitions.
      */
-    abstract public function setFilterConditions(?Collection $filterConditions): void;
+    abstract public function setFilterConditions(array|Collection|null $filterConditions): void;
     
     /**
      * Return filter-condition definitions.

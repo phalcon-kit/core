@@ -28,7 +28,7 @@ trait AbstractColumn
     /**
      * Replace aggregate column configuration.
      */
-    abstract public function setColumn(?Collection $column): void;
+    abstract public function setColumn(array|Collection|null $column): void;
     
     /**
      * Return aggregate column configuration.

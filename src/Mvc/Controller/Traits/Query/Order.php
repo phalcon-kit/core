@@ -20,6 +20,7 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractOrder;
 use PhalconKit\Mvc\Controller\Traits\Query\Fields\OrderFields;
+use PhalconKit\Support\CollectionPolicy;
 
 /**
  * Parses REST `order` parameters into Phalcon-compatible query expressions.
@@ -154,9 +155,9 @@ trait Order
      * Values are compiled later by {@see \PhalconKit\Mvc\Controller\Traits\Query::prepareFind()}.
      * Use null when no ORDER BY clause should be sent to Phalcon.
      */
-    public function setOrder(?Collection $order): void
+    public function setOrder(array|Collection|null $order): void
     {
-        $this->order = $order;
+        $this->order = CollectionPolicy::normalizeNullable($order);
     }
     
     /**

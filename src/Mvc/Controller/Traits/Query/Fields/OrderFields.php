@@ -63,12 +63,12 @@ trait OrderFields
      * no fields, which can be useful for controllers that must reject every
      * client-controlled sort key.
      *
-     * @param Collection|null $orderFields Field policy collection, null for
+     * @param array|Collection|null $orderFields Field policy collection, null for
      *     unrestricted ordering, or an empty collection for a closed policy.
      */
-    public function setOrderFields(?Collection $orderFields): void
+    public function setOrderFields(array|Collection|null $orderFields): void
     {
-        $this->orderFields = $orderFields;
+        $this->orderFields = CollectionPolicy::normalizeNullable($orderFields);
     }
 
     /**
@@ -105,13 +105,13 @@ trait OrderFields
      * starts from the incoming collection, string keys can override previous
      * entries, and false/null values can disable inherited entries.
      *
-     * @param Collection $orderFields Additional field policy entries.
+     * @param array|Collection $orderFields Additional field policy entries.
      */
-    public function mergeOrderFields(Collection $orderFields): void
+    public function mergeOrderFields(array|Collection $orderFields): void
     {
         $this->orderFields = CollectionPolicy::mergeNullable(
             $this->orderFields,
-            $orderFields
+            CollectionPolicy::normalize($orderFields)
         );
     }
 

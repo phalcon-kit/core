@@ -113,14 +113,14 @@ public function validation(): bool
 REST controllers define allowed filter fields with `initializeFilterFields()`:
 
 ```php
-$this->setFilterFields(new Collection([
+$this->setFilterFields([
     'id',
     'uuid',
     'UserEntity' => [
         'email',
         'firstName',
     ],
-]));
+]);
 ```
 
 The REST query condition layer validates allowed fields, normalizes operators,
@@ -148,13 +148,13 @@ Rules:
 REST controllers define searchable fields with `initializeSearchFields()`:
 
 ```php
-$this->setSearchFields(new Collection([
+$this->setSearchFields([
     'label',
     'content',
     'UserEntity' => [
         'email',
     ],
-]));
+]);
 ```
 
 Use search fields for broad text-like search. Use filter fields for exact,

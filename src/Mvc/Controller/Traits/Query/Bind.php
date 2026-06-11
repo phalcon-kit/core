@@ -51,12 +51,12 @@ trait Bind
     /**
      * Sets the fields for binding data.
      *
-     * @param Collection|null $bind The collection of field bindings.
+     * @param array|Collection|null $bind The collection of field bindings.
      *                              Pass null to disable the field bindings.
      */
-    public function setBind(?Collection $bind): void
+    public function setBind(array|Collection|null $bind): void
     {
-        $this->bind = $bind;
+        $this->bind = CollectionPolicy::normalizeNullable($bind);
     }
     
     /**
@@ -78,26 +78,26 @@ trait Bind
     /**
      * Merges the provided bind collection with the current bind property.
      *
-     * @param Collection $bind The collection of expose fields to merge with the current property.
+     * @param array|Collection $bind The collection of expose fields to merge with the current property.
      * @return void
      */
-    public function mergeBind(Collection $bind): void
+    public function mergeBind(array|Collection $bind): void
     {
         $this->bind = CollectionPolicy::mergeNullable(
             $this->bind,
-            $bind
+            CollectionPolicy::normalize($bind)
         );
     }
     
     /**
      * Sets the fields for binding data.
      *
-     * @param Collection|null $bindTypes The collection of binding types.
+     * @param array|Collection|null $bindTypes The collection of binding types.
      *                                   Pass null to disable the binding types.
      */
-    public function setBindTypes(?Collection $bindTypes): void
+    public function setBindTypes(array|Collection|null $bindTypes): void
     {
-        $this->bindTypes = $bindTypes;
+        $this->bindTypes = CollectionPolicy::normalizeNullable($bindTypes);
     }
     
     /**
@@ -119,14 +119,14 @@ trait Bind
     /**
      * Merges the provided bindTypes collection with the current bindTypes property.
      *
-     * @param Collection $bindTypes The collection of bindTypes to merge with the current property.
+     * @param array|Collection $bindTypes The collection of bindTypes to merge with the current property.
      * @return void
      */
-    public function mergeBindTypes(Collection $bindTypes): void
+    public function mergeBindTypes(array|Collection $bindTypes): void
     {
         $this->bindTypes = CollectionPolicy::mergeNullable(
             $this->bindTypes,
-            $bindTypes
+            CollectionPolicy::normalize($bindTypes)
         );
     }
 }

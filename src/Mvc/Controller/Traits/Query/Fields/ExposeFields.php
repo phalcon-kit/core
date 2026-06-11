@@ -46,9 +46,9 @@ trait ExposeFields
      * collection is a closed response policy and can be useful when a custom
      * transformer owns the complete payload.
      */
-    public function setExposeFields(?Collection $exposeFields): void
+    public function setExposeFields(array|Collection|null $exposeFields): void
     {
-        $this->exposeFields = $exposeFields;
+        $this->exposeFields = CollectionPolicy::normalizeNullable($exposeFields);
     }
     
     /**
@@ -80,11 +80,11 @@ trait ExposeFields
      * from the incoming collection, empty incoming collections leave an existing
      * policy unchanged, and associative keys can override previous entries.
      */
-    public function mergeExposeFields(Collection $exposeFields): void
+    public function mergeExposeFields(array|Collection $exposeFields): void
     {
         $this->exposeFields = CollectionPolicy::mergeNullable(
             $this->exposeFields,
-            $exposeFields
+            CollectionPolicy::normalize($exposeFields)
         );
     }
 }

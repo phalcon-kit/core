@@ -24,12 +24,12 @@ permissions, and custom actions.
 | `Zemit\Modules\Api\Module` module base class | `PhalconKit\Modules\Api\Module` module base class |
 | `Zemit\Mvc\Module` / `Zemit\Cli\Module` constants | `PhalconKit\Mvc\Module` / `PhalconKit\Cli\Module` constants |
 | `Zemit\Models\...` model mapping | `PhalconKit\Models\...` model mapping |
-| `getWhiteList()` | `initializeSaveFields()` plus `setSaveFields(Collection)` |
-| `getSearchWhiteList()` | `initializeSearchFields()` plus `setSearchFields(Collection)` |
-| `getFilterWhiteList()` | `initializeFilterFields()` plus `setFilterFields(Collection)` |
+| `getWhiteList()` | `initializeSaveFields()` plus `setSaveFields(array|Collection|null)` |
+| `getSearchWhiteList()` | `initializeSearchFields()` plus `setSearchFields(array|Collection|null)` |
+| `getFilterWhiteList()` | `initializeFilterFields()` plus `setFilterFields(array|Collection|null)` |
 | `getWith()` and `getListWith()` | `initializeWith()`; use `isListRequest()` for list/detail graph differences |
-| indexed `getJoins()` arrays | keyed `initializeJoins()` collection entries |
-| `getDynamicJoins()` | `initializeDynamicJoins()` plus `setDynamicJoins(Collection)` |
+| indexed `getJoins()` arrays | keyed `initializeJoins()` policy arrays or collections |
+| `getDynamicJoins()` | `initializeDynamicJoins()` plus `setDynamicJoins(array|Collection|null)` |
 | `getExpose()` | `initializeExposeFields()` or transformers; simple resources can keep default expose behavior |
 | `getFind()` custom mutation | `initializeConditions()` with named condition blocks or a dedicated trait |
 | `getListAction()` runtime/limit overrides | `initializeLimit()` |
@@ -428,22 +428,22 @@ trait LegacyTrait
     {
         $this->eventsManager->attach(
             'rest:afterInitializeFields',
-            fn () => $this->mergeSaveFields(new Collection($this->getWhiteList()))
+            fn () => $this->mergeSaveFields($this->getWhiteList())
         );
 
         $this->eventsManager->attach(
             'rest:afterInitializeFields',
-            fn () => $this->mergeFilterFields(new Collection($this->getFilterWhiteList()))
+            fn () => $this->mergeFilterFields($this->getFilterWhiteList())
         );
 
         $this->eventsManager->attach(
             'rest:afterInitializeWith',
-            fn () => $this->mergeWith(new Collection($this->getLegacyWith()))
+            fn () => $this->mergeWith($this->getLegacyWith())
         );
 
         $this->eventsManager->attach(
             'rest:afterInitializeFind',
-            fn () => $this->setFind(new Collection($this->getLegacyFind()))
+            fn () => $this->setFind($this->getLegacyFind())
         );
 
         $this->initializeBeforeAssign();
@@ -893,14 +893,12 @@ public function getFilterWhiteList()
 }
 ```
 
-In 1.x, initialize the policy collections explicitly:
+In 1.x, initialize the policy arrays explicitly:
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeSaveFields(): void
 {
-    $this->setSaveFields(new Collection([
+    $this->setSaveFields([
         'label',
         'description',
         'usernode' => [
@@ -908,30 +906,38 @@ public function initializeSaveFields(): void
             'type',
             'deleted',
         ],
-    ]));
+    ]);
 }
 
 public function initializeSearchFields(): void
 {
-    $this->setSearchFields(new Collection([
+    $this->setSearchFields([
         'id',
         'label',
         'description',
-    ]));
+    ]);
 }
 
 public function initializeFilterFields(): void
 {
-    $this->setFilterFields(new Collection([
+    $this->setFilterFields([
         'id',
         'label',
         'UserNode.userId',
-    ]));
+    ]);
 }
 ```
 
 Use the migration as a chance to keep the lists separate. Do not move every old
 field into every new policy list unless the API really allows that operation.
+
+From 3.1, REST/query policy setters and merge helpers accept either arrays or
+`Phalcon\Support\Collection` instances. If an application controller overrides
+one of these framework methods, update the override signature to match the
+widened parent contract. For example, `setSaveFields(?Collection $fields)` must
+become `setSaveFields(array|Collection|null $fields)`, and
+`mergeSaveFields(Collection $fields)` must become
+`mergeSaveFields(array|Collection $fields)`.
 
 For large nested save graphs, do not retype every scaffolded column by hand.
 Use model metadata for schema-owned fields, then attach only the relation graph
@@ -953,7 +959,7 @@ public function initializeSaveFields(): void
     $formSaveFields['formgrouplist'] = $formGroupList;
     $formSaveFields['formquestionlist'] = $formQuestionList;
 
-    $this->setSaveFields(new Collection($formSaveFields));
+    $this->setSaveFields($formSaveFields);
 }
 ```
 
@@ -971,29 +977,29 @@ class AnnotationController extends AbstractController
 {
     public function initializeSaveFields(): void
     {
-        $this->setSaveFields(new Collection([
+        $this->setSaveFields([
             'documentId',
             'hash',
             'color',
             'note',
             'content',
             'deleted',
-        ]));
+        ]);
     }
 
     public function initializeSearchFields(): void
     {
-        $this->setSearchFields(new Collection([
+        $this->setSearchFields([
             'hash',
             'color',
             'note',
             'content',
-        ]));
+        ]);
     }
 
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields(new Collection([
+        $this->setFilterFields([
             'workspaceId',
             'fooBarId',
             'documentId',
@@ -1004,7 +1010,7 @@ class AnnotationController extends AbstractController
             'deleted',
             'createdBy',
             'createdAt',
-        ]));
+        ]);
     }
 }
 ```
@@ -1046,20 +1052,20 @@ In 1.x, use `initializeWith()` and branch on the request shape:
 public function initializeWith(): void
 {
     if ($this->isListRequest()) {
-        $this->setWith(new Collection([
+        $this->setWith([
             'UserNode.UserEntity',
             'GroupList',
-        ]));
+        ]);
         return;
     }
 
-    $this->setWith(new Collection([
+    $this->setWith([
         'UserNode.UserEntity',
         'GroupList',
         'FooBarDecisionList',
         'FormList',
         ...$this->getFormEagerLoadingDefinition('FormList.'),
-    ]));
+    ]);
 }
 ```
 
@@ -1073,10 +1079,10 @@ request shapes:
 ```php
 public function initializeWith(): void
 {
-    $this->setWith(new Collection([
+    $this->setWith([
         'CreatedByEntity',
         'UserEntity',
-    ]));
+    ]);
 }
 ```
 
@@ -1106,14 +1112,14 @@ In 1.x, key joins by alias:
 ```php
 public function initializeJoins(): void
 {
-    $this->setJoins(new Collection([
+    $this->setJoins([
         'UserNode' => [
             WorkspaceUser::class,
             '[' . $this->getModelName() . '].[id] = [UserNode].[workspaceId]',
             'UserNode',
             'left',
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -1143,12 +1149,12 @@ public function getDynamicJoins(): array
 }
 ```
 
-In 1.x, initialize a collection:
+In 1.x, initialize a policy array:
 
 ```php
 public function initializeDynamicJoins(): void
 {
-    $this->setDynamicJoins(new Collection([
+    $this->setDynamicJoins([
         'Note' => [
             Note::class,
             '[' . $this->getModelName() . '].[id] = [Note].[fooBarId]'
@@ -1160,7 +1166,7 @@ public function initializeDynamicJoins(): void
             . '[FooBarReview.FooBarDecisionReason].[fooBarReviewId]'
             . ' and [FooBarReview.FooBarDecisionReason].[deleted] <> 1',
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -1634,7 +1640,7 @@ share the same shape:
 ```php
 public function initializeExposeFields(): void
 {
-    $this->setExposeFields(new Collection([
+    $this->setExposeFields([
         false,
         'id',
         'workspaceId',
@@ -1661,7 +1667,7 @@ public function initializeExposeFields(): void
             'lastName',
             'email',
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -1872,7 +1878,7 @@ and then delegate to the normal `saveAction()`:
 ```php
 public function saveReviewStatusAction(): ResponseInterface
 {
-    $this->mergeSaveFields(new Collection([
+    $this->mergeSaveFields([
         'foobarreviewlist' => [
             'type',
             'userId',
@@ -1883,7 +1889,7 @@ public function saveReviewStatusAction(): ResponseInterface
                 'deleted',
             ],
         ],
-    ]));
+    ]);
 
     $wasCompleteBeforeSave = false;
 

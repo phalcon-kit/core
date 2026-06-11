@@ -105,9 +105,9 @@ trait DistinctAction
      * default for reusable framework controllers because exposing all
      * filterable columns could leak high-cardinality or sensitive values.
      */
-    public function setDistinctActionFields(?Collection $distinctActionFields): void
+    public function setDistinctActionFields(array|Collection|null $distinctActionFields): void
     {
-        $this->distinctActionFields = $distinctActionFields;
+        $this->distinctActionFields = CollectionPolicy::normalizeNullable($distinctActionFields);
     }
 
     /**
@@ -129,15 +129,15 @@ trait DistinctAction
     /**
      * Merge additional distinct action fields with the current policy.
      *
-     * @param Collection $distinctActionFields Collection containing public field
+     * @param array|Collection $distinctActionFields array or Collection containing public field
      *     names, enabled maps, or public-to-query aliases accepted by
      *     {@see getDistinctActionFieldMap()}.
      */
-    public function mergeDistinctActionFields(Collection $distinctActionFields): void
+    public function mergeDistinctActionFields(array|Collection $distinctActionFields): void
     {
         $this->distinctActionFields = CollectionPolicy::mergeNullable(
             $this->distinctActionFields,
-            $distinctActionFields
+            CollectionPolicy::normalize($distinctActionFields)
         );
     }
 

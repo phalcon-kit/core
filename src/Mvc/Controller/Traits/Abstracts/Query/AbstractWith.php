@@ -28,7 +28,7 @@ trait AbstractWith
     /**
      * Replace eager-loading relation configuration.
      */
-    abstract public function setWith(?Collection $with): void;
+    abstract public function setWith(array|Collection|null $with): void;
     
     /**
      * Return eager-loading relation configuration.

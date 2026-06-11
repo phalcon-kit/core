@@ -20,6 +20,45 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 class CollectionPolicyTest extends AbstractUnit
 {
+    public function testNormalizeKeepsExistingCollectionInstance(): void
+    {
+        $collection = new Collection(['id'], false);
+
+        $this->assertSame($collection, CollectionPolicy::normalize($collection));
+    }
+
+    public function testNormalizeTurnsArraysIntoCollections(): void
+    {
+        $collection = CollectionPolicy::normalize([
+            'label',
+            'usernode' => [
+                'userId',
+                'type',
+                'deleted',
+            ],
+        ]);
+
+        $this->assertInstanceOf(Collection::class, $collection);
+        $this->assertSame([
+            'label',
+            'usernode' => [
+                'userId',
+                'type',
+                'deleted',
+            ],
+        ], $collection->toArray());
+    }
+
+    public function testNormalizeNullablePreservesNullAndEmptyArrayPolicy(): void
+    {
+        $this->assertNull(CollectionPolicy::normalizeNullable(null));
+
+        $collection = CollectionPolicy::normalizeNullable([]);
+
+        $this->assertInstanceOf(Collection::class, $collection);
+        $this->assertSame([], $collection->toArray());
+    }
+
     #[DataProvider('enabledValueProvider')]
     public function testIsEnabledValueNormalizesBooleanLikeMapValues(mixed $value, bool $expected): void
     {

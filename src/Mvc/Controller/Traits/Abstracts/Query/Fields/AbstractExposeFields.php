@@ -32,11 +32,11 @@ trait AbstractExposeFields
     /**
      * Replace the exposure-field policy.
      *
-     * @param Collection|null $exposeFields Field policy collection, null for
+     * @param array|Collection|null $exposeFields Field policy collection, null for
      *     default exposure behavior, or an empty collection for a closed
      *     response policy.
      */
-    abstract public function setExposeFields(?Collection $exposeFields): void;
+    abstract public function setExposeFields(array|Collection|null $exposeFields): void;
     
     /**
      * Return the configured exposure-field policy.

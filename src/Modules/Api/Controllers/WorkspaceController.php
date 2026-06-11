@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Api\Controllers;
 
-use Phalcon\Support\Collection;
 use PhalconKit\Modules\Api\Controller;
 
 class WorkspaceController extends Controller
@@ -24,10 +23,10 @@ class WorkspaceController extends Controller
     #[\Override]
     public function initializeWith(): void
     {
-        $this->setWith(new Collection([
+        $this->setWith([
             'LangList',
             'TableList.ColumnList'
-        ]));
+        ]);
     }
     
     #[\Override]
@@ -39,10 +38,10 @@ class WorkspaceController extends Controller
     #[\Override]
     public function initializeSearchFields(): void
     {
-        $this->setSearchFields(new Collection([
+        $this->setSearchFields([
             'uuid',
             'name',
             'description'
-        ]));
+        ]);
     }
 }

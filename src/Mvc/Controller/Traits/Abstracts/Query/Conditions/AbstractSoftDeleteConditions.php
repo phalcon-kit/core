@@ -42,7 +42,7 @@ trait AbstractSoftDeleteConditions
     /**
      * Replace the soft-delete condition collection.
      */
-    abstract public function setSoftDeleteConditions(?Collection $softDeleteConditions): void;
+    abstract public function setSoftDeleteConditions(array|Collection|null $softDeleteConditions): void;
 
     /**
      * Retrieve the registered soft-delete conditions.

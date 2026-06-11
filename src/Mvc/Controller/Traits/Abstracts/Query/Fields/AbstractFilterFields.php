@@ -32,10 +32,10 @@ trait AbstractFilterFields
     /**
      * Replace the filter-field policy.
      *
-     * @param Collection|null $filterFields Field policy collection, null for
+     * @param array|Collection|null $filterFields Field policy collection, null for
      *     unrestricted filtering, or an empty collection for a closed policy.
      */
-    abstract public function setFilterFields(?Collection $filterFields): void;
+    abstract public function setFilterFields(array|Collection|null $filterFields): void;
     
     /**
      * Return the configured filter-field policy.

@@ -242,9 +242,9 @@ class CountActionTest extends AbstractUnit
         $this->assertFalse($controller->hasCountActionResponseFields());
         $this->assertNull($controller->getCountActionResponseFields());
 
-        $controller->setCountActionResponseFields(new Collection([
+        $controller->setCountActionResponseFields([
             CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT,
-        ], false));
+        ]);
 
         $this->assertTrue($controller->hasCountActionResponseFields());
         $this->assertSame(
@@ -252,9 +252,9 @@ class CountActionTest extends AbstractUnit
             $controller->getCountActionResponseFields()?->toArray()
         );
 
-        $controller->mergeCountActionResponseFields(new Collection([
+        $controller->mergeCountActionResponseFields([
             CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL,
-        ], false));
+        ]);
 
         $this->assertSame(
             [
@@ -264,9 +264,9 @@ class CountActionTest extends AbstractUnit
             $controller->getCountActionResponseFields()?->toArray()
         );
 
-        $controller->setCountActionResponseFields(new Collection([
+        $controller->setCountActionResponseFields([
             CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => false,
-        ], false));
+        ]);
 
         $this->assertFalse($controller->hasCountActionResponseFields());
     }
@@ -274,11 +274,11 @@ class CountActionTest extends AbstractUnit
     public function testCountActionResponseFieldsNormalizeEnabledMapValues(): void
     {
         $controller = $this->createController([7, 11]);
-        $controller->setCountActionResponseFields(new Collection([
+        $controller->setCountActionResponseFields([
             CountActionControllerDouble::COUNT_RESPONSE_GROUPED_COUNT => 'off',
             CountActionControllerDouble::COUNT_RESPONSE_BUCKET_TOTAL => 0,
             CountActionControllerDouble::COUNT_RESPONSE_TOTAL_COUNT => 'yes',
-        ], false));
+        ]);
 
         $controller->countAction();
 

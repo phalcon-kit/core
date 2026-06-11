@@ -42,7 +42,7 @@ trait AbstractConditions
     /**
      * Replace the composed condition collection.
      */
-    abstract public function setConditions(?Collection $conditions): void;
+    abstract public function setConditions(array|Collection|null $conditions): void;
     
     /**
      * Return the composed condition collection.

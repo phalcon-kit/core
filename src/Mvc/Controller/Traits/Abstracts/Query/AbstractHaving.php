@@ -28,7 +28,7 @@ trait AbstractHaving
     /**
      * Replace HAVING conditions.
      */
-    abstract public function setHaving(?Collection $having): void;
+    abstract public function setHaving(array|Collection|null $having): void;
     
     /**
      * Return HAVING conditions.

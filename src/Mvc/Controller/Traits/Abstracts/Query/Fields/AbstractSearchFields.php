@@ -32,10 +32,10 @@ trait AbstractSearchFields
     /**
      * Replace the search-field policy.
      *
-     * @param Collection|null $searchFields Field policy collection or null when
+     * @param array|Collection|null $searchFields Field policy collection or null when
      *     search should remain unconfigured.
      */
-    abstract public function setSearchFields(?Collection $searchFields): void;
+    abstract public function setSearchFields(array|Collection|null $searchFields): void;
     
     /**
      * Return the configured search-field policy.

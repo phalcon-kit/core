@@ -42,13 +42,11 @@ Start with the app API base controller and declare the resource policy:
 
 namespace App\Modules\Api\Controllers;
 
-use Phalcon\Support\Collection;
-
 final class ProjectController extends AbstractController
 {
     public function initializeSaveFields(): void
     {
-        $this->setSaveFields(new Collection([
+        $this->setSaveFields([
             'label',
             'status',
             'usernode' => [
@@ -56,35 +54,35 @@ final class ProjectController extends AbstractController
                 'type',
                 'deleted',
             ],
-        ]));
+        ]);
     }
 
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields(new Collection([
+        $this->setFilterFields([
             'id',
             'label',
             'status',
             'UserNode.userId',
             'UserNode.type',
             'deleted',
-        ]));
+        ]);
     }
 
     public function initializeSearchFields(): void
     {
-        $this->setSearchFields(new Collection([
+        $this->setSearchFields([
             'id',
             'label',
             'status',
-        ]));
+        ]);
     }
 
     public function initializeWith(): void
     {
-        $this->setWith(new Collection([
+        $this->setWith([
             'UserNode.UserEntity',
-        ]));
+        ]);
     }
 }
 ```
@@ -96,6 +94,10 @@ This small controller tells PhalconKit:
 - which fields participate in text search;
 - which relations should load with `find-with` and `find-first-with`;
 - which nested relation payloads can be saved.
+
+REST policy setters accept plain arrays and normalize them into internal
+collections. Passing a `Phalcon\Support\Collection` is still supported when a
+controller needs explicit collection behavior.
 
 ## Keep Policies Separate
 
@@ -231,14 +233,14 @@ Use joins when filters or ordering depend on related tables:
 ```php
 public function initializeJoins(): void
 {
-    $this->setJoins(new Collection([
+    $this->setJoins([
         'UserNode' => [
             \App\Models\ProjectUser::class,
             '[' . $this->getModelName() . '].[id] = [UserNode].[projectId]',
             'UserNode',
             'left',
         ],
-    ]));
+    ]);
 }
 ```
 
@@ -410,19 +412,18 @@ Controllers that need to always emit dashboard or facet metadata, or restrict
 which optional fields clients may request, can configure explicit extra fields:
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeCountActionResponseFields(): void
 {
-    $this->setCountActionResponseFields(new Collection([
+    $this->setCountActionResponseFields([
         self::COUNT_RESPONSE_GROUPED_COUNT,
         self::COUNT_RESPONSE_BUCKET_TOTAL,
         self::COUNT_RESPONSE_TOTAL_COUNT,
-    ], false));
+    ]);
 }
 ```
 
-Collection policies accept either value-list entries or enabled-map entries.
+Policy arrays and collections accept either value-list entries or enabled-map
+entries.
 For count field policies, enabled-map values use boolean-like normalization:
 `true`, `1`, `'1'`, and `'yes'` enable the key, while `false`, `0`, `'0'`,
 `'false'`, `'no'`, and `'off'` disable it. Alias-capable policies such as
@@ -430,8 +431,8 @@ distinct fields keep string map values as aliases instead.
 
 When this policy is null, clients may request any supported count metadata
 field. When it is non-null, requested metadata is restricted to the configured
-field names. Passing an empty collection blocks every optional requested count
-metadata field while still returning the native `count` field.
+field names. Passing an empty array or collection blocks every optional
+requested count metadata field while still returning the native `count` field.
 
 `Restful::initialize()` calls this initializer after the query policy setup, so
 count response metadata follows the same controller initialization pattern as
@@ -455,15 +456,13 @@ field can be requested. Controllers only need to configure a policy when they
 want to restrict or block embedded counts.
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeFindActionCountFields(): void
 {
-    $this->setFindActionCountFields(new Collection([
+    $this->setFindActionCountFields([
         self::REST_VIEW_COUNT,
         self::COUNT_RESPONSE_BUCKET_TOTAL,
         self::COUNT_RESPONSE_TOTAL_COUNT,
-    ], false));
+    ]);
 }
 ```
 
@@ -475,9 +474,9 @@ List counts use the prepared list query, including filters, search, joins,
 permissions, identity conditions, bind values, and cache options. Limit and
 offset are removed for count queries. Without a client `count` request, the
 legacy list payload is preserved and no count query is executed. Passing an
-empty collection to `setFindActionCountFields()` blocks every embedded count
-field, while unsupported field names are rejected instead of becoming dynamic
-response variables.
+empty array or collection to `setFindActionCountFields()` blocks every embedded
+count field, while unsupported field names are rejected instead of becoming
+dynamic response variables.
 
 ## Distinct Value Responses
 
@@ -490,15 +489,13 @@ The action is closed by default. Configure allowed fields in the controller
 initializer:
 
 ```php
-use Phalcon\Support\Collection;
-
 public function initializeDistinctActionFields(): void
 {
-    $this->setDistinctActionFields(new Collection([
+    $this->setDistinctActionFields([
         'status',
         'type',
         'ownerEmail' => 'Owner.email',
-    ], false));
+    ]);
 }
 ```
 

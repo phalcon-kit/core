@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Api\Controllers;
 
-use Phalcon\Support\Collection;
 use PhalconKit\Modules\Api\Controller;
 
 class RoleController extends Controller
@@ -21,29 +20,29 @@ class RoleController extends Controller
     #[\Override]
     public function initializeWith(): void
     {
-        $this->setWith(new Collection([
+        $this->setWith([
             'UserList',
-        ]));
+        ]);
     }
     
     #[\Override]
     public function initializeSaveFields(): void
     {
-        $this->setSaveFields(new Collection([
+        $this->setSaveFields([
             'key',
             'labelFr',
             'labelEn'
-        ]));
+        ]);
     }
     
     #[\Override]
     public function initializeExposeFields(): void
     {
-        $this->setExposeFields(new Collection([
+        $this->setExposeFields([
             true,
             'User' => [
                 'password' => false,
             ],
-        ]));
+        ]);
     }
 }

@@ -44,7 +44,7 @@ trait AbstractPermissionConditions
     /**
      * Replace the permission condition collection.
      */
-    abstract public function setPermissionConditions(?Collection $permissionConditions): void;
+    abstract public function setPermissionConditions(array|Collection|null $permissionConditions): void;
 
     /**
      * Retrieve the registered permission conditions.

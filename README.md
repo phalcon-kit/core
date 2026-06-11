@@ -82,13 +82,11 @@ Example resource controller:
 
 namespace App\Modules\Api\Controllers;
 
-use Phalcon\Support\Collection;
-
 final class FooBarController extends AbstractController
 {
     public function initializeSaveFields(): void
     {
-        $this->setSaveFields(new Collection([
+        $this->setSaveFields([
             'label',
             'status',
             'usernode' => [
@@ -96,26 +94,26 @@ final class FooBarController extends AbstractController
                 'type',
                 'deleted',
             ],
-        ]));
+        ]);
     }
 
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields(new Collection([
+        $this->setFilterFields([
             'id',
             'label',
             'status',
             'UserNode.userId',
             'UserNode.type',
             'deleted',
-        ]));
+        ]);
     }
 
     public function initializeWith(): void
     {
-        $this->setWith(new Collection([
+        $this->setWith([
             'UserNode.UserEntity',
-        ]));
+        ]);
     }
 }
 ```

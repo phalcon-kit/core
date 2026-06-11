@@ -84,10 +84,10 @@ class RecordController extends Controller
     #[\Override]
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields(new Collection([
+        $this->setFilterFields([
             'workspaceId',
             'tableId',
-        ]));
+        ]);
     }
     
     public function hasAdvanced(string $key): bool

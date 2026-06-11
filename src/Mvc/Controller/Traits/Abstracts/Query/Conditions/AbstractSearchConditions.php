@@ -41,7 +41,7 @@ trait AbstractSearchConditions
     /**
      * Replace the search condition collection.
      */
-    abstract public function setSearchConditions(?Collection $searchConditions): void;
+    abstract public function setSearchConditions(array|Collection|null $searchConditions): void;
 
     /**
      * Retrieve the registered search conditions.

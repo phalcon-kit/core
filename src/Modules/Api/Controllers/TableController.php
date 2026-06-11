@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Api\Controllers;
 
-use Phalcon\Support\Collection;
 use PhalconKit\Modules\Api\Controller;
 
 class TableController extends Controller
@@ -24,8 +23,8 @@ class TableController extends Controller
     #[\Override]
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields(new Collection([
+        $this->setFilterFields([
             'workspaceId',
-        ]));
+        ]);
     }
 }

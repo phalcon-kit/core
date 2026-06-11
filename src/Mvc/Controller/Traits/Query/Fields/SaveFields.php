@@ -46,9 +46,9 @@ trait SaveFields
      * the policy explicit but gives `assign()` no allowed fields, which is a
      * useful closed default for read-only resources.
      */
-    public function setSaveFields(?Collection $saveFields): void
+    public function setSaveFields(array|Collection|null $saveFields): void
     {
-        $this->saveFields = $saveFields;
+        $this->saveFields = CollectionPolicy::normalizeNullable($saveFields);
     }
     
     /**
@@ -81,11 +81,11 @@ trait SaveFields
      * from the incoming collection, empty incoming collections leave an existing
      * policy unchanged, and associative keys can override previous entries.
      */
-    public function mergeSaveFields(Collection $saveFields): void
+    public function mergeSaveFields(array|Collection $saveFields): void
     {
         $this->saveFields = CollectionPolicy::mergeNullable(
             $this->saveFields,
-            $saveFields
+            CollectionPolicy::normalize($saveFields)
         );
     }
 }

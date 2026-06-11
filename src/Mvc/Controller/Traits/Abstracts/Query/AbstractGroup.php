@@ -28,7 +28,7 @@ trait AbstractGroup
     /**
      * Replace group configuration.
      */
-    abstract public function setGroup(?Collection $group): void;
+    abstract public function setGroup(array|Collection|null $group): void;
     
     /**
      * Return group configuration.

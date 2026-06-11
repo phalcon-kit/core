@@ -32,20 +32,20 @@ guidance in the relevant guide or shipped skill reference.
 
 ## Current Focus
 
-Target: `3.0.4` release readiness, then `3.1.x` planning
+Target: `3.1.0` REST API ergonomics and scaffold readiness
 
-Theme: keep the completed `3.0.4` coverage pass releasable, then start the
-next development block with a clear scaffold ownership contract.
+Theme: keep REST controller declarations concise and predictable, then continue
+the scaffold work with a clear generated-file ownership contract.
 
 Decision:
 
-- The `3.0.4` coverage batch is complete and belongs in the changelog, not in
+- Completed `3.0.4` coverage and maintenance work belongs in the changelog, not
   active roadmap blocks.
-- Do not add broad runtime behavior to `3.0.4`; keep remaining work limited to
-  QA fixes, release notes, and release mechanics.
-- After `3.0.4`, the next development block is REST controller scaffold
-  readiness. Start with generated-file ownership before adding public
-  scaffolding behavior.
+- REST policy declaration ergonomics start the `3.1.0` development line:
+  collection-backed setters should accept arrays while storing normalized
+  collections internally.
+- The next schedulable block is REST controller scaffold readiness. Start with
+  generated-file ownership before adding public scaffolding behavior.
 
 Release principles:
 
@@ -58,41 +58,11 @@ Release principles:
 
 ## Next Blocks
 
-### 3.0.4 Release Readiness
+### REST Controller Scaffold Readiness
 
 Status: Next
 
-Target: `3.0.4`
-
-Why:
-
-- The testing coverage pass is complete, but the release should not ship with a
-  failing database-backed unit or stale planning docs.
-- The release should preserve the current public behavior and avoid mixing
-  scaffolding feature work into the patch train.
-
-Scope:
-
-- Keep `composer qa:test`, style, package skeleton, and practical static checks
-  green for the release environment.
-- Keep the changelog focused on shipped behavior and maintainer workflow
-  changes.
-- Remove completed testing-priority inventories from active planning docs.
-- Cut and publish the release only after the local release gate is clean.
-
-Validation:
-
-- `composer qa:test`.
-- `composer phpcs`.
-- `composer skeleton`.
-- `composer phpstan`.
-- `git diff --check`.
-
-### REST Controller Scaffold Readiness
-
-Status: Planned
-
-Target: `3.1.x`
+Target: `3.1.0`
 
 Why:
 

@@ -33,7 +33,7 @@ trait AbstractOrder
     /**
      * Replace request order configuration.
      */
-    abstract public function setOrder(?Collection $order): void;
+    abstract public function setOrder(array|Collection|null $order): void;
     
     /**
      * Return request order configuration.

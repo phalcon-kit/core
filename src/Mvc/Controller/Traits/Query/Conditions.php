@@ -69,12 +69,12 @@ trait Conditions
     /**
      * Sets the conditions.
      *
-     * @param Collection|null $conditions A collection of conditions or null to unset the conditions.
+     * @param array|Collection|null $conditions A collection of conditions or null to unset the conditions.
      * @return void
      */
-    public function setConditions(?Collection $conditions): void
+    public function setConditions(array|Collection|null $conditions): void
     {
-        $this->conditions = $conditions;
+        $this->conditions = CollectionPolicy::normalizeNullable($conditions);
     }
 
     /**
@@ -90,14 +90,14 @@ trait Conditions
     /**
      * Merges the provided conditions collection with the current conditions property.
      *
-     * @param Collection $conditions The collection of conditions to merge with the current property.
+     * @param array|Collection $conditions The collection of conditions to merge with the current property.
      * @return void
      */
-    public function mergeConditions(Collection $conditions): void
+    public function mergeConditions(array|Collection $conditions): void
     {
         $this->conditions = CollectionPolicy::mergeNullable(
             $this->conditions,
-            $conditions
+            CollectionPolicy::normalize($conditions)
         );
     }
 }

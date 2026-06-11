@@ -130,16 +130,16 @@ class DistinctActionTest extends AbstractUnit
         $this->assertFalse($controller->hasDistinctActionFields());
         $this->assertNull($controller->getDistinctActionFields());
 
-        $controller->setDistinctActionFields(new Collection([
+        $controller->setDistinctActionFields([
             'status',
-        ], false));
+        ]);
 
         $this->assertTrue($controller->hasDistinctActionFields());
         $this->assertSame(['status'], $controller->getDistinctActionFields()?->toArray());
 
-        $controller->mergeDistinctActionFields(new Collection([
+        $controller->mergeDistinctActionFields([
             'ownerEmail' => 'Owner.email',
-        ], false));
+        ]);
 
         $this->assertSame(
             [
@@ -149,9 +149,9 @@ class DistinctActionTest extends AbstractUnit
             $controller->getDistinctActionFields()?->toArray()
         );
 
-        $controller->setDistinctActionFields(new Collection([
+        $controller->setDistinctActionFields([
             'status' => false,
-        ], false));
+        ]);
 
         $this->assertFalse($controller->hasDistinctActionFields());
     }

@@ -23,6 +23,7 @@ use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\Fields\AbstractFilterFields;
+use PhalconKit\Support\CollectionPolicy;
 use PhalconKit\Support\Helper\Arr\FlattenKeys;
 
 trait FilterConditions
@@ -54,13 +55,13 @@ trait FilterConditions
     /**
      * Sets the filter conditions used for configuring specific query or data processing criteria.
      *
-     * @param Collection|null $filterConditions A collection of filter conditions to be applied.
+     * @param array|Collection|null $filterConditions A collection of filter conditions to be applied.
      *                                           Can be null to clear existing conditions.
      * @return void
      */
-    public function setFilterConditions(?Collection $filterConditions): void
+    public function setFilterConditions(array|Collection|null $filterConditions): void
     {
-        $this->filterConditions = $filterConditions;
+        $this->filterConditions = CollectionPolicy::normalizeNullable($filterConditions);
     }
 
     /**

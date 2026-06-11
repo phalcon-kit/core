@@ -45,9 +45,9 @@ trait MapFields
      * Passing null disables field mapping. Passing an empty collection keeps the
      * decision explicit but maps no payload keys.
      */
-    public function setMapFields(?Collection $mapFields): void
+    public function setMapFields(array|Collection|null $mapFields): void
     {
-        $this->mapFields = $mapFields;
+        $this->mapFields = CollectionPolicy::normalizeNullable($mapFields);
     }
     
     /**
@@ -80,11 +80,11 @@ trait MapFields
      * from the incoming collection, empty incoming collections leave an existing
      * policy unchanged, and associative keys can override previous entries.
      */
-    public function mergeMapFields(Collection $mapFields): void
+    public function mergeMapFields(array|Collection $mapFields): void
     {
         $this->mapFields = CollectionPolicy::mergeNullable(
             $this->mapFields,
-            $mapFields
+            CollectionPolicy::normalize($mapFields)
         );
     }
 }

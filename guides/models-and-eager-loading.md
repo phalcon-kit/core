@@ -54,14 +54,14 @@ Controllers can allow relation writes through nested `initializeSaveFields()`
 configuration:
 
 ```php
-$this->setSaveFields(new Collection([
+$this->setSaveFields([
     'label',
     'usernode' => [
         'userId',
         'type',
         'deleted',
     ],
-]));
+]);
 ```
 
 Keep relation payloads explicit. Do not expose every nested field just because a
@@ -148,10 +148,10 @@ Controller-level examples:
 ```php
 public function initializeWith(): void
 {
-    $this->setWith(new Collection([
+    $this->setWith([
         'UserNode.UserEntity',
         'CategoryList',
-    ]));
+    ]);
 }
 ```
 

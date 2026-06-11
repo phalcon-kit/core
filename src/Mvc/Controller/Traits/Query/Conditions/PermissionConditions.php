@@ -18,6 +18,7 @@ use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractModel;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractQuery;
+use PhalconKit\Support\CollectionPolicy;
 
 /**
  * Permission-based query condition provider.
@@ -65,11 +66,11 @@ trait PermissionConditions
     /**
      * Replace the permission condition collection.
      *
-     * @param Collection|null $permissionConditions
+     * @param array|Collection|null $permissionConditions
      */
-    public function setPermissionConditions(?Collection $permissionConditions): void
+    public function setPermissionConditions(array|Collection|null $permissionConditions): void
     {
-        $this->permissionConditions = $permissionConditions;
+        $this->permissionConditions = CollectionPolicy::normalizeNullable($permissionConditions);
     }
 
     /**

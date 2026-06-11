@@ -33,7 +33,7 @@ trait AbstractBind
     /**
      * Replace bind values used by compiled query options.
      */
-    abstract public function setBind(?Collection $bind): void;
+    abstract public function setBind(array|Collection|null $bind): void;
     
     /**
      * Return bind values used by compiled query options.
@@ -43,7 +43,7 @@ trait AbstractBind
     /**
      * Replace bind types used by compiled query options.
      */
-    abstract public function setBindTypes(?Collection $bindTypes): void;
+    abstract public function setBindTypes(array|Collection|null $bindTypes): void;
     
     /**
      * Return bind types used by compiled query options.

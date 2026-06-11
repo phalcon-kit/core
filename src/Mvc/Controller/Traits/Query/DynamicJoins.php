@@ -47,12 +47,12 @@ trait DynamicJoins
     /**
      * Sets the dynamic joins for the find criteria.
      *
-     * @param Collection|null $dynamicJoins The collection of dynamic joins.
+     * @param array|Collection|null $dynamicJoins The collection of dynamic joins.
      *                                      Pass null to disable dynamic joins.
      */
-    public function setDynamicJoins(?Collection $dynamicJoins): void
+    public function setDynamicJoins(array|Collection|null $dynamicJoins): void
     {
-        $this->dynamicJoins = $dynamicJoins;
+        $this->dynamicJoins = CollectionPolicy::normalizeNullable($dynamicJoins);
         $dynamicJoins = $this->getDynamicJoinsFromFilters();
         $joins = $this->getJoins();
         if ($joins === null) {
@@ -89,14 +89,14 @@ trait DynamicJoins
     /**
      * Merges the provided dynamicJoins collection with the current dynamicJoins property.
      *
-     * @param Collection $dynamicJoins The collection of dynamicJoins to merge with the current property.
+     * @param array|Collection $dynamicJoins The collection of dynamicJoins to merge with the current property.
      * @return void
      */
-    public function mergeDynamicJoins(Collection $dynamicJoins): void
+    public function mergeDynamicJoins(array|Collection $dynamicJoins): void
     {
         $this->dynamicJoins = CollectionPolicy::mergeNullable(
             $this->dynamicJoins,
-            $dynamicJoins
+            CollectionPolicy::normalize($dynamicJoins)
         );
     }
 

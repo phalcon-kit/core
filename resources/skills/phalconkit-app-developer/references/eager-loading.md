@@ -56,7 +56,7 @@ Model APIs:
 Controller APIs:
 
 - API controllers usually define a default relation graph in
-  `initializeWith()` with `$this->setWith(new Collection([...]))`.
+  `initializeWith()` with `$this->setWith([...])`.
 - `findWithAction()` and `findFirstWithAction()` use the controller's `with`
   collection and query parameters.
 - Custom controller actions can call `$this->findWith($with, $find)` or
@@ -213,12 +213,11 @@ Current implementation limits:
 Define default eager loading in the resource controller:
 
 ```php
-use Phalcon\Support\Collection;
 use PhalconKit\Mvc\Model\EagerLoading\QueryBuilder;
 
 public function initializeWith(): void
 {
-    $this->setWith(new Collection([
+    $this->setWith([
         'UserEntity',
         'CouncilEntity',
         'UnionEntity',
@@ -228,7 +227,7 @@ public function initializeWith(): void
         },
         'DonationList.UnionEntity',
         'DonationList.CouncilEntity',
-    ]));
+    ]);
 }
 ```
 

@@ -28,7 +28,7 @@ trait AbstractDistinct
     /**
      * Replace distinct-field configuration.
      */
-    abstract public function setDistinct(?Collection $distinct): void;
+    abstract public function setDistinct(array|Collection|null $distinct): void;
     
     /**
      * Return distinct-field configuration.

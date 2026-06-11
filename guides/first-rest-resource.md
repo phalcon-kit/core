@@ -114,13 +114,12 @@ write, filter, search, load, and access.
 namespace App\Modules\Api\Controllers;
 
 use App\Models\ProjectUser;
-use Phalcon\Support\Collection;
 
 final class ProjectController extends AbstractController
 {
     public function initializeSaveFields(): void
     {
-        $this->setSaveFields(new Collection([
+        $this->setSaveFields([
             'label',
             'status',
             'usernode' => [
@@ -128,47 +127,47 @@ final class ProjectController extends AbstractController
                 'type',
                 'deleted',
             ],
-        ]));
+        ]);
     }
 
     public function initializeSearchFields(): void
     {
-        $this->setSearchFields(new Collection([
+        $this->setSearchFields([
             'id',
             'label',
             'status',
-        ]));
+        ]);
     }
 
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields(new Collection([
+        $this->setFilterFields([
             'id',
             'label',
             'status',
             'deleted',
             'UserNode.userId',
             'UserNode.type',
-        ]));
+        ]);
     }
 
     public function initializeWith(): void
     {
-        $this->setWith(new Collection([
+        $this->setWith([
             'UserNode.UserEntity',
-        ]));
+        ]);
     }
 
     public function initializeJoins(): void
     {
-        $this->setJoins(new Collection([
+        $this->setJoins([
             'UserNode' => [
                 ProjectUser::class,
                 '[' . $this->getModelName() . '].[id] = [UserNode].[projectId]',
                 'UserNode',
                 'left',
             ],
-        ]));
+        ]);
     }
 
     public function initializePermissionConditions(): void
