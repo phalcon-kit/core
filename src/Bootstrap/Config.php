@@ -1430,7 +1430,9 @@ class Config extends \PhalconKit\Config\Config
             /**
              * Access Control List (ACL) options
              */
-            'acl' => [],
+            'acl' => [
+                'attributes' => Env::get('ACL_ATTRIBUTES', true),
+            ],
             
             /**
              * Application permissions

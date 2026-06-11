@@ -96,4 +96,20 @@ class AclTest extends AbstractUnit
         $this->assertTrue($memory->isAllowed('child', 'BaseController', 'index'));
         $this->assertTrue($memory->isAllowed('child', 'ChildController', 'index'));
     }
+
+    public function testGetRegistersDashCaseAliasesForCamelCaseActions(): void
+    {
+        $memory = (new Acl())->get(permissions: [
+            'roles' => [
+                'user' => [
+                    'components' => [
+                        'ProjectController' => ['findWith'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertTrue($memory->isAllowed('user', 'ProjectController', 'findWith'));
+        $this->assertTrue($memory->isAllowed('user', 'ProjectController', 'find-with'));
+    }
 }

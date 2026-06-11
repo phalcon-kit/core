@@ -18,6 +18,8 @@ use Phalcon\Di\Di;
 use Phalcon\Events\Manager;
 use PhalconKit\Config\Config;
 use PhalconKit\Mvc\Controller\Rest;
+use PhalconKit\Mvc\Dispatcher;
+use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\AttributePolicyController;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\BehaviorTestListener;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\InjectableBehaviorTestListener;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -82,6 +84,59 @@ class BehaviorTest extends AbstractUnit
         $this->assertNotEmpty($eventsManager->getListeners('custom'));
     }
 
+    public function testBeforeExecuteRouteAttachesActionScopedAttributeBehaviors(): void
+    {
+        $eventsManager = new Manager();
+        $dispatcher = new Dispatcher();
+        $dispatcher->setControllerName('attribute-policy');
+        $dispatcher->setActionName('saveUserNode');
+
+        $controller = $this->newAttributePolicyController($eventsManager, $dispatcher, [
+            'roles' => [
+                'manager' => [],
+            ],
+        ]);
+
+        $controller->beforeExecuteRoute();
+
+        $this->assertSame([], $eventsManager->getListeners('rest'));
+        $this->assertCount(1, $eventsManager->getListeners('custom'));
+    }
+
+    public function testBeforeExecuteRouteAttachesDefaultEveryoneAttributeBehavior(): void
+    {
+        $eventsManager = new Manager();
+        $dispatcher = new Dispatcher();
+        $dispatcher->setControllerName('attribute-policy');
+        $dispatcher->setActionName('find-with');
+
+        $controller = $this->newAttributePolicyController($eventsManager, $dispatcher, [
+            'roles' => [],
+        ], roles: []);
+
+        $controller->beforeExecuteRoute();
+
+        $this->assertCount(1, $eventsManager->getListeners('rest'));
+        $this->assertSame([], $eventsManager->getListeners('custom'));
+    }
+
+    public function testBeforeExecuteRouteCanDisableAttributeBehaviorScanning(): void
+    {
+        $eventsManager = new Manager();
+        $dispatcher = new Dispatcher();
+        $dispatcher->setControllerName('attribute-policy');
+        $dispatcher->setActionName('find-with');
+
+        $controller = $this->newAttributePolicyController($eventsManager, $dispatcher, [
+            'roles' => [],
+        ], roles: [], aclAttributes: false);
+
+        $controller->beforeExecuteRoute();
+
+        $this->assertSame([], $eventsManager->getListeners('rest'));
+        $this->assertSame([], $eventsManager->getListeners('custom'));
+    }
+
     public function testAttachBehaviorCreatesEventsManagerWhenDiDoesNotProvideOne(): void
     {
         $di = new Di();
@@ -141,6 +196,45 @@ class BehaviorTest extends AbstractUnit
                 return in_array('admin', (array)$roles, true);
             }
         };
+
+        return $controller;
+    }
+
+    private function newAttributePolicyController(
+        Manager $eventsManager,
+        Dispatcher $dispatcher,
+        array $permissions,
+        array $roles = ['manager'],
+        bool $aclAttributes = true
+    ): AttributePolicyController {
+        $di = new FactoryDefault();
+        $di->setShared('eventsManager', $eventsManager);
+        $di->setShared('dispatcher', $dispatcher);
+        $di->setShared('config', new Config([
+            'acl' => [
+                'attributes' => $aclAttributes,
+            ],
+            'permissions' => $permissions,
+        ]));
+        $di->setShared('identity', new class ($roles) {
+            public function __construct(private readonly array $roles)
+            {
+            }
+
+            public function hasRole(array|string $roles): bool
+            {
+                foreach ((array)$roles as $role) {
+                    if (in_array($role, $this->roles, true)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        });
+
+        $controller = new AttributePolicyController();
+        $controller->setDI($di);
 
         return $controller;
     }

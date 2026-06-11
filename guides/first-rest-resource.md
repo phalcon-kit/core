@@ -229,6 +229,54 @@ Feature permissions live in config:
 The config says which components a role can use. The controller's permission
 conditions decide which rows that role can access.
 
+The same controller actions can also be declared with attributes while keeping
+role assignment in config:
+
+```php
+use PhalconKit\Mvc\Controller\Attributes\PermissionFeature;
+
+#[PermissionFeature('manageProject', actions: '*')]
+#[PermissionFeature('viewProject', actions: [
+    'find',
+    'find-with',
+    'find-first',
+    'find-first-with',
+])]
+final class ProjectController extends AbstractController
+{
+}
+```
+
+With that style, the config only needs to assign features to roles and keep
+model-level permissions:
+
+```php
+'permissions' => [
+    'features' => [
+        'manageProject' => [
+            'components' => [
+                \App\Models\Project::class => ['*'],
+                \App\Models\ProjectUser::class => ['*'],
+            ],
+        ],
+        'viewProject' => [
+            'components' => [
+                \App\Models\Project::class => ['find'],
+                \App\Models\ProjectUser::class => ['find'],
+            ],
+        ],
+    ],
+    'roles' => [
+        'admin' => [
+            'features' => ['manageProject'],
+        ],
+        'researcher' => [
+            'features' => ['viewProject'],
+        ],
+    ],
+],
+```
+
 ## 6. Call The Resource
 
 Exact URLs depend on your route config. With the default module route shape,

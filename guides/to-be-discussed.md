@@ -94,11 +94,11 @@ Keep for discussion:
   assignment. Remaining design work: a clearer replacement for boolean
   keep-missing sentinels, and explicit rules for sparse payloads that reactivate
   or update existing relation rows.
-- Controller behavior merging:
+- Controller behavior responses and merge semantics:
   `src/Mvc/Controller/Traits/Behavior.php`.
   Define whether controller behaviors should collect multiple event responses
-  and how feature/role permission merges should de-duplicate overlapping
-  entries.
+  and whether legacy feature/role permission merges should move from native
+  recursive merging to the attribute resolver's de-duplicating merge helper.
 - `findIn*` model helpers:
   `src/Mvc/Model/Traits/FindIn.php`.
   Expand beyond `findInById()` only after field validation, bind-type

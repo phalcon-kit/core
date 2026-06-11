@@ -56,6 +56,7 @@ class ConfigTest extends AbstractUnit
             'imap',
             'dotenv',
             'client',
+            'acl',
             'permissions',
         ];
         
@@ -209,6 +210,27 @@ class ConfigTest extends AbstractUnit
             $this->assertTrue($config->path('identity.stateless'));
         } finally {
             Env::set('IDENTITY_STATELESS', $previous);
+        }
+    }
+
+    public function testAclAttributesConfigUsesEnvironmentFlag(): void
+    {
+        $previous = Env::get('ACL_ATTRIBUTES');
+
+        try {
+            Env::set('ACL_ATTRIBUTES', 'false');
+
+            $config = new Config();
+
+            $this->assertFalse($config->path('acl.attributes'));
+
+            Env::set('ACL_ATTRIBUTES', null);
+
+            $config = new Config();
+
+            $this->assertTrue($config->path('acl.attributes'));
+        } finally {
+            Env::set('ACL_ATTRIBUTES', $previous);
         }
     }
 

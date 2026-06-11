@@ -18,7 +18,9 @@ use Phalcon\Dispatcher\AbstractDispatcher;
 use Phalcon\Events\Event;
 use Phalcon\Dispatcher\Exception as DispatcherException;
 use Phalcon\Mvc\Dispatcher as MvcDispatcher;
+use PhalconKit\Acl\PermissionName;
 use PhalconKit\Di\Injectable;
+use PhalconKit\Mvc\Controller\Attributes\PermissionAttributeResolver;
 
 /**
  * Dispatcher listener that enforces configured ACL permissions.
@@ -84,12 +86,23 @@ class Security extends Injectable
         $handlerRouteKey = $dispatcher instanceof CliDispatcher ? 'task' : 'controller';
         $handlerClass = $dispatcher->getHandlerClass();
         $action = $dispatcher->getActionName();
+        $actionCandidates = PermissionName::actionCandidates($action);
+        $handlerSuffix = $dispatcher instanceof CliDispatcher ? 'Task' : 'Controller';
+        $handlerCandidates = PermissionName::handlerCandidates($handlerClass, $handler, $handlerSuffix);
+        $permissions = $this->config->pathToArray('permissions') ?? [];
+        if ($this->usesControllerAttributes()) {
+            $permissions = PermissionAttributeResolver::mergePermissions(
+                $permissions,
+                PermissionAttributeResolver::forController($handlerClass)
+            );
+        }
         
         // ACL components are grouped by shared components plus handler type.
-        $acl = $this->acl->get($componentNames);
+        $acl = $this->acl->get($componentNames, $permissions);
+        $component = $this->resolveAclComponent($acl, $handlerCandidates);
         
         // Unknown handlers are treated as not-found instead of forbidden.
-        if (!$acl->isComponent($handlerClass)) {
+        if ($component === null) {
             $notFoundRoute = $this->config->pathToArray('router.notFound') ?? [];
             $dispatcher->forward($notFoundRoute);
             return false;
@@ -99,13 +112,14 @@ class Security extends Injectable
         $roles = $this->identity->getAclRoles();
         
         foreach ($roles as $role) {
-            $allowed = $acl->isAllowed($role, $handlerClass, $action);
-            if ($allowed) {
-                break;
+            foreach ($actionCandidates as $actionCandidate) {
+                $allowed = $acl->isAllowed($role, $component, $actionCandidate);
+                if ($allowed) {
+                    break 2;
+                }
             }
         }
         
-        $permissions = $this->config->pathToArray('permissions');
         if (empty($permissions)) {
             $allowed = true;
         }
@@ -142,7 +156,13 @@ class Security extends Injectable
         ?string $handler,
         string $action
     ): bool {
-        if (!array_key_exists('action', $route) || $route['action'] !== $action) {
+        if (
+            !array_key_exists('action', $route)
+            || (
+                $route['action'] !== $action
+                && PermissionName::action((string)$route['action']) !== PermissionName::action($action)
+            )
+        ) {
             return false;
         }
 
@@ -163,5 +183,30 @@ class Security extends Injectable
         }
 
         return true;
+    }
+
+    /**
+     * Resolve the configured ACL component for the current dispatcher handler.
+     *
+     * @param \Phalcon\Acl\Adapter\Memory $acl Native ACL instance.
+     * @param array<int, string> $candidates Handler class and route aliases.
+     */
+    private function resolveAclComponent(\Phalcon\Acl\Adapter\Memory $acl, array $candidates): ?string
+    {
+        foreach ($candidates as $candidate) {
+            if ($acl->isComponent($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine whether controller attributes should augment permission config.
+     */
+    private function usesControllerAttributes(): bool
+    {
+        return (bool)($this->config->path('acl.attributes', true) ?? true);
     }
 }

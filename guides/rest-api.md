@@ -252,6 +252,12 @@ normal list requests lighter.
 Feature permissions decide whether a role can use a controller/action. Row-level
 conditions decide which records that role can access.
 
+Permission action keys should be dash-case, matching route names such as
+`find-with` or `archive-project`. Controller methods remain normal PHP camelCase
+methods such as `findWithAction()` and `archiveProjectAction()`. PhalconKit
+accepts both names during ACL checks, but new config and attributes should use
+the route-style dash-case names.
+
 ```php
 public function initializePermissionConditions(): void
 {

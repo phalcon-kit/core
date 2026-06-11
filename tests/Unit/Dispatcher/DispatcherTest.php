@@ -14,13 +14,16 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Dispatcher;
 
 use Phalcon\Events\Event;
+use PhalconKit\Acl\Acl;
 use PhalconKit\Bootstrap;
+use PhalconKit\Config\Config;
 use PhalconKit\Cli\Dispatcher as CliDispatcher;
 use PhalconKit\Dispatcher\AbstractDispatcher;
 use PhalconKit\Dispatcher\DispatcherInterface;
 use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
 use PhalconKit\Mvc\Dispatcher\Camelize;
 use PhalconKit\Support\HelperFactory;
+use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\AttributePolicyController;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class DispatcherTest extends AbstractUnit
@@ -228,6 +231,49 @@ class DispatcherTest extends AbstractUnit
 
         $this->assertSame('forbidden', $dispatcher->getActionName());
     }
+
+    public function testMvcSecurityAllowsDashCasePermissionForCamelCaseDispatcherAction(): void
+    {
+        [$security, $event, $dispatcher] = $this->createAllowedMvcSecurityFixture([
+            'roles' => [
+                'user' => [
+                    'controllers' => [
+                        'App\\Controllers\\UnitController' => ['find-with'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $dispatcher->setActionName('findWith');
+
+        $this->assertTrue($security->checkAcl($event, $dispatcher));
+    }
+
+    public function testMvcSecurityAllowsRouteStyleControllerAlias(): void
+    {
+        [$security, $event, $dispatcher] = $this->createAllowedMvcSecurityFixture([
+            'roles' => [
+                'user' => [
+                    'controllers' => [
+                        'unit' => ['find-with'],
+                    ],
+                ],
+            ],
+        ]);
+
+        $dispatcher->setActionName('findWith');
+
+        $this->assertTrue($security->checkAcl($event, $dispatcher));
+    }
+
+    public function testMvcSecurityAllowsControllerAttributeRolePolicy(): void
+    {
+        [$security, $event, $dispatcher] = $this->createAttributeMvcSecurityFixture(['admin']);
+
+        $dispatcher->setActionName('findWith');
+
+        $this->assertTrue($security->checkAcl($event, $dispatcher));
+    }
     
     public function testToArray(): void
     {
@@ -282,7 +328,7 @@ class DispatcherTest extends AbstractUnit
         $dispatcher->setActionName($action);
 
         $di = new \Phalcon\Di\Di();
-        $di->set('config', new \PhalconKit\Config\Config([
+        $di->set('config', new Config([
             'permissions' => [
                 'roles' => [
                     'guest' => [],
@@ -295,8 +341,10 @@ class DispatcherTest extends AbstractUnit
             ],
         ]));
         $di->set('acl', new class {
-            public function get(array $componentNames = ['components']): \Phalcon\Acl\Adapter\Memory
-            {
+            public function get(
+                array $componentNames = ['components'],
+                ?array $permissions = null
+            ): \Phalcon\Acl\Adapter\Memory {
                 $acl = new \Phalcon\Acl\Adapter\Memory();
                 $acl->addRole(new \Phalcon\Acl\Role('guest'));
                 $acl->addComponent(new \Phalcon\Acl\Component('App\\Controllers\\UnitController'), ['index', 'forbidden']);
@@ -313,6 +361,92 @@ class DispatcherTest extends AbstractUnit
 
         $security = new \PhalconKit\Mvc\Dispatcher\Security();
         $security->setDI($di);
+
+        return [$security, new \Phalcon\Events\Event('beforeDispatchLoop', $security), $dispatcher];
+    }
+
+    /**
+     * @return array{
+     *     0: \PhalconKit\Mvc\Dispatcher\Security,
+     *     1: \Phalcon\Events\Event,
+     *     2: \PhalconKit\Mvc\Dispatcher
+     * }
+     */
+    private function createAllowedMvcSecurityFixture(array $permissions): array
+    {
+        $dispatcher = new \PhalconKit\Mvc\Dispatcher();
+        $dispatcher->setNamespaceName('App\\Controllers');
+        $dispatcher->setModuleName('api');
+        $dispatcher->setControllerName('unit');
+        $dispatcher->setActionName('index');
+
+        $di = new \Phalcon\Di\Di();
+        $di->set('config', new Config([
+            'permissions' => $permissions,
+            'router' => [
+                'forbidden' => [
+                    'action' => 'forbidden',
+                ],
+            ],
+        ]));
+        $di->set('acl', new Acl(['permissions' => $permissions]));
+        $di->set('identity', new class {
+            public function getAclRoles(): array
+            {
+                return ['user'];
+            }
+        });
+
+        $security = new \PhalconKit\Mvc\Dispatcher\Security();
+        $security->setDI($di);
+
+        return [$security, new \Phalcon\Events\Event('beforeDispatchLoop', $security), $dispatcher];
+    }
+
+    /**
+     * @param array<int, string> $roles
+     *
+     * @return array{
+     *     0: \PhalconKit\Mvc\Dispatcher\Security,
+     *     1: \Phalcon\Events\Event,
+     *     2: \PhalconKit\Mvc\Dispatcher
+     * }
+     */
+    private function createAttributeMvcSecurityFixture(array $roles): array
+    {
+        $dispatcher = new \PhalconKit\Mvc\Dispatcher();
+        $dispatcher->setNamespaceName('PhalconKit\\Tests\\Unit\\Mvc\\Controller\\Traits\\Fixtures');
+        $dispatcher->setControllerName('attribute-policy');
+        $dispatcher->setActionName('index');
+
+        $di = new \Phalcon\Di\Di();
+        $di->set('config', new Config([
+            'permissions' => [],
+            'router' => [
+                'notFound' => [
+                    'action' => 'not-found',
+                ],
+                'forbidden' => [
+                    'action' => 'forbidden',
+                ],
+            ],
+        ]));
+        $di->set('acl', new Acl());
+        $di->set('identity', new class ($roles) {
+            public function __construct(private readonly array $roles)
+            {
+            }
+
+            public function getAclRoles(): array
+            {
+                return $this->roles;
+            }
+        });
+
+        $security = new \PhalconKit\Mvc\Dispatcher\Security();
+        $security->setDI($di);
+
+        $this->assertSame(AttributePolicyController::class, $dispatcher->getHandlerClass());
 
         return [$security, new \Phalcon\Events\Event('beforeDispatchLoop', $security), $dispatcher];
     }

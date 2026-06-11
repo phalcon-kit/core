@@ -14,8 +14,12 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits;
 
 use Phalcon\Di\Injectable;
+use Phalcon\Dispatcher\AbstractDispatcher;
 use Phalcon\Events\Manager;
 use Phalcon\Events\ManagerInterface;
+use Phalcon\Mvc\Dispatcher as MvcDispatcher;
+use PhalconKit\Acl\PermissionName;
+use PhalconKit\Mvc\Controller\Attributes\PermissionAttributeResolver;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractBehavior;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
 
@@ -36,8 +40,17 @@ trait Behavior
         
         // retrieve events based on the config roles and features
         $permissions = $this->config->pathToArray('permissions') ?? [];
+        if ($this->usesControllerAttributes()) {
+            $permissions = PermissionAttributeResolver::mergePermissions(
+                $permissions,
+                PermissionAttributeResolver::forController($this)
+            );
+        }
         $featureList = $permissions['features'] ?? [];
         $roleList = $permissions['roles'] ?? [];
+        $handlerCandidates = $this->getBehaviorHandlerCandidates();
+        $actionCandidates = $this->getBehaviorActionCandidates();
+        $modelName = method_exists($this, 'getModelName') ? $this->getModelName() : null;
         
         foreach ($roleList as $role => $rolePermission) {
             // do not attach other roles behaviors
@@ -55,16 +68,15 @@ trait Behavior
             }
             
             $behaviorsContext = $rolePermission['behaviors'] ?? [];
-            foreach ($behaviorsContext as $className => $behaviors) {
-                if (is_int($className) || get_class($this) === $className) {
-                    $this->attachBehaviors($behaviors, 'rest');
-                }
-                if (method_exists($this, 'getModelName')) {
-                    if ($this->getModelName() === $className) {
-                        $this->attachBehaviors($behaviors, 'model');
-                    }
-                }
-            }
+            $this->attachConfiguredBehaviors($behaviorsContext, $handlerCandidates, $modelName);
+
+            $behaviorActionsContext = $rolePermission['behaviorActions'] ?? [];
+            $this->attachConfiguredActionBehaviors(
+                $behaviorActionsContext,
+                $handlerCandidates,
+                $actionCandidates,
+                $modelName
+            );
         }
     }
     
@@ -124,5 +136,119 @@ trait Behavior
 
         $this->setEventsManager($eventsManager);
         return $eventsManager;
+    }
+
+    /**
+     * Attach legacy, non-action-scoped behavior config for this controller/model.
+     *
+     * @param array<string|int, mixed> $behaviorsContext Permission behavior map.
+     * @param array<int, string> $handlerCandidates Controller class/name aliases.
+     */
+    private function attachConfiguredBehaviors(
+        array $behaviorsContext,
+        array $handlerCandidates,
+        ?string $modelName
+    ): void {
+        foreach ($behaviorsContext as $className => $behaviors) {
+            if (is_int($className) || in_array($className, $handlerCandidates, true)) {
+                $this->attachBehaviors((array)$behaviors, 'rest');
+            }
+
+            if ($modelName !== null && $modelName === $className) {
+                $this->attachBehaviors((array)$behaviors, 'model');
+            }
+        }
+    }
+
+    /**
+     * Attach action-scoped controller/model behavior config for this request.
+     *
+     * @param array<string|int, mixed> $behaviorActionsContext Action behavior map.
+     * @param array<int, string> $handlerCandidates Controller class/name aliases.
+     * @param array<int, string> $actionCandidates Current action aliases.
+     */
+    private function attachConfiguredActionBehaviors(
+        array $behaviorActionsContext,
+        array $handlerCandidates,
+        array $actionCandidates,
+        ?string $modelName
+    ): void {
+        foreach ($behaviorActionsContext as $className => $actionBehaviors) {
+            $eventType = 'rest';
+            if (is_int($className) || in_array($className, $handlerCandidates, true)) {
+                $matches = true;
+            }
+            elseif ($modelName !== null && $modelName === $className) {
+                $matches = true;
+                $eventType = 'model';
+            }
+            else {
+                $matches = false;
+            }
+
+            if (!$matches || !is_array($actionBehaviors)) {
+                continue;
+            }
+
+            foreach ($actionBehaviors as $action => $behaviors) {
+                $action = (string)$action;
+                if (
+                    $action !== '*'
+                    && !in_array($action, $actionCandidates, true)
+                    && !in_array(PermissionName::action($action), $actionCandidates, true)
+                ) {
+                    continue;
+                }
+
+                $this->attachBehaviors((array)$behaviors, $eventType);
+            }
+        }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function getBehaviorHandlerCandidates(): array
+    {
+        $dispatcher = $this->getBehaviorDispatcher();
+        $routeName = null;
+
+        if ($dispatcher instanceof MvcDispatcher) {
+            $routeName = $dispatcher->getControllerName();
+        }
+
+        return PermissionName::handlerCandidates($this::class, $routeName, 'Controller');
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function getBehaviorActionCandidates(): array
+    {
+        $dispatcher = $this->getBehaviorDispatcher();
+        if ($dispatcher === null) {
+            return ['*'];
+        }
+
+        return PermissionName::actionCandidates($dispatcher->getActionName());
+    }
+
+    private function getBehaviorDispatcher(): ?AbstractDispatcher
+    {
+        $di = $this->getDI();
+        if (!$di->has('dispatcher')) {
+            return null;
+        }
+
+        $dispatcher = $di->getShared('dispatcher');
+        return $dispatcher instanceof AbstractDispatcher ? $dispatcher : null;
+    }
+
+    /**
+     * Determine whether controller attributes should augment permission config.
+     */
+    private function usesControllerAttributes(): bool
+    {
+        return (bool)($this->config->path('acl.attributes', true) ?? true);
     }
 }

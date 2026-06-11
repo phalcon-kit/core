@@ -287,5 +287,16 @@ query behaviors, and roles.
 The identity/security system can enforce permissions across controllers,
 actions, models, methods, CLI tasks, and WebSocket tasks.
 
+Controller/action attributes are enabled by default and are merged into the same
+permission graph at runtime. Disable attribute scanning for config-only
+applications that want to avoid controller reflection. The default bootstrap
+config reads `ACL_ATTRIBUTES`:
+
+```php
+'acl' => [
+    'attributes' => Env::get('ACL_ATTRIBUTES', true),
+],
+```
+
 For row-level controller conditions and role inheritance, read
 [Identity And Permissions](identity-and-permissions.md).

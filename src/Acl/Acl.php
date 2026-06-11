@@ -92,7 +92,7 @@ class Acl extends AbstractInjectionAware implements AclInterface
                         continue;
                     }
                     
-                    $aclAccess = is_array($accessList) ? array_values(array_unique(array_filter($accessList))) : [$accessList];
+                    $aclAccess = PermissionName::accessList($accessList);
                     $aclComponent = new Component($component);
                     $acl->addComponent($aclComponent, $aclAccess);
                     $acl->allow((string)$aclRole, (string)$aclComponent, $aclAccess);

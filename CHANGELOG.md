@@ -15,10 +15,22 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 3.1.0 - Unreleased
+## 3.1.0 - 2026-06-11
 
 ### Added
 
+- Added controller/action policy attributes for REST permission declarations:
+  `AllowRoles`, `PermissionFeature`, and `AttachBehavior`. Attributes compile into
+  the existing permission config shape, support direct roles and feature-based
+  grants, and can attach action-scoped controller behaviors.
+- Added shared permission-name normalization so ACL checks accept camelCase and
+  dash-case action names while recommending dash-case as the canonical route and
+  permission key. Dispatcher security also accepts route-style controller aliases
+  while continuing to prefer controller class names.
+- Added the env-backed `acl.attributes` config switch (`ACL_ATTRIBUTES`). It
+  defaults to enabled so controller attributes work out of the box; config-only
+  applications can set it to `false` to skip controller reflection during
+  permission and behavior checks.
 - Added array-friendly REST/query policy setters and merge helpers. Controllers
   can now pass plain arrays to field, condition, join, eager-loading, count,
   distinct, cache, bind, group, having, column, order, and find policy methods;
