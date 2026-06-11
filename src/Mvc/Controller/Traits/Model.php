@@ -38,6 +38,12 @@ trait Model
      * @var string[]
      */
     protected ?array $modelNamespaces = null;
+
+    /**
+     * Cached model column and mapped-attribute lookup tables.
+     * @var array<class-string<ModelInterface>, array<string, bool>>
+     */
+    protected static array $modelColumnCache = [];
     
     /**
      * Retrieves the name of the model associated with the controller.
@@ -168,6 +174,43 @@ trait Model
     {
         $modelName ??= $this->getModelName() ?? '';
         return $this->modelsManager->load($modelName);
+    }
+
+    /**
+     * Determine whether the configured model exposes a database column or mapped
+     * model attribute.
+     *
+     * The helper prefers generated model `columnMap()` definitions, then falls
+     * back to Phalcon's model metadata for models that do not declare a column
+     * map. Metadata availability depends on the application's configured
+     * metadata strategy and cache; if metadata cannot be read safely, the helper
+     * returns false instead of turning an optional controller condition into a
+     * runtime failure.
+     *
+     * @param string $column Database column name or mapped model attribute name.
+     * @param class-string<ModelInterface>|null $modelName Optional model class;
+     *     defaults to the current controller model.
+     *
+     * @return bool True when the model column map contains the raw column or
+     *     mapped attribute name.
+     */
+    public function modelHasColumn(string $column, ?string $modelName = null): bool
+    {
+        if ($column === '') {
+            return false;
+        }
+
+        $modelName ??= $this->getModelName();
+        if (!$modelName || !is_a($modelName, ModelInterface::class, true)) {
+            return false;
+        }
+        /** @var class-string<ModelInterface> $modelName */
+
+        if (!isset(self::$modelColumnCache[$modelName])) {
+            $this->cacheModelColumns($modelName);
+        }
+
+        return self::$modelColumnCache[$modelName][$column] ?? false;
     }
 
     /**
@@ -315,6 +358,80 @@ trait Model
         }
         
         return $this->modelsMetadata->getPrimaryKeyAttributes($this->loadModel($modelName));
+    }
+
+    /**
+     * @param class-string<ModelInterface> $modelName
+     */
+    protected function cacheModelColumns(string $modelName): void
+    {
+        $model = $this->loadModel($modelName);
+        $lookup = [];
+
+        $this->collectModelColumnMap($lookup, $this->getGeneratedModelColumnMap($model));
+
+        try {
+            $modelsMetadata = $model->getModelsMetaData();
+            $this->collectModelColumnMap($lookup, $modelsMetadata->getColumnMap($model));
+            $this->collectModelAttributes($lookup, $modelsMetadata->getAttributes($model));
+        } catch (\Throwable) {
+            // Metadata can be unavailable when a model has no initialized DI or
+            // the configured adapter cannot read metadata for the model.
+        }
+
+        self::$modelColumnCache[$modelName] = $lookup;
+    }
+
+    /**
+     * @return array<array-key, mixed>|null
+     */
+    protected function getGeneratedModelColumnMap(ModelInterface $model): ?array
+    {
+        if (!method_exists($model, 'columnMap')) {
+            return null;
+        }
+
+        try {
+            $columnMap = call_user_func([$model, 'columnMap']);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return is_array($columnMap) ? $columnMap : null;
+    }
+
+    /**
+     * @param array<string, bool> $lookup
+     * @param array<array-key, mixed>|null $columnMap
+     */
+    protected function collectModelColumnMap(array &$lookup, ?array $columnMap): void
+    {
+        if ($columnMap === null) {
+            return;
+        }
+
+        foreach ($columnMap as $column => $attribute) {
+            if (is_string($column)) {
+                $lookup[$column] = true;
+            }
+
+            if (is_string($attribute)) {
+                $lookup[$attribute] = true;
+            }
+        }
+    }
+
+    /**
+     * @param array<string, bool> $lookup
+     * @param array<array-key, mixed> $attributes
+     */
+    protected function collectModelAttributes(array &$lookup, array $attributes): void
+    {
+        foreach ($attributes as $attribute) {
+            if (is_string($attribute)) {
+                $lookup[$attribute] = true;
+            }
+        }
     }
 
     protected function isExpression(string $field): bool

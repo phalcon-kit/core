@@ -68,4 +68,19 @@ interface ModelInterface
      *     override.
      */
     public function loadModel(?string $modelName = null): \Phalcon\Mvc\ModelInterface;
+
+    /**
+     * Determine whether the configured model exposes a raw database column or a
+     * mapped model attribute name.
+     *
+     * Implementations should use generated `columnMap()` definitions or Phalcon
+     * model metadata rather than issuing application-level data queries. Models
+     * without generated maps may depend on the application's configured metadata
+     * strategy and cache.
+     *
+     * @param string $column Database column or mapped model attribute.
+     * @param class-string<\Phalcon\Mvc\ModelInterface>|null $modelName Optional
+     *     model override; defaults to the current controller model.
+     */
+    public function modelHasColumn(string $column, ?string $modelName = null): bool;
 }

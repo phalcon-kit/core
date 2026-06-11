@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.1.2 - 2026-06-11
+
+### Added
+
+- Added `modelHasColumn()` to REST controller model helpers so applications can
+  conditionally compose model-backed behavior from generated column maps or
+  Phalcon model metadata.
+
 ## 3.1.1 - 2026-06-11
 
 ### Added
