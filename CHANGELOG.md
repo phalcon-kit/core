@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.1.3 - 2026-06-12
+
+### Fixed
+
+- Fixed REST action failure status resolution so empty
+  `Phalcon\Messages\Messages` collections are treated as no-message failures
+  instead of generic validation failures.
+
 ## 3.1.2 - 2026-06-11
 
 ### Added

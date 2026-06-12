@@ -54,4 +54,15 @@ final class RestResponseControllerDouble extends Rest
     {
         return $this->getRestViewVars();
     }
+
+    /**
+     * Expose failure status resolution for message payload regression tests.
+     */
+    public function exposeRestActionFailureStatusCode(
+        mixed $messages,
+        int $emptyStatusCode = 400,
+        int $defaultStatusCode = 422
+    ): int {
+        return $this->getRestActionFailureStatusCode($messages, $emptyStatusCode, $defaultStatusCode);
+    }
 }

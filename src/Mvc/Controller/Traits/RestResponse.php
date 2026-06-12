@@ -16,6 +16,7 @@ namespace PhalconKit\Mvc\Controller\Traits;
 use Phalcon\Http\ResponseInterface;
 use Phalcon\Messages\MessageInterface;
 use Phalcon\Mvc\Dispatcher;
+use Countable;
 use PhalconKit\Http\StatusCode as HttpStatusCode;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractDebug;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractInjectable;
@@ -184,7 +185,7 @@ trait RestResponse
         int $emptyStatusCode = 400,
         int $defaultStatusCode = 422
     ): int {
-        if (empty($messages)) {
+        if (!$this->hasRestActionMessages($messages)) {
             return $emptyStatusCode;
         }
 
@@ -196,6 +197,35 @@ trait RestResponse
         }
 
         return $defaultStatusCode;
+    }
+
+    /**
+     * Determine whether a REST action failure carried any message payload.
+     *
+     * PHP objects are never empty for `empty()`, even when they implement
+     * `Countable` and contain zero messages. Phalcon validation returns
+     * `Phalcon\Messages\Messages`, so status resolution must check the
+     * collection count instead of relying on PHP object truthiness.
+     */
+    protected function hasRestActionMessages(mixed $messages): bool
+    {
+        if ($messages instanceof Countable) {
+            return count($messages) > 0;
+        }
+
+        if (is_array($messages)) {
+            return count($messages) > 0;
+        }
+
+        if ($messages instanceof \Traversable) {
+            foreach ($messages as $_message) {
+                return true;
+            }
+
+            return false;
+        }
+
+        return (bool) $messages;
     }
 
     /**

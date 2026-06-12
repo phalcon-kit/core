@@ -185,7 +185,7 @@ class Position extends Behavior
                             $modelPrimaryKeys,
                         ));
                         $messages = $save->getMessages();
-                        if (!empty($messages)) {
+                        if (count($messages) > 0) {
                             $model->appendMessages($messages, 'afterSave');
                         }
                     }

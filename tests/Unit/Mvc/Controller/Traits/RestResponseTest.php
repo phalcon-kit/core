@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc\Controller\Traits;
 
+use Phalcon\Messages\Message;
+use Phalcon\Messages\Messages;
 use PhalconKit\Mvc\Controller\Traits\Interfaces\RestResponseInterface;
 use PhalconKit\Tests\Unit\AbstractUnit;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\RestResponseControllerDouble;
@@ -82,6 +84,33 @@ class RestResponseTest extends AbstractUnit
         foreach ($interface->getConstants() as $name => $value) {
             $this->assertSame($value, $controller->getConstant($name), $name . ' differs.');
         }
+    }
+
+    public function testRestActionFailureStatusTreatsEmptyPhalconMessagesCollectionAsEmpty(): void
+    {
+        $controller = $this->newController();
+
+        $this->assertSame(400, $controller->exposeRestActionFailureStatusCode(new Messages()));
+    }
+
+    public function testRestActionFailureStatusTreatsPopulatedPhalconMessagesCollectionAsMessages(): void
+    {
+        $controller = $this->newController();
+        $messages = new Messages([
+            new Message('Invalid value'),
+        ]);
+
+        $this->assertSame(422, $controller->exposeRestActionFailureStatusCode($messages));
+    }
+
+    public function testRestActionFailureStatusKeepsExplicitMessageHttpCode(): void
+    {
+        $controller = $this->newController();
+        $messages = new Messages([
+            new Message('Forbidden', code: 403),
+        ]);
+
+        $this->assertSame(403, $controller->exposeRestActionFailureStatusCode($messages));
     }
 
     private function newController(): RestResponseControllerDouble

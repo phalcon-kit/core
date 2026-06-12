@@ -161,7 +161,7 @@ DOC;
                 $response[$source]['deleted'] += $deleted ? 1 : 0;
                 
                 $messages = $record->getMessages();
-                if (!empty($messages)) {
+                if (count($messages) > 0) {
                     $response[$source]['messages'] = array_merge($response[$source]['messages'], $messages);
                 }
             };
