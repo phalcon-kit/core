@@ -15,9 +15,13 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 3.2.1 - Unreleased
+## 3.3.0 - 2026-06-16
 
-No changes yet.
+### Changed
+
+- **Breaking:** Disabled Blameable audit table writes by default. Applications
+  that need audit rows must opt in with `auditEnabled => true`; blameable
+  attribution fields and user relationships still initialize normally.
 
 ## 3.2.0 - 2026-06-16
 

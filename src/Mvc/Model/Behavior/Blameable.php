@@ -88,8 +88,9 @@ class Blameable extends Behavior
 
     /**
      * Instance-level audit toggle (parent audit row).
+     * Subclasses can redeclare this property to change the default.
      */
-    protected bool $auditEnabled = true;
+    protected bool $auditEnabled = false;
 
     /**
      * Global audit toggle (parent audit row).
@@ -98,6 +99,7 @@ class Blameable extends Behavior
 
     /**
      * Instance-level audit detail toggle (per-column rows).
+     * Subclasses can redeclare this property to change the default.
      */
     protected bool $auditDetailEnabled = true;
 
@@ -112,6 +114,11 @@ class Blameable extends Behavior
      * Accepts configuration options to control:
      * - Model classes
      * - Initial audit/audit-detail enablement
+     *
+     * Audit is opt-in with `auditEnabled => true`. Audit detail remains enabled
+     * by default once audit itself is enabled and can be disabled with
+     * `auditDetailEnabled => false`. Explicit options override subclass
+     * property defaults.
      */
     public function __construct(array $options = [])
     {
@@ -121,8 +128,8 @@ class Blameable extends Behavior
         $this->auditClass = $options['auditClass'] ?? $this->auditClass;
         $this->auditDetailClass = $options['auditDetailClass'] ?? $this->auditDetailClass;
 
-        $this->auditEnabled = $options['auditEnabled'] ?? true;
-        $this->auditDetailEnabled = $options['auditDetailEnabled'] ?? true;
+        $this->auditEnabled = $options['auditEnabled'] ?? $this->auditEnabled;
+        $this->auditDetailEnabled = $options['auditDetailEnabled'] ?? $this->auditDetailEnabled;
     }
 
     /**

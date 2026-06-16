@@ -53,8 +53,10 @@ trait Blameable
      * custom model classes keep one central mapping.
      *
      * @param array<array-key, mixed>|null $options Behavior options. Common
-     *     keys include `auditClass`, `auditDetailClass`, `userClass`, and
-     *     `userField`.
+     *     keys include `auditClass`, `auditDetailClass`, `userClass`,
+     *     `userField`, `auditEnabled`, and `auditDetailEnabled`. Audit is
+     *     opt-in; set `auditEnabled` to `true` for applications that install
+     *     and use audit tables.
      * @throws ServiceException When the models service cannot be resolved
      *     through the PhalconKit DI contract.
      */

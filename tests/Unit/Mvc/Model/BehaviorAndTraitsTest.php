@@ -479,6 +479,12 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
     public function testBlameableTogglesAndNormalizers(): void
     {
+        $this->assertFalse((new BlameableProbe())->isAuditEnabled());
+        $this->assertTrue((new BlameableProbe(['auditEnabled' => true]))->isAuditEnabled());
+        $this->assertTrue((new class extends BlameableProbe {
+            protected bool $auditEnabled = true;
+        })->isAuditEnabled());
+
         $behavior = new BlameableProbe([
             'auditEnabled' => true,
             'auditDetailEnabled' => true,
@@ -498,6 +504,10 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $behavior->disableAuditDetail();
         $this->assertFalse($behavior->isAuditDetailEnabled());
         $behavior->enableAuditDetail();
+        $this->assertFalse((new BlameableProbe(['auditDetailEnabled' => false]))->isAuditDetailEnabled());
+        $this->assertFalse((new class extends BlameableProbe {
+            protected bool $auditDetailEnabled = false;
+        })->isAuditDetailEnabled());
         Blameable::staticDisableAuditDetail();
         $this->assertFalse($behavior->isAuditDetailEnabled());
         Blameable::staticEnableAuditDetail();
@@ -550,6 +560,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
     {
         FakeAudit::reset();
         $behavior = new Blameable([
+            'auditEnabled' => true,
             'auditClass' => FakeAudit::class,
             'auditDetailClass' => FakeAuditDetail::class,
         ]);
@@ -623,6 +634,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
         $model->setDirtyRelated([]);
         $withoutDetails = new Blameable([
+            'auditEnabled' => true,
             'auditClass' => FakeAudit::class,
             'auditDetailClass' => FakeAuditDetail::class,
             'auditDetailEnabled' => false,
@@ -840,8 +852,12 @@ class BehaviorAndTraitsTest extends AbstractUnit
             'auditDetailClass' => FakeAuditDetail::class,
             'userClass' => User::class,
             'userField' => 'userId',
+            'auditEnabled' => true,
+            'auditDetailEnabled' => false,
         ]);
         $this->assertInstanceOf(Blameable::class, $model->getBlameableBehavior());
+        $this->assertTrue($model->getBlameableBehavior()->isAuditEnabled());
+        $this->assertFalse($model->getBlameableBehavior()->isAuditDetailEnabled());
 
         $created = new Transformable();
         $model->setCreatedBehavior($created);
