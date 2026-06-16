@@ -15,6 +15,10 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.3.1 - Unreleased
+
+No changes yet.
+
 ## 3.3.0 - 2026-06-16
 
 ### Changed
