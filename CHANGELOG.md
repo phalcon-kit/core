@@ -15,6 +15,30 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.1.5 - Unreleased
+
+### Added
+
+- Added a Phalcon runtime upgrade guide covering extension, Composer, IDE stub,
+  Docker, CI, and application compatibility checks for patch-level Phalcon
+  upgrades.
+
+### Changed
+
+- Prepared the package and CI baseline for Phalcon 5.14.2 by raising the
+  `ext-phalcon` and `phalcon/ide-stubs` floors and updating the GitHub Actions
+  Phalcon install pin.
+
+### Fixed
+
+- Restored JSON body parameter support for REST body requests without merging
+  query, form, or alternate-method body parameters into the save payload.
+- Updated PhalconKit custom validators to use Phalcon 5.14.2's consolidated
+  `allowEmpty` handling, including per-field maps.
+- Kept the Blameable audit-table guard from treating an unavailable database
+  connection as a missing audit table, preserving fake/no-database audit
+  behavior while still skipping known missing audit tables.
+
 ## 3.1.4 - 2026-06-16
 
 ### Changed

@@ -36,13 +36,16 @@ with Phalcon Kit. Start with the task you are trying to complete.
    and WebSocket worker proxying.
 2. [Quality And Maintenance](quality-and-maintenance.md): local QA commands and
    CI expectations.
-3. [Project Roadmap](../ROADMAP.md): release blocks, priorities, retired
+3. [Phalcon Runtime Upgrades](phalcon-runtime-upgrades.md): update the native
+   extension, Composer platform requirement, IDE stubs, Docker images, and CI
+   pins together.
+4. [Project Roadmap](../ROADMAP.md): release blocks, priorities, retired
    GitHub Project items, and maintainer planning rules.
-4. [Testing Strategy](testing-roadmap.md): phased unit, component,
+5. [Testing Strategy](testing-roadmap.md): phased unit, component,
    integration, model, eager-loading, and REST API coverage approach.
-5. [To Be Discussed](to-be-discussed.md): open maintainer design questions that
+6. [To Be Discussed](to-be-discussed.md): open maintainer design questions that
    need a concrete use case before behavior changes.
-6. [Release Process](release.md): release checklist and package-history notes.
+7. [Release Process](release.md): release checklist and package-history notes.
 
 ## I Am Using zemit-cms/core
 

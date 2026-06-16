@@ -43,8 +43,8 @@ class Json extends AbstractValidator implements ValidatorInterface
      *
      * Supported options:
      * - `message`/`template`: native Phalcon message customization.
-     * - `allowEmpty`: when true, PHP-empty values such as `null` and `''` pass
-     *   before JSON syntax is checked.
+     * - `allowEmpty`: native Phalcon empty-value handling, including
+     *   per-field maps, is honored before JSON syntax is checked.
      * - `depth`: maximum nesting depth passed to `json_validate()`.
      * - `flags`: JSON validation flags passed to `json_validate()`.
      *
@@ -70,9 +70,7 @@ class Json extends AbstractValidator implements ValidatorInterface
     {
         $value = $validation->getValue($field);
         
-        $allowEmpty = $this->getOption('allowEmpty', false);
-        
-        if ($allowEmpty && empty($value)) {
+        if (is_string($field) && $this->isAllowEmpty($validation, $field)) {
             return true;
         }
         

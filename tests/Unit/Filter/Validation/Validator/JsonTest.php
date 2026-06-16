@@ -69,6 +69,23 @@ class JsonTest extends AbstractUnit
         $this->assertTrue($json->validate($validation, 'field'));
     }
 
+    public function testValidateHonorsPerFieldAllowEmptyMap(): void
+    {
+        $json = new Json(['allowEmpty' => ['field' => true]]);
+        $validation = new Validation();
+        $validation->add('field', $json);
+
+        $this->assertCount(0, $validation->validate(['field' => null]));
+        $this->assertTrue($json->validate($validation, 'field'));
+
+        $json = new Json(['allowEmpty' => ['field' => false]]);
+        $validation = new Validation();
+        $validation->add('field', $json);
+
+        $this->assertCount(1, $validation->validate(['field' => null]));
+        $this->assertFalse($json->validate($validation, 'field'));
+    }
+
     public function testValidateRejectsNonStringAndMalformedJsonValues(): void
     {
         $json = new Json();

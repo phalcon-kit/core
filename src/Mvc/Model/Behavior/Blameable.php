@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Model\Behavior;
 
 use Phalcon\Db\Column;
+use Phalcon\Mvc\Model\MetaData\Exceptions\TableNotInDatabase;
 use Phalcon\Mvc\Model\Behavior;
 use Phalcon\Mvc\ModelInterface;
 use PhalconKit\Models\User;
@@ -192,6 +193,10 @@ class Blameable extends Behavior
 
         $audit = $this->requireAuditRecord($audit);
 
+        if (!$this->hasAuditModelStorage($audit)) {
+            return true;
+        }
+
         // Populate core audit metadata
         $audit->setModel($model::class);
         $audit->setTable($model->getSource());
@@ -219,44 +224,47 @@ class Blameable extends Behavior
         if ($this->isAuditDetailEnabled()) {
             $details = [];
             $detailClass = $this->auditDetailClass;
+            $detailPrototype = $this->requireAuditDetailRecord(new $detailClass());
 
-            foreach ($columns as $column) {
-                $map = $columnMap[$column] ?? $column;
-                $type = $columnTypes[$column] ?? null;
+            if ($this->hasAuditModelStorage($detailPrototype)) {
+                foreach ($columns as $column) {
+                    $map = $columnMap[$column] ?? $column;
+                    $type = $columnTypes[$column] ?? null;
 
-                $before = $this->normalizeValue($snapshot[$map] ?? null, $type);
-                $after  = $this->normalizeValue($model->readAttribute($map), $type);
+                    $before = $this->normalizeValue($snapshot[$map] ?? null, $type);
+                    $after  = $this->normalizeValue($model->readAttribute($map), $type);
 
-                // Skip unchanged fields on update
-                if (
-                    $event === 'update' &&
-                    $changed !== null &&
-                    $snapshot !== null &&
-                    ($before === $after || !in_array($map, $changed, true))
-                ) {
-                    continue;
+                    // Skip unchanged fields on update
+                    if (
+                        $event === 'update' &&
+                        $changed !== null &&
+                        $snapshot !== null &&
+                        ($before === $after || !in_array($map, $changed, true))
+                    ) {
+                        continue;
+                    }
+
+                    $detail = $this->requireAuditDetailRecord(new $detailClass());
+
+                    $detail->setColumn($column);
+                    $detail->setBefore($before);
+                    $detail->setAfter($after);
+
+                    // Legacy compatibility fields
+                    $detail->assign([
+                        'model' => $audit->getModel(),
+                        'table' => $audit->getTable(),
+                        'primary' => $audit->getPrimary(),
+                        'event' => $event,
+                        'map' => $map,
+                    ]);
+
+                    $details[] = $detail;
                 }
 
-                $detail = $this->requireAuditDetailRecord(new $detailClass());
-
-                $detail->setColumn($column);
-                $detail->setBefore($before);
-                $detail->setAfter($after);
-
-                // Legacy compatibility fields
-                $detail->assign([
-                    'model' => $audit->getModel(),
-                    'table' => $audit->getTable(),
-                    'primary' => $audit->getPrimary(),
-                    'event' => $event,
-                    'map' => $map,
-                ]);
-
-                $details[] = $detail;
-            }
-
-            if ($details !== []) {
-                $audit->assign(['AuditDetailList' => $details]);
+                if ($details !== []) {
+                    $audit->assign(['AuditDetailList' => $details]);
+                }
             }
         }
 
@@ -330,6 +338,27 @@ class Blameable extends Behavior
             Model::class,
             get_debug_type($audit)
         ));
+    }
+
+    /**
+     * Return true when the configured audit model has backing metadata.
+     *
+     * Missing audit tables are optional in some applications, so a concrete
+     * `TableNotInDatabase` skips audit creation. An unavailable local database
+     * is not the same signal; let the normal save path or test double decide
+     * instead of silently disabling audit.
+     */
+    protected function hasAuditModelStorage(Model $model): bool
+    {
+        try {
+            $model->getModelsMetaData()->getAttributes($model);
+        } catch (TableNotInDatabase) {
+            return false;
+        } catch (\PDOException) {
+            return true;
+        }
+
+        return true;
     }
 
     /**

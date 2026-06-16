@@ -16,8 +16,10 @@ namespace PhalconKit\Mvc\Controller\Traits\Interfaces;
 /**
  * Contract for filtered REST request parameter access.
  *
- * Implementations merge route, query, body, and raw JSON parameters according
- * to controller policy, then apply Phalcon filter services on demand.
+ * Implementations select a single request parameter source according to the
+ * request method, then apply Phalcon filter services on demand. Body methods
+ * may prefer a JSON payload over form data, but query parameters are not merged
+ * into body payloads.
  */
 interface ParamsInterface
 {
@@ -27,14 +29,14 @@ interface ParamsInterface
      * @param string $key Parameter key.
      * @param array|string|null $filters Filter name(s) to apply.
      * @param mixed $default Default value when the key is missing.
-     * @param array<string, mixed>|null $params Optional parameter source.
+     * @param array<array-key, mixed>|null $params Optional parameter source.
      */
     public function getParam(string $key, array|string|null $filters = null, mixed $default = null, ?array $params = null): mixed;
     
     /**
      * Determine whether a parameter exists.
      *
-     * @param array<string, mixed>|null $params Optional parameter source.
+     * @param array<array-key, mixed>|null $params Optional parameter source.
      * @param bool $cached Whether cached controller parameters may be reused.
      */
     public function hasParam(string $key, ?array $params = null, bool $cached = true): bool;
@@ -65,12 +67,12 @@ interface ParamsInterface
     public function getAllParams(?array $filters = null, bool $cached = true, bool $deep = true): array;
     
     /**
-     * @param array<string, mixed> $params
+     * @param array<array-key, mixed> $params
      * @param array<string, array|string> $filters
      * @param bool $deep Whether nested parameters should be filtered
      *     recursively.
      *
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     public function applyFilters(array $params, array $filters, bool $deep = true): array;
     

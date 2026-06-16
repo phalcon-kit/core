@@ -160,7 +160,7 @@ services, transformers, and tasks remain application-owned.
 ## Requirements
 
 - PHP `>= 8.5`
-- Phalcon `^5.14.1`
+- Phalcon `^5.14.2`
 - Composer
 - A PDO-compatible database supported by Phalcon
 - MySQL 8+ for the core test/scaffold baseline
@@ -179,6 +179,7 @@ IMAP, sockets, SimpleXML, and GD.
 - Add roles and row-level access: [Identity And Permissions](guides/identity-and-permissions.md)
 - Deploy behind PHP-FPM or WebSocket proxying: [Web Server And WebSocket](guides/web-server-and-websocket.md)
 - Run checks before release: [Quality And Maintenance](guides/quality-and-maintenance.md)
+- Upgrade the Phalcon extension: [Phalcon Runtime Upgrades](guides/phalcon-runtime-upgrades.md)
 - Use the bundled AI skills: [AI-Assisted Development](AI.md)
 - Migrate from the old package name: [Migration From zemit-cms/core](guides/migration-from-zemit.md)
 - Migrate old RESTful resources: [Migrate RESTful 0.x Resources To 1.x](guides/migration-restful-0x-to-1x.md)

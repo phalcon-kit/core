@@ -22,7 +22,7 @@ trait Params
     use AbstractParams;
     use AbstractInjectable;
     
-    /** @var array<string, mixed>|null Cached raw request parameters */
+    /** @var array<array-key, mixed>|null Cached raw request parameters */
     protected ?array $rawParams = null;
     
     /** @var array<string, array|string> Default filters applied to params */
@@ -127,32 +127,88 @@ trait Params
     }
     
     /**
-     * Collect parameters based on the HTTP method.
+     * Collect parameters from one request source based on the HTTP method.
      *
-     * @return array<string, mixed>
+     * Body methods prefer an explicitly JSON request body and otherwise use the
+     * matching form body. Query parameters are intentionally not merged into
+     * body payloads so save endpoints cannot accidentally persist route/query
+     * controls such as `with`, `filters`, or `order`.
+     *
+     * @return array<array-key, mixed>
      */
     private function collectRequestParams(): array
     {
         $params = match (true) {
-            $this->request->isPost() => $this->request->getPost(),
-            $this->request->isPatch() => $this->request->getPatch(),
-            $this->request->isPut() => $this->request->getPut(),
-            default => $this->request->getQuery(),
+            $this->request->isPost() => $this->collectBodyParams($this->request->getPost()),
+            $this->request->isPatch() => $this->collectBodyParams($this->request->getPatch()),
+            $this->request->isPut() => $this->collectBodyParams($this->request->getPut()),
+            default => $this->normalizeRequestParams($this->request->getQuery()),
         };
         
         unset($params['_url']); // remove Phalcon's default _url param
         
         return $params;
     }
+
+    /**
+     * Collect body parameters from JSON or the method-specific form payload.
+     *
+     * @param mixed $formParams Method-specific form payload from Phalcon.
+     *
+     * @return array<array-key, mixed>
+     */
+    private function collectBodyParams(mixed $formParams): array
+    {
+        return $this->collectJsonRequestParams()
+            ?? $this->normalizeRequestParams($formParams);
+    }
+
+    /**
+     * Collect JSON request parameters when a body request explicitly sends JSON.
+     *
+     * @return array<array-key, mixed>|null
+     */
+    private function collectJsonRequestParams(): ?array
+    {
+        if (!$this->hasJsonContentType()) {
+            return null;
+        }
+
+        $params = $this->request->getJsonRawBody(true);
+
+        return is_array($params) ? $params : null;
+    }
+
+    /**
+     * Return true for standard JSON and vendor JSON request content types.
+     */
+    private function hasJsonContentType(): bool
+    {
+        $contentType = strtolower((string)$this->request->getContentType());
+        $contentType = trim(explode(';', $contentType, 2)[0]);
+
+        return $contentType === 'application/json'
+            || str_ends_with($contentType, '+json');
+    }
+
+    /**
+     * Normalize Phalcon request accessor output into a parameter array.
+     *
+     * @return array<array-key, mixed>
+     */
+    private function normalizeRequestParams(mixed $params): array
+    {
+        return is_array($params) ? $params : [];
+    }
     
     /**
      * Apply filters to parameters (recursively if $deep is true).
      *
-     * @param array<string, mixed> $params
+     * @param array<array-key, mixed> $params
      * @param array<string, array|string> $filters
      * @param bool $deep
      *
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      * @throws FilterException When request parameter filtering fails.
      */
     public function applyFilters(array $params, array $filters, bool $deep = true): array
@@ -246,7 +302,7 @@ trait Params
      * Retrieves the raw parameters from the request. If caching is enabled, it returns the cached parameters.
      *
      * @param bool $cached Determines whether to use cached parameters. Defaults to true.
-     * @return array<string, mixed> The raw request parameters.
+     * @return array<array-key, mixed> The raw request parameters.
      */
     public function getRawParams(bool $cached = true): array
     {

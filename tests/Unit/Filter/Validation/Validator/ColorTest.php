@@ -89,4 +89,21 @@ class ColorTest extends AbstractUnit
         $this->assertCount(1, $validation->validate(['field' => 123]));
         $this->assertFalse($color->validate($validation, 'field'));
     }
+
+    public function testValidateHonorsPerFieldAllowEmptyMap(): void
+    {
+        $color = new Color(['allowEmpty' => ['field' => true]]);
+        $validation = new Validation();
+        $validation->add('field', $color);
+
+        $this->assertCount(0, $validation->validate(['field' => null]));
+        $this->assertTrue($color->validate($validation, 'field'));
+
+        $color = new Color(['allowEmpty' => ['field' => false]]);
+        $validation = new Validation();
+        $validation->add('field', $color);
+
+        $this->assertCount(1, $validation->validate(['field' => null]));
+        $this->assertFalse($color->validate($validation, 'field'));
+    }
 }

@@ -41,9 +41,9 @@ class Color extends AbstractValidator implements ValidatorInterface
      * Create the color validator.
      *
      * Common Phalcon validator options such as `message`, `template`, and
-     * `allowEmpty` are forwarded to the native base validator. The actual color
-     * check remains strict: when a value reaches `validate()`, it must be a
-     * string in one of the supported hexadecimal formats.
+     * `allowEmpty` are forwarded to the native base validator. Native
+     * empty-value handling, including per-field maps, is honored before the
+     * strict color check runs.
      *
      * @param array<string, mixed> $options Native Phalcon validator options.
      */
@@ -65,6 +65,10 @@ class Color extends AbstractValidator implements ValidatorInterface
     public function validate(Validation $validation, mixed $field): bool
     {
         $value = $validation->getValue($field);
+
+        if (is_string($field) && $this->isAllowEmpty($validation, $field)) {
+            return true;
+        }
         
         if (!is_string($value) || !$this->isValidColor($value)) {
             $validation->appendMessage(
