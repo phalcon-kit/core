@@ -193,10 +193,6 @@ class Blameable extends Behavior
 
         $audit = $this->requireAuditRecord($audit);
 
-        if (!$this->hasAuditModelStorage($audit)) {
-            return true;
-        }
-
         // Populate core audit metadata
         $audit->setModel($model::class);
         $audit->setTable($model->getSource());
@@ -224,52 +220,49 @@ class Blameable extends Behavior
         if ($this->isAuditDetailEnabled()) {
             $details = [];
             $detailClass = $this->auditDetailClass;
-            $detailPrototype = $this->requireAuditDetailRecord(new $detailClass());
 
-            if ($this->hasAuditModelStorage($detailPrototype)) {
-                foreach ($columns as $column) {
-                    $map = $columnMap[$column] ?? $column;
-                    $type = $columnTypes[$column] ?? null;
+            foreach ($columns as $column) {
+                $map = $columnMap[$column] ?? $column;
+                $type = $columnTypes[$column] ?? null;
 
-                    $before = $this->normalizeValue($snapshot[$map] ?? null, $type);
-                    $after  = $this->normalizeValue($model->readAttribute($map), $type);
+                $before = $this->normalizeValue($snapshot[$map] ?? null, $type);
+                $after  = $this->normalizeValue($model->readAttribute($map), $type);
 
-                    // Skip unchanged fields on update
-                    if (
-                        $event === 'update' &&
-                        $changed !== null &&
-                        $snapshot !== null &&
-                        ($before === $after || !in_array($map, $changed, true))
-                    ) {
-                        continue;
-                    }
-
-                    $detail = $this->requireAuditDetailRecord(new $detailClass());
-
-                    $detail->setColumn($column);
-                    $detail->setBefore($before);
-                    $detail->setAfter($after);
-
-                    // Legacy compatibility fields
-                    $detail->assign([
-                        'model' => $audit->getModel(),
-                        'table' => $audit->getTable(),
-                        'primary' => $audit->getPrimary(),
-                        'event' => $event,
-                        'map' => $map,
-                    ]);
-
-                    $details[] = $detail;
+                // Skip unchanged fields on update
+                if (
+                    $event === 'update' &&
+                    $changed !== null &&
+                    $snapshot !== null &&
+                    ($before === $after || !in_array($map, $changed, true))
+                ) {
+                    continue;
                 }
 
-                if ($details !== []) {
-                    $audit->assign(['AuditDetailList' => $details]);
-                }
+                $detail = $this->requireAuditDetailRecord(new $detailClass());
+
+                $detail->setColumn($column);
+                $detail->setBefore($before);
+                $detail->setAfter($after);
+
+                // Legacy compatibility fields
+                $detail->assign([
+                    'model' => $audit->getModel(),
+                    'table' => $audit->getTable(),
+                    'primary' => $audit->getPrimary(),
+                    'event' => $event,
+                    'map' => $map,
+                ]);
+
+                $details[] = $detail;
+            }
+
+            if ($details !== []) {
+                $audit->assign(['AuditDetailList' => $details]);
             }
         }
 
         // Persist audit (and details via relationship)
-        $saved = $audit->save();
+        $saved = $this->saveAuditRecord($audit);
 
         // Propagate audit validation errors back to the source model
         foreach ($audit->getMessages() as $message) {
@@ -341,24 +334,20 @@ class Blameable extends Behavior
     }
 
     /**
-     * Return true when the configured audit model has backing metadata.
+     * Save the audit record unless audit storage is explicitly absent.
      *
      * Missing audit tables are optional in some applications, so a concrete
-     * `TableNotInDatabase` skips audit creation. An unavailable local database
-     * is not the same signal; let the normal save path or test double decide
-     * instead of silently disabling audit.
+     * `TableNotInDatabase` skips audit creation. The guard is intentionally at
+     * the save boundary so fake/custom audit models that override persistence
+     * still run normally.
      */
-    protected function hasAuditModelStorage(Model $model): bool
+    protected function saveAuditRecord(AuditInterface&Model $audit): bool
     {
         try {
-            $model->getModelsMetaData()->getAttributes($model);
+            return $audit->save();
         } catch (TableNotInDatabase) {
-            return false;
-        } catch (\PDOException) {
             return true;
         }
-
-        return true;
     }
 
     /**

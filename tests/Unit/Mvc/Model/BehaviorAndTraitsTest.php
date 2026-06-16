@@ -610,6 +610,12 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame('Audit.event', $model->messages[0]->getField());
 
         FakeAudit::$messages = [];
+        FakeAudit::reset();
+        FakeAudit::$throwMissingTableOnSave = true;
+        $this->assertTrue($behavior->createAudit('afterUpdate', $model));
+        $this->assertNull(FakeAudit::$last);
+
+        FakeAudit::reset();
         $noSnapshot = new ModelBehaviorDouble();
         $this->assertFalse($behavior->notify('beforeUpdate', $noSnapshot));
 
