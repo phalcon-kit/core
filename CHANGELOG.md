@@ -15,6 +15,18 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.1.4 - 2026-06-16
+
+### Changed
+
+- Normalized mailer driver and SMTP encryption config case-insensitively,
+  validated mailer option shapes, and failed fast on unsupported values before
+  send-time network behavior.
+- Replaced internal references to deprecated Phalcon events interfaces with
+  their `Phalcon\Contracts\Events` equivalents.
+- Relaxed `modelHasColumn()` PHPDoc to match its nullable string contract so
+  Psalm accepts the controller trait implementation.
+
 ## 3.1.3 - 2026-06-12
 
 ### Fixed
@@ -131,13 +143,6 @@ release notes.
   database preflight failures, with direct coverage for the shared formatter.
 - Added a public independence disclaimer clarifying that Phalcon Kit is not
   affiliated with, endorsed by, or sponsored by the official Phalcon project.
-- Normalized mailer driver and SMTP encryption config case-insensitively,
-  validated mailer option shapes, and failed fast on unsupported values before
-  send-time network behavior.
-- Replaced internal references to deprecated Phalcon events interfaces with
-  their `Phalcon\Contracts\Events` equivalents.
-- Relaxed `modelHasColumn()` PHPDoc to match its nullable string contract so
-  Psalm accepts the controller trait implementation.
 
 ## 3.0.3 - 2026-06-10
 
