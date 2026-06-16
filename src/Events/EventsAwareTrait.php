@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Events;
 
 use Phalcon\Di\Di;
-use Phalcon\Events\ManagerInterface;
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Support\Helper;
 use PhalconKit\Support\Slug;
@@ -34,12 +34,12 @@ trait EventsAwareTrait
     /**
      * The event manager responsible for handling and triggering events.
      */
-    protected ?ManagerInterface $eventsManager;
+    protected ?EventsManagerContract $eventsManager;
     
     /**
      * Set the events manager
      */
-    public function setEventsManager(ManagerInterface $manager): void
+    public function setEventsManager(EventsManagerContract $manager): void
     {
         $this->eventsManager = $manager;
     }
@@ -47,7 +47,7 @@ trait EventsAwareTrait
     /**
      * Get the events manager.
      */
-    public function getEventsManager(): ?ManagerInterface
+    public function getEventsManager(): ?EventsManagerContract
     {
         $this->eventsManager ??= Di::getDefault()->get('eventsManager');
         return $this->eventsManager;
@@ -101,8 +101,10 @@ trait EventsAwareTrait
         $eventType = $this->getEventsPrefix() . ':' . $task;
         $eventsManager = $this->getEventsManager();
         
-        if (!$eventsManager instanceof ManagerInterface) {
-            throw new InvalidArgumentException("Events manager must be an instance of '" . ManagerInterface::class . "'.");
+        if (!$eventsManager instanceof EventsManagerContract) {
+            throw new InvalidArgumentException(
+                "Events manager must be an instance of '" . EventsManagerContract::class . "'."
+            );
         }
         
         return $eventsManager->fire($eventType, $this, $data, $cancelable);

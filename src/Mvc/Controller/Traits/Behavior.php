@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Controller\Traits;
 
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Di\Injectable;
 use Phalcon\Dispatcher\AbstractDispatcher;
 use Phalcon\Events\Manager;
-use Phalcon\Events\ManagerInterface;
 use Phalcon\Mvc\Dispatcher as MvcDispatcher;
 use PhalconKit\Acl\PermissionName;
 use PhalconKit\Mvc\Controller\Attributes\PermissionAttributeResolver;
@@ -118,10 +118,10 @@ trait Behavior
         }
     }
 
-    protected function getOrCreateEventsManager(): ManagerInterface
+    protected function getOrCreateEventsManager(): EventsManagerContract
     {
         $eventsManager = $this->getEventsManager();
-        if ($eventsManager instanceof ManagerInterface) {
+        if ($eventsManager instanceof EventsManagerContract) {
             return $eventsManager;
         }
 
@@ -130,7 +130,7 @@ trait Behavior
             $eventsManager = $di->getShared('eventsManager');
         }
 
-        if (!$eventsManager instanceof ManagerInterface) {
+        if (!$eventsManager instanceof Manager) {
             $eventsManager = new Manager();
         }
 

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\Mailer;
 
-use Phalcon\Events\ManagerInterface;
+use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Incubator\Mailer\Manager;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Exception\ConfigurationException;
@@ -66,7 +66,7 @@ class ServiceProvider extends AbstractServiceProvider
         $di->setShared($this->getName(), function () use ($di) {
             $config = $di->getConfig();
 
-            $mailerConfig = $config->pathToArray('mailer', []);
+            $mailerConfig = $config->pathToArray('mailer', []) ?? [];
 
             $driver = self::normalizeMailerToken($mailerConfig['driver'] ?? '', 'mailer.driver');
             self::assertSupportedDriver($driver);
@@ -82,9 +82,11 @@ class ServiceProvider extends AbstractServiceProvider
             $manager = new Manager($options);
             $manager->setDI($di);
 
-            $eventsManager = $di->get('eventsManager');
-            if ($eventsManager instanceof ManagerInterface) {
-                $manager->setEventsManager($eventsManager);
+            if ($di->has('eventsManager')) {
+                $eventsManager = $di->get('eventsManager');
+                if ($eventsManager instanceof EventsManager) {
+                    $manager->setEventsManager($eventsManager);
+                }
             }
 
             if ($driver === 'smtp') {

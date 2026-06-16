@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Events;
 
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
+use Phalcon\Contracts\Events\Event as EventContract;
 use Phalcon\Events\Event;
-use Phalcon\Events\EventInterface;
 use Phalcon\Events\Manager;
-use Phalcon\Events\ManagerInterface;
 use PhalconKit\Events\EventsAwareTrait;
 use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -43,7 +43,7 @@ class EventsAwareTraitTest extends AbstractUnit
     public function testGetEventsManager(): void
     {
         $manager = $this->events->getEventsManager();
-        $this->assertInstanceOf(ManagerInterface::class, $manager);
+        $this->assertInstanceOf(EventsManagerContract::class, $manager);
         $this->assertInstanceOf(Manager::class, $manager);
     }
     
@@ -67,7 +67,7 @@ class EventsAwareTraitTest extends AbstractUnit
         $bag = [];
         $task = 'testFire';
         
-        $manager->attach($this->events->getEventsPrefix() . ':' . $task, function (EventInterface $event, $subject, $data) use (&$bag) {
+        $manager->attach($this->events->getEventsPrefix() . ':' . $task, function (EventContract $event, $subject, $data) use (&$bag) {
             $bag = [
                 'event' => $event,
                 'subject' => $subject,
@@ -77,7 +77,7 @@ class EventsAwareTraitTest extends AbstractUnit
             return 'first-return';
         }, 0);
         
-        $manager->attach($this->events->getEventsPrefix() . ':' . $task, function (EventInterface $event) {
+        $manager->attach($this->events->getEventsPrefix() . ':' . $task, function (EventContract $event) {
             $event->stop();
             return 'second-return';
         }, 1);
@@ -92,7 +92,7 @@ class EventsAwareTraitTest extends AbstractUnit
         
         $this->assertEquals('second-return', $result);
         $this->assertInstanceOf(Event::class, $bag['event']);
-        $this->assertInstanceOf(EventInterface::class, $bag['event']);
+        $this->assertInstanceOf(EventContract::class, $bag['event']);
         $this->assertInstanceOf($this->events::class, $bag['subject']);
         $this->assertEquals($data, $bag['event']->getData());
         $this->assertEquals($data, $bag['data']);
@@ -120,7 +120,7 @@ class EventsAwareTraitTest extends AbstractUnit
         $captured = [];
         $manager->attach(
             $this->events->getEventsPrefix() . ':' . $task,
-            function (EventInterface $event, object $subject, array $payload) use (&$captured): void {
+            function (EventContract $event, object $subject, array $payload) use (&$captured): void {
                 $captured = [
                     'type' => $event->getType(),
                     'source' => $event->getSource(),
@@ -158,14 +158,14 @@ class EventsAwareTraitTest extends AbstractUnit
         $events = new class {
             use EventsAwareTrait;
 
-            public function getEventsManager(): ?ManagerInterface
+            public function getEventsManager(): ?EventsManagerContract
             {
                 return null;
             }
         };
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(ManagerInterface::class);
+        $this->expectExceptionMessage(EventsManagerContract::class);
 
         $events->fire('missingManager');
     }

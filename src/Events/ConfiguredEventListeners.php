@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace PhalconKit\Events;
 
 use Phalcon\Di\InjectionAwareInterface;
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Events\Manager;
-use Phalcon\Events\ManagerInterface;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Exception\ConfigurationException;
 
@@ -63,14 +63,14 @@ final class ConfiguredEventListeners
      * @param DiInterface $di Container used to resolve listener services and
      *     inject DI into listener objects that implement Phalcon's
      *     `InjectionAwareInterface`.
-     * @param ManagerInterface $eventsManager Events manager that receives the
+     * @param EventsManagerContract $eventsManager Events manager that receives the
      *     listener attachments.
      * @param array<array-key, mixed> $listeners Event-type map from config.
      *
      * @throws ConfigurationException When an event type, listener definition,
      *     listener class, listener service, or priority is invalid.
      */
-    public static function attach(DiInterface $di, ManagerInterface $eventsManager, array $listeners): void
+    public static function attach(DiInterface $di, EventsManagerContract $eventsManager, array $listeners): void
     {
         if ($listeners === []) {
             return;

@@ -134,6 +134,8 @@ release notes.
 - Normalized mailer driver and SMTP encryption config case-insensitively,
   validated mailer option shapes, and failed fast on unsupported values before
   send-time network behavior.
+- Replaced internal references to deprecated Phalcon events interfaces with
+  their `Phalcon\Contracts\Events` equivalents.
 
 ## 3.0.3 - 2026-06-10
 

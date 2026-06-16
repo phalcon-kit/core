@@ -15,8 +15,8 @@ namespace PhalconKit\Provider\Database;
 
 use Phalcon\Db\Adapter\Pdo\AbstractPdo;
 use Phalcon\Db\Adapter\Pdo\Mysql;
+use Phalcon\Events\Manager as EventsManager;
 use PhalconKit\Di\DiInterface;
-use Phalcon\Events\ManagerInterface;
 use PhalconKit\Db\Events\Logger;
 use PhalconKit\Db\Events\Profiler;
 use PhalconKit\Exception\ConfigurationException;
@@ -137,7 +137,7 @@ class ServiceProvider extends AbstractServiceProvider
             }
             
             // attach events
-            $eventsManager = $di->getTyped('eventsManager', ManagerInterface::class);
+            $eventsManager = $di->getTyped('eventsManager', EventsManager::class);
             
             if (!self::$attachedEvents) {
                 $eventsManager->detach('db', new Logger());

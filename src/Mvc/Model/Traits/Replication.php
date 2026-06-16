@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Model\Traits;
 
 use Phalcon\Config\ConfigInterface;
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Db\Adapter\AdapterInterface;
-use Phalcon\Events\ManagerInterface;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEventsManager;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractInjectable;
@@ -94,7 +94,7 @@ trait Replication
      * instance keeps listener attachment idempotent while still allowing a new
      * manager to receive the listeners if the model swaps managers.
      */
-    protected ?ManagerInterface $readWriteConnectionBehaviorEventsManager = null;
+    protected ?EventsManagerContract $readWriteConnectionBehaviorEventsManager = null;
     
     /**
      * Return the configured replica lag window in milliseconds.
@@ -211,10 +211,10 @@ trait Replication
     public function addReadWriteConnectionBehavior(): void
     {
         $eventsManager = $this->getEventsManager();
-        if (!$eventsManager instanceof ManagerInterface) {
+        if (!$eventsManager instanceof EventsManagerContract) {
             throw new ServiceException(sprintf(
                 'Expected model events manager for model replication helpers to be an instance of "%s"; got "%s".',
-                ManagerInterface::class,
+                EventsManagerContract::class,
                 get_debug_type($eventsManager)
             ));
         }

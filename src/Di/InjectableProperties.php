@@ -50,7 +50,7 @@ namespace PhalconKit\Di;
  * @property \Phalcon\Db\Adapter\AbstractAdapter $db
  * @property \Phalcon\Db\Adapter\AbstractAdapter $dbd
  * @property \Phalcon\Db\Adapter\AbstractAdapter $dbr
- * @property \Phalcon\Events\ManagerInterface $eventsManager
+ * @property \Phalcon\Contracts\Events\Manager $eventsManager
  * @property \Phalcon\Flash\FlashInterface $flash
  * @property \Phalcon\Logger\LoggerInterface $logger
  * @property \Phalcon\Incubator\Mailer\Manager $mailer

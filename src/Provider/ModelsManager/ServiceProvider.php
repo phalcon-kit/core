@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Provider\ModelsManager;
 
+use Phalcon\Events\Manager as EventsManager;
 use PhalconKit\Di\DiInterface;
-use Phalcon\Events\ManagerInterface;
 use PhalconKit\Mvc\Model\Manager;
 use PhalconKit\Provider\AbstractServiceProvider;
 
@@ -43,9 +43,11 @@ class ServiceProvider extends AbstractServiceProvider
             
             $manager = new Manager();
     
-            $eventsManager = $di->get('eventsManager');
-            if ($eventsManager instanceof ManagerInterface) {
-                $manager->setEventsManager($eventsManager);
+            if ($di->has('eventsManager')) {
+                $eventsManager = $di->get('eventsManager');
+                if ($eventsManager instanceof EventsManager) {
+                    $manager->setEventsManager($eventsManager);
+                }
             }
             
             return $manager;

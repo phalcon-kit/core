@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace PhalconKit;
 
 use Phalcon\Application\AbstractApplication;
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Di\Di as PhalconDi;
-use Phalcon\Events;
+use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Cli\Console;
@@ -157,7 +158,7 @@ DOC;
     public function __construct(?string $mode = null)
     {
         $this->setMode($mode);
-        $this->setEventsManager(new Events\Manager());
+        $this->setEventsManager(new EventsManager());
         $this->setDI();
         $this->initialize();
         $this->registerConfig();
@@ -400,7 +401,7 @@ DOC;
 
         ConfiguredEventListeners::attach(
             $this->di,
-            $this->di->getTyped('eventsManager', Events\ManagerInterface::class),
+            $this->di->getTyped('eventsManager', EventsManagerContract::class),
             $listeners
         );
         $this->configuredEventListenersAttached = true;

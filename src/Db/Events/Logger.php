@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Db\Events;
 
+use Phalcon\Contracts\Events\Event as EventContract;
 use Phalcon\Db\Adapter\AbstractAdapter;
-use Phalcon\Events\EventInterface;
 use Phalcon\Logger\Exception as LoggerException;
 use PhalconKit\Di\Injectable;
 
@@ -28,12 +28,12 @@ class Logger extends Injectable
     /**
      * Executes before a database query is executed.
      *
-     * @param EventInterface $event The event object.
+     * @param EventContract $event The event object.
      * @param AbstractAdapter $connection The database connection object.
      * @return void
      * @throws LoggerException If Phalcon cannot write the query log entry.
      */
-    public function beforeQuery(EventInterface $event, AbstractAdapter $connection): void
+    public function beforeQuery(EventContract $event, AbstractAdapter $connection): void
     {
         if ($this->config->path('logger.enable') || $this->config->path('app.logger')) {
             if ($this->config->path('loggers.database.enable')) {

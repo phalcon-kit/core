@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Db\Events;
 
+use Phalcon\Contracts\Events\Event as EventContract;
 use Phalcon\Db\Adapter\AbstractAdapter;
-use Phalcon\Events\EventInterface;
 use PhalconKit\Di\Injectable;
 
 /**
@@ -47,11 +47,11 @@ class Profiler extends Injectable
      * Stopped events are ignored so listeners earlier in the chain can cancel
      * profiling together with the query.
      *
-     * @param EventInterface $event Database `beforeQuery` event.
+     * @param EventContract $event Database `beforeQuery` event.
      * @param AbstractAdapter $connection Connection that is about to execute
      *     the statement.
      */
-    public function beforeQuery(EventInterface $event, AbstractAdapter $connection): void
+    public function beforeQuery(EventContract $event, AbstractAdapter $connection): void
     {
         if ($this->isEnabled()) {
             if (!$event->isStopped()) {
@@ -69,10 +69,10 @@ class Profiler extends Injectable
      *
      * @scrutinizer ignore-unused
      *
-     * @param EventInterface $event Database `afterQuery` event.
+     * @param EventContract $event Database `afterQuery` event.
      * @param AbstractAdapter $connection Connection that executed the statement.
      */
-    public function afterQuery(EventInterface $event, AbstractAdapter $connection): void
+    public function afterQuery(EventContract $event, AbstractAdapter $connection): void
     {
         if ($this->isEnabled()) {
             $this->profiler->stopProfile();

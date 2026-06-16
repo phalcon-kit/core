@@ -31,7 +31,7 @@ use Phalcon\Di\DiInterface;
  * @property \Phalcon\Flash\Direct $flash
  * @property \Phalcon\Flash\Session $flashSession
  * @property \Phalcon\Session\ManagerInterface $session
- * @property \Phalcon\Events\Manager|\Phalcon\Events\ManagerInterface $eventsManager
+ * @property \Phalcon\Events\Manager|\Phalcon\Contracts\Events\Manager $eventsManager
  * @property \Phalcon\Db\Adapter\AdapterInterface $db
  * @property \PhalconKit\Encryption\Security|\Phalcon\Encryption\Security $security
  * @property \Phalcon\Encryption\Crypt|\Phalcon\Encryption\Crypt\CryptInterface $crypt

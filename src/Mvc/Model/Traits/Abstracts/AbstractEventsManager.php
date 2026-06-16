@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits\Abstracts;
 
-use Phalcon\Events\ManagerInterface;
+use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 
 trait AbstractEventsManager
 {
     use AbstractInjectable;
     
-    abstract public function getEventsManager(): ?ManagerInterface;
+    abstract public function getEventsManager(): ?EventsManagerContract;
     
     abstract public function fireEventCancel(string $eventName): bool;
     
