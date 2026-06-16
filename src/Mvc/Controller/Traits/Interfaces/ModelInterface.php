@@ -79,8 +79,8 @@ interface ModelInterface
      * strategy and cache.
      *
      * @param string $column Database column or mapped model attribute.
-     * @param class-string<\Phalcon\Mvc\ModelInterface>|null $modelName Optional
-     *     model override; defaults to the current controller model.
+     * @param string|null $modelName Optional model override; defaults to the
+     *     current controller model. Non-model strings should return false.
      */
     public function modelHasColumn(string $column, ?string $modelName = null): bool;
 }

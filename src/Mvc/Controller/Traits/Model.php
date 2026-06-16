@@ -188,8 +188,8 @@ trait Model
      * runtime failure.
      *
      * @param string $column Database column name or mapped model attribute name.
-     * @param class-string<ModelInterface>|null $modelName Optional model class;
-     *     defaults to the current controller model.
+     * @param string|null $modelName Optional model class; defaults to the
+     *     current controller model. Non-model strings return false.
      *
      * @return bool True when the model column map contains the raw column or
      *     mapped attribute name.

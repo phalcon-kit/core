@@ -136,6 +136,8 @@ release notes.
   send-time network behavior.
 - Replaced internal references to deprecated Phalcon events interfaces with
   their `Phalcon\Contracts\Events` equivalents.
+- Relaxed `modelHasColumn()` PHPDoc to match its nullable string contract so
+  Psalm accepts the controller trait implementation.
 
 ## 3.0.3 - 2026-06-10
 
