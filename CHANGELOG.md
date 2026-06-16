@@ -131,6 +131,9 @@ release notes.
   database preflight failures, with direct coverage for the shared formatter.
 - Added a public independence disclaimer clarifying that Phalcon Kit is not
   affiliated with, endorsed by, or sponsored by the official Phalcon project.
+- Normalized mailer driver and SMTP encryption config case-insensitively,
+  validated mailer option shapes, and failed fast on unsupported values before
+  send-time network behavior.
 
 ## 3.0.3 - 2026-06-10
 

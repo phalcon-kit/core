@@ -615,16 +615,16 @@ class AdditionalServiceProvidersTest extends AbstractUnit
     {
         $di = $this->createDi([
             'mailer' => [
-                'driver' => 'smtp',
+                'driver' => 'SMTP',
                 'drivers' => [
                     'smtp' => [
-                        'driver' => 'smtp',
-                        'host' => 'localhost',
-                        'port' => 25,
+                        'driver' => 'SMTP',
+                        'encryption' => 'SSL',
                     ],
                 ],
-                'defaults' => [
-                    'charset' => 'utf-8',
+                'default' => [
+                    'host' => 'localhost',
+                    'port' => 25,
                 ],
             ],
         ]);
@@ -638,6 +638,92 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertSame($di, $mailer->getDI());
         $this->assertSame($eventsManager, $mailer->getEventsManager());
         $this->assertTrue($mailer->getMailer()->SMTPAuth);
+        $this->assertSame('ssl', $mailer->getMailer()->SMTPSecure);
+        $this->assertSame('localhost', $mailer->getMailer()->Host);
+        $this->assertSame(25, $mailer->getMailer()->Port);
+    }
+
+    public function testMailerProviderRejectsUnsupportedDriver(): void
+    {
+        $di = $this->createDi([
+            'mailer' => [
+                'driver' => 'mail',
+                'drivers' => [
+                    'mail' => [
+                        'driver' => 'mail',
+                    ],
+                ],
+            ],
+        ]);
+        (new MailerProvider($di))->register($di);
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Unsupported mailer driver "mail"');
+
+        $di->get('mailer');
+    }
+
+    public function testMailerProviderRejectsInvalidDriverOptionsShape(): void
+    {
+        $di = $this->createDi([
+            'mailer' => [
+                'driver' => 'smtp',
+                'drivers' => [
+                    'smtp' => 'localhost',
+                ],
+            ],
+        ]);
+        (new MailerProvider($di))->register($di);
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('mailer.drivers.smtp must be an array.');
+
+        $di->get('mailer');
+    }
+
+    public function testMailerProviderRejectsUnsupportedSmtpEncryption(): void
+    {
+        $di = $this->createDi([
+            'mailer' => [
+                'driver' => 'smtp',
+                'drivers' => [
+                    'smtp' => [
+                        'driver' => 'smtp',
+                        'host' => 'localhost',
+                        'port' => 25,
+                        'encryption' => 'starttls',
+                    ],
+                ],
+            ],
+        ]);
+        (new MailerProvider($di))->register($di);
+
+        $this->expectException(ConfigurationException::class);
+        $this->expectExceptionMessage('Unsupported mailer SMTP encryption "starttls"');
+
+        $di->get('mailer');
+    }
+
+    public function testMailerProviderTreatsFalseSmtpEncryptionAsEmpty(): void
+    {
+        $di = $this->createDi([
+            'mailer' => [
+                'driver' => 'smtp',
+                'drivers' => [
+                    'smtp' => [
+                        'driver' => 'smtp',
+                        'host' => 'localhost',
+                        'port' => 25,
+                        'encryption' => false,
+                    ],
+                ],
+            ],
+        ]);
+        (new MailerProvider($di))->register($di);
+
+        $mailer = $di->get('mailer');
+
+        $this->assertSame('', $mailer->getMailer()->SMTPSecure);
     }
 
     public function testModelsMetadataProviderRegistersMemoryAdapter(): void

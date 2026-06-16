@@ -115,9 +115,11 @@ Rules:
 
 ## Mailer And IMAP
 
-Mailer config supports `mail`, `sendmail`, and `smtp`. IMAP config contains the
-mailbox path, login, password, attachments directory, server encoding, and
-filename mode.
+Mailer config supports `sendmail` and `smtp`. The selected driver is normalized
+case-insensitively and invalid driver/options shapes fail before the mailer is
+created. SMTP encryption accepts `ssl`, `tls`, or an empty string; values are
+also normalized case-insensitively. IMAP config contains the mailbox path, login,
+password, attachments directory, server encoding, and filename mode.
 
 Rules:
 
