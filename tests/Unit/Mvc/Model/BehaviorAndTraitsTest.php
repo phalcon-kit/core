@@ -1914,6 +1914,213 @@ class BehaviorAndTraitsTest extends AbstractUnit
         }
     }
 
+    public function testRelationshipOptionsAllowPerAliasOverrides(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $this->assertFalse($model->getRelationshipOption('enforceDirectOwnership'));
+        $this->assertTrue($model->getRelationshipOption('allowUnownedDirectRelationAdoption'));
+        $this->assertFalse($model->getRelationshipOption('autoRestoreDirectRelations'));
+
+        $model->setRelationshipOptions([
+            'enforceDirectOwnership' => true,
+            'autoRestoreDirectRelations' => true,
+            'aliases' => [
+                'Children' => [
+                    'autoRestoreDirectRelations' => false,
+                ],
+            ],
+        ]);
+
+        $this->assertTrue($model->getRelationshipOption('enforceDirectOwnership'));
+        $this->assertTrue($model->getRelationshipOption('autoRestoreDirectRelations'));
+        $this->assertTrue($model->getRelationshipOption('enforceDirectOwnership', 'children'));
+        $this->assertFalse($model->getRelationshipOption('autoRestoreDirectRelations', 'children'));
+        $this->assertArrayNotHasKey('aliases', $model->getRelationshipOptions());
+        $this->assertSame('fallback', $model->getRelationshipOption('unknown', 'children', 'fallback'));
+    }
+
+    public function testRelationshipOptionsUseBootstrapModelDefaults(): void
+    {
+        $this->getConfig()->merge([
+            'model' => [
+                'relationship' => [
+                    'enforceDirectOwnership' => true,
+                    'allowUnownedDirectRelationAdoption' => false,
+                    'aliases' => [
+                        'children' => [
+                            'autoRestoreDirectRelations' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $model = new ModelBehaviorDouble();
+
+        $this->assertTrue($model->getRelationshipOption('enforceDirectOwnership'));
+        $this->assertFalse($model->getRelationshipOption('allowUnownedDirectRelationAdoption'));
+        $this->assertFalse($model->getRelationshipOption('autoRestoreDirectRelations'));
+        $this->assertTrue($model->getRelationshipOption('autoRestoreDirectRelations', 'children'));
+
+        $model->setRelationshipOptions([
+            'enforceDirectOwnership' => false,
+            'aliases' => [
+                'children' => [
+                    'autoRestoreDirectRelations' => false,
+                ],
+            ],
+        ]);
+
+        $this->assertFalse($model->getRelationshipOption('enforceDirectOwnership'));
+        $this->assertFalse($model->getRelationshipOption('autoRestoreDirectRelations', 'children'));
+    }
+
+    public function testDirectRelationshipOwnershipGuardRejectsForeignPrimaryKeyBeforeAssignment(): void
+    {
+        $manager = new FakeModelsManager();
+        $metaData = new FakeMetaData();
+        $metaData->attributes = ['id', 'parentId', 'name'];
+
+        NativeRelationshipModelDouble::$defaultModelsManager = $manager;
+        NativeRelationshipModelDouble::$defaultModelsMetaData = $metaData;
+
+        $parent = new NativeRelationshipModelDouble();
+        $parent->id = 5;
+        $parent->setRelationshipOptions(['enforceDirectOwnership' => true]);
+
+        $foreignChild = new NativeRelationshipModelDouble();
+        $foreignChild->id = 10;
+        $foreignChild->parentId = 7;
+        NativeRelationshipModelDouble::$findFirstResult = $foreignChild;
+
+        $children = new Relation(Relation::HAS_MANY, NativeRelationshipModelDouble::class, 'id', 'parentId', [
+            'alias' => 'children',
+        ]);
+        $manager->setRelationByAlias(NativeRelationshipModelDouble::class, 'children', $children);
+
+        try {
+            $parent->assignRelated([
+                'children' => [
+                    [
+                        'id' => 10,
+                        'parentId' => 5,
+                    ],
+                ],
+            ]);
+            $this->fail('Expected foreign direct child ownership exception.');
+        } catch (\PhalconKit\Exception\InvalidArgumentException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Related record `' . NativeRelationshipModelDouble::class .
+                '` for alias `children` belongs to another model and cannot be assigned through a direct relationship.',
+                $exception->getMessage()
+            );
+        }
+
+        $this->assertSame(7, $foreignChild->parentId);
+    }
+
+    public function testDirectRelationshipOwnershipGuardCanRejectUnownedPrimaryKeyAdoption(): void
+    {
+        $manager = new FakeModelsManager();
+        $metaData = new FakeMetaData();
+        $metaData->attributes = ['id', 'parentId', 'name'];
+
+        NativeRelationshipModelDouble::$defaultModelsManager = $manager;
+        NativeRelationshipModelDouble::$defaultModelsMetaData = $metaData;
+
+        $parent = new NativeRelationshipModelDouble();
+        $parent->id = 5;
+        $parent->setRelationshipOptions([
+            'enforceDirectOwnership' => true,
+            'allowUnownedDirectRelationAdoption' => false,
+        ]);
+
+        $unownedChild = new NativeRelationshipModelDouble();
+        $unownedChild->id = 11;
+        $unownedChild->parentId = null;
+        NativeRelationshipModelDouble::$findFirstResult = $unownedChild;
+
+        $children = new Relation(Relation::HAS_MANY, NativeRelationshipModelDouble::class, 'id', 'parentId', [
+            'alias' => 'children',
+        ]);
+        $manager->setRelationByAlias(NativeRelationshipModelDouble::class, 'children', $children);
+
+        try {
+            $parent->assignRelated(['children' => [['id' => 11]]]);
+            $this->fail('Expected unowned direct child adoption exception.');
+        } catch (\PhalconKit\Exception\InvalidArgumentException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertSame(
+                'Related record `' . NativeRelationshipModelDouble::class .
+                '` for alias `children` is not attached to the current model and cannot be assigned through a direct relationship.',
+                $exception->getMessage()
+            );
+        }
+    }
+
+    public function testDirectRelationshipOwnershipGuardRejectsForeignModelObjectBeforeSave(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->id = 5;
+        $model->fakeModelsManager = new FakeModelsManager();
+        $model->fakeModelsMetaData = new FakeMetaData();
+        $model->setRelationshipOptions(['enforceDirectOwnership' => true]);
+
+        $children = new Relation(Relation::HAS_MANY, ModelBehaviorDouble::class, 'id', 'parentId', [
+            'alias' => 'children',
+        ]);
+        $model->fakeModelsManager->setRelationByAlias(ModelBehaviorDouble::class, 'children', $children);
+
+        $foreignChild = new ModelBehaviorDouble();
+        $foreignChild->id = 12;
+        $foreignChild->parentId = 7;
+
+        $connection = $this->createStub(AdapterInterface::class);
+        $connection->method('begin')->willReturn(true);
+        $connection->method('rollback')->willReturn(true);
+        $connection->method('commit')->willReturn(true);
+
+        $this->expectException(\PhalconKit\Exception\InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Related record `' . ModelBehaviorDouble::class .
+            '` for alias `children` belongs to another model and cannot be assigned through a direct relationship.'
+        );
+
+        $model->callPostSaveRelatedRecords($connection, ['children' => [$foreignChild]], new Collection());
+    }
+
+    public function testDirectRelationshipCanAutoRestoreOwnedSoftDeletedChildWhenEnabled(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $model->id = 5;
+        $model->fakeModelsManager = new FakeModelsManager();
+        $model->fakeModelsMetaData = new FakeMetaData();
+        $model->setRelationshipOptions(['autoRestoreDirectRelations' => true]);
+
+        $children = new Relation(Relation::HAS_MANY, ModelBehaviorDouble::class, 'id', 'parentId', [
+            'alias' => 'children',
+        ]);
+        $model->fakeModelsManager->setRelationByAlias(ModelBehaviorDouble::class, 'children', $children);
+
+        $child = new ModelBehaviorDouble();
+        $child->id = 13;
+        $child->parentId = 5;
+        $child->deleted = 1;
+        $child->fakeModelsManager = new FakeModelsManager();
+        $child->initializeSoftDelete();
+
+        $connection = $this->createStub(AdapterInterface::class);
+        $connection->method('begin')->willReturn(true);
+        $connection->method('rollback')->willReturn(true);
+        $connection->method('commit')->willReturn(true);
+
+        $this->assertTrue($model->callPostSaveRelatedRecords($connection, ['children' => [$child]], new Collection()));
+        $this->assertSame(0, $child->deleted);
+        $this->assertSame(5, $child->parentId);
+        $this->assertEmpty($model->messages);
+    }
+
     public function testRelationshipNativeAssignAndToArray(): void
     {
         $model = new NativeRelationshipModelDouble();

@@ -31,6 +31,7 @@ class ConfigTest extends AbstractUnit
             'debug',
             'response',
             'identity',
+            'model',
             'models',
             'providers',
             'logger',
@@ -210,6 +211,38 @@ class ConfigTest extends AbstractUnit
             $this->assertTrue($config->path('identity.stateless'));
         } finally {
             Env::set('IDENTITY_STATELESS', $previous);
+        }
+    }
+
+    public function testModelRelationshipConfigUsesEnvironmentFlags(): void
+    {
+        $keys = [
+            'MODEL_RELATIONSHIP_ENFORCE_DIRECT_OWNERSHIP',
+            'MODEL_RELATIONSHIP_ALLOW_UNOWNED_DIRECT_RELATION_ADOPTION',
+            'MODEL_RELATIONSHIP_AUTO_RESTORE_DIRECT_RELATIONS',
+        ];
+        $previous = [];
+        foreach ($keys as $key) {
+            $previous[$key] = Env::get($key);
+            Env::set($key, null);
+        }
+
+        try {
+            Env::set('MODEL_RELATIONSHIP_ENFORCE_DIRECT_OWNERSHIP', 'true');
+            Env::set('MODEL_RELATIONSHIP_ALLOW_UNOWNED_DIRECT_RELATION_ADOPTION', 'false');
+            Env::set('MODEL_RELATIONSHIP_AUTO_RESTORE_DIRECT_RELATIONS', 'true');
+
+            $config = new Config();
+            $relationship = $config->pathToArray('model.relationship') ?? [];
+
+            $this->assertTrue($relationship['enforceDirectOwnership'] ?? null);
+            $this->assertFalse($relationship['allowUnownedDirectRelationAdoption'] ?? null);
+            $this->assertTrue($relationship['autoRestoreDirectRelations'] ?? null);
+            $this->assertArrayNotHasKey('aliases', $relationship);
+        } finally {
+            foreach ($previous as $key => $value) {
+                Env::set($key, $value);
+            }
         }
     }
 

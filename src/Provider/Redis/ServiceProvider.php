@@ -47,7 +47,7 @@ class ServiceProvider extends AbstractServiceProvider
     #[\Override]
     public function register(DiInterface $di): void
     {
-        $di->setShared($this->getName(), function () use ($di) {
+        $di->setShared($this->getName(), function () use ($di): Redis {
 
             $config = $di->getConfig();
 

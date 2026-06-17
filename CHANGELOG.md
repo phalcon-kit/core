@@ -15,9 +15,22 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 3.3.1 - Unreleased
+## 3.4.0 - 2026-06-17
 
-No changes yet.
+### Added
+
+- Added configurable relationship save behavior for direct child relations,
+  including opt-in direct ownership enforcement, unowned child adoption
+  control, per-alias overrides, direct soft-delete auto-restore, and
+  env-backed bootstrap defaults under `model.relationship`. Defaults
+  preserve legacy direct-relation save behavior for the 3.x line.
+- Added a Psalm Redis extension stub so static analysis can run in development
+  environments where `ext-redis` is not loaded.
+
+### Fixed
+
+- Fixed optional IMAP and Redis provider tests so they skip cleanly when the
+  matching PHP extension or session handler is unavailable.
 
 ## 3.3.0 - 2026-06-16
 

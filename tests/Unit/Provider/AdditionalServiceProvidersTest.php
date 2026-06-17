@@ -579,6 +579,10 @@ class AdditionalServiceProvidersTest extends AbstractUnit
 
     public function testImapProviderUsesConfiguredOptionsAndRuntimeOverrides(): void
     {
+        if (!defined('OP_READONLY')) {
+            $this->skipUnavailableExtension('IMAP', 'OP_READONLY constant is not available.');
+        }
+
         $di = $this->createDi([
             'imap' => [
                 'path' => '{imap.example.test:993/imap/ssl}INBOX',
@@ -1314,6 +1318,17 @@ class AdditionalServiceProvidersTest extends AbstractUnit
     {
         $originalSaveHandler = ini_get('session.save_handler');
         $originalSavePath = ini_get('session.save_path');
+
+        $redisSaveHandlerAvailable = @ini_set('session.save_handler', 'redis') !== false;
+        if ($originalSaveHandler !== 'user') {
+            @ini_set('session.save_handler', $originalSaveHandler);
+        }
+        ini_set('session.save_path', $originalSavePath);
+
+        if (!$redisSaveHandlerAvailable) {
+            $this->skipUnavailableExtension('Redis', 'session save handler "redis" is not available.');
+        }
+
         $adapter = $this->createFakeRedisSessionAdapterClass();
         $di = $this->createDi([
             'session' => [

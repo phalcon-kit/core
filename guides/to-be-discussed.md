@@ -92,8 +92,10 @@ Keep for discussion:
   Opt-in strict relation assignment now covers non-whitelisted aliases, unknown
   complex relation payloads, malformed relation values, and nested relation
   assignment. Remaining design work: a clearer replacement for boolean
-  keep-missing sentinels, and explicit rules for sparse payloads that reactivate
-  or update existing relation rows.
+  keep-missing sentinels, explicit rules for sparse payloads that reactivate
+  or update existing relation rows, and future-major defaults for direct
+  relationship ownership enforcement, unowned child adoption, and direct
+  soft-delete auto-restore.
 - Controller behavior responses and merge semantics:
   `src/Mvc/Controller/Traits/Behavior.php`.
   Define whether controller behaviors should collect multiple event responses

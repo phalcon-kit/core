@@ -31,6 +31,7 @@
     </projectFiles>
 
     <stubs>
+        <file name="stubs/redis.php"/>
         <file name="stubs/swoole.php"/>
     </stubs>
 

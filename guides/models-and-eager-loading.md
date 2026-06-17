@@ -106,6 +106,41 @@ Strict relationship assignment does not replace column validation, model
 validation, or REST save-field policies. It is a guard for nested relation
 payloads, not a general "reject every unknown scalar field" mode.
 
+## Relationship Save Options
+
+Direct `hasOne` and `hasMany` saves keep legacy behavior by default: submitted
+children can be created or updated, missing children can still be deleted when
+`keepMissingRelated` is false, and soft-deleted direct children are not restored
+automatically.
+
+Applications that need stricter direct-child ownership can set relationship
+defaults in bootstrap config under `model.relationship`:
+
+```php
+'model' => [
+    'relationship' => [
+        'enforceDirectOwnership' => true,
+        'allowUnownedDirectRelationAdoption' => false,
+        'autoRestoreDirectRelations' => false,
+    ],
+],
+```
+
+The same defaults can be controlled with environment variables:
+
+- `MODEL_RELATIONSHIP_ENFORCE_DIRECT_OWNERSHIP`
+- `MODEL_RELATIONSHIP_ALLOW_UNOWNED_DIRECT_RELATION_ADOPTION`
+- `MODEL_RELATIONSHIP_AUTO_RESTORE_DIRECT_RELATIONS`
+
+`enforceDirectOwnership` rejects direct child records that already point to a
+different parent before the save process rewrites their foreign key. When that
+guard is enabled, `allowUnownedDirectRelationAdoption` controls whether existing
+children with empty relationship keys may be attached to the current parent.
+
+`autoRestoreDirectRelations` only restores soft-deleted direct children that
+already belong to the current parent. Many-to-many through relations keep their
+existing intermediate-node restore behavior.
+
 ## Eager Loading
 
 Use eager loading when a response or workflow needs related data. This avoids

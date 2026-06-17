@@ -24,13 +24,16 @@ use Phalcon\Mvc\Model\RelationInterface;
 use Phalcon\Mvc\Model\ResultsetInterface;
 use Phalcon\Mvc\ModelInterface;
 use Phalcon\Support\Collection\CollectionInterface;
+use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Exception\LogicException;
 use PhalconKit\Mvc\Model\Interfaces\RelationshipInterface;
 use PhalconKit\Mvc\Model\Interfaces\SoftDeleteInterface;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEntity;
+use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractInjectable;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractMetaData;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractModelsManager;
+use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractOptions;
 
 /**
  * Adds relationship-aware assignment, persistence, and export helpers.
@@ -45,12 +48,23 @@ use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractModelsManager;
 trait Relationship
 {
     use AbstractEntity;
+    use AbstractInjectable;
     use AbstractMetaData;
     use AbstractModelsManager;
+    use AbstractOptions;
     
     abstract public function appendMessage(\Phalcon\Messages\MessageInterface $message): ModelInterface;
     
     private array $keepMissingRelated = [];
+
+    /**
+     * @var array<string, mixed>
+     */
+    private const array DEFAULT_RELATIONSHIP_OPTIONS = [
+        'enforceDirectOwnership' => false,
+        'allowUnownedDirectRelationAdoption' => true,
+        'autoRestoreDirectRelations' => false,
+    ];
 
     /**
      * Whether relation-specific assignment mistakes should throw exceptions.
@@ -98,6 +112,103 @@ trait Relationship
     }
 
     /**
+     * Replace the configured relationship behavior options.
+     *
+     * The option group is intentionally stored in the shared model options
+     * manager so applications can opt into stricter behavior per model without
+     * changing generated relationship declarations.
+     */
+    public function setRelationshipOptions(array $options): void
+    {
+        $this->getOptionsManager()->set('relationship', $options);
+    }
+
+    /**
+     * Return relationship options, optionally including a per-alias override.
+     */
+    public function getRelationshipOptions(?string $alias = null): array
+    {
+        $configured = $this->getConfiguredRelationshipOptions();
+        $instance = $this->getOptionsManager()->get('relationship') ?? [];
+        if (!is_array($instance)) {
+            $instance = [];
+        }
+
+        $options = array_replace(
+            self::DEFAULT_RELATIONSHIP_OPTIONS,
+            array_intersect_key($configured, self::DEFAULT_RELATIONSHIP_OPTIONS),
+            array_intersect_key($instance, self::DEFAULT_RELATIONSHIP_OPTIONS)
+        );
+
+        if ($alias === null) {
+            return $options;
+        }
+
+        $aliasOptions = array_replace(
+            $this->getRelationshipAliasOptions($configured, $alias),
+            $this->getRelationshipAliasOptions($instance, $alias)
+        );
+
+        return array_replace(
+            $options,
+            array_intersect_key($aliasOptions, $options)
+        );
+    }
+
+    /**
+     * Read relationship defaults from bootstrap config when available.
+     *
+     * The config path is intentionally feature-specific (`model.relationship`)
+     * rather than part of the generic model options manager.
+     *
+     * @return array<string, mixed>
+     */
+    private function getConfiguredRelationshipOptions(): array
+    {
+        try {
+            $config = $this->getDI()->get('config');
+        }
+        catch (\Throwable) {
+            return [];
+        }
+
+        if (!$config instanceof ConfigInterface) {
+            return [];
+        }
+
+        return $config->pathToArray('model.relationship', []) ?? [];
+    }
+
+    /**
+     * Return one configured relationship behavior option.
+     */
+    public function getRelationshipOption(string $option, ?string $alias = null, mixed $default = null): mixed
+    {
+        return $this->getRelationshipOptions($alias)[$option] ?? $default;
+    }
+
+    private function getRelationshipAliasOptions(array $configured, string $alias): array
+    {
+        $aliases = $configured['aliases'] ?? [];
+        if (!is_array($aliases)) {
+            return [];
+        }
+
+        $normalizedAlias = $this->normalizeRelationAlias($alias);
+        foreach ($aliases as $configuredAlias => $options) {
+            if (
+                is_string($configuredAlias)
+                && $this->normalizeRelationAlias($configuredAlias) === $normalizedAlias
+                && is_array($options)
+            ) {
+                return $options;
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * Set the missing related configuration list
      */
     public function setKeepMissingRelated(array $keepMissingRelated): void
@@ -107,6 +218,8 @@ trait Relationship
     
     /**
      * Return the missing related configuration list
+     *
+     * @return array<string, bool>
      */
     public function getKeepMissingRelated(): array
     {
@@ -147,6 +260,8 @@ trait Relationship
     
     /**
      * Return the dirtyRelated entities
+     *
+     * @return array<string, mixed>
      */
     public function getDirtyRelated(): array
     {
@@ -197,6 +312,8 @@ trait Relationship
 
     /**
      * Return the eager-loaded related entities
+     *
+     * @return array<string, mixed>
      */
     public function getLoadedRelated(): array
     {
@@ -544,6 +661,146 @@ trait Relationship
         $reverseColumnMap = $metaData->getReverseColumnMap($this) ?? [];
         return array_key_exists($field, $reverseColumnMap) || in_array($field, $reverseColumnMap, true);
     }
+
+    private function isDirectOwnedRelationType(?int $type): bool
+    {
+        return in_array($type, [Relation::HAS_ONE, Relation::HAS_MANY], true);
+    }
+
+    private function assertDirectRelatedRecordCanBeAssigned(
+        ?string $alias,
+        ?int $type,
+        array $relationFields,
+        array $referencedFields,
+        EntityInterface $record
+    ): void {
+        if (
+            $alias === null
+            || !$this->isDirectOwnedRelationType($type)
+            || !$this->getRelationshipOption('enforceDirectOwnership', $alias, false)
+        ) {
+            return;
+        }
+
+        $ownershipState = $this->getDirectRelatedOwnershipState($relationFields, $referencedFields, $record);
+        if ($ownershipState === 'owned') {
+            return;
+        }
+
+        if (
+            $ownershipState === 'unowned'
+            && $this->getRelationshipOption('allowUnownedDirectRelationAdoption', $alias, true)
+        ) {
+            return;
+        }
+
+        $reason = $ownershipState === 'unowned'
+            ? 'is not attached to the current model'
+            : 'belongs to another model';
+
+        throw new InvalidArgumentException(
+            'Related record `' . get_class($record) . '` for alias `' . $alias . '` ' . $reason .
+            ' and cannot be assigned through a direct relationship.',
+            400
+        );
+    }
+
+    private function getDirectRelatedOwnershipState(
+        array $relationFields,
+        array $referencedFields,
+        EntityInterface $record
+    ): string {
+        $hasReferencedValue = false;
+
+        foreach ($relationFields as $key => $relationField) {
+            if (!array_key_exists($key, $referencedFields)) {
+                return 'foreign';
+            }
+
+            $referencedValue = $record->readAttribute($referencedFields[$key]);
+            if ($this->isEmptyRelationValue($referencedValue)) {
+                continue;
+            }
+
+            $hasReferencedValue = true;
+            if (!$this->isSameRelationValue($this->readAttribute($relationField), $referencedValue)) {
+                return 'foreign';
+            }
+        }
+
+        return $hasReferencedValue ? 'owned' : 'unowned';
+    }
+
+    private function isEmptyRelationValue(mixed $value): bool
+    {
+        return $value === null || $value === '';
+    }
+
+    private function isSameRelationValue(mixed $expected, mixed $actual): bool
+    {
+        if ($expected === $actual) {
+            return true;
+        }
+
+        if ($expected === null || $actual === null) {
+            return false;
+        }
+
+        return (string)$expected === (string)$actual;
+    }
+
+    private function prepareDirectRelatedRecordForSave(
+        RelationInterface $relation,
+        EntityInterface $record,
+        ?string $alias,
+        ?int $index = null
+    ): bool {
+        if (!$this->isDirectOwnedRelationType($relation->getType())) {
+            return true;
+        }
+
+        $relationFields = $relation->getFields();
+        $relationFields = is_array($relationFields) ? $relationFields : [$relationFields];
+
+        $referencedFields = $relation->getReferencedFields();
+        $referencedFields = is_array($referencedFields) ? $referencedFields : [$referencedFields];
+
+        $this->assertDirectRelatedRecordCanBeAssigned(
+            $alias,
+            $relation->getType(),
+            $relationFields,
+            $referencedFields,
+            $record
+        );
+
+        if (!$this->getRelationshipOption('autoRestoreDirectRelations', $alias, false)) {
+            return true;
+        }
+
+        if (
+            $this->getDirectRelatedOwnershipState($relationFields, $referencedFields, $record) !== 'owned'
+            || !$record instanceof SoftDeleteInterface
+            || !$record->isDeleted()
+        ) {
+            return true;
+        }
+
+        if ($record->restore()) {
+            return true;
+        }
+
+        assert($record instanceof ModelInterface);
+        $messageAlias = $alias ?? '';
+        $this->appendMessagesFromRecord($record, $messageAlias, $index);
+        $this->appendMessage(new Message(
+            'Unable to restore previously deleted related entity `' . get_class($record) . '`',
+            $messageAlias,
+            'Bad Request',
+            400
+        ));
+
+        return false;
+    }
     
     /**
      *  Saves related records that must be stored prior to save the master record
@@ -876,6 +1133,12 @@ trait Relationship
         $referencedFields = is_array($referencedFields) ? $referencedFields : [$referencedFields];
         
         foreach ($relatedRecords as $recordAfter) {
+            assert($recordAfter instanceof EntityInterface);
+            assert($recordAfter instanceof Model);
+            if (!$this->prepareDirectRelatedRecordForSave($relation, $recordAfter, $lowerCaseAlias)) {
+                return false;
+            }
+
             foreach ($relationFields as $key => $relationField) {
                 $recordAfter->writeAttribute($referencedFields[$key], $this->readAttribute($relationField));
             }
@@ -1063,6 +1326,15 @@ trait Relationship
         
         // using primary key first
         $entity = $this->findFirstByPrimaryKeys($data, $modelClass);
+        if ($entity instanceof EntityInterface) {
+            $this->assertDirectRelatedRecordCanBeAssigned(
+                $alias,
+                is_int($type) ? $type : null,
+                is_array($readFields) ? $readFields : [],
+                $fields,
+                $entity
+            );
+        }
         
         // not found, using the relationship fields instead
         if (!$entity) {
@@ -1240,7 +1512,7 @@ trait Relationship
      * @param array|null $columns (optional) The columns to include in the array for each related record
      * @param bool $useGetter (optional) Whether to use getter methods of the related records (default: true)
      * 
-     * @return array The related records as an array
+     * @return array<string, mixed> The related records as an array
      */
     public function relatedToArray(?array $columns = null, bool $useGetter = true): array
     {

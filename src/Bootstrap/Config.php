@@ -51,6 +51,7 @@ use PhalconKit\Support\Version;
  * @property PhalconConfig $debug
  * @property PhalconConfig $response
  * @property PhalconConfig $identity
+ * @property PhalconConfig $model
  * @property PhalconConfig $models
  * @property PhalconConfig $providers
  * @property PhalconConfig $logger
@@ -358,6 +359,17 @@ class Config extends \PhalconKit\Config\Config
                 ],
             ],
             
+            /**
+             * Model behavior defaults
+             */
+            'model' => [
+                'relationship' => [
+                    'enforceDirectOwnership' => Env::get('MODEL_RELATIONSHIP_ENFORCE_DIRECT_OWNERSHIP', false),
+                    'allowUnownedDirectRelationAdoption' => Env::get('MODEL_RELATIONSHIP_ALLOW_UNOWNED_DIRECT_RELATION_ADOPTION', true),
+                    'autoRestoreDirectRelations' => Env::get('MODEL_RELATIONSHIP_AUTO_RESTORE_DIRECT_RELATIONS', false),
+                ],
+            ],
+
             /**
              *
              */
