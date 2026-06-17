@@ -17,7 +17,10 @@ release notes.
 
 ## 3.4.1 - Unreleased
 
-No changes yet.
+### Changed
+
+- Bumped optional/dev Composer constraints for AWS SDK, Guzzle, and the OpenAI
+  PHP client to match the current supported dependency set.
 
 ## 3.4.0 - 2026-06-17
 
