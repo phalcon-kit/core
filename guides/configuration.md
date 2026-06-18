@@ -13,9 +13,9 @@ secrets in environment files and keep application structure in code:
 
 Official Phalcon references:
 
-- Config: https://docs.phalcon.io/5.14/config/
-- Dependency injection: https://docs.phalcon.io/5.14/di/
-- Routing: https://docs.phalcon.io/5.14/routing/
+- Config: https://docs.phalcon.io/5.15/config/
+- Dependency injection: https://docs.phalcon.io/5.15/di/
+- Routing: https://docs.phalcon.io/5.15/routing/
 
 ## Environment
 

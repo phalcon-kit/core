@@ -50,8 +50,8 @@ use PhalconKit\Support\Helper;
  * Phalcon model `find()`/aggregate option arrays while keeping extension hooks
  * available through REST initialization events.
  *
- * @see https://docs.phalcon.io/5.14/db-models/
- * @see https://docs.phalcon.io/5.14/db-models-relationships/
+ * @see https://docs.phalcon.io/5.15/db-models/
+ * @see https://docs.phalcon.io/5.15/db-models-relationships/
  */
 trait Query
 {

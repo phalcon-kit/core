@@ -39,7 +39,7 @@ use PhalconKit\Mvc\Model\Interfaces\RelationshipInterface;
  * serializes only that already-known state.
  *
  * @see https://fractal.thephpleague.com/transformers/
- * @see https://docs.phalcon.io/5.14/db-models-relationships/
+ * @see https://docs.phalcon.io/5.15/db-models-relationships/
  */
 class Transformer extends TransformerAbstract implements InjectionAwareInterface
 {

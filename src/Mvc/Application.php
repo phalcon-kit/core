@@ -29,7 +29,7 @@ use PhalconKit\Mvc\Dispatcher as MvcDispatcher;
  * helpers. `request()` provides a small HMVC dispatch helper for rendering an
  * internal controller/task target without mutating the active dispatcher.
  *
- * @see https://docs.phalcon.io/5.14/application/
+ * @see https://docs.phalcon.io/5.15/application/
  */
 class Application extends \Phalcon\Mvc\Application
 {

@@ -29,7 +29,7 @@ use PhalconKit\Support\Slug;
  * host-derived route names so generated routes do not collide with path-based
  * module routes.
  *
- * @see https://docs.phalcon.io/5.14/routing/
+ * @see https://docs.phalcon.io/5.15/routing/
  */
 class ModuleRoute extends RouterGroup
 {

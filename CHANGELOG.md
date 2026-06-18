@@ -21,6 +21,9 @@ release notes.
 
 - Bumped optional/dev Composer constraints for AWS SDK, Guzzle, and the OpenAI
   PHP client to match the current supported dependency set.
+- Prepared the package, CI baseline, runtime upgrade guide, and Phalcon
+  documentation references for Phalcon 5.15.0 by raising the `ext-phalcon` and
+  `phalcon/ide-stubs` floors.
 
 ## 3.4.0 - 2026-06-17
 

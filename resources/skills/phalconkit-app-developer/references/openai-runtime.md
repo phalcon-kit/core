@@ -8,10 +8,10 @@ AI documentation assets, use `AI.md` and the skill references instead.
 
 Native Phalcon references:
 
-- Dependency injection: https://docs.phalcon.io/5.14/di/
-- Controllers: https://docs.phalcon.io/5.14/controllers/
-- CLI applications: https://docs.phalcon.io/5.14/cli/
-- Logger: https://docs.phalcon.io/5.14/logger/
+- Dependency injection: https://docs.phalcon.io/5.15/di/
+- Controllers: https://docs.phalcon.io/5.15/controllers/
+- CLI applications: https://docs.phalcon.io/5.15/cli/
+- Logger: https://docs.phalcon.io/5.15/logger/
 
 Phalcon does not provide OpenAI runtime APIs. PhalconKit registers an OpenAI
 client as a DI service, so native DI/controller/task/logger guidance still

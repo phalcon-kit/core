@@ -26,7 +26,7 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * Argon2id with a moderate work factor; applications can override both under
  * `security.workFactor` and `security.hash`.
  *
- * @see https://docs.phalcon.io/5.14/encryption-security/
+ * @see https://docs.phalcon.io/5.15/encryption-security/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

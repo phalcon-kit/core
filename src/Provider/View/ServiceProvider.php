@@ -28,7 +28,7 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * per-resolution options when manually resolving the service, otherwise
  * `view` config is used.
  *
- * @see https://docs.phalcon.io/5.14/views/
+ * @see https://docs.phalcon.io/5.15/views/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

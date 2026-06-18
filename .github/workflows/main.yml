@@ -19,11 +19,11 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PHALCON_VERSION: 5.14.2
-  PHALCON_PECL_URL: https://github.com/phalcon/cphalcon/releases/download/v5.14.2/phalcon-pecl.tgz
+  PHALCON_VERSION: 5.15.0
+  PHALCON_PECL_URL: https://github.com/phalcon/cphalcon/releases/download/v5.15.0/phalcon-pecl.tgz
   # PHP extensions required by Composer
   EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, swoole, :memcache, :psr
-  EXTENSIONS_CACHE_KEY: php-ext-v4-php8.5-phalcon-helper-5.14.2
+  EXTENSIONS_CACHE_KEY: php-ext-v4-php8.5-phalcon-helper-5.15.0
 
 permissions:
   contents: read
@@ -67,7 +67,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer
 
-      - name: Ensure Phalcon 5.14.2
+      - name: Ensure Phalcon 5.15.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -119,7 +119,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpcs
 
-      - name: Ensure Phalcon 5.14.2
+      - name: Ensure Phalcon 5.15.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -168,7 +168,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpstan
 
-      - name: Ensure Phalcon 5.14.2
+      - name: Ensure Phalcon 5.15.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -222,7 +222,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, psalm
 
-      - name: Ensure Phalcon 5.14.2
+      - name: Ensure Phalcon 5.15.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -322,7 +322,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpunit
 
-      - name: Ensure Phalcon 5.14.2
+      - name: Ensure Phalcon 5.15.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4

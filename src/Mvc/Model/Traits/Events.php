@@ -83,7 +83,7 @@ trait Events
      * Counts the number of records that match the given parameters.
      *
      * This method wraps the core static `count` model call with beforeCount/afterCount cancellable events.
-     * The "beforeCount" event can cancel the operation. Since Phalcon 5.14's
+     * The "beforeCount" event can cancel the operation. Since Phalcon 5.15's
      * native contract cannot return false for count(), cancellation returns 0.
      *
      * @see \Phalcon\Mvc\Model::count()
@@ -110,7 +110,7 @@ trait Events
      * Executes a sum operation on the underlying data with optional parameters.
      * This method supports cancellable events triggered before and after execution.
      * If the "beforeSum" event cancels the operation, this method returns 0.0
-     * to satisfy Phalcon 5.14's native return contract.
+     * to satisfy Phalcon 5.15's native return contract.
      *
      * @see \Phalcon\Mvc\Model::sum()
      * @param mixed $parameters Optional native Phalcon sum parameters.
@@ -141,7 +141,7 @@ trait Events
      * - afterAverage()
      *
      * If the "beforeAverage" event cancels the operation, 0.0 is returned to
-     * satisfy Phalcon 5.14's native return contract.
+     * satisfy Phalcon 5.15's native return contract.
      * @see \Phalcon\Mvc\Model::average()
      * @param array $parameters Parameters to define the criteria for calculating the average.
      * @return ResultsetInterface|float The calculated average or a ResultsetInterface, depending on the implementation.

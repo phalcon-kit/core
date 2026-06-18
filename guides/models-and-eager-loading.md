@@ -5,10 +5,10 @@ relationship-aware assignment, model behaviors, and batch eager loading.
 
 Official Phalcon references:
 
-- Models: https://docs.phalcon.io/5.14/db-models/
-- Relationships: https://docs.phalcon.io/5.14/db-models-relationships/
-- Behaviors: https://docs.phalcon.io/5.14/db-models-behaviors/
-- Model validation: https://docs.phalcon.io/5.14/db-models-validation/
+- Models: https://docs.phalcon.io/5.15/db-models/
+- Relationships: https://docs.phalcon.io/5.15/db-models-relationships/
+- Behaviors: https://docs.phalcon.io/5.15/db-models-behaviors/
+- Model validation: https://docs.phalcon.io/5.15/db-models-validation/
 
 ## Generated And Concrete Layers
 

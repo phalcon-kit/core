@@ -11,10 +11,10 @@ behaviors, read `references/identity-and-security.md`.
 
 Native Phalcon references:
 
-- Controllers: https://docs.phalcon.io/5.14/controllers/
-- Dispatcher API: https://docs.phalcon.io/5.14/api/phalcon_mvc/#mvcdispatcher
-- Events manager: https://docs.phalcon.io/5.14/events/
-- ACL: https://docs.phalcon.io/5.14/acl/
+- Controllers: https://docs.phalcon.io/5.15/controllers/
+- Dispatcher API: https://docs.phalcon.io/5.15/api/phalcon_mvc/#mvcdispatcher
+- Events manager: https://docs.phalcon.io/5.15/events/
+- ACL: https://docs.phalcon.io/5.15/acl/
 
 PhalconKit controller behaviors are permission-attached hooks around native
 controller, dispatcher, event, and ACL flow. Use native docs for dispatch/event

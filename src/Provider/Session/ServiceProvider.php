@@ -37,7 +37,7 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * so flash messages, OAuth2 state, locale persistence, and other PHP-session
  * consumers can keep working normally.
  *
- * @see https://docs.phalcon.io/5.14/session/
+ * @see https://docs.phalcon.io/5.15/session/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

@@ -27,7 +27,7 @@ use PhalconKit\Filter\Sanitize\Md5;
  * services so framework providers and tests can create equivalent filter
  * locators without duplicating the alias map.
  *
- * @see https://docs.phalcon.io/5.14/filter/
+ * @see https://docs.phalcon.io/5.15/filter/
  */
 class FilterFactory extends \Phalcon\Filter\FilterFactory
 {

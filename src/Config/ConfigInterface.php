@@ -21,7 +21,7 @@ namespace PhalconKit\Config;
  * interface when they need `pathToArray()` in addition to native `get()`,
  * `path()`, `merge()`, and `toArray()` behavior.
  *
- * @see https://docs.phalcon.io/5.14/config/
+ * @see https://docs.phalcon.io/5.15/config/
  */
 interface ConfigInterface extends \Phalcon\Config\ConfigInterface
 {

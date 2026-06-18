@@ -30,11 +30,11 @@ concrete app models.
 
 Official Phalcon references:
 
-- Models: https://docs.phalcon.io/5.14/db-models/
-- Relationships: https://docs.phalcon.io/5.14/db-models-relationships/
-- Model validation: https://docs.phalcon.io/5.14/db-models-validation/
-- Migrations: https://docs.phalcon.io/5.14/db-migrations/
-- DevTools: https://docs.phalcon.io/5.14/devtools/
+- Models: https://docs.phalcon.io/5.15/db-models/
+- Relationships: https://docs.phalcon.io/5.15/db-models-relationships/
+- Model validation: https://docs.phalcon.io/5.15/db-models-validation/
+- Migrations: https://docs.phalcon.io/5.15/db-migrations/
+- DevTools: https://docs.phalcon.io/5.15/devtools/
 
 ## 1. Run Migrations
 

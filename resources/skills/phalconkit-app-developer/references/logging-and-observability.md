@@ -8,10 +8,10 @@ WebSocket logs.
 
 Native Phalcon references:
 
-- Logger: https://docs.phalcon.io/5.14/logger/
-- Events manager: https://docs.phalcon.io/5.14/events/
-- Database/model events: https://docs.phalcon.io/5.14/db-models-events/
-- Debug tools: https://docs.phalcon.io/5.14/debug/
+- Logger: https://docs.phalcon.io/5.15/logger/
+- Events manager: https://docs.phalcon.io/5.15/events/
+- Database/model events: https://docs.phalcon.io/5.15/db-models-events/
+- Debug tools: https://docs.phalcon.io/5.15/debug/
 
 PhalconKit logging uses native logger, events, database events, and debug
 concepts as its base. Use native docs for logger adapters and event manager
