@@ -212,8 +212,8 @@ core interfaces.
 Runtime toggles can disable parent audit rows or detail rows for imports,
 migrations, or hot paths. Keep such toggles local to the operation.
 
-Audit is opt-in by default. Applications that install and use the audit tables
-should enable audit in the model `blameable` options:
+Audit is disabled by default. Applications that want audit rows should opt in,
+usually through the model `blameable` options:
 
 ```php
 [
@@ -226,6 +226,10 @@ should enable audit in the model `blameable` options:
 Applications that do not install audit tables can omit this option. If audit is
 enabled while the audit tables are absent, PhalconKit treats the missing audit
 storage as an optional feature and skips the audit write.
+
+If an application provides a custom Blameable behavior subclass, it can instead
+change the protected `$auditEnabled` default. Explicit `auditEnabled` options
+always override subclass defaults.
 
 Audit detail rows remain enabled when audit is enabled. Disable detail rows with
 `auditDetailEnabled => false`.
