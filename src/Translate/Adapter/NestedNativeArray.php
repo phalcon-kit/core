@@ -73,11 +73,6 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
     private array $translate = [];
     
     /**
-     * Whether missing keys should throw instead of returning the original key.
-     */
-    private bool $triggerError = false;
-    
-    /**
      * Delimiter used when resolving nested translation paths.
      *
      * @var non-empty-string
@@ -100,7 +95,7 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
     {
         parent::__construct($interpolator, $options);
         $this->delimiter = $options['delimiter'] ?? $this->delimiter ?: '.';
-        $this->triggerError = $options['triggerError'] ?? $this->triggerError;
+        $this->triggerError = (bool)($options['triggerError'] ?? $this->triggerError);
         $this->translate = $options['content'] ?? $this->translate;
     }
     
@@ -164,6 +159,7 @@ class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
      *
      * @throws RuntimeException When `triggerError` is true.
      */
+    #[\Override]
     public function notFound(string $index): string
     {
         if ($this->triggerError) {
