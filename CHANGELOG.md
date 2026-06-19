@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.5.2 - 2026-06-19
+
+### Fixed
+
+- Stopped the bundled API error controller from inheriting model-backed REST
+  CRUD/query actions, so unexpected routes such as `/api/error/save` no longer
+  try to infer and load an `Error` model before returning status responses.
+
 ## 3.5.1 - 2026-06-19
 
 ### Fixed
