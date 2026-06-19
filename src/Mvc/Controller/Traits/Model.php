@@ -132,7 +132,7 @@ trait Model
             )
         );
         
-        if (class_exists($model)) {
+        if (class_exists($model) && is_subclass_of($model, ModelInterface::class)) {
             return $model;
         }
         
@@ -169,10 +169,21 @@ trait Model
      * @param string|null $modelName The name of the model to load. Default is null and will use $this->getModelName().
      *
      * @return ModelInterface The loaded model.
+     *
+     * @throws ServiceException When no model can be resolved or the resolved
+     *     class does not implement Phalcon's model contract.
      */
     public function loadModel(?string $modelName = null): ModelInterface
     {
-        $modelName ??= $this->getModelName() ?? '';
+        $modelName ??= $this->getModelName();
+        if (!$modelName || !is_a($modelName, ModelInterface::class, true)) {
+            throw new ServiceException(sprintf(
+                'Unable to load controller model "%s": expected a class implementing "%s".',
+                $modelName ?: '(none)',
+                ModelInterface::class
+            ));
+        }
+
         return $this->modelsManager->load($modelName);
     }
 

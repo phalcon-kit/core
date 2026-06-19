@@ -15,6 +15,15 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.5.1 - 2026-06-19
+
+### Fixed
+
+- Fixed controller model inference so PHP built-in classes such as `Error` are
+  not treated as loadable Phalcon models, and `loadModel()` now fails with a
+  clear PhalconKit service exception before delegating invalid model names to
+  Phalcon's models manager.
+
 ## 3.5.0 - 2026-06-18
 
 ### Changed

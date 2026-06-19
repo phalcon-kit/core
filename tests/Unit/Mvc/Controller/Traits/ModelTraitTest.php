@@ -18,6 +18,7 @@ use PhalconKit\Di\FactoryDefault;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Controller\Restful;
 use PhalconKit\Tests\Unit\AbstractUnit;
+use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\Models\Error as ErrorModel;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\ModelColumnAlternateModel;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\ModelColumnMappedModel;
 use PhalconKit\Tests\Unit\Mvc\Controller\Traits\Fixtures\ModelColumnMetadataModel;
@@ -25,6 +26,45 @@ use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\FakeMetaData;
 
 class ModelTraitTest extends AbstractUnit
 {
+    public function testModelNameInferenceIgnoresNonModelGlobalClasses(): void
+    {
+        $controller = $this->newControllerNamed('Error');
+        $controller->setModelNamespaces([]);
+
+        $this->assertNull($controller->getModelNameFromController());
+    }
+
+    public function testModelNameInferenceResolvesNamespacedModelAfterGlobalClassCollision(): void
+    {
+        $controller = $this->newControllerNamed('Error');
+        $controller->setModelNamespaces([
+            substr(ErrorModel::class, 0, -strlen('Error')) => __DIR__ . '/Fixtures/Models/',
+        ]);
+
+        $this->assertSame(ErrorModel::class, $controller->getModelNameFromController());
+    }
+
+    public function testLoadModelRejectsMissingOrNonModelClassBeforeModelsManagerLoad(): void
+    {
+        $controller = $this->newControllerNamed('Error');
+        $controller->setModelName('Error');
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage(
+            'Unable to load controller model "Error": expected a class implementing "Phalcon\Mvc\ModelInterface".'
+        );
+
+        $controller->loadModel();
+    }
+
+    public function testLoadModelAcceptsNamespacedModelAfterGlobalClassCollision(): void
+    {
+        $controller = $this->newControllerNamed('Error');
+        $controller->setModelName(ErrorModel::class);
+
+        $this->assertInstanceOf(ErrorModel::class, $controller->loadModel());
+    }
+
     public function testGetModelNamespacesRejectsInvalidLoaderService(): void
     {
         $controller = new class extends Restful {
@@ -139,6 +179,35 @@ class ModelTraitTest extends AbstractUnit
 
         $controller->setDI($di);
         $controller->setModelName($modelName);
+
+        return $controller;
+    }
+
+    private function newControllerNamed(string $controllerName): Restful
+    {
+        $controller = new class extends Restful {
+            public string $controllerName = '';
+
+            /**
+             * Disable normal REST initialization for this trait-focused test.
+             */
+            public function initialize(): void
+            {
+            }
+
+            public function getControllerName(): string
+            {
+                return $this->controllerName;
+            }
+        };
+
+        $di = $this->di;
+        if ($di === null) {
+            self::fail('DI container was not initialized.');
+        }
+
+        $controller->setDI($di);
+        $controller->controllerName = $controllerName;
 
         return $controller;
     }
