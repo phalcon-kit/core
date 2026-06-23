@@ -15,6 +15,18 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.7.0 - 2026-06-23
+
+### Changed
+
+- Adapted PhalconKit debug output to Phalcon 5.16's renderer pipeline with a
+  PhalconKit-owned inline renderer, embedded base64 logo, and wrapped table
+  styling, removing remote debug CSS, JavaScript, and logo asset loading from
+  exception pages.
+- Refined PhalconKit debug backtrace frames so file and line metadata stay
+  visible while source context expands separately, with focused-line and
+  full-file source controls.
+
 ## 3.6.0 - 2026-06-23
 
 ### Changed

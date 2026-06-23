@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Support;
 
 use PhalconKit\Support\Debug;
+use PhalconKit\Support\Debug\Renderer\HtmlRenderer;
 use PhalconKit\Support\Version as PhalconKitVersion;
 use Phalcon\Support\Version as PhalconVersion;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -49,20 +50,13 @@ class DebugTest extends AbstractUnit
         
         $this->assertStringContainsString($phalconKitVersion->get(), $result);
         $this->assertStringContainsString($phalconVersion->get(), $result);
-        $this->assertStringContainsString('Phalcon Kit', $result);
-        $this->assertStringContainsString('Phalcon Framework', $result);
+        $this->assertStringContainsString('PhalconKit', $result);
+        $this->assertStringContainsString('Phalcon', $result);
     }
 
-    public function testGetVersionLinksToCurrentDocumentationMajorMinor(): void
+    public function testDebugInstallsPhalconKitHtmlRenderer(): void
     {
-        $phalconVersion = new PhalconVersion();
-        $expectedDocsUrl = sprintf(
-            'https://docs.phalcon.io/%d.%d/',
-            $phalconVersion->getPart(PhalconVersion::VERSION_MAJOR),
-            $phalconVersion->getPart(PhalconVersion::VERSION_MEDIUM)
-        );
-
-        $this->assertStringContainsString($expectedDocsUrl, (new Debug())->getVersion());
+        $this->assertInstanceOf(HtmlRenderer::class, (new Debug())->getRenderer());
     }
 
     public function testGetCssSourcesReturnsInlineStyleBlock(): void
@@ -71,19 +65,68 @@ class DebugTest extends AbstractUnit
 
         $this->assertStringStartsWith('<style>', $css);
         $this->assertStringContainsString(':root', $css);
-        $this->assertStringContainsString('.error-main', $css);
-        $this->assertStringContainsString('#tabs{width:100%;min-width:0;overflow:hidden;background:var(--bg-panel)}', $css);
-        $this->assertStringContainsString('--panel-pad-x:24px;--panel-pad-y:20px;--code-pad-x:16px;', $css);
-        $this->assertStringContainsString('#tabs>ul{display:none;', $css);
-        $this->assertStringContainsString('#tabs.debug-js>ul{display:flex}', $css);
-        $this->assertStringContainsString('#tabs>div[id^=error-tabs-],#tabs>div[id]{display:block;', $css);
-        $this->assertStringContainsString('#tabs.debug-js>div[id^=error-tabs-],#tabs.debug-js>div[id]{display:none;', $css);
-        $this->assertStringContainsString('.superglobal-detail th.key,.superglobal-detail td.key,#memory th:first-child,#memory td:first-child{width:220px;', $css);
-        $this->assertStringContainsString('#files th.number,#files td:first-child{width:64px;', $css);
-        $this->assertStringContainsString('pre.prettyprint{display:block;inline-size:100%;max-inline-size:100%;', $css);
-        $this->assertStringContainsString('#tabs:not(.debug-js) pre.prettyprint{display:none}', $css);
-        $this->assertStringContainsString('contain:inline-size;', $css);
-        $this->assertStringContainsString('pre.prettyprint .code-line{display:inline-flex;min-width:100%;width:auto;', $css);
+        $this->assertStringContainsString('--table-head:#e7e7e7;', $css);
+        $this->assertStringContainsString('.wrap{width:min(1160px,100%);', $css);
+        $this->assertStringContainsString('.masthead{display:flex;', $css);
+        $this->assertStringContainsString('.brand-logo{display:block;', $css);
+        $this->assertStringContainsString('.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;', $css);
+        $this->assertStringContainsString('.tabs{display:flex;', $css);
+        $this->assertStringContainsString('.tab.is-active{background:var(--text);color:var(--invert)}', $css);
+        $this->assertStringContainsString('.panel.is-active{display:block}', $css);
+        $this->assertStringContainsString('.frame-head{display:grid;', $css);
+        $this->assertStringContainsString('button.frame-head{cursor:pointer}', $css);
+        $this->assertStringContainsString('.frame-code-body[hidden]{display:none}', $css);
+        $this->assertStringContainsString('--code-highlight-bg:#fff;--code-highlight-text:#000;', $css);
+        $this->assertStringContainsString('scrollbar-color:var(--line) var(--bg)', $css);
+        $this->assertStringContainsString('.tabs::-webkit-scrollbar{width:8px;height:8px}', $css);
+        $this->assertStringContainsString('font-size:0;line-height:0;overflow:hidden', $css);
+        $this->assertStringContainsString('.chev::before{content:"";display:block;', $css);
+        $this->assertStringContainsString('clip-path:polygon(30% 15%,30% 85%,76% 50%)', $css);
+        $this->assertStringContainsString('.frame.is-code-open .chev::before{transform:rotate(90deg)}', $css);
+        $this->assertStringContainsString('.code-actions{position:absolute;', $css);
+        $this->assertStringNotContainsString('margin-bottom:42px', $css);
+        $this->assertStringContainsString('scrollbar-color:var(--code-highlight-bg) var(--code)', $css);
+        $this->assertStringContainsString('.code::-webkit-scrollbar,pre.prettyprint::-webkit-scrollbar', $css);
+        $this->assertStringContainsString(
+            '.code::selection,.code *::selection,pre.prettyprint::selection,pre.prettyprint *::selection'
+                . '{background:#fff;color:#000;text-shadow:none}',
+            $css
+        );
+        $this->assertStringContainsString('.code tr.hl,.code tr.highlight{background:#fff!important;color:#000!important}', $css);
+        $this->assertStringContainsString(
+            '.code tr.hl td,.code tr.hl .ln,.code tr.hl .src,.code tr.highlight td,'
+                . '.code tr.highlight .ln,.code tr.highlight .src'
+                . '{background:#fff!important;color:#000!important;text-shadow:none!important}',
+            $css
+        );
+        $this->assertStringContainsString(
+            '.code tr.hl *,.code tr.highlight *,.code .highlight'
+                . '{background:transparent!important;color:#000!important;text-shadow:none!important}',
+            $css
+        );
+        $this->assertStringContainsString(
+            '.code-line.hl,pre.prettyprint .highlight,pre.prettyprint mark'
+                . '{background:#fff!important;color:#000!important;text-shadow:none!important}',
+            $css
+        );
+        $this->assertStringContainsString('@keyframes frame-focus', $css);
+        $this->assertStringContainsString('.grid,.superglobal-detail{width:100%;max-width:100%;', $css);
+        $this->assertStringContainsString('table-layout:auto', $css);
+        $this->assertStringContainsString('.kv-grid col.key-col{width:1%}', $css);
+        $this->assertStringContainsString('.kv-grid col.value-col{width:auto}', $css);
+        $this->assertStringContainsString('.files-grid col.number-col{width:70px}', $css);
+        $this->assertStringContainsString('.grid thead th,.superglobal-detail thead th', $css);
+        $this->assertStringContainsString('background:var(--table-head);color:var(--text);font-size:12px;font-weight:800', $css);
+        $this->assertStringContainsString('.kv-grid thead th.key{min-width:10ch;white-space:nowrap;overflow-wrap:normal;word-break:normal}', $css);
+        $this->assertStringContainsString('.grid tbody td,.superglobal-detail tbody td', $css);
+        $this->assertStringContainsString('overflow-wrap:anywhere;word-break:break-word', $css);
+        $this->assertStringContainsString('.grid tbody td.k,.superglobal-detail tbody th.key,.superglobal-detail tbody td.key', $css);
+        $this->assertStringContainsString('background:var(--soft);white-space:nowrap', $css);
+        $this->assertStringNotContainsString('.grid td.k,.grid th.key', $css);
+        $this->assertStringContainsString('#files .grid th.number,#files .grid td.k', $css);
+        $this->assertStringContainsString('.stats{display:grid;', $css);
+        $this->assertStringNotContainsString('debug.css', $css);
+        $this->assertStringNotContainsString('assets.phalcon.io', $css);
         $this->assertStringEndsWith('</style>', $css);
     }
 
@@ -93,9 +136,18 @@ class DebugTest extends AbstractUnit
 
         $this->assertStringStartsWith('<script>', $js);
         $this->assertStringContainsString('DOMContentLoaded', $js);
-        $this->assertStringContainsString('classList.add("debug-js")', $js);
-        $this->assertStringContainsString('a[href^="#"]', $js);
+        $this->assertStringContainsString('.tab[data-tab]', $js);
+        $this->assertStringContainsString('data-action="copy-trace"', $js);
+        $this->assertStringContainsString('data-action="toggle-theme"', $js);
+        $this->assertStringContainsString('#backtrace .frame.has-source', $js);
+        $this->assertStringContainsString('data-action="toggle-frame-code"', $js);
+        $this->assertStringContainsString('.frame-code-body', $js);
+        $this->assertStringContainsString('data-action="focus-line"', $js);
+        $this->assertStringContainsString('data-action="toggle-full-file"', $js);
+        $this->assertStringContainsString('Show context', $js);
         $this->assertStringContainsString('Show full file', $js);
+        $this->assertStringNotContainsString('debug.js', $js);
+        $this->assertStringNotContainsString('assets.phalcon.io', $js);
         $this->assertStringEndsWith('</script>', $js);
     }
 
@@ -108,10 +160,41 @@ class DebugTest extends AbstractUnit
             'https://github.com/phalcon-kit/docs/tree/main/docs/api/classes/PhalconKit/Support/Debug.md',
             $html
         );
-        $this->assertStringContainsString('<thead><tr><th class="key">Key</th><th>Value</th></tr></thead>', $html);
-        $this->assertStringContainsString('<thead><tr><th class="number">#</th><th>Path</th></tr></thead>', $html);
+        $this->assertStringContainsString("class='grid kv-grid'", $html);
+        $this->assertStringContainsString('<colgroup><col class="key-col"><col class="value-col"></colgroup>', $html);
+        $this->assertStringContainsString(
+            '<thead><tr><th class="key" scope="col">Key</th><th scope="col">Value</th></tr></thead>',
+            $html
+        );
+        $this->assertStringContainsString("class='grid files-grid'", $html);
+        $this->assertStringContainsString('<colgroup><col class="number-col"><col></colgroup>', $html);
+        $this->assertStringContainsString(
+            '<thead><tr><th class="number" scope="col">#</th><th scope="col">Path</th></tr></thead>',
+            $html
+        );
         $this->assertStringContainsString('Memory usage (real)', $html);
         $this->assertStringContainsString('Peak usage', $html);
+        $this->assertStringContainsString('<style>', $html);
+        $this->assertStringContainsString('<script>', $html);
+        $this->assertStringContainsString('PhalconKit Debug', $html);
+        $this->assertStringContainsString('brand-logo', $html);
+        $this->assertStringContainsString('data:image/png;base64,', $html);
+        $this->assertStringContainsString("<article class='frame", $html);
+        $this->assertStringContainsString("data-action='toggle-frame-code'", $html);
+        $this->assertStringContainsString("class='frame-code-body'", $html);
+        $this->assertStringContainsString("class='code-actions'", $html);
+        $this->assertStringContainsString("data-action='focus-line'", $html);
+        $this->assertStringContainsString('Focus line', $html);
+        $this->assertStringContainsString('Expand code', $html);
+        $this->assertStringContainsString('Collapse code', $html);
+        $this->assertStringNotContainsString("<details class='frame ", $html);
+        $this->assertStringNotContainsString("class='frame-code-summary'", $html);
+        $this->assertStringNotContainsString('Source context', $html);
+        $this->assertStringNotContainsString('debug.css', $html);
+        $this->assertStringNotContainsString('debug.js', $html);
+        $this->assertStringNotContainsString('assets.phalcon.io', $html);
+        $this->assertStringNotContainsString('logo--tablet.svg', $html);
+        $this->assertStringNotContainsString('<img class=\'logo\'', $html);
         $this->assertStringContainsString('PhalconKit\\Support\\Debug', $html);
     }
 

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Support;
 
 use PhalconKit\Exception\RuntimeException;
-use PhalconKit\Support\Version as PhalconKitVersion;
+use PhalconKit\Support\Debug\Renderer\HtmlRenderer;
 use Phalcon\Support\Version as PhalconVersion;
 
 /**
@@ -28,6 +28,16 @@ use Phalcon\Support\Version as PhalconVersion;
  */
 class Debug extends \Phalcon\Support\Debug
 {
+    /**
+     * Install PhalconKit's inline renderer on the native 5.16 debug pipeline.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->setRenderer(new HtmlRenderer());
+    }
+
     /**
      * Render an uncaught exception debug page with a server-error status.
      *
@@ -75,16 +85,7 @@ class Debug extends \Phalcon\Support\Debug
     #[\Override]
     public function getVersion(): string
     {
-        $phalconKit = new PhalconKitVersion();
-        $phalcon = new PhalconVersion();
-        
-        return sprintf(
-            '<div class="version">Phalcon Kit <a href="https://github.com/phalcon-kit/core" target="_new">%s</a> | Phalcon Framework <a href="https://docs.phalcon.io/%d.%d/" target="_new">%s</a></div>',
-            $phalconKit->get(),
-            $phalcon->getPart(PhalconVersion::VERSION_MAJOR),
-            $phalcon->getPart(PhalconVersion::VERSION_MEDIUM),
-            $phalcon->get()
-        );
+        return $this->getRenderer()->getVersion();
     }
     
     /**
@@ -121,42 +122,71 @@ class Debug extends \Phalcon\Support\Debug
 
         $html = preg_replace(
             '#<thead>\s*<tr>\s*<th>Key</th>\s*</tr>\s*<tr>\s*<th>Value</th>\s*</tr>\s*</thead>#',
-            '<thead><tr><th class="key">Key</th><th>Value</th></tr></thead>',
+            '<thead><tr><th class="key" scope="col">Key</th><th scope="col">Value</th></tr></thead>',
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing key/value debug table headers');
         $html = preg_replace(
-            '#<thead>\s*<tr>\s*<th(?:\s+class=[\'"]key[\'"])?>Key</th>\s*<th>Value</th>\s*</tr>\s*</thead>#',
-            '<thead><tr><th class="key">Key</th><th>Value</th></tr></thead>',
+            '#<thead>\s*<tr>\s*<th(?:\s+class=[\'"]key[\'"])?(?:\s+scope=[\'"]col[\'"])?>Key</th>\s*<th(?:\s+scope=[\'"]col[\'"])?>Value</th>\s*</tr>\s*</thead>#',
+            '<thead><tr><th class="key" scope="col">Key</th><th scope="col">Value</th></tr></thead>',
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing key/value debug table headers');
 
         $html = preg_replace(
             '~<thead>\s*<tr>\s*<th>\#</th>\s*</tr>\s*<tr>\s*<th>Path</th>\s*</tr>\s*</thead>~',
-            '<thead><tr><th class="number">#</th><th>Path</th></tr></thead>',
+            '<thead><tr><th class="number" scope="col">#</th><th scope="col">Path</th></tr></thead>',
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing included-file debug table headers');
         $html = preg_replace(
-            '~<thead>\s*<tr>\s*<th(?:\s+class=[\'"]number[\'"])?>\#</th>\s*<th>Path</th>\s*</tr>\s*</thead>~',
-            '<thead><tr><th class="number">#</th><th>Path</th></tr></thead>',
+            '~<thead>\s*<tr>\s*<th(?:\s+class=[\'"]number[\'"])?(?:\s+scope=[\'"]col[\'"])?>\#</th>\s*<th(?:\s+scope=[\'"]col[\'"])?>Path</th>\s*</tr>\s*</thead>~',
+            '<thead><tr><th class="number" scope="col">#</th><th scope="col">Path</th></tr></thead>',
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing included-file debug table headers');
 
         $html = preg_replace(
             '#<thead>\s*<tr>\s*<th>Memory</th>\s*</tr>\s*<tr>\s*<th></th>\s*</tr>\s*</thead>#',
-            '<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>',
+            '<thead><tr><th class="key" scope="col">Memory</th><th scope="col">Value</th></tr></thead>',
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing memory debug table headers');
         $html = preg_replace(
-            '#<thead>\s*<tr>\s*<th\s+class=[\'"]key[\'"]>Memory</th>\s*<th>Value</th>\s*</tr>\s*</thead>#',
-            '<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>',
+            '#<thead>\s*<tr>\s*<th\s+class=[\'"]key[\'"](?:\s+scope=[\'"]col[\'"])?>Memory</th>\s*<th(?:\s+scope=[\'"]col[\'"])?>Value</th>\s*</tr>\s*</thead>#',
+            '<thead><tr><th class="key" scope="col">Memory</th><th scope="col">Value</th></tr></thead>',
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing memory debug table headers');
+        $html = preg_replace(
+            '#<table([^>]*)class=(["\'])(?![^"\']*\bkv-grid\b)([^"\']*(?:\bgrid\b|\bsuperglobal-detail\b)[^"\']*)\2([^>]*)>'
+                . '\s*<thead><tr><th class="key" scope="col">(Key|Memory)</th><th scope="col">Value</th></tr></thead>#',
+            '<table$1class=$2$3 kv-grid$2$4>'
+                . '<colgroup><col class="key-col"><col class="value-col"></colgroup>'
+                . '<thead><tr><th class="key" scope="col">$5</th><th scope="col">Value</th></tr></thead>',
+            $html
+        );
+        $html = self::requireRenderedHtml($html, 'marking key/value debug tables');
+        $html = preg_replace(
+            '~<table([^>]*)class=(["\'])(?![^"\']*\bfiles-grid\b)([^"\']*\bgrid\b[^"\']*)\2([^>]*)>'
+                . '\s*<thead><tr><th class="number" scope="col">\#</th><th scope="col">Path</th></tr></thead>~',
+            '<table$1class=$2$3 files-grid$2$4>'
+                . '<colgroup><col class="number-col"><col></colgroup>'
+                . '<thead><tr><th class="number" scope="col">#</th><th scope="col">Path</th></tr></thead>',
+            $html
+        );
+        $html = self::requireRenderedHtml($html, 'marking included-file debug tables');
+        $html = str_replace(
+            [
+                "data-action='expand-all'>Expand all",
+                "data-action='collapse-all'>Collapse all",
+            ],
+            [
+                "data-action='expand-all'>Expand code",
+                "data-action='collapse-all'>Collapse code",
+            ],
+            $html
+        );
         
         // --- Add Phalcon Kit class links ---
         $html = preg_replace_callback(
@@ -174,8 +204,191 @@ class Debug extends \Phalcon\Support\Debug
             $html
         );
         $html = self::requireRenderedHtml($html, 'linking PhalconKit API classes');
+        $html = self::normalizeBacktraceFrames($html);
         
         return $html;
+    }
+
+    /**
+     * Keep backtrace metadata visible while only the source block expands.
+     *
+     * Phalcon 5.16 renders each frame as a `<details>` element, which hides the
+     * file and line number when a frame is collapsed. PhalconKit keeps the frame
+     * header and file path visible, then moves source context into its own
+     * expandable region. When the source file is readable and reasonably sized,
+     * a hidden full-file template is also embedded for the inline toggle button.
+     *
+     * @throws RuntimeException When an internal debug HTML rewrite fails.
+     */
+    private static function normalizeBacktraceFrames(string $html): string
+    {
+        $html = preg_replace_callback(
+            "#<details class='frame(?P<class>[^']*)'(?P<open>\\s+open)?>(?P<body>.*?)</details>#s",
+            static function (array $match): string {
+                $body = $match['body'];
+
+                if (!preg_match(
+                    "#\\s*<summary>\\s*(<div class='frame-head'>.*?</div>)\\s*</summary>#s",
+                    $body,
+                    $summary
+                )) {
+                    return $match[0];
+                }
+
+                $head = preg_replace("#\\s*<span class='chev'>.*?</span>#s", '', $summary[1]);
+                $head = self::requireRenderedHtml($head, 'removing the frame-level backtrace chevron');
+                $body = str_replace($summary[0], '', $body);
+
+                $fileBlock = '';
+                $file = null;
+                $line = null;
+
+                if (preg_match("#\\s*(<div class='frame-file'[^>]*>.*?</div>)#s", $body, $fileMatch)) {
+                    $fileBlock = $fileMatch[1];
+                    $body = str_replace($fileMatch[0], '', $body);
+                    $file = self::readHtmlAttribute($fileBlock, 'data-file');
+                    $lineValue = self::readHtmlAttribute($fileBlock, 'data-line');
+                    $line = is_numeric($lineValue) ? (int) $lineValue : null;
+                }
+
+                $codeBlock = '';
+
+                if (preg_match("#\\s*(<div class='code'>.*?</div>)#s", $body, $codeMatch)) {
+                    $codeBlock = $codeMatch[1];
+                    $body = str_replace($codeMatch[0], '', $body);
+                }
+
+                $isCodeOpen = ($match['open'] ?? '') !== '';
+                $classes = trim(
+                    'frame'
+                    . $match['class']
+                    . ($codeBlock !== '' ? ' has-source' : ' no-source')
+                    . ($codeBlock !== '' && $isCodeOpen ? ' is-code-open' : '')
+                );
+
+                if ($codeBlock !== '') {
+                    $head = self::makeBacktraceFrameHeadToggle($head, $isCodeOpen);
+                }
+
+                $frame = "\n        <article class='" . htmlspecialchars($classes, ENT_QUOTES) . "'>\n            {$head}";
+
+                if ($fileBlock !== '') {
+                    $frame .= "\n            {$fileBlock}";
+                }
+
+                if ($codeBlock !== '') {
+                    $fullFileTemplate = self::buildFullFileSourceTemplate($file, $line);
+                    $fullFileButton = $fullFileTemplate !== ''
+                        ? "\n                    <button class='btn code-btn' "
+                            . "data-action='toggle-full-file'>Show full file</button>"
+                        : '';
+
+                    $hidden = $isCodeOpen ? '' : ' hidden';
+                    $frame .= "\n            <div class='frame-code-body'{$hidden}>"
+                        . "\n                <div class='code-shell'>"
+                        . "\n                    {$codeBlock}"
+                        . "\n                    <div class='code-actions'>"
+                        . "\n                        <button class='btn code-btn' data-action='focus-line'>Focus line</button>"
+                        . str_replace("\n                    ", "\n                        ", $fullFileButton)
+                        . "\n                    </div>"
+                        . "\n                </div>"
+                        . $fullFileTemplate
+                        . "\n            </div>";
+                }
+
+                $extra = trim($body);
+
+                if ($extra !== '') {
+                    $frame .= "\n            <div class='frame-extra'>{$extra}</div>";
+                }
+
+                return $frame . "\n        </article>";
+            },
+            $html
+        );
+
+        return self::requireRenderedHtml($html, 'normalizing backtrace frame layout');
+    }
+
+    /**
+     * Turn the native frame header into the source-context toggle.
+     *
+     * The path row remains outside the toggle so file and line metadata stay
+     * visible even when source context is collapsed.
+     *
+     * @throws RuntimeException When the rewrite failed.
+     */
+    private static function makeBacktraceFrameHeadToggle(string $head, bool $isOpen): string
+    {
+        $expanded = $isOpen ? 'true' : 'false';
+        $head = trim($head);
+        $head = preg_replace(
+            "#^<div class='frame-head'>#",
+            "<button type='button' class='frame-head' "
+                . "data-action='toggle-frame-code' aria-expanded='{$expanded}'>",
+            $head
+        );
+        $head = self::requireRenderedHtml($head, 'making backtrace frame header clickable');
+        $head = preg_replace(
+            '#</div>$#',
+            "<span class='chev' aria-hidden='true'>&#9656;</span></button>",
+            $head
+        );
+
+        return self::requireRenderedHtml($head, 'adding the backtrace frame header chevron');
+    }
+
+    /**
+     * Read an HTML attribute value from a native debug fragment.
+     */
+    private static function readHtmlAttribute(string $html, string $attribute): ?string
+    {
+        $quoted = preg_quote($attribute, '#');
+
+        if (!preg_match("#\\s{$quoted}=(['\"])(.*?)\\1#s", $html, $match)) {
+            return null;
+        }
+
+        return html_entity_decode($match[2], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+
+    /**
+     * Build a hidden full-file source table for the inline source toggle.
+     */
+    private static function buildFullFileSourceTemplate(?string $file, ?int $line): string
+    {
+        if ($file === null || !is_file($file) || !is_readable($file)) {
+            return '';
+        }
+
+        $size = filesize($file);
+
+        if ($size === false || $size > 1_000_000) {
+            return '';
+        }
+
+        $lines = file($file, FILE_IGNORE_NEW_LINES);
+
+        if (!is_array($lines)) {
+            return '';
+        }
+
+        $rows = [];
+
+        foreach ($lines as $index => $sourceLine) {
+            $lineNumber = $index + 1;
+            $class = $lineNumber === $line ? " class='hl'" : '';
+            $rows[] = sprintf(
+                "<tr%s><td class='ln'>%d</td><td class='src'>%s</td></tr>",
+                $class,
+                $lineNumber,
+                htmlspecialchars($sourceLine, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+            );
+        }
+
+        return "\n                <template class='code-full-template'><table>"
+            . implode('', $rows)
+            . '</table></template>';
     }
 
     /**
@@ -210,6 +423,12 @@ class Debug extends \Phalcon\Support\Debug
     #[\Override]
     public function getCssSources(): string
     {
+        $renderer = $this->getRenderer();
+
+        if ($renderer instanceof HtmlRenderer) {
+            return $renderer->getCssSources('');
+        }
+
         return <<<'STYLE'
 <style>
 :root{--bg-main:#ffffff;--bg-panel:#ffffff;--bg-alt:#f5f5f5;--bg-code:#0a0a0a;--text-main:#000000;--text-dim:#555555;--text-invert:#ffffff;--border:#000000;--border-light:#d0d0d0;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;--panel-pad-x:24px;--panel-pad-y:20px;--code-pad-x:16px;--code-pad-y:14px}
@@ -298,6 +517,12 @@ STYLE;
     #[\Override]
     public function getJsSources(): string
     {
+        $renderer = $this->getRenderer();
+
+        if ($renderer instanceof HtmlRenderer) {
+            return $renderer->getJsSources('');
+        }
+
         return <<<'SCRIPT'
 <script>
 document.addEventListener("DOMContentLoaded", () => {
