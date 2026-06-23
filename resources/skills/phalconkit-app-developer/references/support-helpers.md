@@ -8,11 +8,11 @@ null-aware field policy merging.
 
 Native Phalcon references:
 
-- Loader/autoloading: https://docs.phalcon.io/5.15/autoload/
-- Helper: https://docs.phalcon.io/5.15/helper/
-- Config service: https://docs.phalcon.io/5.15/config/
-- Collection: https://docs.phalcon.io/5.15/collection/
-- Registry: https://docs.phalcon.io/5.15/registry/
+- Loader/autoloading: https://docs.phalcon.io/5.16/autoload/
+- Helper: https://docs.phalcon.io/5.16/helper/
+- Config service: https://docs.phalcon.io/5.16/config/
+- Collection: https://docs.phalcon.io/5.16/collection/
+- Registry: https://docs.phalcon.io/5.16/registry/
 
 PhalconKit support helpers wrap or extend native loader, helper, config,
 collection, and runtime conventions. Use native docs for base component

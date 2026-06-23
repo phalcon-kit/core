@@ -23,7 +23,7 @@ use PhalconKit\Di\Injectable;
  * The class is intentionally inert until REST-specific dispatch behavior is
  * promoted to a supported framework contract.
  *
- * @see https://docs.phalcon.io/5.15/dispatcher/
+ * @see https://docs.phalcon.io/5.16/dispatcher/
  */
 class Rest extends Injectable
 {

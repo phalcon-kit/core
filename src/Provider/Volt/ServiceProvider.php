@@ -25,7 +25,7 @@ use Phalcon\Mvc\ViewInterface;
  * then receives options from `volt` config. This keeps compiler paths, template
  * cache behavior, and engine options centralized in application configuration.
  *
- * @see https://docs.phalcon.io/5.15/volt/
+ * @see https://docs.phalcon.io/5.16/volt/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

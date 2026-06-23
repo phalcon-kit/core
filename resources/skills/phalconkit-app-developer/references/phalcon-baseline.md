@@ -10,36 +10,36 @@ building this skill reference.
 
 ## Core Runtime
 
-- MVC overview: https://docs.phalcon.io/5.15/mvc/
-- Dependency injection: https://docs.phalcon.io/5.15/di/
-- Loader/autoloading: https://docs.phalcon.io/5.15/autoload/
-- Config service: https://docs.phalcon.io/5.15/config/
-- CLI applications: https://docs.phalcon.io/5.15/cli/
-- Namespaces: https://docs.phalcon.io/5.15/namespaces/
+- MVC overview: https://docs.phalcon.io/5.16/mvc/
+- Dependency injection: https://docs.phalcon.io/5.16/di/
+- Loader/autoloading: https://docs.phalcon.io/5.16/autoload/
+- Config service: https://docs.phalcon.io/5.16/config/
+- CLI applications: https://docs.phalcon.io/5.16/cli/
+- Namespaces: https://docs.phalcon.io/5.16/namespaces/
 
 ## HTTP And Dispatch
 
-- Controllers: https://docs.phalcon.io/5.15/controllers/
-- Routing: https://docs.phalcon.io/5.15/routing/
-- Dispatcher API: https://docs.phalcon.io/5.15/api/phalcon_mvc/#mvcdispatcher
-- Events manager: https://docs.phalcon.io/5.15/events/
-- Request: https://docs.phalcon.io/5.15/request/
-- Response: https://docs.phalcon.io/5.15/response/
-- Cookies and HTTP APIs: https://docs.phalcon.io/5.15/api/phalcon_http/
-- Sessions: https://docs.phalcon.io/5.15/session/
+- Controllers: https://docs.phalcon.io/5.16/controllers/
+- Routing: https://docs.phalcon.io/5.16/routing/
+- Dispatcher API: https://docs.phalcon.io/5.16/api/phalcon_mvc/#mvcdispatcher
+- Events manager: https://docs.phalcon.io/5.16/events/
+- Request: https://docs.phalcon.io/5.16/request/
+- Response: https://docs.phalcon.io/5.16/response/
+- Cookies and HTTP APIs: https://docs.phalcon.io/5.16/api/phalcon_http/
+- Sessions: https://docs.phalcon.io/5.16/session/
 
 ## Security And ACL
 
-- ACL: https://docs.phalcon.io/5.15/acl/
-- Security and password hashing: https://docs.phalcon.io/5.15/encryption-security/
-- JWT: https://docs.phalcon.io/5.15/encryption-security-jwt/
-- Cryptography: https://docs.phalcon.io/5.15/encryption-crypt/
+- ACL: https://docs.phalcon.io/5.16/acl/
+- Security and password hashing: https://docs.phalcon.io/5.16/encryption-security/
+- JWT: https://docs.phalcon.io/5.16/encryption-security-jwt/
+- Cryptography: https://docs.phalcon.io/5.16/encryption-crypt/
 
 ## Filters And Validation
 
-- Filters and sanitizers: https://docs.phalcon.io/5.15/filter-filter/
-- Validation component: https://docs.phalcon.io/5.15/filter-validation/
-- Model validation: https://docs.phalcon.io/5.15/db-models-validation/
+- Filters and sanitizers: https://docs.phalcon.io/5.16/filter-filter/
+- Validation component: https://docs.phalcon.io/5.16/filter-validation/
+- Model validation: https://docs.phalcon.io/5.16/db-models-validation/
 
 Native Phalcon filter names in the current docs:
 
@@ -59,35 +59,35 @@ PresenceOf, Regex, StringLength, Uniqueness, Url
 
 ## Database And Models
 
-- Models: https://docs.phalcon.io/5.15/db-models/
-- Relationships: https://docs.phalcon.io/5.15/db-models-relationships/
-- Behaviors: https://docs.phalcon.io/5.15/db-models-behaviors/
-- PHQL: https://docs.phalcon.io/5.15/db-phql/
-- Model events: https://docs.phalcon.io/5.15/db-models-events/
-- Metadata: https://docs.phalcon.io/5.15/db-models-metadata/
-- Transactions: https://docs.phalcon.io/5.15/db-models-transactions/
-- Migrations: https://docs.phalcon.io/5.15/db-migrations/
-- Devtools: https://docs.phalcon.io/5.15/devtools/
+- Models: https://docs.phalcon.io/5.16/db-models/
+- Relationships: https://docs.phalcon.io/5.16/db-models-relationships/
+- Behaviors: https://docs.phalcon.io/5.16/db-models-behaviors/
+- PHQL: https://docs.phalcon.io/5.16/db-phql/
+- Model events: https://docs.phalcon.io/5.16/db-models-events/
+- Metadata: https://docs.phalcon.io/5.16/db-models-metadata/
+- Transactions: https://docs.phalcon.io/5.16/db-models-transactions/
+- Migrations: https://docs.phalcon.io/5.16/db-migrations/
+- Devtools: https://docs.phalcon.io/5.16/devtools/
 
 ## Services And Frontend
 
-- Logger: https://docs.phalcon.io/5.15/logger/
-- Cache: https://docs.phalcon.io/5.15/cache/
-- Storage: https://docs.phalcon.io/5.15/storage/
-- Escaper: https://docs.phalcon.io/5.15/escaper/
-- View: https://docs.phalcon.io/5.15/views/
-- Volt: https://docs.phalcon.io/5.15/volt/
-- URL: https://docs.phalcon.io/5.15/url/
-- Helper: https://docs.phalcon.io/5.15/helper/
-- Collection: https://docs.phalcon.io/5.15/collection/
+- Logger: https://docs.phalcon.io/5.16/logger/
+- Cache: https://docs.phalcon.io/5.16/cache/
+- Storage: https://docs.phalcon.io/5.16/storage/
+- Escaper: https://docs.phalcon.io/5.16/escaper/
+- View: https://docs.phalcon.io/5.16/views/
+- Volt: https://docs.phalcon.io/5.16/volt/
+- URL: https://docs.phalcon.io/5.16/url/
+- Helper: https://docs.phalcon.io/5.16/helper/
+- Collection: https://docs.phalcon.io/5.16/collection/
 
 ## Testing And Environment
 
-- Webserver setup: https://docs.phalcon.io/5.15/webserver-setup/
-- Docker environment: https://docs.phalcon.io/5.15/environments-docker/
-- Unit testing: https://docs.phalcon.io/5.15/unit-testing/
-- Testing environment: https://docs.phalcon.io/5.15/testing-environment/
-- Reproducible tests: https://docs.phalcon.io/5.15/reproducible-tests/
+- Webserver setup: https://docs.phalcon.io/5.16/webserver-setup/
+- Docker environment: https://docs.phalcon.io/5.16/environments-docker/
+- Unit testing: https://docs.phalcon.io/5.16/unit-testing/
+- Testing environment: https://docs.phalcon.io/5.16/testing-environment/
+- Reproducible tests: https://docs.phalcon.io/5.16/reproducible-tests/
 
 ## Use Rules
 

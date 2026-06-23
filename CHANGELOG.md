@@ -15,6 +15,19 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.6.0 - 2026-06-23
+
+### Changed
+
+- Prepared the package, CI baseline, runtime upgrade guide, reusable skill
+  references, and Phalcon documentation links for Phalcon 5.16.0 by raising
+  the `ext-phalcon` and `phalcon/ide-stubs` floors.
+
+### Fixed
+
+- Kept PhalconKit debug table header normalization stable with Phalcon 5.16.0's
+  one-row debug table markup.
+
 ## 3.5.2 - 2026-06-19
 
 ### Fixed

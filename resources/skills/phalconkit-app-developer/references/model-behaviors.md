@@ -9,11 +9,11 @@ security.
 
 Native Phalcon references:
 
-- Models: https://docs.phalcon.io/5.15/db-models/
-- Relationships: https://docs.phalcon.io/5.15/db-models-relationships/
-- Behaviors: https://docs.phalcon.io/5.15/db-models-behaviors/
-- Model validation: https://docs.phalcon.io/5.15/db-models-validation/
-- Model events: https://docs.phalcon.io/5.15/db-models-events/
+- Models: https://docs.phalcon.io/5.16/db-models/
+- Relationships: https://docs.phalcon.io/5.16/db-models-relationships/
+- Behaviors: https://docs.phalcon.io/5.16/db-models-behaviors/
+- Model validation: https://docs.phalcon.io/5.16/db-models-validation/
+- Model events: https://docs.phalcon.io/5.16/db-models-events/
 
 PhalconKit model behavior builds on native `Phalcon\Mvc\Model`, relationships,
 events, validation, and behavior hooks. Use native docs for ORM lifecycle and

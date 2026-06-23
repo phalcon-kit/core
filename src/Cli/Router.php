@@ -22,11 +22,11 @@ use PhalconKit\Router\RouterInterface;
  * applications and modules expect that concrete runtime behavior. It also
  * implements PhalconKit's shared router interface for typed DI lookups.
  *
- * Phalcon 5.15 aligns the native CLI router with `Phalcon\Cli\RouterInterface`,
+ * Phalcon 5.16 aligns the native CLI router with `Phalcon\Cli\RouterInterface`,
  * so this wrapper now satisfies both the native router interface inherited from
  * the parent and PhalconKit's shared router interface.
  *
- * @see https://docs.phalcon.io/5.15/application-cli/
+ * @see https://docs.phalcon.io/5.16/application-cli/
  */
 class Router extends \Phalcon\Cli\Router implements RouterInterface
 {

@@ -29,7 +29,7 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * Phalcon's signing path. Stream modes are rejected with signing enabled
  * because Phalcon's HMAC signing path is not compatible with those modes.
  *
- * @see https://docs.phalcon.io/5.15/encryption-crypt/
+ * @see https://docs.phalcon.io/5.16/encryption-crypt/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

@@ -24,7 +24,7 @@ use PhalconKit\Config\ConfigInterface;
  * boundary should type against this interface instead of native
  * `Phalcon\Di\DiInterface` so `getTyped()` and `getConfig()` are available.
  *
- * @see https://docs.phalcon.io/5.15/di/
+ * @see https://docs.phalcon.io/5.16/di/
  */
 interface DiInterface extends \Phalcon\Di\DiInterface
 {

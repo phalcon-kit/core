@@ -7,9 +7,9 @@ filter/search conditions, advanced condition blocks, or model validation.
 
 Native Phalcon references:
 
-- Filters and sanitizers: https://docs.phalcon.io/5.15/filter-filter/
-- Validation component: https://docs.phalcon.io/5.15/filter-validation/
-- Model validation: https://docs.phalcon.io/5.15/db-models-validation/
+- Filters and sanitizers: https://docs.phalcon.io/5.16/filter-filter/
+- Validation component: https://docs.phalcon.io/5.16/filter-validation/
+- Model validation: https://docs.phalcon.io/5.16/db-models-validation/
 
 PhalconKit extends the native filter service and validation component. Check the
 native Phalcon docs first when the question is about built-in sanitizers,

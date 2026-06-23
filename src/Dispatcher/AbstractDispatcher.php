@@ -18,7 +18,7 @@ use Phalcon\Dispatcher\Exception as DispatcherException;
 /**
  * Generic PhalconKit dispatcher helper.
  *
- * Native Phalcon 5.15 requires concrete dispatchers to implement the internal
+ * Native Phalcon 5.16 requires concrete dispatchers to implement the internal
  * exception hooks used by the dispatch loop. MVC and CLI dispatchers keep their
  * native specialized behavior; this generic wrapper provides a minimal
  * concrete implementation so shared helper behavior can still be tested and

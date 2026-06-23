@@ -23,7 +23,7 @@ use Phalcon\Cli\Dispatcher as CliDispatcher;
  * preserving only positional action arguments when invoking handlers, and
  * preventing event-driven forwards from cycling back to the current target.
  *
- * @see https://docs.phalcon.io/5.15/dispatcher/
+ * @see https://docs.phalcon.io/5.16/dispatcher/
  */
 trait DispatcherTrait
 {
