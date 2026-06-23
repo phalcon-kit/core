@@ -54,7 +54,7 @@ The most important practical changes are:
 - Composer package and namespace changed from `zemit-cms/core` / `Zemit\...` to
   `phalcon-kit/core` / `PhalconKit\...`.
 - The Phalcon baseline moved from the older 5.9.x package surface toward the
-  current 5.15.x surface.
+  current 5.16.x surface.
 - `Restful::initialize()` now calls `initializeQuery()` as the normal query
   bootstrap path.
 - The old monolithic `Mvc\Controller\Traits\Query` getter API was split into

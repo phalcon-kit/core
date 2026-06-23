@@ -8,11 +8,11 @@ model events in a PhalconKit application.
 
 Native Phalcon references:
 
-- Models: https://docs.phalcon.io/5.15/db-models/
-- Relationships: https://docs.phalcon.io/5.15/db-models-relationships/
-- Model validation: https://docs.phalcon.io/5.15/db-models-validation/
-- Migrations: https://docs.phalcon.io/5.15/db-migrations/
-- Devtools: https://docs.phalcon.io/5.15/devtools/
+- Models: https://docs.phalcon.io/5.16/db-models/
+- Relationships: https://docs.phalcon.io/5.16/db-models-relationships/
+- Model validation: https://docs.phalcon.io/5.16/db-models-validation/
+- Migrations: https://docs.phalcon.io/5.16/db-migrations/
+- Devtools: https://docs.phalcon.io/5.16/devtools/
 
 PhalconKit scaffolding reads the database and generates app model layers on top
 of native Phalcon ORM conventions. Use native docs for ORM vocabulary and
@@ -178,7 +178,7 @@ table, it describes:
   autoincrement flags, defaults, generated-column metadata, visibility flags,
   array/spatial/UUID/native database types, and enum domains where the adapter
   exposes them.
-- Indexes, especially primary and unique indexes. Phalcon 5.15 can also expose
+- Indexes, especially primary and unique indexes. Phalcon 5.16 can also expose
   newer index intent such as invisible indexes, directions, partial predicates,
   expression entries, and concurrent PostgreSQL indexes when supported by the
   active adapter/dialect.
@@ -240,7 +240,7 @@ The scaffold tries to infer every safe convention from the database:
   defaults.
 - PostgreSQL arrays, UUIDs, generated columns, invisible columns, spatial
   columns, expression indexes, partial indexes, and CHECK constraints are
-  native Phalcon 5.15 schema concepts. If the current scaffolder does not yet
+  native Phalcon 5.16 schema concepts. If the current scaffolder does not yet
   emit a dedicated model annotation or validation for one of them, preserve the
   schema in migrations and add the domain rule in the concrete model.
 

@@ -125,6 +125,12 @@ class Debug extends \Phalcon\Support\Debug
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing key/value debug table headers');
+        $html = preg_replace(
+            '#<thead>\s*<tr>\s*<th(?:\s+class=[\'"]key[\'"])?>Key</th>\s*<th>Value</th>\s*</tr>\s*</thead>#',
+            '<thead><tr><th class="key">Key</th><th>Value</th></tr></thead>',
+            $html
+        );
+        $html = self::requireRenderedHtml($html, 'normalizing key/value debug table headers');
 
         $html = preg_replace(
             '~<thead>\s*<tr>\s*<th>\#</th>\s*</tr>\s*<tr>\s*<th>Path</th>\s*</tr>\s*</thead>~',
@@ -132,9 +138,21 @@ class Debug extends \Phalcon\Support\Debug
             $html
         );
         $html = self::requireRenderedHtml($html, 'normalizing included-file debug table headers');
+        $html = preg_replace(
+            '~<thead>\s*<tr>\s*<th(?:\s+class=[\'"]number[\'"])?>\#</th>\s*<th>Path</th>\s*</tr>\s*</thead>~',
+            '<thead><tr><th class="number">#</th><th>Path</th></tr></thead>',
+            $html
+        );
+        $html = self::requireRenderedHtml($html, 'normalizing included-file debug table headers');
 
         $html = preg_replace(
             '#<thead>\s*<tr>\s*<th>Memory</th>\s*</tr>\s*<tr>\s*<th></th>\s*</tr>\s*</thead>#',
+            '<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>',
+            $html
+        );
+        $html = self::requireRenderedHtml($html, 'normalizing memory debug table headers');
+        $html = preg_replace(
+            '#<thead>\s*<tr>\s*<th\s+class=[\'"]key[\'"]>Memory</th>\s*<th>Value</th>\s*</tr>\s*</thead>#',
             '<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>',
             $html
         );

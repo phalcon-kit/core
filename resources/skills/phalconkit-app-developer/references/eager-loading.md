@@ -8,9 +8,9 @@ relation-level `QueryBuilder` closures.
 
 Native Phalcon references:
 
-- Models: https://docs.phalcon.io/5.15/db-models/
-- Relationships: https://docs.phalcon.io/5.15/db-models-relationships/
-- PHQL: https://docs.phalcon.io/5.15/db-phql/
+- Models: https://docs.phalcon.io/5.16/db-models/
+- Relationships: https://docs.phalcon.io/5.16/db-models-relationships/
+- PHQL: https://docs.phalcon.io/5.16/db-phql/
 
 PhalconKit eager loading is an extension over native Phalcon model
 relationships and PHQL query building. Use native docs for relation aliases,

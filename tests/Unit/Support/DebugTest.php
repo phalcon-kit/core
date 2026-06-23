@@ -110,7 +110,8 @@ class DebugTest extends AbstractUnit
         );
         $this->assertStringContainsString('<thead><tr><th class="key">Key</th><th>Value</th></tr></thead>', $html);
         $this->assertStringContainsString('<thead><tr><th class="number">#</th><th>Path</th></tr></thead>', $html);
-        $this->assertStringContainsString('<thead><tr><th class="key">Memory</th><th>Value</th></tr></thead>', $html);
+        $this->assertStringContainsString('Memory usage (real)', $html);
+        $this->assertStringContainsString('Peak usage', $html);
         $this->assertStringContainsString('PhalconKit\\Support\\Debug', $html);
     }
 

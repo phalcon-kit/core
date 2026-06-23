@@ -24,7 +24,7 @@ use PhalconKit\Support\Slug;
  * Phalcon. `getContent()` can also perform lightweight HTML output minification
  * for applications that opt in through `setMinify()`.
  *
- * @see https://docs.phalcon.io/5.15/views/
+ * @see https://docs.phalcon.io/5.16/views/
  */
 class View extends \Phalcon\Mvc\View
 {

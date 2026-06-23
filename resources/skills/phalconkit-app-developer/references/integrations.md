@@ -8,11 +8,11 @@ and override pattern, also read `providers.md`.
 
 Native Phalcon references:
 
-- Dependency injection: https://docs.phalcon.io/5.15/di/
-- Storage: https://docs.phalcon.io/5.15/storage/
-- Cache: https://docs.phalcon.io/5.15/cache/
-- Logger: https://docs.phalcon.io/5.15/logger/
-- Sessions: https://docs.phalcon.io/5.15/session/
+- Dependency injection: https://docs.phalcon.io/5.16/di/
+- Storage: https://docs.phalcon.io/5.16/storage/
+- Cache: https://docs.phalcon.io/5.16/cache/
+- Logger: https://docs.phalcon.io/5.16/logger/
+- Sessions: https://docs.phalcon.io/5.16/session/
 
 PhalconKit integration providers register app-ready services in the native DI
 container. Use native docs for storage, cache, logger, session, and service

@@ -8,10 +8,10 @@ locale settings, or custom integration config.
 
 Native Phalcon references:
 
-- Config service: https://docs.phalcon.io/5.15/config/
-- Dependency injection: https://docs.phalcon.io/5.15/di/
-- Routing config concepts: https://docs.phalcon.io/5.15/routing/
-- Loader/autoloading: https://docs.phalcon.io/5.15/autoload/
+- Config service: https://docs.phalcon.io/5.16/config/
+- Dependency injection: https://docs.phalcon.io/5.16/di/
+- Routing config concepts: https://docs.phalcon.io/5.16/routing/
+- Loader/autoloading: https://docs.phalcon.io/5.16/autoload/
 
 PhalconKit config extends native Phalcon config and DI patterns. Use native docs
 for raw config objects, DI service loading, and router behavior; use this file

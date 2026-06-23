@@ -11,9 +11,9 @@ permission policies, also read `references/identity-and-security.md`.
 
 Native Phalcon references:
 
-- Dependency injection: https://docs.phalcon.io/5.15/di/
-- Config service: https://docs.phalcon.io/5.15/config/
-- Controllers and DI access: https://docs.phalcon.io/5.15/controllers/
+- Dependency injection: https://docs.phalcon.io/5.16/di/
+- Config service: https://docs.phalcon.io/5.16/config/
+- Controllers and DI access: https://docs.phalcon.io/5.16/controllers/
 
 PhalconKit providers are app-facing registrations for the PhalconKit DI
 container. Use native Phalcon docs for the underlying service mechanics, but
