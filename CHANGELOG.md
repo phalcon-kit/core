@@ -15,6 +15,12 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.7.1 - 2026-06-23
+
+### Fixed
+
+- Removed the localhost-only debug smoke-test page from packaged public assets.
+
 ## 3.7.0 - 2026-06-23
 
 ### Changed
