@@ -222,92 +222,133 @@ class Debug extends \Phalcon\Support\Debug
      */
     private static function normalizeBacktraceFrames(string $html): string
     {
-        $html = preg_replace_callback(
-            "#<details class='frame(?P<class>[^']*)'(?P<open>\\s+open)?>(?P<body>.*?)</details>#s",
-            static function (array $match): string {
-                $body = $match['body'];
+        $offset = 0;
+        $normalized = '';
+        $openNeedle = "<details class='frame";
+        $closeNeedle = '</details>';
 
-                if (!preg_match(
-                    "#\\s*<summary>\\s*(<div class='frame-head'>.*?</div>)\\s*</summary>#s",
-                    $body,
-                    $summary
-                )) {
-                    return $match[0];
-                }
+        while (($start = strpos($html, $openNeedle, $offset)) !== false) {
+            $openEnd = strpos($html, '>', $start);
 
-                $head = preg_replace("#\\s*<span class='chev'>.*?</span>#s", '', $summary[1]);
-                $head = self::requireRenderedHtml($head, 'removing the frame-level backtrace chevron');
-                $body = str_replace($summary[0], '', $body);
+            if ($openEnd === false) {
+                break;
+            }
 
-                $fileBlock = '';
-                $file = null;
-                $line = null;
+            $closeStart = strpos($html, $closeNeedle, $openEnd + 1);
 
-                if (preg_match("#\\s*(<div class='frame-file'[^>]*>.*?</div>)#s", $body, $fileMatch)) {
-                    $fileBlock = $fileMatch[1];
-                    $body = str_replace($fileMatch[0], '', $body);
-                    $file = self::readHtmlAttribute($fileBlock, 'data-file');
-                    $lineValue = self::readHtmlAttribute($fileBlock, 'data-line');
-                    $line = is_numeric($lineValue) ? (int) $lineValue : null;
-                }
+            if ($closeStart === false) {
+                break;
+            }
 
-                $codeBlock = '';
+            $closeEnd = $closeStart + strlen($closeNeedle);
+            $openingTag = substr($html, $start, $openEnd - $start + 1);
+            $body = substr($html, $openEnd + 1, $closeStart - $openEnd - 1);
+            $originalFrame = substr($html, $start, $closeEnd - $start);
 
-                if (preg_match("#\\s*(<div class='code'>.*?</div>)#s", $body, $codeMatch)) {
-                    $codeBlock = $codeMatch[1];
-                    $body = str_replace($codeMatch[0], '', $body);
-                }
+            $normalized .= substr($html, $offset, $start - $offset);
+            $normalized .= self::normalizeBacktraceFrame($openingTag, $body, $originalFrame);
+            $offset = $closeEnd;
+        }
 
-                $isCodeOpen = ($match['open'] ?? '') !== '';
-                $classes = trim(
-                    'frame'
-                    . $match['class']
-                    . ($codeBlock !== '' ? ' has-source' : ' no-source')
-                    . ($codeBlock !== '' && $isCodeOpen ? ' is-code-open' : '')
-                );
+        if ($offset === 0) {
+            return $html;
+        }
 
-                if ($codeBlock !== '') {
-                    $head = self::makeBacktraceFrameHeadToggle($head, $isCodeOpen);
-                }
+        return $normalized . substr($html, $offset);
+    }
 
-                $frame = "\n        <article class='" . htmlspecialchars($classes, ENT_QUOTES) . "'>\n            {$head}";
+    /**
+     * Normalize one native debug frame after the frame boundary is known.
+     *
+     * Frame extraction intentionally avoids a document-wide regex so large
+     * backtraces cannot exhaust PCRE backtracking before the per-frame rewrite
+     * runs. If Phalcon changes the opening tag shape, the original frame is
+     * preserved instead of dropping debug output.
+     *
+     * @throws RuntimeException When an internal frame rewrite fails.
+     */
+    private static function normalizeBacktraceFrame(string $openingTag, string $body, string $originalFrame): string
+    {
+        if (!preg_match("#^<details class='frame(?P<class>[^']*)'(?P<open>\\s+open)?\\s*>$#s", $openingTag, $match)) {
+            return $originalFrame;
+        }
 
-                if ($fileBlock !== '') {
-                    $frame .= "\n            {$fileBlock}";
-                }
+        if (!preg_match(
+            "#\\s*<summary>\\s*(<div class='frame-head'>.*?</div>)\\s*</summary>#s",
+            $body,
+            $summary
+        )) {
+            return $originalFrame;
+        }
 
-                if ($codeBlock !== '') {
-                    $fullFileTemplate = self::buildFullFileSourceTemplate($file, $line);
-                    $fullFileButton = $fullFileTemplate !== ''
-                        ? "\n                    <button class='btn code-btn' "
-                            . "data-action='toggle-full-file'>Show full file</button>"
-                        : '';
+        $head = preg_replace("#\\s*<span class='chev'>.*?</span>#s", '', $summary[1]);
+        $head = self::requireRenderedHtml($head, 'removing the frame-level backtrace chevron');
+        $body = str_replace($summary[0], '', $body);
 
-                    $hidden = $isCodeOpen ? '' : ' hidden';
-                    $frame .= "\n            <div class='frame-code-body'{$hidden}>"
-                        . "\n                <div class='code-shell'>"
-                        . "\n                    {$codeBlock}"
-                        . "\n                    <div class='code-actions'>"
-                        . "\n                        <button class='btn code-btn' data-action='focus-line'>Focus line</button>"
-                        . str_replace("\n                    ", "\n                        ", $fullFileButton)
-                        . "\n                    </div>"
-                        . "\n                </div>"
-                        . $fullFileTemplate
-                        . "\n            </div>";
-                }
+        $fileBlock = '';
+        $file = null;
+        $line = null;
 
-                $extra = trim($body);
+        if (preg_match("#\\s*(<div class='frame-file'[^>]*>.*?</div>)#s", $body, $fileMatch)) {
+            $fileBlock = $fileMatch[1];
+            $body = str_replace($fileMatch[0], '', $body);
+            $file = self::readHtmlAttribute($fileBlock, 'data-file');
+            $lineValue = self::readHtmlAttribute($fileBlock, 'data-line');
+            $line = is_numeric($lineValue) ? (int) $lineValue : null;
+        }
 
-                if ($extra !== '') {
-                    $frame .= "\n            <div class='frame-extra'>{$extra}</div>";
-                }
+        $codeBlock = '';
 
-                return $frame . "\n        </article>";
-            },
-            $html
+        if (preg_match("#\\s*(<div class='code'>.*?</div>)#s", $body, $codeMatch)) {
+            $codeBlock = $codeMatch[1];
+            $body = str_replace($codeMatch[0], '', $body);
+        }
+
+        $isCodeOpen = ($match['open'] ?? '') !== '';
+        $classes = trim(
+            'frame'
+            . $match['class']
+            . ($codeBlock !== '' ? ' has-source' : ' no-source')
+            . ($codeBlock !== '' && $isCodeOpen ? ' is-code-open' : '')
         );
 
-        return self::requireRenderedHtml($html, 'normalizing backtrace frame layout');
+        if ($codeBlock !== '') {
+            $head = self::makeBacktraceFrameHeadToggle($head, $isCodeOpen);
+        }
+
+        $frame = "\n        <article class='" . htmlspecialchars($classes, ENT_QUOTES) . "'>\n            {$head}";
+
+        if ($fileBlock !== '') {
+            $frame .= "\n            {$fileBlock}";
+        }
+
+        if ($codeBlock !== '') {
+            $fullFileTemplate = self::buildFullFileSourceTemplate($file, $line);
+            $fullFileButton = $fullFileTemplate !== ''
+                ? "\n                    <button class='btn code-btn' "
+                    . "data-action='toggle-full-file'>Show full file</button>"
+                : '';
+
+            $hidden = $isCodeOpen ? '' : ' hidden';
+            $frame .= "\n            <div class='frame-code-body'{$hidden}>"
+                . "\n                <div class='code-shell'>"
+                . "\n                    {$codeBlock}"
+                . "\n                    <div class='code-actions'>"
+                . "\n                        <button class='btn code-btn' data-action='focus-line'>Focus line</button>"
+                . str_replace("\n                    ", "\n                        ", $fullFileButton)
+                . "\n                    </div>"
+                . "\n                </div>"
+                . $fullFileTemplate
+                . "\n            </div>";
+        }
+
+        $extra = trim($body);
+
+        if ($extra !== '') {
+            $frame .= "\n            <div class='frame-extra'>{$extra}</div>";
+        }
+
+        return $frame . "\n        </article>";
     }
 
     /**

@@ -15,6 +15,15 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.7.2 - Unreleased
+
+### Fixed
+
+- Kept PhalconKit debug backtrace frame normalization from exhausting PCRE
+  backtracking limits on large runner-generated exception pages.
+- Added a local-only test fixture for visually inspecting rendered debug error
+  pages without packaging it as a public asset.
+
 ## 3.7.1 - 2026-06-23
 
 ### Fixed

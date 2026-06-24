@@ -198,6 +198,36 @@ class DebugTest extends AbstractUnit
         $this->assertStringContainsString('PhalconKit\\Support\\Debug', $html);
     }
 
+    public function testBacktraceFrameNormalizationAvoidsDocumentWidePcreBacktracking(): void
+    {
+        $previousLimit = ini_get('pcre.backtrack_limit');
+        $method = new \ReflectionMethod(Debug::class, 'normalizeBacktraceFrames');
+        $html = "<section id='backtrace'>"
+            . "<details class='frame app' open>"
+            . "<summary><div class='frame-head'><span class='frame-num'>#0</span>"
+            . "<span class='frame-call'><span class='fn'>demo</span></span>"
+            . "<span class='chev' aria-hidden='true'>x</span></div></summary>"
+            . str_repeat('x', 20_000)
+            . '</details>'
+            . '</section>';
+
+        try {
+            ini_set('pcre.backtrack_limit', '1000');
+
+            $normalized = $method->invoke(null, $html);
+        }
+        finally {
+            if (is_string($previousLimit)) {
+                ini_set('pcre.backtrack_limit', $previousLimit);
+            }
+        }
+
+        $this->assertIsString($normalized);
+        $this->assertStringContainsString("<article class='frame app no-source'>", $normalized);
+        $this->assertStringNotContainsString("<details class='frame", $normalized);
+        $this->assertStringContainsString("class='frame-extra'", $normalized);
+    }
+
     public function testUncaughtExceptionDebugPagesSetServerErrorStatus(): void
     {
         $debug = new class extends Debug {
