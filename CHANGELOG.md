@@ -19,6 +19,9 @@ release notes.
 
 ### Fixed
 
+- Replaced redundant eager-loading entity assertions with a deterministic
+  runtime contract check, keeping both current local and GitHub PHPStan type
+  models valid.
 - Preserved valid 400-599 statuses from MVC `HttpException` failures through a
   configurable `router.httpException` error-action route, synchronized the
   shared Phalcon response status and standard reason phrase, exposed safe API

@@ -320,6 +320,19 @@ class EagerLoadTest extends AbstractUnit
         (new EagerLoadInvalidHostDouble())->load();
     }
 
+    public function testEagerLoadNodeRequiresEntitySubjectsForRelationKeys(): void
+    {
+        $node = new ReflectionClass(EagerLoadNode::class);
+        $instance = $node->newInstanceWithoutConstructor();
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage(
+            'Expected eager-loading subject to implement "Phalcon\\Mvc\\EntityInterface"; got "stdClass".'
+        );
+
+        $node->getMethod('requireEntity')->invoke($instance, new \stdClass());
+    }
+
     private function assertModelAggregateSignature(
         ReflectionClass $trait,
         string $methodName,

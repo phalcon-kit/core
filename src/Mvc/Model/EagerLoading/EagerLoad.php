@@ -229,8 +229,7 @@ final class EagerLoad
             unset($record);
 
             foreach ($parentSubject as $record) {
-                assert($record instanceof EntityInterface);
-                $referencedFieldValue = $this->getRelationKey($record, $relField);
+                $referencedFieldValue = $this->getRelationKey($this->requireEntity($record), $relField);
 
                 if ($referencedFieldValue !== null && isset($modelReferencedModelValues[$referencedFieldValue])) {
                     $referencedModels = [];
@@ -306,8 +305,7 @@ final class EagerLoad
                 }
 
                 foreach ($parentSubject as $record) {
-                    assert($record instanceof EntityInterface);
-                    $referencedFieldValue = $this->getRelationKey($record, $relField);
+                    $referencedFieldValue = $this->getRelationKey($this->requireEntity($record), $relField);
 
                     if ($referencedFieldValue !== null && isset($indexedRecords[$referencedFieldValue])) {
                         $this->assignRelation($record, $alias, $indexedRecords[$referencedFieldValue]);
@@ -348,6 +346,27 @@ final class EagerLoad
         }
 
         return is_int($value) || is_string($value) ? $value : (string)$value;
+    }
+
+    /**
+     * Require the native entity contract at the model-subject boundary.
+     *
+     * Phalcon's ModelInterface does not extend EntityInterface even though the
+     * native Model implements both. Eager-loading relation keys need the entity
+     * attribute API, so validate that runtime contract deterministically instead
+     * of relying on assertions that may be disabled.
+     */
+    private function requireEntity(object $record): EntityInterface
+    {
+        if (!$record instanceof EntityInterface) {
+            throw new RuntimeException(sprintf(
+                'Expected eager-loading subject to implement "%s"; got "%s".',
+                EntityInterface::class,
+                get_debug_type($record)
+            ));
+        }
+
+        return $record;
     }
 
     private function isSingleRelation(RelationInterface $relation, bool $isThrough): bool
