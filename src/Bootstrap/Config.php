@@ -768,6 +768,12 @@ class Config extends \PhalconKit\Config\Config
                     'task' => Env::get('ROUTER_NOTFOUND_TASK', 'error'),
                     'action' => Env::get('ROUTER_NOTFOUND_ACTION', 'notFound'),
                 ],
+                'httpException' => [
+                    'namespace' => Env::get('ROUTER_HTTP_EXCEPTION_NAMESPACE'),
+                    'module' => Env::get('ROUTER_HTTP_EXCEPTION_MODULE'),
+                    'controller' => Env::get('ROUTER_HTTP_EXCEPTION_CONTROLLER', 'error'),
+                    'action' => Env::get('ROUTER_HTTP_EXCEPTION_ACTION', 'error'),
+                ],
                 'fatal' => [
                     'namespace' => Env::get('ROUTER_FATAL_NAMESPACE', ''),
                     'module' => Env::get('ROUTER_FATAL_MODULE', ''),

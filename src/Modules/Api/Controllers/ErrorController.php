@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhalconKit\Modules\Api\Controllers;
 
+use Phalcon\Messages\Message;
+use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Rest;
 use PhalconKit\Mvc\Controller\Traits\Actions\ErrorActions;
 use PhalconKit\Mvc\Controller\Traits\StatusCode;
@@ -27,6 +29,34 @@ use PhalconKit\Mvc\Controller\Traits\StatusCode;
  */
 class ErrorController extends Rest
 {
-    use ErrorActions;
+    use ErrorActions {
+        errorAction as private setErrorStatusAction;
+    }
     use StatusCode;
+
+    /**
+     * Render the configured HTTP-exception route through the REST envelope.
+     *
+     * The dispatcher owns status validation and preserves the exception as a
+     * named route parameter. Only HttpException messages are exposed here;
+     * fatal exceptions remain private and use {@see fatalAction()}.
+     */
+    public function errorAction(?int $code = null, ?string $message = null): void
+    {
+        $this->setErrorStatusAction($code, $message);
+
+        $exception = $this->dispatcher->getParam('exception');
+        if (!$exception instanceof HttpException) {
+            return;
+        }
+
+        $this->setRestViewVar(self::REST_VIEW_MESSAGES, [
+            new Message(
+                $exception->getMessage(),
+                '',
+                'HttpException',
+                $this->response->getStatusCode()
+            ),
+        ]);
+    }
 }

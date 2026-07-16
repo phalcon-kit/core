@@ -99,6 +99,7 @@ debugging, logging, and tests.
 Core config defines route targets for:
 
 - `notFound`
+- `httpException`
 - `fatal`
 - `forbidden`
 - `unauthorized`
@@ -115,8 +116,36 @@ Keep app overrides explicit:
         'controller' => 'error',
         'action' => 'notFound',
     ],
+    'httpException' => [
+        'namespace' => 'App\\Modules\\Api\\Controllers',
+        'module' => 'api',
+        'controller' => 'error',
+        'action' => 'error',
+    ],
 ],
 ```
+
+`PhalconKit\Exception\HttpException` is an expected request failure. The MVC
+dispatcher accepts its exception code only when it is in the 400-599 range,
+sets the shared response with the standard `PhalconKit\Http\StatusCode` reason
+phrase, and forwards it through `router.httpException` in both debug and
+production modes. Unmapped in-range codes use the framework-owned generic `Bad
+Request` or `Internal Server Error` phrase for their status category. Invalid
+codes become HTTP 500. An arbitrary exception with a numeric code such as `403`
+remains an unexpected HTTP 500 failure.
+
+The forward preserves the HttpException under the named `exception` route
+parameter and the normalized status under `code`. Applications may override
+the route or error controller to normalize application message contracts, but
+status validation remains framework-owned. The bundled API error controller
+exposes the exception message as a standard `view.messages` entry; bundled
+Frontend/Admin pages keep the status and reason phrase without rendering raw
+exception details.
+
+Unexpected exceptions are rethrown in debug mode. In production they use
+`router.fatal`, return HTTP 500, and do not expose the exception message or
+trace. Native missing-controller/action exceptions continue to use
+`router.notFound` and HTTP 404.
 
 For single-page frontends, the app error controller can forward unknown
 frontend routes to the compiled frontend entrypoint while still returning API

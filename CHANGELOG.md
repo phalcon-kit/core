@@ -19,6 +19,14 @@ release notes.
 
 ### Fixed
 
+- Preserved valid 400-599 statuses from MVC `HttpException` failures through a
+  configurable `router.httpException` error-action route, synchronized the
+  shared Phalcon response status and standard reason phrase, exposed safe API
+  REST messages, and kept expected request failures out of the HTTP 500 debug
+  path.
+- Routed unexpected production MVC exceptions through `router.fatal` instead
+  of the incompatible `router.error`/`index` target, while keeping their
+  details out of bundled production error responses.
 - Kept PhalconKit debug backtrace frame normalization from exhausting PCRE
   backtracking limits on large runner-generated exception pages.
 - Added a local-only test fixture for visually inspecting rendered debug error

@@ -89,6 +89,30 @@ Register app modules explicitly:
 ],
 ```
 
+## HTTP Exception Route
+
+Expected MVC request failures raised as
+`PhalconKit\Exception\HttpException` use the dedicated
+`router.httpException` target. Its defaults keep the current module context and
+dispatch to `errorAction()`:
+
+```php
+'router' => [
+    'httpException' => [
+        'namespace' => Env::get('ROUTER_HTTP_EXCEPTION_NAMESPACE'),
+        'module' => Env::get('ROUTER_HTTP_EXCEPTION_MODULE'),
+        'controller' => Env::get('ROUTER_HTTP_EXCEPTION_CONTROLLER', 'error'),
+        'action' => Env::get('ROUTER_HTTP_EXCEPTION_ACTION', 'error'),
+    ],
+],
+```
+
+Applications may override this route and controller to adapt their response
+envelope. The dispatcher still owns status validation: only HttpException codes
+from 400 through 599 are preserved, and invalid codes become HTTP 500. Generic
+exceptions never derive transport status from their numeric exception code;
+production failures use `router.fatal`, while debug mode rethrows them.
+
 ## Provider Overrides
 
 Provider overrides are config-first. Replace a core provider by keeping the

@@ -214,6 +214,48 @@ class ConfigTest extends AbstractUnit
         }
     }
 
+    public function testHttpExceptionRouteUsesEnvironmentOverrides(): void
+    {
+        $keys = [
+            'ROUTER_HTTP_EXCEPTION_NAMESPACE',
+            'ROUTER_HTTP_EXCEPTION_MODULE',
+            'ROUTER_HTTP_EXCEPTION_CONTROLLER',
+            'ROUTER_HTTP_EXCEPTION_ACTION',
+        ];
+        $previous = [];
+        foreach ($keys as $key) {
+            $previous[$key] = Env::get($key);
+            Env::set($key, null);
+        }
+
+        try {
+            $defaults = (new Config())->pathToArray('router.httpException');
+
+            $this->assertSame([
+                'namespace' => null,
+                'module' => null,
+                'controller' => 'error',
+                'action' => 'error',
+            ], $defaults);
+
+            Env::set('ROUTER_HTTP_EXCEPTION_NAMESPACE', 'App\\Modules\\Api\\Controllers');
+            Env::set('ROUTER_HTTP_EXCEPTION_MODULE', 'api');
+            Env::set('ROUTER_HTTP_EXCEPTION_CONTROLLER', 'problem');
+            Env::set('ROUTER_HTTP_EXCEPTION_ACTION', 'render');
+
+            $configured = (new Config())->pathToArray('router.httpException');
+
+            $this->assertSame('App\\Modules\\Api\\Controllers', $configured['namespace'] ?? null);
+            $this->assertSame('api', $configured['module'] ?? null);
+            $this->assertSame('problem', $configured['controller'] ?? null);
+            $this->assertSame('render', $configured['action'] ?? null);
+        } finally {
+            foreach ($previous as $key => $value) {
+                Env::set($key, $value);
+            }
+        }
+    }
+
     public function testModelRelationshipConfigUsesEnvironmentFlags(): void
     {
         $keys = [

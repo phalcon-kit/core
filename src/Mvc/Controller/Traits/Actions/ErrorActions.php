@@ -23,12 +23,18 @@ trait ErrorActions
     use AbstractStatusCode;
     
     /**
-     * Http Status Code - Generic
-     * error
+     * Render a generic error using an explicit or already-selected status.
+     *
+     * Dispatcher listeners can set the shared response status before forwarding
+     * here. Direct callers may still provide a status and optional reason phrase;
+     * otherwise the action falls back to HTTP 500.
      */
     public function errorAction(?int $code = null, ?string $message = null): void
     {
-        $code ??= 500;
+        if ($code === null) {
+            $code = $this->response->getStatusCode() ?: 500;
+            $message ??= $this->response->getReasonPhrase();
+        }
         $this->setStatusCode($code, $message);
     }
     
