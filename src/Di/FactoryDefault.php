@@ -20,7 +20,7 @@ namespace PhalconKit\Di;
  * PhalconKit typed lookup helpers. It is the default container for non-CLI
  * PhalconKit bootstraps unless an application passes a custom DiInterface.
  *
- * @see https://docs.phalcon.io/5.16/di/
+ * @see https://docs.phalcon.io/5.17/di/
  */
 class FactoryDefault extends \Phalcon\Di\FactoryDefault implements DiInterface
 {

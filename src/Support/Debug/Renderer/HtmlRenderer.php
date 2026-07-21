@@ -17,7 +17,7 @@ use PhalconKit\Support\Version as PhalconKitVersion;
 use Phalcon\Support\Version as PhalconVersion;
 
 /**
- * Renders Phalcon 5.16 debug reports with PhalconKit's inline theme.
+ * Renders Phalcon 5.16+ debug reports with PhalconKit's inline theme.
  *
  * Phalcon 5.16 moved debug output behind a renderer/template contract. This
  * renderer uses that contract directly so debug pages do not load remote

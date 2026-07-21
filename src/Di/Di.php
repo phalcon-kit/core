@@ -20,7 +20,7 @@ namespace PhalconKit\Di;
  * not need the default MVC/CLI services pre-registered by FactoryDefault. It
  * keeps native Phalcon DI behavior while exposing PhalconKit typed helpers.
  *
- * @see https://docs.phalcon.io/5.16/di/
+ * @see https://docs.phalcon.io/5.17/di/
  */
 class Di extends \Phalcon\Di\Di implements DiInterface
 {

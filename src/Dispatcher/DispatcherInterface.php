@@ -21,7 +21,7 @@ namespace PhalconKit\Dispatcher;
  * export. Dispatcher listeners can depend on this contract when they do not
  * care whether the active handler is an MVC controller or CLI/WebSocket task.
  *
- * @see https://docs.phalcon.io/5.16/dispatcher/
+ * @see https://docs.phalcon.io/5.17/dispatcher/
  */
 interface DispatcherInterface extends \Phalcon\Dispatcher\DispatcherInterface
 {

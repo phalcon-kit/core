@@ -24,7 +24,7 @@ use Phalcon\Translate\InterpolatorFactory;
  * the bundled content. It remains a normal Phalcon NativeArray adapter, so it
  * can be registered anywhere Phalcon expects a translate adapter.
  *
- * @see https://docs.phalcon.io/5.16/translate/
+ * @see https://docs.phalcon.io/5.17/translate/
  */
 class Fr extends NativeArray
 {

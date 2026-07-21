@@ -8,10 +8,10 @@ application.
 
 Native Phalcon references:
 
-- CLI applications: https://docs.phalcon.io/5.16/cli/
-- Dependency injection: https://docs.phalcon.io/5.16/di/
-- Dispatcher API: https://docs.phalcon.io/5.16/api/phalcon_mvc/#mvcdispatcher
-- Events manager: https://docs.phalcon.io/5.16/events/
+- CLI applications: https://docs.phalcon.io/5.17/cli/
+- Dependency injection: https://docs.phalcon.io/5.17/di/
+- Dispatcher API: https://docs.phalcon.io/5.17/api/phalcon_mvc/#mvcdispatcher
+- Events manager: https://docs.phalcon.io/5.17/events/
 
 PhalconKit CLI and WebSocket modules reuse native Phalcon CLI, DI, dispatcher,
 and event concepts. Use this file for app task wrappers, Swoole runtime,

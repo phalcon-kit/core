@@ -28,7 +28,7 @@ use PhalconKit\Router\RouterInterface;
  * while exposing a small `toArray()` diagnostic snapshot through
  * `RouterInterface`.
  *
- * @see https://docs.phalcon.io/5.16/routing/
+ * @see https://docs.phalcon.io/5.17/routing/
  */
 class Router extends \Phalcon\Mvc\Router implements PhalconMvcRouterInterface, RouterInterface
 {

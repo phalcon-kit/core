@@ -25,7 +25,7 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * `cookies.signKey`, or pass runtime overrides when resolving the service
  * manually.
  *
- * @see https://docs.phalcon.io/5.16/cookies/
+ * @see https://docs.phalcon.io/5.17/cookies/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

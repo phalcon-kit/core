@@ -64,7 +64,7 @@ docs for native framework behavior and these guides for PhalconKit conventions.
 Phalcon Kit is independently maintained and is not affiliated with, endorsed by,
 or sponsored by the official Phalcon PHP Framework project.
 
-- Phalcon docs: https://docs.phalcon.io/5.16/
+- Phalcon docs: https://docs.phalcon.io/5.17/
 - Phalcon framework: https://phalcon.io
 
 ## Agent References

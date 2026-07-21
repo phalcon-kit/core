@@ -20,17 +20,17 @@ Use this checklist when changing any of these values:
 Keep those changes in one focused commit where possible. Avoid mixing a runtime
 upgrade with unrelated model, controller, schema, or API behavior changes.
 
-## Phalcon 5.16.0 Checklist
+## Phalcon 5.17.0 Checklist
 
-For the 5.16.0 line, align the package and runtime on:
+For the 5.17.0 line, align the package and runtime on:
 
 ```json
 {
   "require": {
-    "ext-phalcon": "^5.16.0"
+    "ext-phalcon": "^5.17.0"
   },
   "require-dev": {
-    "phalcon/ide-stubs": "^5.16.0"
+    "phalcon/ide-stubs": "^5.17.0"
   }
 }
 ```

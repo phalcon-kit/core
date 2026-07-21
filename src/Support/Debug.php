@@ -29,7 +29,7 @@ use Phalcon\Support\Version as PhalconVersion;
 class Debug extends \Phalcon\Support\Debug
 {
     /**
-     * Install PhalconKit's inline renderer on the native 5.16 debug pipeline.
+     * Install PhalconKit's inline renderer on the native 5.16+ debug pipeline.
      */
     public function __construct()
     {
@@ -212,7 +212,7 @@ class Debug extends \Phalcon\Support\Debug
     /**
      * Keep backtrace metadata visible while only the source block expands.
      *
-     * Phalcon 5.16 renders each frame as a `<details>` element, which hides the
+     * Phalcon 5.16+ renders each frame as a `<details>` element, which hides the
      * file and line number when a frame is collapsed. PhalconKit keeps the frame
      * header and file path visible, then moves source context into its own
      * expandable region. When the source file is readable and reasonably sized,

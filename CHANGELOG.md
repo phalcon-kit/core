@@ -15,6 +15,16 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.8.0 - 2026-07-21
+
+### Changed
+
+- Raised the package, CI, IDE-stub, runtime-guide, Docker-example, and native
+  documentation baselines from Phalcon 5.16.0 to Phalcon 5.17.0.
+- Migrated the model security behavior from Phalcon's deprecated legacy ACL
+  adapter interface to the canonical `Phalcon\Contracts\Acl\Adapter\Adapter`
+  contract while retaining compatibility with native ACL adapters.
+
 ## 3.7.2 - 2026-07-16
 
 ### Fixed

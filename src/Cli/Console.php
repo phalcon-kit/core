@@ -22,7 +22,7 @@ use Phalcon\Di\DiInterface;
  * applications and providers a PhalconKit namespace type for CLI bootstraps.
  * CLI modules still rely on native Phalcon console dispatch semantics.
  *
- * @see https://docs.phalcon.io/5.16/application-cli/
+ * @see https://docs.phalcon.io/5.17/application-cli/
  */
 class Console extends \Phalcon\Cli\Console
 {

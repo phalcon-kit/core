@@ -8,10 +8,10 @@ transformer than an exposer array.
 
 Native Phalcon references:
 
-- Controllers: https://docs.phalcon.io/5.16/controllers/
-- Response: https://docs.phalcon.io/5.16/response/
-- Models: https://docs.phalcon.io/5.16/db-models/
-- Relationships: https://docs.phalcon.io/5.16/db-models-relationships/
+- Controllers: https://docs.phalcon.io/5.17/controllers/
+- Response: https://docs.phalcon.io/5.17/response/
+- Models: https://docs.phalcon.io/5.17/db-models/
+- Relationships: https://docs.phalcon.io/5.17/db-models-relationships/
 
 Transformers are not a native Phalcon feature; PhalconKit integrates League
 Fractal with native controllers, responses, models, and relationships. Use

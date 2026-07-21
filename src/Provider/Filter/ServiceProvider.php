@@ -27,7 +27,7 @@ use PhalconKit\Provider\AbstractServiceProvider;
  * filters from `filters`. Applications can use that config path to add or
  * replace named filter services without replacing the provider itself.
  *
- * @see https://docs.phalcon.io/5.16/filter/
+ * @see https://docs.phalcon.io/5.17/filter/
  */
 class ServiceProvider extends AbstractServiceProvider
 {

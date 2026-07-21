@@ -26,7 +26,7 @@ use PhalconKit\Router\RouterInterface;
  * so this wrapper now satisfies both the native router interface inherited from
  * the parent and PhalconKit's shared router interface.
  *
- * @see https://docs.phalcon.io/5.16/application-cli/
+ * @see https://docs.phalcon.io/5.17/application-cli/
  */
 class Router extends \Phalcon\Cli\Router implements RouterInterface
 {

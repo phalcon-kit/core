@@ -23,7 +23,7 @@ use PhalconKit\Dispatcher\DispatcherTrait;
  * framework forwarding protections and diagnostic export helpers from
  * `DispatcherTrait`.
  *
- * @see https://docs.phalcon.io/5.16/dispatcher/
+ * @see https://docs.phalcon.io/5.17/dispatcher/
  */
 class Dispatcher extends \Phalcon\Mvc\Dispatcher implements DispatcherInterface
 {

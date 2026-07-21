@@ -23,7 +23,7 @@ use PhalconKit\Di\TypedServicesTrait;
  * adds PhalconKit typed lookup helpers. It is the default container for
  * PhalconKit CLI bootstraps unless an application passes a custom DiInterface.
  *
- * @see https://docs.phalcon.io/5.16/di/
+ * @see https://docs.phalcon.io/5.17/di/
  */
 class Cli extends \Phalcon\Di\FactoryDefault\Cli implements DiInterface
 {

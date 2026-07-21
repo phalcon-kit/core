@@ -26,7 +26,7 @@ namespace PhalconKit\Filter;
  * are designed to plug into this native validation flow without changing the
  * message collection or field binding semantics.
  *
- * @see https://docs.phalcon.io/5.16/filter-validation/
+ * @see https://docs.phalcon.io/5.17/filter-validation/
  */
 class Validation extends \Phalcon\Filter\Validation
 {

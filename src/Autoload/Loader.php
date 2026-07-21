@@ -23,7 +23,7 @@ use Phalcon\Autoload\Exception as AutoloadException;
  * registration remains native Phalcon behavior; only the file checking
  * callback is changed.
  *
- * @see https://docs.phalcon.io/5.16/autoload/
+ * @see https://docs.phalcon.io/5.17/autoload/
  */
 class Loader extends \Phalcon\Autoload\Loader
 {

@@ -8,10 +8,10 @@ commands.
 
 Native Phalcon references:
 
-- Unit testing: https://docs.phalcon.io/5.16/unit-testing/
-- Testing environment: https://docs.phalcon.io/5.16/testing-environment/
-- Reproducible tests: https://docs.phalcon.io/5.16/reproducible-tests/
-- Debug tools: https://docs.phalcon.io/5.16/debug/
+- Unit testing: https://docs.phalcon.io/5.17/unit-testing/
+- Testing environment: https://docs.phalcon.io/5.17/testing-environment/
+- Reproducible tests: https://docs.phalcon.io/5.17/reproducible-tests/
+- Debug tools: https://docs.phalcon.io/5.17/debug/
 
 PhalconKit app tests still bootstrap native Phalcon services, DI, models,
 controllers, and CLI tasks. Use native docs for generic test setup and this

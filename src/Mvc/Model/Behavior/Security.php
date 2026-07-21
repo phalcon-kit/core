@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Behavior;
 
-use Phalcon\Acl\Adapter\AdapterInterface;
+use Phalcon\Contracts\Acl\Adapter\Adapter as AclAdapter;
 use Phalcon\Messages\Message;
 use Phalcon\Mvc\Model\Behavior;
 use Phalcon\Mvc\ModelInterface;
@@ -60,7 +60,7 @@ class Security extends Behavior
      * This is intentionally the native ACL adapter returned by the PhalconKit
      * ACL service, not the service wrapper itself.
      */
-    public static ?AdapterInterface $acl = null;
+    public static ?AclAdapter $acl = null;
     
     /**
      * Replace or clear the cached ACL adapter used by model permission checks.
@@ -69,10 +69,10 @@ class Security extends Behavior
      * changes after the behavior has already resolved it. Passing null clears
      * the cache so `getAcl()` will resolve a fresh adapter from the default DI.
      *
-     * @param AdapterInterface|null $acl Native ACL adapter to cache, or null to
+     * @param AclAdapter|null $acl Native ACL adapter to cache, or null to
      *     force lazy resolution on the next permission check.
      */
-    public static function setAcl(?AdapterInterface $acl = null): void
+    public static function setAcl(?AclAdapter $acl = null): void
     {
         self::$acl = $acl;
     }
@@ -85,11 +85,11 @@ class Security extends Behavior
      * so model-level checks share the same permission graph as dispatcher
      * checks.
      *
-     * @return AdapterInterface Native ACL adapter used for permission checks.
+     * @return AclAdapter Native ACL adapter used for permission checks.
      * @throws ServiceException When the default DI or ACL service cannot be
      *     resolved through the PhalconKit DI contract.
      */
-    public static function getAcl(): AdapterInterface
+    public static function getAcl(): AclAdapter
     {
         if (is_null(self::$acl)) {
             $acl = ServiceResolver::fromDefault(
@@ -100,7 +100,7 @@ class Security extends Behavior
             self::setAcl($acl->get(['models', 'components']));
         }
 
-        if (!self::$acl instanceof AdapterInterface) {
+        if (!self::$acl instanceof AclAdapter) {
             throw new ServiceException('Could not resolve ACL adapter for model security behavior.');
         }
 
@@ -216,7 +216,7 @@ class Security extends Behavior
      * @param string $type Normalized operation name, such as `create`,
      *     `update`, `delete`, `restore`, `find`, or `count`.
      * @param ModelInterface $model Model instance being authorized.
-     * @param AdapterInterface|null $acl Optional adapter override, useful for
+     * @param AclAdapter|null $acl Optional adapter override, useful for
      *     tests or callers that already resolved a scoped ACL.
      * @param array<int|string, string|\Stringable>|null $roles Optional role
      *     names or ACL role objects to check instead of resolving the current
@@ -226,7 +226,7 @@ class Security extends Behavior
      * @throws ServiceException When ACL or identity services must be resolved
      *     but are unavailable or incompatible.
      */
-    public function isAllowed(string $type, ModelInterface $model, ?AdapterInterface $acl = null, ?array $roles = null): bool
+    public function isAllowed(string $type, ModelInterface $model, ?AclAdapter $acl = null, ?array $roles = null): bool
     {
         $acl ??= self::getAcl();
         $modelClass = get_class($model);

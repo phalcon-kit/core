@@ -22,7 +22,7 @@ use PhalconKit\Dispatcher\DispatcherTrait;
  * shared PhalconKit dispatcher helper surface through {@see DispatcherTrait},
  * including state export used by diagnostics and tests.
  *
- * @see https://docs.phalcon.io/5.16/application-cli/
+ * @see https://docs.phalcon.io/5.17/application-cli/
  */
 class Dispatcher extends \Phalcon\Cli\Dispatcher implements DispatcherInterface
 {

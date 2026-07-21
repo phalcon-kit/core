@@ -15,6 +15,7 @@ namespace PhalconKit\Tests\Unit\Mvc\Model;
 
 use Phalcon\Acl\Adapter\Memory;
 use Phalcon\Cache\Cache;
+use Phalcon\Contracts\Acl\Adapter\Adapter as AclAdapter;
 use Phalcon\Db\Adapter\AdapterInterface;
 use Phalcon\Db\Column;
 use Phalcon\Db\RawValue;
@@ -443,6 +444,11 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $missingAcl->addRole('reader');
         $this->assertFalse($behavior->isAllowed('find', $missing, $missingAcl, ['reader']));
         $this->assertSame(404, $missing->getMessages()[0]->getCode());
+
+        $contractAcl = $this->createStub(AclAdapter::class);
+        $contractAcl->method('isComponent')->willReturn(true);
+        $contractAcl->method('isAllowed')->willReturn(true);
+        $this->assertTrue($behavior->isAllowed('find', new ModelBehaviorDouble(), $contractAcl, ['reader']));
 
         $this->assertTrue($behavior->notify('afterSave', $model));
         $this->assertTrue($behavior->notify('beforeFind', $model));

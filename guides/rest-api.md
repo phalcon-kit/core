@@ -9,10 +9,10 @@ permission conditions, and common REST actions.
 
 Official Phalcon references:
 
-- Controllers: https://docs.phalcon.io/5.16/controllers/
-- Request: https://docs.phalcon.io/5.16/request/
-- Response: https://docs.phalcon.io/5.16/response/
-- PHQL: https://docs.phalcon.io/5.16/db-phql/
+- Controllers: https://docs.phalcon.io/5.17/controllers/
+- Request: https://docs.phalcon.io/5.17/request/
+- Response: https://docs.phalcon.io/5.17/response/
+- PHQL: https://docs.phalcon.io/5.17/db-phql/
 
 ## What You Get
 

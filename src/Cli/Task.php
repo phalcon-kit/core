@@ -27,7 +27,7 @@ use PhalconKit\Di\InjectableProperties;
  * @property \PhalconKit\Cli\Router $router
  * @property \PhalconKit\Cli\Dispatcher $dispatcher
  *
- * @see https://docs.phalcon.io/5.16/application-cli/
+ * @see https://docs.phalcon.io/5.17/application-cli/
  */
 class Task extends \Phalcon\Cli\Task implements TaskInterface
 {
