@@ -51,7 +51,7 @@ if [[ "${installed_version}" != "${required_version}" ]]; then
 fi
 
 installed_version="$(php -r 'echo phpversion("phalcon") ?: "";')"
-public_version="$(php -r 'echo class_exists("Phalcon\\Support\\Version") ? (new Phalcon\\Support\\Version())->get() : "";')"
+public_version="$(php -r '$class = "Phalcon\\Support\\Version"; echo class_exists($class) ? (new $class())->get() : "";')"
 
 if [[ "${installed_version}" != "${required_version}" || "${public_version}" != "${required_version}" ]]; then
   echo "::error::Expected Phalcon ${required_version}, got extension ${installed_version:-not installed} and API ${public_version:-not installed}"
