@@ -25,6 +25,9 @@ release notes.
   changes the extension distribution archive.
 - Updated synthetic database result fixtures for Phalcon 5.18's lazy
   resultset materialization and counting behavior.
+- Refreshed the tested Composer dependency floors for AWS SDK, Flysystem,
+  Guzzle 7, PhpStorm attributes, the OpenAI PHP client, and phpdotenv while
+  retaining Guzzle 7 compatibility for the OAuth2 client ecosystem.
 
 ### Fixed
 
