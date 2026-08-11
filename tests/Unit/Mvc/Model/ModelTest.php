@@ -18,7 +18,9 @@ use Phalcon\Mvc\Model\Criteria;
 use Phalcon\Mvc\Model\Resultset\Simple;
 use PhalconKit\Models\Audit;
 use PhalconKit\Models\AuditDetail;
+use PhalconKit\Models\Feature;
 use PhalconKit\Models\Role;
+use PhalconKit\Models\RoleFeature;
 use PhalconKit\Models\User;
 use PhalconKit\Models\UserRole;
 use PhalconKit\Tests\Unit\AbstractUnit;
@@ -43,6 +45,8 @@ class ModelTest extends AbstractUnit
             $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new Audit()->getSource()));
             $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new User()->getSource()));
             $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new UserRole()->getSource()));
+            $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new RoleFeature()->getSource()));
+            $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new Feature()->getSource()));
             $db->execute('TRUNCATE TABLE ' . $db->escapeIdentifier(new Role()->getSource()));
         }
         catch (\Throwable $e) {
@@ -65,6 +69,8 @@ class ModelTest extends AbstractUnit
         $this->addModelsPermissions([User::class => ['*']]);
         $this->addModelsPermissions([ProtectedRelationshipUser::class => ['*']]);
         $this->addModelsPermissions([UserRole::class => ['*']]);
+        $this->addModelsPermissions([RoleFeature::class => ['*']]);
+        $this->addModelsPermissions([Feature::class => ['*']]);
         $this->addModelsPermissions([Role::class => ['*']]);
         $this->assertEquals('user', new User()->getSource());
         $this->assertEquals('user_role', new UserRole()->getSource());
@@ -507,6 +513,89 @@ class ModelTest extends AbstractUnit
         $this->assertTrue($criteriaLoaded->hasLoadedRelatedAlias('rolelist'));
         $this->assertCount(1, $criteriaLoaded->getRelated('RoleList'));
         $this->assertSame('protected-role', $criteriaLoaded->getRelated('RoleList')->getFirst()->getKey());
+    }
+
+    public function testNativeNestedEagerLoadingPopulatesReadOnlyCachesAndExports(): void
+    {
+        $this->prepareTests();
+
+        $feature = new Feature();
+        $feature->setKey('nested-feature');
+        $feature->setLabel('Nested Feature');
+        $this->assertTrue($feature->save());
+        $this->assertEmpty($feature->getMessages(), json_encode($feature->getMessages()));
+
+        $roleWithFeature = new Role();
+        $roleWithFeature->setKey('role-with-feature');
+        $roleWithFeature->setLabel('Role With Feature');
+        $this->assertTrue($roleWithFeature->save());
+        $this->assertEmpty($roleWithFeature->getMessages(), json_encode($roleWithFeature->getMessages()));
+
+        $roleWithoutFeature = new Role();
+        $roleWithoutFeature->setKey('role-without-feature');
+        $roleWithoutFeature->setLabel('Role Without Feature');
+        $this->assertTrue($roleWithoutFeature->save());
+        $this->assertEmpty($roleWithoutFeature->getMessages(), json_encode($roleWithoutFeature->getMessages()));
+
+        $user = new User();
+        $user->setEmail('nested-eager@test.tld');
+        $this->assertTrue($user->save());
+        $this->assertEmpty($user->getMessages(), json_encode($user->getMessages()));
+
+        foreach ([$roleWithFeature, $roleWithoutFeature] as $role) {
+            $userRole = new UserRole();
+            $userRole->setUserId($user->getId());
+            $userRole->setRoleId($role->getId());
+            $this->assertTrue($userRole->save());
+            $this->assertEmpty($userRole->getMessages(), json_encode($userRole->getMessages()));
+        }
+
+        $roleFeature = new RoleFeature();
+        $roleFeature->setRoleId($roleWithFeature->getId());
+        $roleFeature->setFeatureId($feature->getId());
+        $this->assertTrue($roleFeature->save());
+        $this->assertEmpty($roleFeature->getMessages(), json_encode($roleFeature->getMessages()));
+
+        $loaded = User::find([
+            'conditions' => 'email = :email:',
+            'bind' => ['email' => 'nested-eager@test.tld'],
+            'bindTypes' => ['email' => Column::BIND_PARAM_STR],
+            'eager' => ['RoleList.FeatureList'],
+        ])->getFirst();
+
+        $this->assertInstanceOf(User::class, $loaded);
+        $this->assertTrue($loaded->isRelationshipLoaded('RoleList'));
+        $this->assertTrue($loaded->hasLoadedRelatedAlias('rolelist'));
+        $this->assertFalse($loaded->hasDirtyRelatedAlias('rolelist'));
+
+        $rolesByKey = [];
+        foreach ($loaded->getRelated('RoleList') as $role) {
+            $this->assertInstanceOf(Role::class, $role);
+            $rolesByKey[$role->getKey()] = $role;
+        }
+
+        $this->assertCount(2, $rolesByKey);
+        $this->assertArrayHasKey('role-with-feature', $rolesByKey);
+        $this->assertArrayHasKey('role-without-feature', $rolesByKey);
+
+        foreach ($rolesByKey as $role) {
+            $this->assertTrue($role->isRelationshipLoaded('FeatureList'));
+            $this->assertTrue($role->hasLoadedRelatedAlias('featurelist'));
+            $this->assertFalse($role->hasDirtyRelatedAlias('featurelist'));
+        }
+
+        $this->assertCount(1, $rolesByKey['role-with-feature']->getRelated('FeatureList'));
+        $this->assertSame(
+            'nested-feature',
+            $rolesByKey['role-with-feature']->getRelated('FeatureList')->getFirst()->getKey()
+        );
+        $this->assertCount(0, $rolesByKey['role-without-feature']->getRelated('FeatureList'));
+
+        $array = $loaded->toArray();
+        $roleArrays = array_column($array['rolelist'], null, 'key');
+
+        $this->assertSame('nested-feature', $roleArrays['role-with-feature']['featurelist'][0]['key']);
+        $this->assertSame([], $roleArrays['role-without-feature']['featurelist']);
     }
 
     public function testEagerLoadingSkipsEmptyRelationKeys(): void

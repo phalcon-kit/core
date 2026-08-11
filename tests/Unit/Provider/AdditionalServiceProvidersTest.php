@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Provider;
 
 use Aws\Sdk;
+use Aws\S3\S3Client;
 use League\OAuth2\Client\Provider\Facebook;
 use League\OAuth2\Client\Provider\GenericProvider;
 use League\OAuth2\Client\Provider\Google;
@@ -153,6 +154,8 @@ class AdditionalServiceProvidersTest extends AbstractUnit
             'aws' => [
                 'region' => 'us-east-1',
                 'version' => 'latest',
+                'endpoint' => 'https://s3.example.test',
+                'use_path_style_endpoint' => true,
                 'credentials' => [
                     'key' => 'test-key',
                     'secret' => 'test-secret',
@@ -161,7 +164,14 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         ]);
         (new AwsProvider($di))->register($di);
 
-        $this->assertInstanceOf(Sdk::class, $di->get('aws'));
+        $sdk = $di->get('aws');
+        $this->assertInstanceOf(Sdk::class, $sdk);
+
+        $s3 = $sdk->createS3();
+        $this->assertInstanceOf(S3Client::class, $s3);
+        $this->assertSame('us-east-1', $s3->getRegion());
+        $this->assertSame('https://s3.example.test', (string)$s3->getEndpoint());
+        $this->assertTrue($s3->getConfig('use_path_style_endpoint'));
     }
 
     public function testCookiesProviderAppliesConfiguredDefaults(): void

@@ -21,6 +21,7 @@ use PhalconKit\Http\Request;
 use PhalconKit\Http\Response;
 use PhalconKit\Logger\Loggers;
 use PhalconKit\Mvc\Url;
+use PhalconKit\Provider\FileSystem\ServiceProvider as FileSystemProvider;
 use PhalconKit\Provider\ServiceProviderInterface;
 use PhalconKit\Support\Utils;
 use PhalconKit\Support\Version;
@@ -70,6 +71,38 @@ class ProviderTest extends AbstractUnit
         $this->assertInstanceOf(Filesystem::class, $fileSystem);
         $contents = $fileSystem->listContents('.');
         $this->assertIsArray($contents->toArray());
+    }
+
+    public function testFileSystemProviderSupportsLocalRoundTrip(): void
+    {
+        $root = sys_get_temp_dir() . '/phalconkit-flysystem-' . bin2hex(random_bytes(8));
+        $path = 'nested/probe.txt';
+        $fileSystem = null;
+
+        $this->assertTrue(mkdir($root, 0777, true));
+
+        try {
+            (new FileSystemProvider($this->di))->register($this->di);
+            $fileSystem = $this->di->get('fileSystem', [$root]);
+
+            $this->assertInstanceOf(Filesystem::class, $fileSystem);
+            $fileSystem->write($path, 'Flysystem provider probe');
+
+            $this->assertTrue($fileSystem->fileExists($path));
+            $this->assertSame('Flysystem provider probe', $fileSystem->read($path));
+
+            $fileSystem->delete($path);
+            $this->assertFalse($fileSystem->fileExists($path));
+        }
+        finally {
+            if ($fileSystem instanceof Filesystem && $fileSystem->directoryExists('nested')) {
+                $fileSystem->deleteDirectory('nested');
+            }
+
+            if (is_dir($root)) {
+                rmdir($root);
+            }
+        }
     }
 
     public function testCommonSupportProvidersResolveExpectedServices(): void

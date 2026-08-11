@@ -28,6 +28,11 @@ release notes.
 - Refreshed the tested Composer dependency floors for AWS SDK, Flysystem,
   Guzzle 7, PhpStorm attributes, the OpenAI PHP client, and phpdotenv while
   retaining Guzzle 7 compatibility for the OAuth2 client ecosystem.
+- Corrected the stale 5.18.1 metadata in Phalcon's official 5.18.2 PECL archive
+  during CI installation and now verify both the extension and public version
+  API before Composer and test jobs continue.
+- Expanded compatibility coverage for nested native eager-loading graphs and
+  the AWS SDK and Flysystem provider boundaries.
 
 ### Fixed
 
