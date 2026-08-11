@@ -8,8 +8,10 @@
 # file that was distributed with this source code.
 #
 
-# Path to mkdocs.yml
-mkdocs_yml="./../docs/mkdocs.yml"
+set -euo pipefail
+
+project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$project_root"
 
 # Path to the Home.md file
 home_md_file="docs/Home.md"
@@ -17,13 +19,8 @@ home_md_file="docs/Home.md"
 # Final output file for the mkdoc menu
 mkdocs_menu_file="docs/mkdocs_menu.yml"
 
-# Clear the mkdoc menu file
-rm $mkdocs_menu_file
-
-# Function to escape special characters for use in awk regex
-escape_awk() {
-    echo "$1" | sed -e 's/[]\/$*.^|[]/\\&/g'
-}
+temporary_menu=$(mktemp)
+trap 'rm -f "$temporary_menu"' EXIT
 
 # Read the Home.md file line by line
 while IFS= read -r line; do
@@ -32,7 +29,7 @@ while IFS= read -r line; do
         section_name=${line/#"### "/}
 
         # Write the section header to the mkdoc menu file
-        echo "      - $section_name:" >> "$mkdocs_menu_file"
+        echo "      - $section_name:" >> "$temporary_menu"
     elif [[ $line =~ \[\`(.*)\`\]\((.*)\.md\) ]]; then
         # Extract the link text and URL from the table
         link_text="${BASH_REMATCH[1]}"
@@ -42,17 +39,11 @@ while IFS= read -r line; do
         url=${url/.\//api/}
 
         # Write the link to the mkdoc menu file
-        echo "          - $link_text: $url.md" >> "$mkdocs_menu_file"
+        echo "          - $link_text: $url.md" >> "$temporary_menu"
     fi
 done < "$home_md_file"
 
+mv "$temporary_menu" "$mkdocs_menu_file"
+trap - EXIT
+
 echo "Mkdoc menu created: $mkdocs_menu_file"
-
-sed -i '/^  - API:/Q' "$mkdocs_yml"
-{
-    echo "  - API:";
-    echo "      - Home: api/Home.md";
-    cat "$mkdocs_menu_file";
-} >> "$mkdocs_yml"
-
-echo "API section replaced successfully."

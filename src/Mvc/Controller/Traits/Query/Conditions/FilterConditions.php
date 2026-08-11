@@ -198,7 +198,8 @@ trait FilterConditions
      *
      * @return array|null ['sql'=>string,'bind'=>array,'bindTypes'=>array]
      *
-     * @throws HttpException|LogicException
+     * @throws HttpException When a requested filter cannot be processed.
+     * @throws LogicException When filter configuration is invalid.
      */
     protected function compileGroup(array $filters, bool $or, int $level, ?array $allowedFilters, ?string $aliasContext = null): ?array
     {

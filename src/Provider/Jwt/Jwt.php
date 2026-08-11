@@ -211,7 +211,8 @@ class Jwt
      *        or null to use the current helper signer.
      * @return array<int|string, mixed> Validator errors.
      * @throws ServiceException When no token is available.
-     * @throws ValidatorException|\DateMalformedStringException
+     * @throws ValidatorException When the token fails validation.
+     * @throws \DateMalformedStringException When a token date cannot be parsed.
      */
     public function validateToken(?Token $token = null, int $timeShift = 0, array $options = [], ?AbstractSigner $signer = null): array
     {

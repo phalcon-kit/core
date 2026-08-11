@@ -15,6 +15,15 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Fixed
+
+- Restored the complete documentation generation pipeline behind `composer docs`
+  so external API links and MkDocs navigation are regenerated with the API.
+- Removed the documentation generator's implicit write to the sibling website
+  repository; publishing generated output is now an explicit maintainer step.
+
 ## 3.9.0 - 2026-08-11
 
 ### Changed

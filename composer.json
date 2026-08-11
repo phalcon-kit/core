@@ -243,10 +243,11 @@
     "test": "@phpunit",
     "test:coverage": "./bin/phpunit-coverage.sh",
     "test:unit": "@phpunit",
-    "docs": "phpDocumentor -c phpdoc.xml"
+    "docs": "./bin/generate-docs.sh"
   },
   "scripts-descriptions": {
     "check": "Alias for the full QA gate.",
+    "docs": "Regenerate API documentation and its MkDocs navigation.",
     "outdated:direct": "Show outdated direct dependencies only.",
     "qa": "Run Composer validation/audit, coding style, static/security analysis, and PHPUnit.",
     "qa:composer": "Validate composer.json and run Composer security audit.",
