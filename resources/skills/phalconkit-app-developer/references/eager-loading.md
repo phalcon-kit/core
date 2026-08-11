@@ -8,14 +8,17 @@ relation-level `QueryBuilder` closures.
 
 Native Phalcon references:
 
-- Models: https://docs.phalcon.io/5.17/db-models/
-- Relationships: https://docs.phalcon.io/5.17/db-models-relationships/
-- PHQL: https://docs.phalcon.io/5.17/db-phql/
+- Models: https://docs.phalcon.io/5.18/db-models/
+- Relationships: https://docs.phalcon.io/5.18/db-models-relationships/
+- PHQL: https://docs.phalcon.io/5.18/db-phql/
 
-PhalconKit eager loading is an extension over native Phalcon model
-relationships and PHQL query building. Use native docs for relation aliases,
-lazy relationship access, and query parameters; use this file for batched
-relation graph loading and relation-level `QueryBuilder` constraints.
+Phalcon 5.18 supports standard eager graphs through
+`Model::find(['eager' => [...]])` and `Criteria::eager()`. PhalconKit bridges
+those native results into its read-only relationship cache. Use native eager
+loading for standard relation graphs; use this file's PhalconKit APIs when the
+query needs relation-level `QueryBuilder` closures, controller
+`initializeWith()` conventions, or the established array return shape. Choose
+one eager-loading surface per query rather than loading the same graph twice.
 
 ## Why It Matters
 
@@ -36,6 +39,8 @@ Use eager loading when:
 
 Model APIs:
 
+- `Model::find(['eager' => $with])` and `Model::query()->eager($with)` use
+  Phalcon 5.18's native eager loader and return native resultsets.
 - `Model::findWith($with, $parameters)` returns a list of models with relations
   loaded.
 - `Model::findFirstWith($with, $parameters)` returns one model or null with

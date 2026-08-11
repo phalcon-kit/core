@@ -22,7 +22,7 @@ use PhalconKit\Config\ConfigInterface;
  * the bundled frontend module. It registers simple controller/action routes and
  * optional locale-prefixed variants based on the configured allowed locales.
  *
- * @see https://docs.phalcon.io/5.17/routing/
+ * @see https://docs.phalcon.io/5.18/routing/
  */
 class Router extends \PhalconKit\Mvc\Router
 {

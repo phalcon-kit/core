@@ -354,6 +354,30 @@ trait Relationship
         return array_key_exists($this->normalizeRelationAlias($alias), $this->loadedRelated);
     }
 
+    /**
+     * Store a related value in both Phalcon's native relation cache and
+     * PhalconKit's read-only eager-loading cache.
+     *
+     * Phalcon 5.18's native eager loader calls this method while hydrating
+     * `find(['eager' => [...]])` results. Mirroring the value keeps direct
+     * property access, `getRelated()`, exports, and native
+     * `isRelationshipLoaded()` checks consistent without marking the relation
+     * for persistence.
+     *
+     * @param string $alias Registered relationship alias.
+     * @param mixed $records Related model, row, resultset, or null.
+     *
+     * @return ModelInterface The current model instance.
+     */
+    #[\Override]
+    public function setRelated(string $alias, mixed $records): ModelInterface
+    {
+        $model = parent::setRelated($alias, $records);
+        $this->setLoadedRelatedAlias($alias, $records);
+
+        return $model;
+    }
+
     private function normalizeRelationAlias(string $alias): string
     {
         return mb_strtolower($alias);
@@ -1568,14 +1592,24 @@ trait Relationship
      *
      * @param string $alias
      * @param mixed $arguments
-     * @return false|int|Model\Resultset\Simple
+     * Values populated by Phalcon 5.18's native eager loader are returned from
+     * PhalconKit's read-only cache. Uncached relationships continue through
+     * the models manager so they are never added to Phalcon's dirty relation
+     * save pipeline.
+     *
+     * @return mixed Cached related data or the models manager query result.
      * @throws InvalidArgumentException
      */
+    #[\Override]
     public function getRelated(string $alias, $arguments = null)
     {
         $className = get_class($this);
         $manager = $this->getModelsManager();
         $lowerAlias = strtolower($alias);
+
+        if ($this->hasLoadedRelatedAlias($lowerAlias)) {
+            return $this->getLoadedRelatedAlias($lowerAlias);
+        }
         
         $relation = $manager->getRelationByAlias($className, $lowerAlias);
         if (!$relation) {

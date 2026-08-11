@@ -20,24 +20,26 @@ Use this checklist when changing any of these values:
 Keep those changes in one focused commit where possible. Avoid mixing a runtime
 upgrade with unrelated model, controller, schema, or API behavior changes.
 
-## Phalcon 5.17.0 Checklist
+## Phalcon 5.18.2 Checklist
 
-For the 5.17.0 line, align the package and runtime on:
+For the 5.18.2 runtime, align the package on:
 
 ```json
 {
   "require": {
-    "ext-phalcon": "^5.17.0"
+    "ext-phalcon": "^5.18.2"
   },
   "require-dev": {
-    "phalcon/ide-stubs": "^5.17.0"
+    "phalcon/ide-stubs": "^5.18.1"
   }
 }
 ```
 
-Applications that keep `phalcon/ide-stubs` only under `suggest` or in a
-separate development tooling package should still update the same version floor
-there so IDE and analyzer signatures match the installed extension.
+The official IDE stubs currently stop at 5.18.1. Phalcon 5.18.2 only changes
+the extension distribution archive, so the 5.18.1 stubs are the matching API
+surface for the 5.18.2 runtime. Applications that keep `phalcon/ide-stubs` only
+under `suggest` or in a separate development tooling package should still use
+that floor so IDE and analyzer signatures match the installed extension.
 
 ## Local Runtime
 
@@ -102,6 +104,18 @@ installer used by this repository.
 
 Patch-level Phalcon upgrades are usually small, but PhalconKit applications
 should review these recurring integration boundaries:
+
+- Phalcon 5.18 adds native eager loading through `find(['eager' => [...]])`
+  and `Criteria::eager()`. PhalconKit models bridge native `setRelated()` data
+  into their read-only relationship cache, so native eager loading and the
+  existing `findWith()`/`findFirstWith()` APIs can coexist. Do not pass both an
+  `eager` parameter and the same graph to `findWith()` in one query.
+- Code that enumerates native event listeners must use
+  `Phalcon\Events\Manager::getListenerMap()`; the short-lived
+  `getEventTypes()` name is not part of the final 5.18 API.
+- MariaDB applications that manually stripped quotes from values returned by
+  `Mysql::describeColumns()` should remove that workaround; 5.18 normalizes
+  string, date, and time defaults itself.
 
 - Replace deprecated `Phalcon\Events\ManagerInterface` and
   `Phalcon\Events\EventInterface` references in application-owned contracts with

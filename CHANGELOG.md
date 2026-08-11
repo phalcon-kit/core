@@ -15,6 +15,24 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Changed
+
+- Raised the package, CI, IDE-stub, runtime-guide, Docker-example, and native
+  documentation baselines from Phalcon 5.17.0 to Phalcon 5.18.2. The official
+  5.18.1 IDE stubs remain the matching API surface because Phalcon 5.18.2 only
+  changes the extension distribution archive.
+- Updated synthetic database result fixtures for Phalcon 5.18's lazy
+  resultset materialization and counting behavior.
+
+### Fixed
+
+- Bridged Phalcon 5.18 native eager-loading results from `Model::setRelated()`
+  into PhalconKit's read-only relationship cache so property access,
+  `getRelated()`, exports, and native relationship-loaded checks stay
+  consistent without marking eager-loaded records for persistence.
+
 ## 3.8.0 - 2026-07-21
 
 ### Changed

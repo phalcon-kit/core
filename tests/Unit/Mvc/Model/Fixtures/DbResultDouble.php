@@ -17,6 +17,8 @@ use Phalcon\Db\ResultInterface;
 
 class DbResultDouble implements ResultInterface
 {
+    private int $position = 0;
+
     public function __construct(private readonly int $rowCount = 1)
     {
     }
@@ -33,17 +35,30 @@ class DbResultDouble implements ResultInterface
 
     public function fetch()
     {
-        return false;
+        if ($this->position >= $this->rowCount) {
+            return false;
+        }
+
+        return ['id' => ++$this->position];
     }
 
     public function fetchAll(): array
     {
-        return [];
+        // Phalcon 5.18 materializes resultsets when count() is first called
+        // instead of relying on numRows(). Return the configured synthetic
+        // rows so resultset-based relationship deletion tests retain their
+        // intended non-empty/empty behavior.
+        $rows = [];
+        while (($row = $this->fetch()) !== false) {
+            $rows[] = $row;
+        }
+
+        return $rows;
     }
 
     public function fetchArray()
     {
-        return false;
+        return $this->fetch();
     }
 
     public function getInternalResult(): \PDOStatement

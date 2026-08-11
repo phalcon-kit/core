@@ -8,10 +8,10 @@ files, or deployment-facing configuration for a PhalconKit application.
 
 Native Phalcon references:
 
-- Installation: https://docs.phalcon.io/5.17/installation/
-- Webserver setup: https://docs.phalcon.io/5.17/webserver-setup/
-- Docker environment: https://docs.phalcon.io/5.17/environments-docker/
-- CLI applications: https://docs.phalcon.io/5.17/cli/
+- Installation: https://docs.phalcon.io/5.18/installation/
+- Webserver setup: https://docs.phalcon.io/5.18/webserver-setup/
+- Docker environment: https://docs.phalcon.io/5.18/environments-docker/
+- CLI applications: https://docs.phalcon.io/5.18/cli/
 
 PhalconKit app runtime still depends on normal Phalcon extension installation,
 web-server rewrite rules, PHP-FPM configuration, and CLI execution. Use native
@@ -164,7 +164,7 @@ same extension setup:
 ```dockerfile
 ARG PHP_VARIANT=php:8.5-fpm
 ARG COMPOSER_VARIANT=composer:2
-ARG PHALCON_VERSION=5.17.0
+ARG PHALCON_VERSION=5.18.2
 
 FROM docker.io/library/${COMPOSER_VARIANT} AS composer
 FROM ${PHP_VARIANT}

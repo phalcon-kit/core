@@ -5,10 +5,10 @@ relationship-aware assignment, model behaviors, and batch eager loading.
 
 Official Phalcon references:
 
-- Models: https://docs.phalcon.io/5.17/db-models/
-- Relationships: https://docs.phalcon.io/5.17/db-models-relationships/
-- Behaviors: https://docs.phalcon.io/5.17/db-models-behaviors/
-- Model validation: https://docs.phalcon.io/5.17/db-models-validation/
+- Models: https://docs.phalcon.io/5.18/db-models/
+- Relationships: https://docs.phalcon.io/5.18/db-models-relationships/
+- Behaviors: https://docs.phalcon.io/5.18/db-models-behaviors/
+- Model validation: https://docs.phalcon.io/5.18/db-models-validation/
 
 ## Generated And Concrete Layers
 
@@ -160,6 +160,27 @@ foreach ($projects as $project) {
 
 Each relation access can trigger more database work. Load the graph once:
 
+Phalcon 5.18 provides native eager loading for standard relationship graphs:
+
+```php
+$projects = Project::find([
+    'conditions' => 'deleted <> 1',
+    'eager' => [
+        'UserNode.UserEntity',
+        'CategoryList',
+    ],
+]);
+```
+
+Native eager loading stores relations through `Model::setRelated()`.
+PhalconKit mirrors that native cache into its read-only loaded-relation cache,
+so property access, `getRelated()`, `relatedToArray()`, and
+`isRelationshipLoaded()` see the same values.
+
+Use PhalconKit's eager-loading API when relation-level closures, its controller
+`initializeWith()` convention, or its established array return shape is
+required:
+
 Model-level examples:
 
 ```php
@@ -192,7 +213,8 @@ public function initializeWith(): void
 
 Use relation-level query builders when a relation needs extra constraints,
 ordering, or limits. Keep expensive relation graphs out of list requests unless
-the UI really needs them.
+the UI really needs them. Choose one eager-loading surface per query; do not
+send the same graph through both native `eager` parameters and `findWith()`.
 
 ## List vs Detail Graphs
 

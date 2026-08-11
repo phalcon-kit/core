@@ -61,7 +61,7 @@ use PhalconKit\Exception\RuntimeException;
  *
  * @implements \ArrayAccess<string, mixed>
  *
- * @see https://docs.phalcon.io/5.17/translate/
+ * @see https://docs.phalcon.io/5.18/translate/
  */
 class NestedNativeArray extends AbstractAdapter implements \ArrayAccess
 {

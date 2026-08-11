@@ -2251,6 +2251,17 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame($model->fakeModelsManager->queryResult, $model->getRelated('children', ['limit' => 1]));
         $this->assertNotEmpty($model->fakeModelsManager->relationRecordCalls);
 
+        $cachedOwner = new ModelBehaviorDouble();
+        $cachedOwner->id = 42;
+        $relationRecordCallCount = count($model->fakeModelsManager->relationRecordCalls);
+
+        $this->assertSame($model, $model->setRelated('owner', $cachedOwner));
+        $this->assertTrue($model->isRelationshipLoaded('owner'));
+        $this->assertTrue($model->hasLoadedRelatedAlias('OWNER'));
+        $this->assertSame($cachedOwner, $model->getLoadedRelatedAlias('owner'));
+        $this->assertSame($cachedOwner, $model->getRelated('OWNER'));
+        $this->assertCount($relationRecordCallCount, $model->fakeModelsManager->relationRecordCalls);
+
         try {
             $model->getRelated('missing');
             $this->fail('Expected missing relation exception.');
