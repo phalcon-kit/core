@@ -21,8 +21,9 @@ use PhalconKit\Support\Slug;
  *
  * When a direct controller/action view path is not present, controller and
  * action names are converted from camelCase to slug form before delegating to
- * Phalcon. `getContent()` can also perform lightweight HTML output minification
- * for applications that opt in through `setMinify()`.
+ * Phalcon. Absolute paths are passed through unchanged so Phalcon's native
+ * path handling remains available. `getContent()` can also perform lightweight
+ * HTML output minification for applications that opt in through `setMinify()`.
  *
  * @see https://docs.phalcon.io/5.18/views/
  */
@@ -70,7 +71,8 @@ class View extends \Phalcon\Mvc\View
     #[\Override]
     public function render(string $controllerName, string $actionName, array $params = []): static|false
     {
-        if (!$this->has($controllerName . (empty($actionName) ? null : '/' . $actionName))) {
+        $viewPath = $controllerName . (empty($actionName) ? null : '/' . $actionName);
+        if (!$this->isAbsoluteViewPath($viewPath) && !$this->has($viewPath)) {
             $controllerName = Slug::generate(Helper::uncamelize($controllerName));
             $actionName = Slug::generate(Helper::uncamelize($actionName));
         }
@@ -90,11 +92,24 @@ class View extends \Phalcon\Mvc\View
     #[\Override]
     public function getRender(string $controllerName, string $actionName, array $params = [], $configCallback = null): string
     {
-        if (!$this->has($controllerName . (empty($actionName) ? null : '/' . $actionName))) {
+        $viewPath = $controllerName . (empty($actionName) ? null : '/' . $actionName);
+        if (!$this->isAbsoluteViewPath($viewPath) && !$this->has($viewPath)) {
             $controllerName = Slug::generate(Helper::uncamelize($controllerName));
             $actionName = Slug::generate(Helper::uncamelize($actionName));
         }
         return parent::getRender($controllerName, $actionName, $params, $configCallback);
+    }
+
+    /**
+     * Return whether a view path is absolute using Phalcon's platform rules.
+     */
+    private function isAbsoluteViewPath(string $path): bool
+    {
+        if (PHP_OS === 'WINNT') {
+            return strlen($path) >= 3 && substr($path, 1, 2) === ':\\';
+        }
+
+        return str_starts_with($path, '/');
     }
     
     /**

@@ -97,6 +97,62 @@ class ViewTest extends AbstractUnit
         $this->assertSame('Hello Lovelace', trim($content));
     }
 
+    public function testPartialAcceptsAbsoluteTemplatePath(): void
+    {
+        $view = $this->createViewWithTemplate('absolute-partial.phtml', 'Partial <?= $name ?>');
+        $viewsDir = $view->getViewsDir();
+        $this->assertIsString($viewsDir);
+
+        ob_start();
+        try {
+            $view->partial($viewsDir . 'absolute-partial', ['name' => 'Ada']);
+            $output = ob_get_clean();
+        } catch (\Throwable $throwable) {
+            ob_end_clean();
+            throw $throwable;
+        }
+
+        $this->assertSame('Partial Ada', trim((string)$output));
+    }
+
+    public function testRenderAcceptsAbsoluteControllerPath(): void
+    {
+        $view = $this->createViewWithTemplate('absolute-controller/view.phtml', 'Render <?= $name ?>');
+        $viewsDir = $view->getViewsDir();
+        $this->assertIsString($viewsDir);
+        $view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+
+        ob_start();
+        try {
+            $result = $view->render($viewsDir . 'absolute-controller', 'view', ['name' => 'Ada']);
+            $output = ob_get_clean();
+        } catch (\Throwable $throwable) {
+            ob_end_clean();
+            throw $throwable;
+        }
+
+        $this->assertNotFalse($result);
+        $this->assertSame('Render Ada', trim((string)$output));
+    }
+
+    public function testGetRenderAcceptsAbsoluteControllerPath(): void
+    {
+        $view = $this->createViewWithTemplate('absolute-get-render/view.phtml', 'Get render <?= $name ?>');
+        $viewsDir = $view->getViewsDir();
+        $this->assertIsString($viewsDir);
+
+        $content = $view->getRender(
+            $viewsDir . 'absolute-get-render',
+            'view',
+            ['name' => 'Ada'],
+            static function (View $view): void {
+                $view->setRenderLevel(\Phalcon\Mvc\View::LEVEL_ACTION_VIEW);
+            }
+        );
+
+        $this->assertSame('Get render Ada', trim($content));
+    }
+
     private function createViewWithTemplate(string $template, string $content): View
     {
         $viewsDir = sys_get_temp_dir() . '/phalconkit-view-' . bin2hex(random_bytes(8)) . '/';

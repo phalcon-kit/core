@@ -32,6 +32,9 @@ release notes.
   into PhalconKit's read-only relationship cache so property access,
   `getRelated()`, exports, and native relationship-loaded checks stay
   consistent without marking eager-loaded records for persistence.
+- Preserved absolute controller/action view paths in PhalconKit's slug-fallback
+  wrapper so Phalcon 5.18.1's restored absolute-path rendering support remains
+  reachable through `render()` and `getRender()`.
 
 ## 3.8.0 - 2026-07-21
 

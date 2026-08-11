@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Mvc\Model;
 
 use Phalcon\Db\Column;
+use Phalcon\Mvc\Model\Criteria;
 use Phalcon\Mvc\Model\Resultset\Simple;
 use PhalconKit\Models\Audit;
 use PhalconKit\Models\AuditDetail;
@@ -471,6 +472,41 @@ class ModelTest extends AbstractUnit
         $array = $loaded->toArray();
         $this->assertArrayHasKey('rolelist', $array);
         $this->assertSame('protected-role', $array['rolelist'][0]['key']);
+
+        $nativeResult = ProtectedRelationshipUser::find([
+            'conditions' => 'email = :email:',
+            'bind' => ['email' => 'protected@test.tld'],
+            'bindTypes' => ['email' => Column::BIND_PARAM_STR],
+            'eager' => ['RoleList'],
+        ]);
+        $nativeLoaded = $nativeResult->getFirst();
+
+        $this->assertInstanceOf(ProtectedRelationshipUser::class, $nativeLoaded);
+        $this->assertTrue($nativeLoaded->isRelationshipLoaded('RoleList'));
+        $this->assertTrue($nativeLoaded->hasLoadedRelatedAlias('rolelist'));
+        $this->assertSame(
+            $nativeLoaded->getLoadedRelatedAlias('RoleList'),
+            $nativeLoaded->getRelated('rolelist')
+        );
+        $this->assertCount(1, $nativeLoaded->getRelated('RoleList'));
+        $this->assertSame('protected-role', $nativeLoaded->getRelated('RoleList')->getFirst()->getKey());
+        $this->assertSame('protected-role', $nativeLoaded->toArray()['rolelist'][0]['key']);
+
+        $criteria = ProtectedRelationshipUser::query();
+        $this->assertInstanceOf(Criteria::class, $criteria);
+        $criteria->where(
+            'email = :email:',
+            ['email' => 'protected@test.tld'],
+            ['email' => Column::BIND_PARAM_STR]
+        );
+        $criteria->eager(['RoleList']);
+        $criteriaLoaded = $criteria->execute()->getFirst();
+
+        $this->assertInstanceOf(ProtectedRelationshipUser::class, $criteriaLoaded);
+        $this->assertTrue($criteriaLoaded->isRelationshipLoaded('RoleList'));
+        $this->assertTrue($criteriaLoaded->hasLoadedRelatedAlias('rolelist'));
+        $this->assertCount(1, $criteriaLoaded->getRelated('RoleList'));
+        $this->assertSame('protected-role', $criteriaLoaded->getRelated('RoleList')->getFirst()->getKey());
     }
 
     public function testEagerLoadingSkipsEmptyRelationKeys(): void
@@ -507,6 +543,22 @@ class ModelTest extends AbstractUnit
         $this->assertInstanceOf(User::class, $users[1]->getLoadedRelatedAlias('CreatedByEntity'));
         $this->assertSame($owner->getId(), $users[1]->getLoadedRelatedAlias('CreatedByEntity')->getId());
         $this->assertNull($users[2]->getLoadedRelatedAlias('CreatedByEntity'));
+
+        $nativeUsers = iterator_to_array(User::find([
+            'order' => 'id ASC',
+            'eager' => ['CreatedByEntity'],
+        ]), false);
+
+        $this->assertCount(3, $nativeUsers);
+        foreach ($nativeUsers as $nativeUser) {
+            $this->assertTrue($nativeUser->isRelationshipLoaded('CreatedByEntity'));
+            $this->assertTrue($nativeUser->hasLoadedRelatedAlias('createdbyentity'));
+        }
+
+        $this->assertNull($nativeUsers[0]->getRelated('CreatedByEntity'));
+        $this->assertInstanceOf(User::class, $nativeUsers[1]->getRelated('CreatedByEntity'));
+        $this->assertSame($owner->getId(), $nativeUsers[1]->getRelated('CreatedByEntity')->getId());
+        $this->assertNull($nativeUsers[2]->getRelated('CreatedByEntity'));
     }
 
     public function roleFindAssert(string $string)
