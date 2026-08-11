@@ -57,7 +57,7 @@ Keep for discussion:
   `src/Provider/Assets/ServiceProvider.php`,
   `tests/Unit/Html/TagFactoryTest.php`.
   The assets manager needs a native-style `TagFactory`, while the public `tag`
-  service exposes PhalconKit's static helper facade. A cleanup would likely need
+  service exposes Phalcon Kit's static helper facade. A cleanup would likely need
   separate service names or a compatibility bridge.
 - Database logger correlation context:
   `src/Db/Events/Logger.php`.

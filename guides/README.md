@@ -1,80 +1,120 @@
-# Guides
+# Developer Guides
 
-These guides are for developers who want to build Phalcon applications faster
-with Phalcon Kit. Start with the task you are trying to complete.
+Build a complete Phalcon Kit application one workflow at a time. These guides
+document the latest stable `phalcon-kit/core` release; Composer metadata is the
+authority for runtime and dependency requirements.
 
-## I Want To Build A REST API
+!!! tip "New to Phalcon Kit?"
 
-1. [Build Your First REST Resource](first-rest-resource.md): build a resource
-   from schema to controller, permissions, and request/response examples.
-2. [REST APIs](rest-api.md): learn the REST controller policy methods.
-3. [Models And Eager Loading](models-and-eager-loading.md): load relation graphs
-   without lazy-loading loops.
-4. [Identity And Permissions](identity-and-permissions.md): add role and
-   row-level access.
+    Follow the **First API** track in order. It starts with a runnable app and
+    ends with a database-backed, permission-aware REST resource.
 
-## I Want To Start Or Integrate A Project
+## Choose A Learning Track
 
-1. [Getting Started](getting-started.md): install, bootstrap, run locally.
-2. [Configuration](configuration.md): configure modules, providers, aliases, and
-   permissions.
-3. [Architecture](architecture.md): understand where app code, generated code,
-   modules, and tasks belong.
+<div class="grid cards" markdown>
 
-## I Want To Generate Models From A Database
+-   :material-rocket-launch:{ .lg .middle } **First API**
 
-1. [Database And Scaffolding](database-scaffolding.md): run migrations and
-   scaffold generated model layers.
-2. [Models And Eager Loading](models-and-eager-loading.md): add concrete model
-   behavior and relationship loading.
-3. [Build Your First REST Resource](first-rest-resource.md): connect generated
-   models to a REST controller.
+    ---
 
-## I Want To Deploy Or Maintain The Package
+    Install the application, learn its structure, and build a complete resource.
 
-1. [Web Server And WebSocket](web-server-and-websocket.md): PHP-FPM, web roots,
-   and WebSocket worker proxying.
-2. [Quality And Maintenance](quality-and-maintenance.md): local QA commands and
-   CI expectations.
-3. [Phalcon Runtime Upgrades](phalcon-runtime-upgrades.md): update the native
-   extension, Composer platform requirement, IDE stubs, Docker images, and CI
-   pins together.
-4. [Project Roadmap](../ROADMAP.md): release blocks, priorities, retired
-   GitHub Project items, and maintainer planning rules.
-5. [Testing Strategy](testing-roadmap.md): phased unit, component,
-   integration, model, eager-loading, and REST API coverage approach.
-6. [To Be Discussed](to-be-discussed.md): open maintainer design questions that
-   need a concrete use case before behavior changes.
-7. [Release Process](release.md): release checklist and package-history notes.
+    1. [Getting Started](getting-started.md)
+    2. [Resource Walkthrough](resource-walkthrough.md)
+    3. [Build Your First REST Resource](first-rest-resource.md)
 
-## I Am Using zemit-cms/core
+-   :material-database-cog:{ .lg .middle } **Database-First Development**
 
-Read [Migration From zemit-cms/core](migration-from-zemit.md) before changing
-package constraints. The short version: new projects use `phalcon-kit/core`;
-older projects should stay pinned until the migration can be tested.
+    ---
 
-If the application also uses old 0.x RESTful controllers, read
-[Migrate RESTful 0.x Resources To 1.x](migration-restful-0x-to-1x.md) for the
-controller, scaffolding, eager-loading, permission, and custom-action migration.
+    Turn migrations into typed models, relationships, validation, and API data.
 
-## Official Phalcon Docs
+    1. [Database And Scaffolding](database-scaffolding.md)
+    2. [Models And Eager Loading](models-and-eager-loading.md)
+    3. [REST APIs](rest-api.md)
 
-Phalcon Kit extends Phalcon instead of replacing it. Use the official Phalcon
-docs for native framework behavior and these guides for PhalconKit conventions.
-Phalcon Kit is independently maintained and is not affiliated with, endorsed by,
-or sponsored by the official Phalcon PHP Framework project.
+-   :material-shield-account:{ .lg .middle } **Secure APIs**
 
-- Phalcon docs: https://docs.phalcon.io/5.18/
-- Phalcon framework: https://phalcon.io
+    ---
 
-## Agent References
+    Configure identity, roles, feature permissions, and row-level conditions.
 
-Read [AI-Assisted Development](../AI.md) for the bundled skill paths, usage
-examples, safety defaults, and coverage notes.
+    1. [Identity And Permissions](identity-and-permissions.md)
+    2. [Configuration](configuration.md)
+    3. [Developer Cookbook](cookbook.md)
 
-Agent-specific instructions live under `resources/skills/`. Human readers
-should start here in `guides/`; agents can use the skills for stricter coding
-rules and deeper implementation conventions. The human docs and skill
-references should stay aligned on the same public concepts: database-first
-scaffolding, REST controllers, eager loading, transformers, identity,
-permissions, CLI/WebSocket workflows, providers, and generated-file boundaries.
+-   :material-server-network:{ .lg .middle } **Run And Operate**
+
+    ---
+
+    Serve HTTP, run CLI and WebSocket processes, and validate runtime alignment.
+
+    1. [Web Server And WebSocket](web-server-and-websocket.md)
+    2. [Runtime Compatibility](phalcon-runtime-upgrades.md)
+    3. [Troubleshooting](troubleshooting.md)
+
+-   :material-swap-horizontal:{ .lg .middle } **Migrate**
+
+    ---
+
+    Move a legacy package or REST resource onto current namespaces and contracts.
+
+    1. [From zemit-cms/core](migration-from-zemit.md)
+    2. [RESTful 0.x To 1.x](migration-restful-0x-to-1x.md)
+
+-   :material-hammer-wrench:{ .lg .middle } **Contribute**
+
+    ---
+
+    Run the project gates, understand test layers, and prepare releases.
+
+    1. [Quality And Maintenance](quality-and-maintenance.md)
+    2. [Testing Strategy](testing-roadmap.md)
+    3. [Release Process](release.md)
+
+</div>
+
+## Core Concepts
+
+Use these guides as the durable reference while building:
+
+| Topic | What it answers |
+| --- | --- |
+| [Architecture](architecture.md) | Where should bootstrap, config, generated code, models, controllers, and tasks live? |
+| [Configuration](configuration.md) | How do modules, providers, aliases, events, identity, and permissions fit together? |
+| [Database And Scaffolding](database-scaffolding.md) | Which files are generated, which files are app-owned, and how do schema changes flow into code? |
+| [Models And Eager Loading](models-and-eager-loading.md) | How do relationships, nested saves, eager loading, behaviors, snapshots, and cache invalidation work? |
+| [REST APIs](rest-api.md) | How are fields, filters, joins, counts, transformers, and response envelopes configured? |
+| [Identity And Permissions](identity-and-permissions.md) | How are feature access, roles, attributes, behaviors, and row-level policy enforced? |
+
+## Examples And Answers
+
+- [Developer Cookbook](cookbook.md) contains focused copy-and-adapt recipes for
+  common application tasks.
+- [Troubleshooting](troubleshooting.md) starts from symptoms such as boot
+  failures, missing services, routing errors, migration drift, and unexpected
+  REST output.
+- [API Reference](https://phalcon-kit.github.io/docs/api/) is generated from the
+  current source and is useful when you know the class or method name.
+
+## Latest-Version Policy
+
+This documentation is intentionally rolling:
+
+- it supports the latest stable Phalcon Kit release;
+- it does not maintain parallel versioned sites;
+- evergreen examples use unconstrained install commands;
+- exact versions belong in Composer metadata, release notes, and compatibility
+  investigations where the number itself matters.
+
+Phalcon Kit extends Phalcon instead of replacing it. Use the
+[latest Phalcon documentation](https://docs.phalcon.io/latest/){:target="_blank"}
+for native framework behavior. Phalcon Kit is independently maintained and is
+not affiliated with or endorsed by the official Phalcon project.
+
+## AI-Assisted Development
+
+Read [AI-Assisted Development](../AI.md) for bundled skill paths, safe usage,
+and coverage notes. Human-facing guides explain the concepts; agent references
+under `resources/skills/` add stricter operational instructions. Both surfaces
+should describe the same public conventions.

@@ -1,6 +1,6 @@
 # Configuration
 
-PhalconKit applications are configured through app-owned config classes. Keep
+Phalcon Kit applications are configured through app-owned config classes. Keep
 secrets in environment files and keep application structure in code:
 
 - modules
@@ -11,11 +11,22 @@ secrets in environment files and keep application structure in code:
 - locale defaults
 - service integrations
 
+Think of configuration in three layers:
+
+| Layer | Keep here | Example |
+| --- | --- | --- |
+| Package defaults | Reusable framework behavior | default providers and router targets |
+| App config | Reviewable application structure and policy | modules, aliases, permissions |
+| Environment | Machine-specific values and secrets | database host, credentials, feature toggles |
+
+App config should merge with package defaults intentionally. Environment values
+should provide data to config, not replace the config structure.
+
 Official Phalcon references:
 
-- Config: https://docs.phalcon.io/5.18/config/
-- Dependency injection: https://docs.phalcon.io/5.18/di/
-- Routing: https://docs.phalcon.io/5.18/routing/
+- Config: https://docs.phalcon.io/latest/config/
+- Dependency injection: https://docs.phalcon.io/latest/di/
+- Routing: https://docs.phalcon.io/latest/routing/
 
 ## Environment
 
@@ -64,7 +75,7 @@ final class Config extends \PhalconKit\Bootstrap\Config
 }
 ```
 
-Use `internalMergeAppend()` when the app wants to keep PhalconKit defaults and
+Use `internalMergeAppend()` when the app wants to keep Phalcon Kit defaults and
 append or override only the app-owned parts.
 
 ## Modules
@@ -174,7 +185,7 @@ same shared event manager without replacing providers.
 
 ## Stateless Identity
 
-API-only applications can keep PhalconKit's normal `session` service available
+API-only applications can keep Phalcon Kit's normal `session` service available
 while making identity itself stateless:
 
 ```php
@@ -232,17 +243,17 @@ final class ServiceProvider extends AbstractServiceProvider
 }
 ```
 
-### PhalconKit DI Boundary
+### Phalcon Kit DI Boundary
 
 Applications that use `PhalconKit\Bootstrap` normally do not need to change
-anything: bootstrap creates a PhalconKit DI container before registering config,
+anything: bootstrap creates a Phalcon Kit DI container before registering config,
 providers, modules, and services.
 
 Custom bootstraps and tests that pass their own container into
 `Bootstrap::setDI()` must pass `PhalconKit\Di\DiInterface`, such as
 `PhalconKit\Di\Di`, `PhalconKit\Di\FactoryDefault`, or
 `PhalconKit\Di\FactoryDefault\Cli`. Native `Phalcon\Di\Di` is no longer the
-provider/bootstrap boundary because it does not expose PhalconKit's typed
+provider/bootstrap boundary because it does not expose Phalcon Kit's typed
 helpers.
 
 Use the typed helpers when the service contract is known:
@@ -252,7 +263,7 @@ $config = $di->getConfig();
 $view = $di->getTyped('view', \Phalcon\Mvc\ViewInterface::class);
 ```
 
-Native Phalcon DI signatures may still appear where PhalconKit extends native
+Native Phalcon DI signatures may still appear where Phalcon Kit extends native
 Phalcon interfaces or classes. App-owned providers should use
 `PhalconKit\Di\DiInterface`.
 
@@ -324,3 +335,22 @@ config reads `ACL_ATTRIBUTES`:
 
 For row-level controller conditions and role inheritance, read
 [Identity And Permissions](identity-and-permissions.md).
+
+## Validate Configuration Changes
+
+Configuration failures should surface during bootstrap, before a request reaches
+business code. After changing modules, providers, aliases, or permissions:
+
+```shell
+composer validate --strict --no-check-publish
+composer phpunit
+php -S 127.0.0.1:8000 -t public public/index.php
+```
+
+Then exercise one route that resolves each changed service or policy. For a new
+provider, add a focused test that builds the container and asserts the service
+implements its intended contract.
+
+Continue with [Developer Cookbook](cookbook.md) for provider and endpoint
+recipes, or [Troubleshooting](troubleshooting.md) when bootstrap cannot resolve
+the expected configuration.

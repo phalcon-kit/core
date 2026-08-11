@@ -1,18 +1,30 @@
 # REST APIs
 
-PhalconKit helps you build model-backed REST APIs without writing the same
+Phalcon Kit helps you build model-backed REST APIs without writing the same
 controller plumbing for every table.
 
 You declare what the resource allows. The framework handles request parameters,
 query compilation, save payloads, relation loading, response formatting,
 permission conditions, and common REST actions.
 
+If this is your first resource, start with
+[Resource Walkthrough](resource-walkthrough.md). Use this page as the detailed
+reference once the schema, generated model, and base controller exist.
+
+| Concern | Controller policy |
+| --- | --- |
+| Writable input | save fields and relation payloads |
+| Query input | filters, search, order, joins, and conditions |
+| Relationship output | allowed `with` graphs and transformers |
+| Record visibility | permission conditions and behaviors |
+| Response metadata | counts, distinct values, and view fields |
+
 Official Phalcon references:
 
-- Controllers: https://docs.phalcon.io/5.18/controllers/
-- Request: https://docs.phalcon.io/5.18/request/
-- Response: https://docs.phalcon.io/5.18/response/
-- PHQL: https://docs.phalcon.io/5.18/db-phql/
+- Controllers: https://docs.phalcon.io/latest/controllers/
+- Request: https://docs.phalcon.io/latest/request/
+- Response: https://docs.phalcon.io/latest/response/
+- PHQL: https://docs.phalcon.io/latest/db-phql/
 
 ## What You Get
 
@@ -131,7 +143,7 @@ the response should contain only the exposed root records.
 
 `findWithAction()` and `findFirstWithAction()` use the controller's configured
 `with` collection when the frontend does not send a `with` parameter. When the
-frontend does send `with`, PhalconKit treats the configured collection as an
+frontend does send `with`, Phalcon Kit treats the configured collection as an
 allow-list and loads only the requested subset.
 
 Configured `with` collections accept normal relation lists, callable relation
@@ -356,7 +368,7 @@ returns `422 Unprocessable Entity`. A failed operation with no messages returns
 `400 Bad Request`, because the framework has no domain-specific reason to
 expose.
 
-PhalconKit also preserves explicit HTTP client-error codes attached to Phalcon
+Phalcon Kit also preserves explicit HTTP client-error codes attached to Phalcon
 messages when the code is in the `400-499` range. Framework paths use this for
 request-shape failures such as invalid create/update intent, missing update
 targets, forbidden operations, or conflicts. Ordinary validation messages with
@@ -530,3 +542,14 @@ checks, webhooks, dashboards, and workflows that are not plain model resources.
 
 Use the app API base controller backed by `Restful` for normal CRUD/query
 resources. Do not extend the model-backed controller just to return JSON.
+
+## Next Steps
+
+- [Developer Cookbook](cookbook.md) has focused endpoint, workflow, distinct,
+  transformer, and test recipes.
+- [Models And Eager Loading](models-and-eager-loading.md) covers the relation
+  graph behind `find-with` operations.
+- [Identity And Permissions](identity-and-permissions.md) covers feature and
+  row-level access.
+- [Troubleshooting](troubleshooting.md) maps common request symptoms back to the
+  owning policy layer.

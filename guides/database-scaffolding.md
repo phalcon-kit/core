@@ -1,6 +1,6 @@
 # Generate Models From Your Database
 
-PhalconKit is database-first. You design the database, then let the scaffolder
+Phalcon Kit is database-first. You design the database, then let the scaffolder
 write the repetitive model layer.
 
 The usual flow is:
@@ -28,13 +28,20 @@ The scaffolder maps what can be inferred from the real database:
 That gives you typed model structure quickly while keeping business logic in
 concrete app models.
 
+!!! warning "Treat regeneration as a reviewed code change"
+
+    Commit or stash app-owned work first. Run migrations against the intended
+    database, generate the narrowest required output, and inspect the diff
+    before accepting it. Generated output is only as accurate as the schema the
+    scaffolder connected to.
+
 Official Phalcon references:
 
-- Models: https://docs.phalcon.io/5.18/db-models/
-- Relationships: https://docs.phalcon.io/5.18/db-models-relationships/
-- Model validation: https://docs.phalcon.io/5.18/db-models-validation/
-- Migrations: https://docs.phalcon.io/5.18/db-migrations/
-- DevTools: https://docs.phalcon.io/5.18/devtools/
+- Models: https://docs.phalcon.io/latest/db-models/
+- Relationships: https://docs.phalcon.io/latest/db-models-relationships/
+- Model validation: https://docs.phalcon.io/latest/db-models-validation/
+- Migrations: https://docs.phalcon.io/latest/db-migrations/
+- DevTools: https://docs.phalcon.io/latest/devtools/
 
 ## 1. Run Migrations
 
@@ -150,3 +157,16 @@ After a schema/scaffold pass:
 3. Update REST save/filter/expose/transformer rules.
 4. Update permission conditions when new ownership fields are added.
 5. Run focused tests and then `composer qa`.
+
+Useful review commands:
+
+```shell
+git status --short
+git diff -- app/Models
+git diff --check
+```
+
+Continue with [Resource Walkthrough](resource-walkthrough.md) to connect the
+generated model to query policy, permissions, and output, or
+[Models And Eager Loading](models-and-eager-loading.md) for relationship and
+behavior details.

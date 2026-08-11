@@ -1,14 +1,26 @@
 # Models And Eager Loading
 
-PhalconKit models build on `Phalcon\Mvc\Model` and add generated model layers,
+Phalcon Kit models build on `Phalcon\Mvc\Model` and add generated model layers,
 relationship-aware assignment, model behaviors, and batch eager loading.
 
 Official Phalcon references:
 
-- Models: https://docs.phalcon.io/5.18/db-models/
-- Relationships: https://docs.phalcon.io/5.18/db-models-relationships/
-- Behaviors: https://docs.phalcon.io/5.18/db-models-behaviors/
-- Model validation: https://docs.phalcon.io/5.18/db-models-validation/
+- Models: https://docs.phalcon.io/latest/db-models/
+- Relationships: https://docs.phalcon.io/latest/db-models-relationships/
+- Behaviors: https://docs.phalcon.io/latest/db-models-behaviors/
+- Model validation: https://docs.phalcon.io/latest/db-models-validation/
+
+Choose the loading strategy from intent:
+
+| Need | Use |
+| --- | --- |
+| One relation on one already-loaded model | Normal relation access |
+| A known graph for a list or detail operation | `findWith()` / `findFirstWith()` |
+| Native Phalcon criteria composition | Native eager-loading parameters |
+| A stable public nested representation | Eager loading plus a transformer |
+
+Avoid loading relationships inside a loop. Decide the graph before executing
+the root query.
 
 ## Generated And Concrete Layers
 
@@ -90,7 +102,7 @@ $project->assign([
 ]);
 ```
 
-When strict mode is enabled, PhalconKit throws a scoped exception for
+When strict mode is enabled, Phalcon Kit throws a scoped exception for
 relationship-specific mistakes:
 
 - a real relation alias is blocked by the assignment whitelist
@@ -99,7 +111,7 @@ relationship-specific mistakes:
 - a known relation receives an unsupported value or list item
 
 Strict mode also follows nested relation assignment. If a parent relation
-payload creates or updates a related PhalconKit model, that child receives the
+payload creates or updates a related Phalcon Kit model, that child receives the
 same strict setting before its own nested `assign()` call runs.
 
 Strict relationship assignment does not replace column validation, model
@@ -173,11 +185,11 @@ $projects = Project::find([
 ```
 
 Native eager loading stores relations through `Model::setRelated()`.
-PhalconKit mirrors that native cache into its read-only loaded-relation cache,
+Phalcon Kit mirrors that native cache into its read-only loaded-relation cache,
 so property access, `getRelated()`, `relatedToArray()`, and
 `isRelationshipLoaded()` see the same values.
 
-Use PhalconKit's eager-loading API when relation-level closures, its controller
+Use Phalcon Kit's eager-loading API when relation-level closures, its controller
 `initializeWith()` convention, or its established array return shape is
 required:
 
@@ -283,7 +295,7 @@ transformers depend on it. Add the new alias for the new use case.
 
 ## Model Behaviors
 
-PhalconKit model traits and behaviors cover common persistence rules:
+Phalcon Kit model traits and behaviors cover common persistence rules:
 
 - UUIDs and UUIDv7 identifiers.
 - Soft delete and restore fields.
@@ -321,7 +333,7 @@ $changedFields = $record->getSnapshotChangedFields([
 The ignore list accepts either mapped model fields such as `updatedAt` or
 database columns such as `updated_at`. Use it for lifecycle and bookkeeping
 fields that should not appear in business-facing diffs. Nullable fields follow
-PhalconKit's existing SQL `"NULL"` string convention, so nullable `"NULL"`
+Phalcon Kit's existing SQL `"NULL"` string convention, so nullable `"NULL"`
 snapshot values compare as `null` without mutating the snapshot.
 
 Do not use snapshot changed fields as the sole authorization context for
@@ -388,3 +400,8 @@ or unable to find the affected cache keys.
   when repeated intermediate rows point to the same target key.
 - Use transformers for heavy nested API resources.
 - Keep model methods focused on domain behavior, not controller formatting.
+
+Continue with [REST APIs](rest-api.md) to expose relationship graphs safely,
+[Developer Cookbook](cookbook.md) for focused eager-loading examples, and
+[Database And Scaffolding](database-scaffolding.md) when aliases or generated
+metadata do not match the schema.

@@ -25,7 +25,7 @@ use PhalconKit\Support\Slug;
  * path handling remains available. `getContent()` can also perform lightweight
  * HTML output minification for applications that opt in through `setMinify()`.
  *
- * @see https://docs.phalcon.io/5.18/views/
+ * @see https://docs.phalcon.io/latest/views/
  */
 class View extends \Phalcon\Mvc\View
 {

@@ -1,8 +1,31 @@
 # Getting Started
 
-This guide gets you from install to a runnable PhalconKit application. If your
+This guide gets you from install to a runnable Phalcon Kit application. If your
 main goal is a REST API, read this first and then continue with the
 [Build Your First REST Resource](first-rest-resource.md).
+
+By the end, you will have:
+
+- dependencies installed against the current package requirements;
+- environment-backed application configuration;
+- working HTTP, CLI, and WebSocket entrypoints;
+- a local HTTP process you can inspect with `curl`;
+- the next commands for migrations, scaffolding, and tests.
+
+!!! info "Before you begin"
+
+    Install Composer and a PHP runtime satisfying the requirements published by
+    `phalcon-kit/core`. The native Phalcon extension must be loaded by the same
+    CLI binary Composer uses. A database is optional until you run migrations or
+    use model-backed resources.
+
+Verify the platform before creating the project:
+
+```shell
+php --version
+php -r 'echo phpversion("phalcon") ?: "phalcon not loaded", PHP_EOL;'
+composer --version
+```
 
 ## 1. Create Or Install
 
@@ -69,6 +92,16 @@ For a quick local test:
 ```shell
 php -S 127.0.0.1:8000 -t public public/index.php
 ```
+
+In another terminal, inspect the response:
+
+```shell
+curl --include http://127.0.0.1:8000/
+```
+
+A configured application response—or even an application-owned 404—proves the
+request reached bootstrap and dispatch. A PHP source download, web-server 404,
+or connection refusal means the request did not reach the application.
 
 For production-like development, use PHP-FPM behind Nginx, Apache, Caddy, or a
 container proxy. See [Web Server And WebSocket](web-server-and-websocket.md).
@@ -149,3 +182,18 @@ echo (new Bootstrap('ws'))->run();
   permissions.
 - [Database And Scaffolding](database-scaffolding.md): generate model layers.
 - [REST APIs](rest-api.md): configure resource controllers.
+- [Developer Cookbook](cookbook.md): copy focused application recipes.
+- [Troubleshooting](troubleshooting.md): diagnose boot, DI, routing, database,
+  and runtime problems.
+
+## Common Setup Problems
+
+| Symptom | Check first |
+| --- | --- |
+| Composer says `ext-phalcon` is missing | Run `php --ri phalcon` with the CLI binary Composer uses |
+| Browser shows PHP source or downloads a file | Configure PHP handling and point the server to `public/` |
+| CLI finds classes that HTTP cannot | Compare FPM and CLI release paths, autoloaders, and environment |
+| Database commands use the wrong schema | Check the CLI working directory and loaded `.env` values |
+| A service is unavailable | Confirm its provider is registered in app config |
+
+For a systematic diagnostic flow, use [Troubleshooting](troubleshooting.md).

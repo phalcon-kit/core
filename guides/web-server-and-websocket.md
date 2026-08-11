@@ -1,14 +1,14 @@
 # Web Server And WebSocket
 
-PhalconKit applications can run behind any web server that can serve the
+Phalcon Kit applications can run behind any web server that can serve the
 `public/` directory and forward PHP requests to PHP-FPM. Apache is not required;
 Nginx, Caddy, containerized proxies, or platform web servers are also valid.
 
 Official Phalcon references:
 
-- Web server setup: https://docs.phalcon.io/5.18/webserver-setup/
-- CLI applications: https://docs.phalcon.io/5.18/cli/
-- Dependency injection: https://docs.phalcon.io/5.18/di/
+- Web server setup: https://docs.phalcon.io/latest/webserver-setup/
+- CLI applications: https://docs.phalcon.io/latest/cli/
+- Dependency injection: https://docs.phalcon.io/latest/di/
 
 ## Built-In PHP Server
 
@@ -153,3 +153,24 @@ StandardError=append:/var/www/app/storage/logs/websocket.err.log
 [Install]
 WantedBy=multi-user.target
 ```
+
+## Deployment Verification
+
+After deploying or changing the proxy:
+
+1. Request a static asset and confirm PHP is not invoked.
+2. Request an application route and confirm it reaches the current release.
+3. Verify HTTPS scheme and host detection behind the proxy.
+4. Confirm `.env`, `vendor/`, logs, and source files are not publicly served.
+5. Open a WebSocket connection and keep it alive through the proxy timeout.
+6. Restart the worker and confirm the supervisor brings it back.
+7. Check that HTTP, CLI, and WebSocket processes load the same intended config.
+
+```shell
+curl --include https://app.example/api/health
+curl --include https://app.example/assets/app.css
+```
+
+Use [Troubleshooting](troubleshooting.md) when only one runtime mode fails, and
+[Runtime Compatibility](phalcon-runtime-upgrades.md) when PHP or Phalcon differs
+between processes.

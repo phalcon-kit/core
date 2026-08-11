@@ -42,7 +42,8 @@ The wrapper scripts under `bin/` keep local and CI analyzer behavior aligned.
 
 ## CI Expectations
 
-The default CI workflow runs on PHP 8.5 with highest dependencies. It checks:
+The default CI workflow runs on the declared PHP baseline with highest
+dependencies. It checks:
 
 - Composer validation and audit.
 - PHPCS.

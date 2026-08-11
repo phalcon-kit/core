@@ -1,162 +1,159 @@
-# Phalcon Runtime Upgrades
+# Runtime Compatibility
 
-Use this guide when moving a PhalconKit application or the core package to a
-new native Phalcon patch or minor release.
+Phalcon Kit documentation supports the latest stable package release. The
+package’s `composer.json`, CI workflow, and release notes are the authorities
+for exact PHP, Phalcon extension, and development-tool versions.
 
-This is separate from the `zemit-cms/core` package rename and the old RESTful
-resource migration. Runtime upgrades are mostly dependency, extension,
-static-analysis, CI, and compatibility-review work.
+Use this guide to verify that an application’s runtime matches those declared
+requirements without duplicating version numbers in application documentation.
 
-## When To Use This
+## Compatibility Has Several Layers
 
-Use this checklist when changing any of these values:
+A working installation aligns all of these surfaces:
 
-- the installed `phalcon` PHP extension;
-- the Composer `ext-phalcon` platform requirement;
-- `phalcon/ide-stubs`;
-- Docker `PHALCON_VERSION` build arguments;
-- CI Phalcon install URLs or extension cache keys.
+| Layer | Source of truth | Why it matters |
+| --- | --- | --- |
+| PHP runtime | `composer.json` | Language features and extension ABI |
+| Native Phalcon extension | `ext-phalcon` constraint | Runtime classes and behavior |
+| IDE/analyzer stubs | `phalcon/ide-stubs` constraint | Static signatures and completion |
+| Application lock file | `composer.lock` | Reproducible dependency graph |
+| Container images | Docker build arguments | Production/runtime parity |
+| CI setup | Workflow install and cache keys | Proof on a clean environment |
 
-Keep those changes in one focused commit where possible. Avoid mixing a runtime
-upgrade with unrelated model, controller, schema, or API behavior changes.
+Changing only one layer can produce misleading results—for example, an IDE may
+accept a method that the loaded extension does not provide, or CLI PHP may load
+a different extension than PHP-FPM.
 
-## Phalcon 5.18.2 Checklist
+## Inspect The Declared Requirements
 
-For the 5.18.2 runtime, align the package on:
+From the application root:
 
-```json
-{
-  "require": {
-    "ext-phalcon": "^5.18.2"
-  },
-  "require-dev": {
-    "phalcon/ide-stubs": "^5.18.1"
-  }
-}
+```bash
+composer show phalcon-kit/core
+composer show phalcon/ide-stubs 2>/dev/null || true
+composer check-platform-reqs
 ```
 
-The official IDE stubs currently stop at 5.18.1. Phalcon 5.18.2 only changes
-the extension distribution archive, so the 5.18.1 stubs are the matching API
-surface for the 5.18.2 runtime. Applications that keep `phalcon/ide-stubs` only
-under `suggest` or in a separate development tooling package should still use
-that floor so IDE and analyzer signatures match the installed extension.
+To inspect the installed native runtime directly:
 
-## Local Runtime
-
-Install the native extension first, then verify the CLI PHP runtime that
-Composer and QA tools will use:
-
-```shell
-php -r 'echo phpversion("phalcon") ?: "not installed"; echo PHP_EOL;'
+```bash
+php --version
+php -r 'echo phpversion("phalcon") ?: "not installed", PHP_EOL;'
 php --ri phalcon
+```
+
+!!! warning "Check every PHP runtime you actually use"
+
+    CLI, PHP-FPM, queue workers, and Swoole/WebSocket processes can load
+    different `php.ini` files. Run the extension check inside each production
+    container or process environment instead of assuming they match.
+
+## Install Or Update An Application
+
+Evergreen install instructions deliberately omit a Phalcon Kit version:
+
+```bash
+composer require phalcon-kit/core
+```
+
+Composer selects the newest release compatible with the application’s PHP and
+platform extensions. Applications that commit `composer.lock` should review and
+commit the resulting lock-file change.
+
+For a focused update:
+
+```bash
+composer update phalcon-kit/core phalcon/ide-stubs --with-dependencies
 composer check-platform-reqs
 ```
 
-If a machine has multiple PHP binaries, run those checks with the same binary
-used by Composer, PHP-FPM, Swoole workers, and CLI tasks. Do not rely on web
-server PHP and CLI PHP having the same extension version unless both are
-checked.
+Do not use `--ignore-platform-reqs` as a permanent install strategy. A targeted
+ignore can help prepare metadata before a native extension is installed, but
+the final environment must pass `composer check-platform-reqs` without ignores.
 
-## Composer And Stubs
+## Upgrade The Core Package Runtime
 
-For PhalconKit core, update tracked Composer constraints and leave ignored
-local lock/vendor changes out of the release commit unless the repository
-explicitly tracks them.
+When maintainers change the supported runtime, keep the work in one reviewable
+slice:
 
-For applications that track `composer.lock`, update the lock file too:
+1. Update PHP, `ext-phalcon`, and stub constraints in `composer.json`.
+2. Update Docker build arguments and base images.
+3. Update CI installers, download URLs, and extension cache keys.
+4. Review upstream release notes for changed and removed APIs.
+5. Search source, tests, examples, and patches for affected symbols.
+6. Refresh dependency metadata and run the complete QA gate.
+7. Record concrete compatibility changes in `CHANGELOG.md`.
 
-```shell
-composer update phalcon/ide-stubs phalcon-kit/core --with-dependencies
-composer check-platform-reqs
+Avoid mixing the runtime bump with unrelated model, schema, or API behavior.
+That separation makes failures attributable and makes downstream upgrades easier
+to review.
+
+## Review Framework Boundaries
+
+Native runtime changes most often affect these integration points:
+
+- DI container and service-provider contracts;
+- events manager and event contract names;
+- request, response, cookies, and session behavior;
+- model relationships, eager loading, resultsets, and database metadata;
+- router and dispatcher method signatures;
+- validation, filtering, and message collections;
+- debug rendering and error handling;
+- PHPDoc/stub signatures used by Psalm, PHPStan, and IDEs.
+
+Search both code and documentation. A compatibility fix is incomplete if the
+runtime works but public examples still teach removed APIs.
+
+```bash
+rg 'Phalcon\\|ext-phalcon|phalcon/ide-stubs|PHALCON_VERSION' \
+  composer.json src tests guides .github Dockerfile*
 ```
 
-When preparing Composer metadata before the new extension is installed, the
-temporary lock refresh can ignore only the not-yet-installed platform
-requirements:
+Adjust the paths for the repository. Review every result rather than applying a
+blind namespace replacement.
 
-```shell
-composer update phalcon/ide-stubs --with-dependencies --ignore-platform-req=ext-phalcon
-```
+## Validate In Increasing Scope
 
-Add other `--ignore-platform-req` flags only for extensions that are unrelated
-to the upgrade and genuinely absent from the local CLI PHP runtime. Run
-`composer check-platform-reqs` again after the real extension is installed.
+Start with fast checks:
 
-If the application does not update `phalcon-kit/core` in the same change, still
-update `phalcon/ide-stubs` so Psalm, PHPStan, and IDEs analyze against the same
-native API version as the runtime.
-
-## Docker And CI
-
-Update every runtime image and CI pin that installs Phalcon:
-
-- Docker `ARG PHALCON_VERSION`;
-- GitHub Actions or other CI `PHALCON_VERSION`;
-- PECL or GitHub release tarball URLs;
-- extension cache keys that include the Phalcon version;
-- image tags or build cache keys derived from PHP and Phalcon versions.
-
-After changing CI pins, confirm the install URL resolves before relying on the
-workflow. A redirect from the GitHub release asset URL is enough for the
-installer used by this repository.
-
-## Application Compatibility Review
-
-Patch-level Phalcon upgrades are usually small, but PhalconKit applications
-should review these recurring integration boundaries:
-
-- Phalcon 5.18 adds native eager loading through `find(['eager' => [...]])`
-  and `Criteria::eager()`. PhalconKit models bridge native `setRelated()` data
-  into their read-only relationship cache, so native eager loading and the
-  existing `findWith()`/`findFirstWith()` APIs can coexist. Do not pass both an
-  `eager` parameter and the same graph to `findWith()` in one query.
-- Code that enumerates native event listeners must use
-  `Phalcon\Events\Manager::getListenerMap()`; the short-lived
-  `getEventTypes()` name is not part of the final 5.18 API.
-- MariaDB applications that manually stripped quotes from values returned by
-  `Mysql::describeColumns()` should remove that workaround; 5.18 normalizes
-  string, date, and time defaults itself.
-
-- Replace deprecated `Phalcon\Events\ManagerInterface` and
-  `Phalcon\Events\EventInterface` references in application-owned contracts with
-  `Phalcon\Contracts\Events\Manager` and `Phalcon\Contracts\Events\Event`.
-- Keep native Phalcon setter boundaries honest. If a native method still
-  requires a concrete `Phalcon\Events\Manager`, guard or type the value there
-  instead of passing only a broader contract.
-- Keep mailer config canonical and lower-case, especially
-  `MAILER_SMTP_ENCRYPTION=ssl` or `tls`. PhalconKit normalizes common casing,
-  but lowercase config keeps app examples and deploy variables unambiguous.
-- Validate app config for provider options that become network behavior later,
-  such as mailer driver, SMTP encryption, host, port, username, and adapter
-  class names.
-- If overriding REST/query policy setters or merge helpers, keep signatures
-  widened to the current `array|\Phalcon\Support\Collection|null` contracts.
-- If using `modelHasColumn()`, keep application PHPDoc aligned with its nullable
-  model-name contract. The helper returns `false` for missing or invalid model
-  names instead of requiring a strict `class-string`.
-
-## Validation
-
-Run the smallest useful checks before the extension is installed, then run the
-runtime checks after installation.
-
-Before installing the new extension:
-
-```shell
+```bash
+php -m | rg '^phalcon$'
 composer validate --strict --no-check-publish
+composer check-platform-reqs
 git diff --check
 ```
 
-After installing the new extension:
+Then run package quality gates:
 
-```shell
-composer check-platform-reqs
+```bash
 composer phpcs
 composer psalm
 composer psalm:taint
 composer phpunit
+composer skeleton
 ```
 
-For a public release, run the full release gate from
-[Quality And Maintenance](quality-and-maintenance.md) and follow
+Finally, prove the application paths that static analysis cannot cover:
+
+- bootstrap one HTTP request;
+- run migrations against a disposable database;
+- execute one representative model relationship query;
+- create and update a model with validation enabled;
+- run one CLI task;
+- boot any long-lived worker or WebSocket process;
+- build the production container from a clean cache.
+
+## Diagnose A Mismatch
+
+| Symptom | Likely cause | First check |
+| --- | --- | --- |
+| Composer reports a missing `ext-phalcon` | CLI PHP does not load the extension | `php --ini` and `php --ri phalcon` |
+| IDE accepts a method but runtime fails | Stub/runtime versions differ | Compare Composer stubs with `phpversion('phalcon')` |
+| Web works but CLI fails | Different PHP binary or INI | `which php`, `php --ini`, FPM config |
+| CI recompiles Phalcon every run | Cache key or installed-version check is stale | Workflow extension cache and installer step |
+| Container works locally but not in deployment | Different image digest/build argument | Inspect the deployed image metadata |
+
+Continue with [Troubleshooting](troubleshooting.md) for application-level boot,
+DI, routing, database, and REST symptoms. Maintainers should also follow
+[Quality And Maintenance](quality-and-maintenance.md) and
 [Release Process](release.md).

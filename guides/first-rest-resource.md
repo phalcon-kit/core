@@ -12,6 +12,12 @@ The example uses two tables:
 By the end, you have schema-backed models, a REST controller, nested relation
 writes, eager loading, permission config, and example request/response payloads.
 
+!!! info "Before starting"
+
+    Complete [Getting Started](getting-started.md), configure a disposable
+    development database, and confirm migrations run against that database.
+    The scaffolder reads the live schema.
+
 ## 1. Create Or Migrate The Schema
 
 Example MySQL schema:
@@ -105,7 +111,7 @@ relationships, and extra validation in concrete models.
 
 ## 4. Add The REST Controller
 
-The controller declares API policy. It tells PhalconKit what the client can
+The controller declares API policy. It tells Phalcon Kit what the client can
 write, filter, search, load, and access.
 
 ```php
@@ -440,6 +446,29 @@ With this setup, the resource has:
 - role policy in config;
 - row-level project scoping in the controller.
 
+## Verify The Resource
+
+Exercise one success and one failure for each public capability:
+
+```shell
+curl --include 'http://127.0.0.1:8000/api/project/find?filter[status]=active'
+curl --include 'http://127.0.0.1:8000/api/project/find-with?with=UserList'
+curl --include \
+  --header 'Content-Type: application/json' \
+  --data '{"label":"Docs portal","status":"draft"}' \
+  http://127.0.0.1:8000/api/project/create
+```
+
+Adapt routes and authentication headers to the application. Also verify:
+
+- unsupported fields cannot be saved or exposed;
+- invalid enum and uniqueness values return useful validation messages;
+- non-super users only see allowed projects;
+- a requested relationship is loaded in batches rather than once per row;
+- delete and restore follow the intended soft-delete policy.
+
+Automate those checks as integration tests after the first manual proof.
+
 ## After Each Schema Change
 
 Review all connected pieces:
@@ -453,3 +482,7 @@ Review all connected pieces:
 - permission config
 - row-level permission conditions
 - focused tests
+
+Use [Developer Cookbook](cookbook.md) for workflow-action and testing recipes,
+and [Troubleshooting](troubleshooting.md) when a request does not reach the
+expected layer.

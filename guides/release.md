@@ -5,8 +5,7 @@ Use this checklist when preparing a public release.
 ## Version Policy
 
 Phalcon Kit follows SemVer for tagged public releases. Keep unreleased work
-under the current `x.y.x - Unreleased` heading in `CHANGELOG.md` until the tag
-is cut.
+under the current `Unreleased` heading in `CHANGELOG.md` until the tag is cut.
 
 ## Before Release
 
@@ -44,15 +43,14 @@ Review the archive if package exclusions changed.
 
 ## Tag
 
-Use a SemVer tag:
+Use the reviewed SemVer release number and create a signed tag:
 
 ```shell
-VERSION=2.0.0
-git tag "$VERSION"
+printf 'Release version: '
+read -r VERSION
+git tag -s "$VERSION" -m "Release $VERSION"
 git push origin "$VERSION"
 ```
-
-Prefer signed tags when possible.
 
 ## After Release
 

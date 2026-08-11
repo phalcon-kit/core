@@ -17,6 +17,13 @@ release notes.
 
 ## Unreleased
 
+### Changed
+
+- Reworked the developer guides into a latest-version learning path with a
+  complete resource walkthrough, practical cookbook, troubleshooting guide,
+  clearer ownership rules, and more runnable verification examples. Official
+  Phalcon references now use its rolling `latest` documentation URLs.
+
 ### Fixed
 
 - Restored the complete documentation generation pipeline behind `composer docs`

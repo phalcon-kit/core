@@ -21,7 +21,7 @@ namespace PhalconKit\Cache;
  * services under the PhalconKit namespace, while still using native Phalcon
  * adapters, serializers, and cache semantics.
  *
- * @see https://docs.phalcon.io/5.18/cache/
+ * @see https://docs.phalcon.io/latest/cache/
  */
 class Cache extends \Phalcon\Cache\Cache
 {

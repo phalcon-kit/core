@@ -1,14 +1,31 @@
 # Identity And Permissions
 
-PhalconKit identity is integrated with sessions, JWT, ACL roles, impersonation,
+Phalcon Kit identity is integrated with sessions, JWT, ACL roles, impersonation,
 controller permissions, model permissions, CLI tasks, and WebSocket tasks.
 
 Official Phalcon references:
 
-- ACL: https://docs.phalcon.io/5.18/acl/
-- Security: https://docs.phalcon.io/5.18/encryption-security/
-- JWT: https://docs.phalcon.io/5.18/encryption-security-jwt/
-- Sessions: https://docs.phalcon.io/5.18/session/
+- ACL: https://docs.phalcon.io/latest/acl/
+- Security: https://docs.phalcon.io/latest/encryption-security/
+- JWT: https://docs.phalcon.io/latest/encryption-security-jwt/
+- Sessions: https://docs.phalcon.io/latest/session/
+
+Authorization is evaluated in layers:
+
+```text
+authenticated identity and context roles
+    ↓
+feature grants for controller/action/model
+    ↓
+optional behavior overrides
+    ↓
+row-level permission conditions
+    ↓
+query and response
+```
+
+A broader feature grant should not be used to repair an incorrect row
+condition. Diagnose the layer that denied access.
 
 ## Identity Responsibilities
 
@@ -106,7 +123,7 @@ Use dash-case for action keys because these names match URLs:
 ],
 ```
 
-Existing camelCase action config remains valid. PhalconKit normalizes dispatcher
+Existing camelCase action config remains valid. Phalcon Kit normalizes dispatcher
 actions and ACL registrations so `findWith` and `find-with` refer to the same
 permission action. New docs and generated examples should prefer dash-case.
 
@@ -301,9 +318,9 @@ final class ProjectController extends AbstractController
 The existing `behaviors` key is still supported for non-action-scoped behavior
 attachment.
 
-Controller attributes use PHP's built-in Reflection API. Normal PHP 8.5 builds
+Controller attributes use PHP's built-in Reflection API. Supported PHP builds
 include Reflection; no extra Composer package or optional extension is required.
-Only the active controller class is inspected, and PhalconKit caches the result
+Only the active controller class is inspected, and Phalcon Kit caches the result
 inside the process. Config-only applications can disable attribute scanning with
 `ACL_ATTRIBUTES=false` or config:
 
@@ -353,3 +370,7 @@ permission and soft-delete conditions.
 - Use role inheritance for broad policy, not copied feature lists.
 - Keep guest, participant, CLI, and WebSocket permissions explicit.
 - Do not use public issues for security defects. Follow `SECURITY.md`.
+
+Continue with [Configuration](configuration.md) for the complete permission
+graph, [REST APIs](rest-api.md) for query integration, and
+[Troubleshooting](troubleshooting.md) for access-denied and missing-row symptoms.
