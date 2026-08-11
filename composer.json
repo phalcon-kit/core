@@ -167,6 +167,7 @@
   },
   "archive": {
     "exclude": [
+      "/.agents",
       "/.github",
       "/.cache",
       "/.codex",

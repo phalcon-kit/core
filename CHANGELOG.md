@@ -15,7 +15,7 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## Unreleased
+## 3.9.0 - 2026-08-11
 
 ### Changed
 
@@ -33,6 +33,8 @@ release notes.
   API before Composer and test jobs continue.
 - Expanded compatibility coverage for nested native eager-loading graphs and
   the AWS SDK and Flysystem provider boundaries.
+- Excluded local agent runtime state from manually generated Composer
+  archives.
 
 ### Fixed
 
