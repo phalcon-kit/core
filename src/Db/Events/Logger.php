@@ -65,4 +65,45 @@ class Logger extends Injectable
             }
         }
     }
+
+    /**
+     * Log that Phalcon detected a lost PDO connection.
+     *
+     * The event is emitted before an enabled adapter attempts its single
+     * automatic reconnect. Query text and bind values are intentionally omitted
+     * because the lost-connection payload can occur on sensitive operations.
+     *
+     * @param EventContract $event Connection-lost event and reconnect context.
+     * @param AbstractAdapter $connection Connection whose state was lost.
+     * @throws LoggerException If Phalcon cannot write the database log entry.
+     */
+    public function connectionLost(EventContract $event, AbstractAdapter $connection): void
+    {
+        if (
+            !($this->config->path('logger.enable') || $this->config->path('app.logger'))
+            || !$this->config->path('loggers.database.enable')
+            || $this->inProgress
+        ) {
+            return;
+        }
+
+        $this->inProgress = true;
+        try {
+            $log = json_encode([
+                'type' => 'connectionLost',
+                'event' => [
+                    'type' => $event->getType(),
+                ],
+                'meta' => [
+                    'connectionId' => $connection->getConnectionId(),
+                ],
+            ]);
+
+            if (!empty($log)) {
+                $this->loggers->get('database')->warning($log);
+            }
+        } finally {
+            $this->inProgress = false;
+        }
+    }
 }

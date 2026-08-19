@@ -354,6 +354,15 @@ class ConfigTest extends AbstractUnit
         }
     }
 
+    public function testReadonlyDatabaseUsesStickyConnectionsByDefault(): void
+    {
+        $config = new Config();
+
+        $this->assertFalse($config->path('database.drivers.mysql.autoReconnect'));
+        $this->assertFalse($config->path('database.drivers.readonly.enable'));
+        $this->assertTrue($config->path('database.drivers.readonly.sticky'));
+    }
+
     public function testGetModelClass(): void
     {
         $config = new \PhalconKit\Bootstrap\Config();

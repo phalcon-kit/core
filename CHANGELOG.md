@@ -36,6 +36,13 @@ release notes.
 
 ### Fixed
 
+- Corrected replica configuration lookup to use `database.drivers.readonly`,
+  enabled Phalcon's request-scoped sticky read/write manager by default for
+  configured replicas, and reset sticky state across reused bootstrap and
+  WebSocket request boundaries.
+- Added opt-in PDO auto-reconnect configuration and privacy-conscious
+  `db:connectionLost` warning logs, and completed optional JWT expected-subject
+  validation using Phalcon 5.17's validator API.
 - Restored the complete documentation generation pipeline behind `composer docs`
   so external API links and MkDocs navigation are regenerated with the API.
 - Removed the documentation generator's implicit write to the sibling website

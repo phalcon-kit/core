@@ -1153,6 +1153,7 @@ class Config extends \PhalconKit\Config\Config
                         'username' => Env::get('DATABASE_USERNAME', 'root'),
                         'password' => Env::get('DATABASE_PASSWORD', ''),
                         'charset' => Env::get('DATABASE_CHARSET', 'utf8'),
+                        'autoReconnect' => Env::get('DATABASE_AUTO_RECONNECT', false),
                         'options' => [
                             self::pdoMysqlAttribute('ATTR_INIT_COMMAND', 'MYSQL_ATTR_INIT_COMMAND') => 'SET' .
                                 ' NAMES ' . Env::get('DATABASE_CHARSET', 'utf8mb4') .
@@ -1172,6 +1173,7 @@ class Config extends \PhalconKit\Config\Config
                     'readonly' => [
                         'extends' => Env::get('DATABASE_READONLY_EXTENDS', 'mysql'),
                         'enable' => Env::get('DATABASE_READONLY_ENABLE', false),
+                        'sticky' => Env::get('DATABASE_READONLY_STICKY', true),
                         'host' => Env::get('DATABASE_READONLY_HOST'),
                         'port' => Env::get('DATABASE_READONLY_PORT'),
                         'dbname' => Env::get('DATABASE_READONLY_DBNAME'),

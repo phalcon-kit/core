@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Ws;
 
+use Phalcon\Mvc\Model\ManagerInterface as ModelsManagerInterface;
 use PhalconKit\Di\InjectableProperties;
 
 /**
@@ -29,4 +30,24 @@ use PhalconKit\Di\InjectableProperties;
 class Task extends \Phalcon\Cli\Task implements TaskInterface
 {
     use InjectableProperties;
+
+    /**
+     * Clear request-scoped model connection state in a long-running worker.
+     *
+     * Call this before custom WebSocket callbacks that perform model reads or
+     * writes. The built-in abstract task invokes it for open, message, close,
+     * HTTP request, and pipe-message callbacks.
+     */
+    public function resetConnectionState(): void
+    {
+        $di = $this->getDI();
+        if (!$di->has('modelsManager')) {
+            return;
+        }
+
+        $modelsManager = $di->get('modelsManager');
+        if ($modelsManager instanceof ModelsManagerInterface) {
+            $modelsManager->resetConnectionState();
+        }
+    }
 }

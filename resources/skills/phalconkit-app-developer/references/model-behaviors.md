@@ -271,16 +271,17 @@ sort expression is not a simple position field.
 ## Replication
 
 Replication behavior activates when
-`database.drivers.mysql.readonly.enable` is true. It configures:
+`database.drivers.readonly.enable` is true. It configures:
 
 - write connection service: usually `db`
 - read connection service: usually `dbr`
 - lag window in milliseconds
 
 After writes, reads are forced to the write connection until the lag window
-expires. After the lag window expires, model reads use the configured read
-connection service again. This avoids stale reads immediately after
-create/update/delete/restore without disabling replicas for normal reads.
+expires. Native sticky connection tracking remains active for the rest of the
+current request when `database.drivers.readonly.sticky` is true, which is the
+default. Long-running runtimes reset sticky state at each logical request so a
+write does not affect later unrelated requests.
 
 ## Snapshot And Change Helpers
 

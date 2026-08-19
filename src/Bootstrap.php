@@ -18,6 +18,7 @@ use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Di\Di as PhalconDi;
 use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Http\ResponseInterface;
+use Phalcon\Mvc\Model\ManagerInterface as ModelsManagerInterface;
 use PhalconKit\Config\ConfigInterface;
 use PhalconKit\Cli\Console;
 use PhalconKit\Di\DiInterface;
@@ -461,6 +462,7 @@ DOC;
      */
     public function run(): ?string
     {
+        $this->resetConnectionState();
         $this->fire('beforeRun');
 
         $content = match ($this->getMode()) {
@@ -478,6 +480,29 @@ DOC;
         $this->fire('afterRun', $content);
 
         return $content;
+    }
+
+    /**
+     * Clear request-scoped model connection state before dispatch.
+     *
+     * Native Phalcon sticky read/write tracking belongs to one logical request.
+     * Traditional PHP runtimes build a new container per request, while
+     * RoadRunner-style runtimes may reuse the bootstrap and its shared model
+     * manager. This reset prevents a write in one request from pinning an
+     * unrelated later request to the write connection.
+     *
+     * Swoole WebSocket handlers should also reset at the start of every logical
+     * message or HTTP request; PhalconKit's base WebSocket task does this for
+     * the built-in callbacks.
+     */
+    public function resetConnectionState(): void
+    {
+        if (!$this->di->has('modelsManager')) {
+            return;
+        }
+
+        $modelsManager = $this->di->getTyped('modelsManager', ModelsManagerInterface::class);
+        $modelsManager->resetConnectionState();
     }
     
     /**

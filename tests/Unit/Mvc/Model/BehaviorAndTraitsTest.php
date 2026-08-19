@@ -1198,10 +1198,8 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $config->merge([
             'database' => [
                 'drivers' => [
-                    'mysql' => [
-                        'readonly' => [
-                            'enable' => true,
-                        ],
+                    'readonly' => [
+                        'enable' => true,
                     ],
                 ],
             ],
@@ -1212,6 +1210,11 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->di->setShared('read-connection', $read);
         $this->di->setShared('write-connection', $write);
 
+        $manager = new FakeModelsManager();
+        $manager->setDI($this->di);
+        $manager->setSticky(true);
+        $model->fakeModelsManager = $manager;
+
         $model->setEventsManager(new EventsManager());
         $model->initializeReplication([
             'lag' => 50,
@@ -1219,6 +1222,8 @@ class BehaviorAndTraitsTest extends AbstractUnit
             'readConnectionService' => 'read-connection',
             'writeConnectionService' => 'write-connection',
         ]);
+        $manager->setReadConnectionService($model, 'read-connection');
+        $manager->setWriteConnectionService($model, 'write-connection');
 
         $this->assertSame(50, $model::getReplicationLag());
         $this->assertSame('read-connection', $model->getReadConnectionService());
@@ -1244,6 +1249,12 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $model::setReplicationReadyAt(null);
         $this->assertSame($read, $model->selectReadConnection());
 
+        $manager->registerWrite($model);
+        $this->assertSame($write, $model->selectReadConnection());
+
+        $manager->resetConnectionState();
+        $this->assertSame($read, $model->selectReadConnection());
+
         $model->getEventsManager()->fire('model:afterSave', $model);
         $this->assertNotNull($model::getReplicationReadyAt());
 
@@ -1254,8 +1265,8 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
     public function testReplicationTraitRejectsInvalidConfigService(): void
     {
-        $this->di->set('config', new \stdClass());
         $model = new ModelBehaviorDouble();
+        $this->di->set('config', new \stdClass());
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage(
@@ -1268,15 +1279,17 @@ class BehaviorAndTraitsTest extends AbstractUnit
     public function testReplicationTraitRejectsInvalidReadConnectionServiceWhenReplicaIsReady(): void
     {
         $model = new ModelBehaviorDouble();
+        $manager = new FakeModelsManager();
+        $manager->setDI($this->di);
+        $model->fakeModelsManager = $manager;
         $model->setReadConnectionService('read-connection');
         $model->setWriteConnectionService('write-connection');
+        $manager->setReadConnectionService($model, 'read-connection');
+        $manager->setWriteConnectionService($model, 'write-connection');
         $this->di->setShared('read-connection', new \stdClass());
         $this->di->setShared('write-connection', $this->createStub(AdapterInterface::class));
 
-        $this->expectException(ServiceException::class);
-        $this->expectExceptionMessage(
-            'Expected DI service "read-connection" to be an instance of "Phalcon\Db\Adapter\AdapterInterface"; got "stdClass".'
-        );
+        $this->expectException(\TypeError::class);
 
         $model::setReplicationReadyAt(null);
         $model->selectReadConnection();

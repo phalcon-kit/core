@@ -40,8 +40,12 @@ class ServiceProvider extends AbstractServiceProvider
     public function register(DiInterface $di): void
     {
         $di->setShared($this->getName(), function () use ($di) {
-            
+            $config = $di->getConfig();
             $manager = new Manager();
+
+            $replicaEnabled = (bool)$config->path('database.drivers.readonly.enable', false);
+            $stickyEnabled = (bool)$config->path('database.drivers.readonly.sticky', true);
+            $manager->setSticky($replicaEnabled && $stickyEnabled);
     
             if ($di->has('eventsManager')) {
                 $eventsManager = $di->get('eventsManager');

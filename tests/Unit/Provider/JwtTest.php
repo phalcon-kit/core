@@ -92,6 +92,20 @@ class JwtTest extends AbstractUnit
         $this->assertSame([], $errors);
     }
 
+    public function testValidateTokenCanRequireAnExpectedSubject(): void
+    {
+        $options = $this->defaultJwtOptions();
+        $jwt = new Jwt($options);
+        $token = $jwt->buildToken($jwt->builder());
+
+        $this->assertSame([], $jwt->validateToken($token, options: [
+            'expectedSubject' => $options['subject'],
+        ]));
+        $this->assertNotEmpty($jwt->validateToken($token, options: [
+            'expectedSubject' => 'different-subject',
+        ]));
+    }
+
     public function testBuilderUsesExplicitOverrides(): void
     {
         $jwt = new Jwt($this->defaultJwtOptions());

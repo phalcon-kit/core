@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Db;
 
+use Phalcon\Contracts\Events\Event as EventContract;
+use Phalcon\Db\Adapter\AbstractAdapter;
 use Phalcon\Logger\AbstractLogger;
 use Phalcon\Logger\LoggerInterface;
+use PhalconKit\Db\Events\Logger as DatabaseEventLogger;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class LoggerTest extends AbstractUnit
@@ -71,5 +74,32 @@ class LoggerTest extends AbstractUnit
         // remove logs
         $this->assertTrue(unlink($filePath));
         $this->assertFalse(file_exists($filePath));
+    }
+
+    public function testConnectionLostEventWritesPrivacySafeWarning(): void
+    {
+        $loggerConfig = $this->getConfig()->pathToArray('loggers.database');
+        $filePath = $loggerConfig['path'] . $loggerConfig['filename'];
+        $this->getConfig()->set('logger.enable', true);
+        $this->getConfig()->set('loggers.database.enable', true);
+        $this->assertTrue(!file_exists($filePath) || unlink($filePath));
+
+        $event = $this->createStub(EventContract::class);
+        $event->method('getType')->willReturn('connectionLost');
+        $event->method('getData')->willReturn(['sql' => 'SELECT sensitive_data']);
+        $connection = $this->createStub(AbstractAdapter::class);
+        $connection->method('getConnectionId')->willReturn(17);
+        $listener = new DatabaseEventLogger();
+        $listener->setDI($this->di);
+
+        $listener->connectionLost($event, $connection);
+
+        $logContent = file_get_contents($filePath);
+        $this->assertIsString($logContent);
+        $this->assertStringContainsString('connectionLost', $logContent);
+        $this->assertStringContainsString('"connectionId":17', $logContent);
+        $this->assertStringNotContainsString('sensitive_data', $logContent);
+        $this->assertStringNotContainsString('sqlStatement', $logContent);
+        $this->assertTrue(unlink($filePath));
     }
 }

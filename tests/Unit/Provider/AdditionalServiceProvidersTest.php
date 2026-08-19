@@ -64,6 +64,7 @@ use PhalconKit\Provider\Jwt\ServiceProvider as JwtProvider;
 use PhalconKit\Provider\LoremIpsum\ServiceProvider as LoremIpsumProvider;
 use PhalconKit\Provider\Mailer\ServiceProvider as MailerProvider;
 use PhalconKit\Provider\ModelsMetadata\ServiceProvider as ModelsMetadataProvider;
+use PhalconKit\Provider\ModelsManager\ServiceProvider as ModelsManagerProvider;
 use PhalconKit\Provider\OCR\ServiceProvider as OCRProvider;
 use PhalconKit\Provider\Oauth2Client\ServiceProvider as Oauth2ClientProvider;
 use PhalconKit\Provider\Oauth2Facebook\ServiceProvider as Oauth2FacebookProvider;
@@ -86,6 +87,37 @@ use thiagoalessio\TesseractOCR\TesseractOCR;
 
 class AdditionalServiceProvidersTest extends AbstractUnit
 {
+    public function testModelsManagerProviderEnablesStickyReadsForReplicas(): void
+    {
+        $di = $this->createDi([
+            'database' => [
+                'drivers' => [
+                    'readonly' => [
+                        'enable' => true,
+                        'sticky' => true,
+                    ],
+                ],
+            ],
+        ]);
+        $read = $this->createStub(\Phalcon\Db\Adapter\AdapterInterface::class);
+        $write = $this->createStub(\Phalcon\Db\Adapter\AdapterInterface::class);
+        $di->setShared('read-connection', $read);
+        $di->setShared('write-connection', $write);
+        (new ModelsManagerProvider($di))->register($di);
+        $manager = $di->get('modelsManager');
+
+        $model = new class (null, $di, $manager) extends \Phalcon\Mvc\Model {
+        };
+        $model->setReadConnectionService('read-connection');
+        $model->setWriteConnectionService('write-connection');
+
+        $this->assertSame($read, $manager->getReadConnection($model));
+        $manager->registerWrite($model);
+        $this->assertSame($write, $manager->getReadConnection($model));
+        $manager->resetConnectionState();
+        $this->assertSame($read, $manager->getReadConnection($model));
+    }
+
     public function testAclProviderBuildsAclFromConfiguredPermissions(): void
     {
         $di = $this->createDi([
@@ -325,6 +357,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
                         'host' => 'base-host',
                         'username' => 'base-user',
                         'password' => 'base-pass',
+                        'autoReconnect' => true,
                     ],
                     'unit' => [
                         'extends' => 'base',
@@ -345,6 +378,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
         $this->assertSame('base-user', $db->descriptor['username']);
         $this->assertSame('unit-db', $db->descriptor['dbname']);
         $this->assertSame('base-pass', $db->descriptor['password']);
+        $this->assertTrue($db->descriptor['autoReconnect']);
         $this->assertArrayNotHasKey('extends', $db->descriptor);
         $this->assertArrayNotHasKey('enable', $db->descriptor);
         $this->assertSame($di->get('eventsManager'), $db->getEventsManager());

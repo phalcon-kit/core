@@ -16,6 +16,7 @@ namespace PhalconKit\Mvc\Model\Traits;
 use Phalcon\Config\ConfigInterface;
 use Phalcon\Contracts\Events\Manager as EventsManagerContract;
 use Phalcon\Db\Adapter\AdapterInterface;
+use Phalcon\Mvc\Model\ManagerInterface;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEventsManager;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractInjectable;
@@ -71,6 +72,14 @@ trait Replication
      * @return string DI service name for read operations.
      */
     abstract public function getReadConnectionService(): string;
+
+    /**
+     * Return the model manager responsible for connection selection.
+     *
+     * Phalcon's manager applies transaction and sticky-write state before
+     * resolving the configured read service.
+     */
+    abstract public function getModelsManager(): ManagerInterface;
     
     /**
      * Replica lag window in milliseconds.
@@ -142,7 +151,7 @@ trait Replication
     /**
      * Initialize read/write connection services for replica-aware models.
      *
-     * The trait reads `database.drivers.mysql.readonly.enable` from the config
+     * The trait reads `database.drivers.readonly.enable` from the config
      * service. When enabled, it configures connection service names and attaches
      * write-event listeners that temporarily pin reads to the write connection.
      *
@@ -159,7 +168,7 @@ trait Replication
         
         $config = $this->getTypedService('config', ConfigInterface::class, 'model replication helpers');
         
-        $enabled = $config->path('database.drivers.mysql.readonly.enable', false);
+        $enabled = $config->path('database.drivers.readonly.enable', false);
         if ($enabled) {
             self::setReplicationLag($options['lag'] ?? 1000);
             $this->setConnectionService($options['connectionService'] ?? 'db');
@@ -172,10 +181,10 @@ trait Replication
     /**
      * Select the connection used for model reads.
      *
-     * When there is no active replica-cooldown window, the configured read
-     * connection service is returned. Immediately after write-like events,
-     * reads are pinned back to the write connection until the lag window
-     * expires, which avoids stale reads from asynchronous replicas.
+     * During the replica-cooldown window, the write connection is returned
+     * directly. Otherwise selection is delegated to Phalcon's model manager so
+     * transactions and native sticky-write state still take precedence over
+     * the configured read service.
      *
      * @return AdapterInterface Read connection when replicas are ready; write
      *     connection while reads are pinned after a mutation.
@@ -184,19 +193,15 @@ trait Replication
      */
     public function selectReadConnection(): AdapterInterface
     {
-        if ($this->isReplicationReady()) {
+        if (!$this->isReplicationReady()) {
             return $this->getTypedService(
-                $this->getReadConnectionService(),
+                $this->getWriteConnectionService(),
                 AdapterInterface::class,
                 'model replication helpers'
             );
         }
-        
-        return $this->getTypedService(
-            $this->getWriteConnectionService(),
-            AdapterInterface::class,
-            'model replication helpers'
-        );
+
+        return $this->getModelsManager()->getReadConnection($this);
     }
     
     /**

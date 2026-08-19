@@ -26,6 +26,7 @@ use PhalconKit\Di\DiInterface;
 use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Cli\Console;
 use PhalconKit\Mvc\Router as MvcRouter;
+use PhalconKit\Mvc\Model\Manager as ModelsManager;
 use PhalconKit\Cli\Router as CliRouter;
 use PhalconKit\Support\Debug;
 use PhalconKit\Support\HelperFactory;
@@ -399,10 +400,22 @@ class BootstrapTest extends AbstractUnit
             $mvcDi = new Di();
             $application = new BootstrapApplicationDouble($mvcDi);
             $mvc = new LightweightBootstrap(Bootstrap::MODE_MVC, $mvcDi);
+            $modelsManager = new class extends ModelsManager {
+                public int $resetCalls = 0;
+
+                #[\Override]
+                public function resetConnectionState(): void
+                {
+                    $this->resetCalls++;
+                    parent::resetConnectionState();
+                }
+            };
             $mvcDi->set('application', $application);
+            $mvcDi->set('modelsManager', $modelsManager);
 
             $this->assertSame('mvc-content', $mvc->run());
             $this->assertSame('/unit', $application->handledUri);
+            $this->assertSame(1, $modelsManager->resetCalls);
 
             $cliDi = new Di();
             $console = new BootstrapConsoleDouble($cliDi);

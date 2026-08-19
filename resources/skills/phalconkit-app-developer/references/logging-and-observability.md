@@ -107,6 +107,9 @@ Use cases:
 - Enable `loggers.database.enable` to inspect SQL in development or controlled
   diagnostics.
 - Enable profiler config for timing and query profiles.
+- With `DATABASE_AUTO_RECONNECT=true`, monitor `db:connectionLost` warning
+  entries; Phalcon retries once outside a transaction and does not retry an
+  interrupted transaction.
 - Keep database logging disabled by default in production unless there is a
   specific retention and privacy policy.
 

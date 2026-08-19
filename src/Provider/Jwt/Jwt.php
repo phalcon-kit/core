@@ -207,6 +207,8 @@ class Jwt
      * @param int $timeShift Clock skew allowance passed to Phalcon's
      *        validator.
      * @param array<string, mixed> $options Validation option overrides.
+     *        Pass nullable `expectedSubject` to opt into validating the `sub`
+     *        claim without changing the subject used by token builders.
      * @param AbstractSigner|null $signer Signer used for signature validation,
      *        or null to use the current helper signer.
      * @return array<int|string, mixed> Validator errors.
@@ -218,6 +220,7 @@ class Jwt
     {
         $token ??= $this->token;
         $signer ??= $this->signer;
+        $expectedSubject = $options['expectedSubject'] ?? null;
         $now = new \DateTimeImmutable();
         $options['expiration'] ??= $now->getTimestamp();
         $options['notBefore'] ??= $now->modify('-10 second')->getTimestamp();
@@ -232,6 +235,7 @@ class Jwt
         $this->validator->validateNotBefore($options['notBefore']);
         $this->validator->validateExpiration($options['expiration']);
         $this->validator->validateIssuedAt($options['issuedAt']);
+        $this->validator->validateSubject($expectedSubject);
         $this->validator->validateSignature($signer, $options['passphrase']);
         
         return $this->validator->getErrors();

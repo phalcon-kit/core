@@ -73,17 +73,26 @@ abstract class AbstractTask extends Task
     
     public function initializeOpen(): void
     {
-        $this->onOpen = fn(Server $server, Request $request): null => $this->onOpen($server, $request);
+        $this->onOpen = function (Server $server, Request $request): void {
+            $this->resetConnectionState();
+            $this->onOpen($server, $request);
+        };
     }
     
     public function initializeMessage(): void
     {
-        $this->onMessage = fn(Server $server, Frame $frame): null => $this->onMessage($server, $frame);
+        $this->onMessage = function (Server $server, Frame $frame): void {
+            $this->resetConnectionState();
+            $this->onMessage($server, $frame);
+        };
     }
     
     public function initializeClose(): void
     {
-        $this->onClose = fn(Server $server, int $fd): null => $this->onClose($server, $fd);
+        $this->onClose = function (Server $server, int $fd): void {
+            $this->resetConnectionState();
+            $this->onClose($server, $fd);
+        };
     }
     
     public function initializeWorkerError(): void
@@ -108,12 +117,18 @@ abstract class AbstractTask extends Task
     
     public function initializeRequest(): void
     {
-        $this->onRequest = fn(Request $request, Response $response): null => $this->onRequest($request, $response);
+        $this->onRequest = function (Request $request, Response $response): void {
+            $this->resetConnectionState();
+            $this->onRequest($request, $response);
+        };
     }
     
     public function initializePipeMessage(): void
     {
-        $this->onPipeMessage = fn(Server $server, int $srcWorkerId, mixed $data): null => $this->onPipeMessage($server, $srcWorkerId, $data);
+        $this->onPipeMessage = function (Server $server, int $srcWorkerId, mixed $data): void {
+            $this->resetConnectionState();
+            $this->onPipeMessage($server, $srcWorkerId, $data);
+        };
     }
     
     // --- Event handlers to override in child classes ---
