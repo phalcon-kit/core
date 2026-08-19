@@ -114,7 +114,7 @@ not affiliated with or endorsed by the official Phalcon project.
 
 ## AI-Assisted Development
 
-Read [AI-Assisted Development](../AI.md) for bundled skill paths, safe usage,
+Read [AI-Assisted Development](https://github.com/phalcon-kit/core/blob/master/AI.md) for bundled skill paths, safe usage,
 and coverage notes. Human-facing guides explain the concepts; agent references
 under `resources/skills/` add stricter operational instructions. Both surfaces
 should describe the same public conventions.
