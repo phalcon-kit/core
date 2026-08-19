@@ -40,7 +40,7 @@ DOC;
                 $match = array_pop($matches);
                 if (!empty($match)) {
                     $key = lcfirst(Helper::camelize(Helper::uncamelize($match)));
-                    $this->dispatcher->setParam($key, $value);
+                    $this->dispatcher->setParameter($key, $value);
                 }
             }
         }
@@ -70,13 +70,13 @@ DOC;
         $payload = $this->normalizeCliPayload($dispatcher->getReturnedValue());
         
         // Quiet output
-        $quiet = $this->dispatcher->getParam('quiet');
+        $quiet = $this->dispatcher->getParameter('quiet');
         if ($quiet) {
             exit(!$payload ? 1 : 0);
         }
         
         // Format response
-        $format = $this->dispatcher->getParam('format');
+        $format = $this->dispatcher->getParameter('format');
         $format ??= 'json';
         switch (strtolower($format)) {
             case 'dump':

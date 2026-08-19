@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Interfaces;
 
-use Phalcon\Db\Adapter\AdapterInterface;
+use Phalcon\Contracts\Db\Adapter\Adapter as AdapterContract;
 
 interface ReplicationInterface
 {
@@ -27,7 +27,7 @@ interface ReplicationInterface
     
     public function initializeReplication(?array $options = null): void;
     
-    public function selectReadConnection(): AdapterInterface;
+    public function selectReadConnection(): AdapterContract;
     
     public function addReadWriteConnectionBehavior(): void;
     

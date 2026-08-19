@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Modules\Cli\Tasks\Traits;
 
 use Phalcon\Db\Column;
-use Phalcon\Db\ColumnInterface;
+use Phalcon\Contracts\Db\Column as ColumnContract;
 use PhalconKit\Support\Helper;
 
 /**
@@ -89,7 +89,7 @@ trait DescribesTrait
     /**
      * Determines the PHP data type of column.
      *
-     * @param ColumnInterface $column The column to check.
+     * @param ColumnContract $column The column to check.
      *
      * @return string The data type of the column. Possible values are:
      *                - 'bool' for boolean columns.
@@ -98,7 +98,7 @@ trait DescribesTrait
      *                - 'double' for double columns.
      *                - 'string' for all other column types.
      */
-    public function getColumnType(ColumnInterface $column): string
+    public function getColumnType(ColumnContract $column): string
     {
         return match ($column->getType()) {
             Column::TYPE_BOOLEAN
@@ -127,10 +127,10 @@ trait DescribesTrait
 
     /**
      * Retrieves the default value for a column.
-     * @param ColumnInterface $column The column object to retrieve the default value from.
+     * @param ColumnContract $column The column object to retrieve the default value from.
      * @return mixed Returns the default value of the column as a string, integer, boolean, float, or null based on the column type.
      */
-    public function getDefaultValue(ColumnInterface $column): mixed
+    public function getDefaultValue(ColumnContract $column): mixed
     {
         if (!$column->hasDefault()) {
             return null;

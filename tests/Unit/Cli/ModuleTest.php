@@ -98,7 +98,7 @@ class ModuleTest extends AbstractUnit
         $this->assertInstanceOf(\Phalcon\Cli\RouterInterface::class, $this->module->router);
         $this->assertInstanceOf(\Phalcon\Cli\Router::class, $this->module->router);
         $this->assertInstanceOf(\PhalconKit\Dispatcher\DispatcherInterface::class, $this->module->dispatcher);
-        $this->assertInstanceOf(\Phalcon\Cli\DispatcherInterface::class, $this->module->dispatcher);
+        $this->assertInstanceOf(\Phalcon\Contracts\Cli\Dispatcher::class, $this->module->dispatcher);
     }
     
     public function testSetServices(): void

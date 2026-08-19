@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Dispatcher;
 
-use Phalcon\Dispatcher\DispatcherInterface;
+use Phalcon\Contracts\Dispatcher\Dispatcher as DispatcherContract;
 use Phalcon\Events\Event;
 use PhalconKit\Di\Injectable;
 
@@ -30,10 +30,10 @@ class Module extends Injectable
      * Apply a forwarded module name before Phalcon continues dispatching.
      *
      * @param Event $event Dispatch event emitted by Phalcon.
-     * @param DispatcherInterface $dispatcher Active dispatcher instance.
+     * @param DispatcherContract $dispatcher Active dispatcher instance.
      * @param array<string, mixed> $forward Forward route parts.
      */
-    public function beforeForward(Event $event, DispatcherInterface $dispatcher, array $forward): void
+    public function beforeForward(Event $event, DispatcherContract $dispatcher, array $forward): void
     {
         if (!empty($forward['module'])) {
             $dispatcher->setModuleName($forward['module']);

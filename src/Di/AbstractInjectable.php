@@ -21,7 +21,7 @@ use Phalcon\Di\DiInterface;
  * This trait provides a common trait for traits that are injectable
  * and depend on a dependency injection container.
  *
- * @property \PhalconKit\Cli\Dispatcher|\PhalconKit\Mvc\Dispatcher|\PhalconKit\Dispatcher\DispatcherInterface|\Phalcon\Mvc\Dispatcher|\Phalcon\Mvc\DispatcherInterface $dispatcher
+ * @property \PhalconKit\Cli\Dispatcher|\PhalconKit\Mvc\Dispatcher|\PhalconKit\Dispatcher\DispatcherInterface|\Phalcon\Mvc\Dispatcher|\Phalcon\Contracts\Mvc\Dispatcher $dispatcher
  * @property \PhalconKit\Cli\Router|\PhalconKit\Mvc\Router|\PhalconKit\Router\RouterInterface|\Phalcon\Mvc\Router|\Phalcon\Mvc\RouterInterface $router
  * @property \PhalconKit\Mvc\Url|\Phalcon\Mvc\Url|\Phalcon\Mvc\Url\UrlInterface $url
  * @property \PhalconKit\Http\Request|\PhalconKit\Http\RequestInterface|\Phalcon\Http\Request|\Phalcon\Http\RequestInterface $request
@@ -32,9 +32,9 @@ use Phalcon\Di\DiInterface;
  * @property \Phalcon\Flash\Session $flashSession
  * @property \Phalcon\Session\ManagerInterface $session
  * @property \Phalcon\Events\Manager|\Phalcon\Contracts\Events\Manager $eventsManager
- * @property \Phalcon\Db\Adapter\AdapterInterface $db
+ * @property \Phalcon\Contracts\Db\Adapter\Adapter $db
  * @property \PhalconKit\Encryption\Security|\Phalcon\Encryption\Security $security
- * @property \Phalcon\Encryption\Crypt|\Phalcon\Encryption\Crypt\CryptInterface $crypt
+ * @property \Phalcon\Encryption\Crypt|\Phalcon\Contracts\Encryption\Crypt\Crypt $crypt
  * @property \PhalconKit\Tag|\Phalcon\Tag $tag
  * @property \PhalconKit\Html\Escaper|\PhalconKit\Html\Escaper\EscaperInterface|\Phalcon\Html\Escaper|\Phalcon\Html\Escaper\EscaperInterface $escaper
  * @property \Phalcon\Annotations\Adapter\Memory|\Phalcon\Annotations\Adapter $annotations

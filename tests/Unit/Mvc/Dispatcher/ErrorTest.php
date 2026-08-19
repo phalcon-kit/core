@@ -49,9 +49,9 @@ class ErrorTest extends AbstractUnit
         $this->assertSame('api', $dispatcher->getModuleName());
         $this->assertSame('error', $dispatcher->getControllerName());
         $this->assertSame('error', $dispatcher->getActionName());
-        $this->assertSame('acme', $dispatcher->getParam('tenant'));
-        $this->assertSame($status, $dispatcher->getParam('code'));
-        $this->assertSame($exception, $dispatcher->getParam('exception'));
+        $this->assertSame('acme', $dispatcher->getParameter('tenant'));
+        $this->assertSame($status, $dispatcher->getParameter('code'));
+        $this->assertSame($exception, $dispatcher->getParameter('exception'));
     }
 
     /**
@@ -87,8 +87,8 @@ class ErrorTest extends AbstractUnit
         $this->assertSame('Internal Server Error', $response->getReasonPhrase());
         $this->assertSame('error', $dispatcher->getControllerName());
         $this->assertSame('error', $dispatcher->getActionName());
-        $this->assertSame(500, $dispatcher->getParam('code'));
-        $this->assertSame($exception, $dispatcher->getParam('exception'));
+        $this->assertSame(500, $dispatcher->getParameter('code'));
+        $this->assertSame($exception, $dispatcher->getParameter('exception'));
     }
 
     /**
@@ -130,8 +130,8 @@ class ErrorTest extends AbstractUnit
         $this->assertSame('Internal Server Error', $response->getReasonPhrase());
         $this->assertSame('server-error', $dispatcher->getControllerName());
         $this->assertSame('crash', $dispatcher->getActionName());
-        $this->assertSame('listener', $dispatcher->getParam('source'));
-        $this->assertSame($exception, $dispatcher->getParam('exception'));
+        $this->assertSame('listener', $dispatcher->getParameter('source'));
+        $this->assertSame($exception, $dispatcher->getParameter('exception'));
     }
 
     public function testDebugUnexpectedExceptionRethrowsIdenticalObject(): void
@@ -168,7 +168,7 @@ class ErrorTest extends AbstractUnit
         $this->assertFalse($handled);
         $this->assertSame(403, $response->getStatusCode());
         $this->assertSame('Forbidden', $response->getReasonPhrase());
-        $this->assertSame($exception, $dispatcher->getParam('exception'));
+        $this->assertSame($exception, $dispatcher->getParameter('exception'));
     }
 
     #[DataProvider('missingDispatchProvider')]
@@ -188,7 +188,7 @@ class ErrorTest extends AbstractUnit
         $this->assertFalse($handled);
         $this->assertSame('missing', $dispatcher->getControllerName());
         $this->assertSame('notFound', $dispatcher->getActionName());
-        $this->assertSame($exception, $dispatcher->getParam('exception'));
+        $this->assertSame($exception, $dispatcher->getParameter('exception'));
     }
 
     /**

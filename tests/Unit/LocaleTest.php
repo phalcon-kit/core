@@ -133,7 +133,7 @@ class LocaleTest extends AbstractUnit
         $this->assertSame('fr', $this->locale->getFromRoute('fr'));
         $this->assertNull($this->locale->getFromRoute('de'));
 
-        $dispatcher->setParams(['locale' => 'en']);
+        $dispatcher->setParameters(['locale' => 'en']);
         $this->assertSame('en', $this->locale->getFromDispatcher());
     }
     

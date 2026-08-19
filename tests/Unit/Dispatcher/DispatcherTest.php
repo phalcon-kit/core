@@ -31,8 +31,8 @@ class DispatcherTest extends AbstractUnit
     protected string $mode = Bootstrap::MODE_CLI;
     
     protected DispatcherInterface $dispatcher;
-    protected \Phalcon\Mvc\DispatcherInterface $mvcDispatcher;
-    protected \Phalcon\Cli\DispatcherInterface $cliDispatcher;
+    protected \Phalcon\Contracts\Mvc\Dispatcher $mvcDispatcher;
+    protected \Phalcon\Contracts\Cli\Dispatcher $cliDispatcher;
     
     protected function setUp(): void
     {
@@ -48,23 +48,23 @@ class DispatcherTest extends AbstractUnit
         $this->assertInstanceOf(\PhalconKit\Dispatcher\DispatcherInterface::class, $this->dispatcher);
         
         $this->assertInstanceOf(\Phalcon\Dispatcher\AbstractDispatcher::class, $this->dispatcher);
-        $this->assertInstanceOf(\Phalcon\Dispatcher\DispatcherInterface::class, $this->dispatcher);
+        $this->assertInstanceOf(\Phalcon\Contracts\Dispatcher\Dispatcher::class, $this->dispatcher);
         
         // MVC
         $this->assertInstanceOf(\PhalconKit\Mvc\Dispatcher::class, $this->mvcDispatcher);
         $this->assertInstanceOf(\PhalconKit\Dispatcher\DispatcherInterface::class, $this->mvcDispatcher);
         
         $this->assertInstanceOf(\Phalcon\Dispatcher\AbstractDispatcher::class, $this->mvcDispatcher);
-        $this->assertInstanceOf(\Phalcon\Dispatcher\DispatcherInterface::class, $this->mvcDispatcher);
-        $this->assertInstanceOf(\Phalcon\Mvc\DispatcherInterface::class, $this->mvcDispatcher);
+        $this->assertInstanceOf(\Phalcon\Contracts\Dispatcher\Dispatcher::class, $this->mvcDispatcher);
+        $this->assertInstanceOf(\Phalcon\Contracts\Mvc\Dispatcher::class, $this->mvcDispatcher);
         
         // CLI
         $this->assertInstanceOf(\PhalconKit\Cli\Dispatcher::class, $this->cliDispatcher);
         $this->assertInstanceOf(\PhalconKit\Dispatcher\DispatcherInterface::class, $this->cliDispatcher);
         
         $this->assertInstanceOf(\Phalcon\Dispatcher\AbstractDispatcher::class, $this->cliDispatcher);
-        $this->assertInstanceOf(\Phalcon\Dispatcher\DispatcherInterface::class, $this->cliDispatcher);
-        $this->assertInstanceOf(\Phalcon\Cli\DispatcherInterface::class, $this->cliDispatcher);
+        $this->assertInstanceOf(\Phalcon\Contracts\Dispatcher\Dispatcher::class, $this->cliDispatcher);
+        $this->assertInstanceOf(\Phalcon\Contracts\Cli\Dispatcher::class, $this->cliDispatcher);
     }
     
     public function testCallActionMethod(): void
@@ -119,7 +119,7 @@ class DispatcherTest extends AbstractUnit
         $this->dispatcher->setNamespaceName('namespace');
         $this->dispatcher->setModuleName('module');
         $this->dispatcher->setActionName('action');
-        $this->dispatcher->setParams(['param' => true]);
+        $this->dispatcher->setParameters(['param' => true]);
         $this->assertFalse($this->dispatcher->canForward($forward));
         
         // Test MVC Dispatcher

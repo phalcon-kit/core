@@ -136,7 +136,7 @@ class TsScaffoldTaskTest extends AbstractUnit
     private function createTsScaffoldTask(array $params = []): TsScaffoldTask
     {
         $dispatcher = new Dispatcher();
-        $dispatcher->setParams(array_merge([
+        $dispatcher->setParameters(array_merge([
             'directory' => './sdk/',
             'force' => false,
             'table' => '',

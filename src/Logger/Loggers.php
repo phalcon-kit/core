@@ -21,7 +21,7 @@ use Phalcon\Logger\Formatter\AbstractFormatter;
 use Phalcon\Logger\Formatter\FormatterInterface;
 use Phalcon\Logger\Formatter\Line;
 use Phalcon\Logger\Logger;
-use Phalcon\Logger\LoggerInterface;
+use Phalcon\Contracts\Logger\Logger as LoggerContract;
 use PhalconKit\Exception\ConfigurationException;
 use PhalconKit\Support\Options\Options;
 
@@ -42,7 +42,7 @@ class Loggers
     /**
      * Cached logger instances keyed by logger name.
      * 
-     * @var array<string, LoggerInterface>
+     * @var array<string, LoggerContract>
      */
     public array $loggers = [];
     
@@ -143,11 +143,11 @@ class Loggers
      * preserving a consistent adapter/formatter setup.
      *
      * @param string $name The name of the logger to load.
-     * @return LoggerInterface The loaded logger.
+     * @return LoggerContract The loaded logger.
      * @throws ConfigurationException If formatter or adapter configuration is
      *         invalid.
      */
-    public function load(string $name): LoggerInterface
+    public function load(string $name): LoggerContract
     {
         $defaultConfig = $this->getOption('default') ?? [];
         $loggersConfig = $this->getOption('loggers') ?? [];
@@ -178,11 +178,11 @@ class Loggers
      * Retrieve a cached logger or lazily load it from configuration.
      *
      * @param string $name The name of the logger to retrieve.
-     * @return LoggerInterface The retrieved logger.
+     * @return LoggerContract The retrieved logger.
      * @throws ConfigurationException If formatter or adapter configuration is
      *         invalid while loading the logger.
      */
-    public function get(string $name): LoggerInterface
+    public function get(string $name): LoggerContract
     {
         if (isset($this->loggers[$name])) {
             return $this->loggers[$name];
@@ -195,9 +195,9 @@ class Loggers
      * Store or replace a named logger instance.
      *
      * @param string $name The name of the logger to set.
-     * @param LoggerInterface $logger The logger to set.
+     * @param LoggerContract $logger The logger to set.
      */
-    public function set(string $name, LoggerInterface $logger): void
+    public function set(string $name, LoggerContract $logger): void
     {
         $this->loggers[$name] = $logger;
     }

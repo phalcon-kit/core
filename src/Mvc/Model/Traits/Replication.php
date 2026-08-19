@@ -15,7 +15,7 @@ namespace PhalconKit\Mvc\Model\Traits;
 
 use Phalcon\Config\ConfigInterface;
 use Phalcon\Contracts\Events\Manager as EventsManagerContract;
-use Phalcon\Db\Adapter\AdapterInterface;
+use Phalcon\Contracts\Db\Adapter\Adapter as AdapterContract;
 use Phalcon\Mvc\Model\ManagerInterface;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEventsManager;
@@ -186,17 +186,17 @@ trait Replication
      * transactions and native sticky-write state still take precedence over
      * the configured read service.
      *
-     * @return AdapterInterface Read connection when replicas are ready; write
+     * @return AdapterContract Read connection when replicas are ready; write
      *     connection while reads are pinned after a mutation.
      * @throws ServiceException When the read or write connection service cannot
      *     be resolved through the PhalconKit DI contract.
      */
-    public function selectReadConnection(): AdapterInterface
+    public function selectReadConnection(): AdapterContract
     {
         if (!$this->isReplicationReady()) {
             return $this->getTypedService(
                 $this->getWriteConnectionService(),
-                AdapterInterface::class,
+                AdapterContract::class,
                 'model replication helpers'
             );
         }

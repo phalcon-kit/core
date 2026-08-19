@@ -112,8 +112,8 @@ provider registers a stable service name in the Phalcon Kit DI container:
 
 ```php
 use App\Service\ReportExporter;
-use Phalcon\Db\Adapter\AdapterInterface;
-use Phalcon\Logger\LoggerInterface;
+use Phalcon\Contracts\Db\Adapter\Adapter as AdapterContract;
+use Phalcon\Contracts\Logger\Logger as LoggerContract;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
@@ -125,8 +125,8 @@ final class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), static function () use ($di) {
             return new ReportExporter(
-                $di->getTyped('db', AdapterInterface::class),
-                $di->getTyped('logger', LoggerInterface::class)
+                $di->getTyped('db', AdapterContract::class),
+                $di->getTyped('logger', LoggerContract::class)
             );
         });
     }

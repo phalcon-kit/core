@@ -46,7 +46,7 @@ trait Params
             return $this->filter->sanitize($params[$key], $filters ?? []);
         }
         
-        return $this->dispatcher->getParam($key, $filters ?? [], $default);
+        return $this->dispatcher->getParameter($key, $filters ?? [], $default);
     }
     
     /**

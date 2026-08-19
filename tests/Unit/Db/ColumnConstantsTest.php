@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Db;
 
-use Phalcon\Db\ColumnInterface;
+use Phalcon\Contracts\Db\Column as ColumnContract;
 use PhalconKit\Db\Column;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
@@ -26,7 +26,7 @@ class ColumnConstantsTest extends AbstractUnit
         ]);
 
         $this->assertInstanceOf(\Phalcon\Db\Column::class, $column);
-        $this->assertInstanceOf(ColumnInterface::class, $column);
+        $this->assertInstanceOf(ColumnContract::class, $column);
     }
 
     public function testBooleanConstants(): void

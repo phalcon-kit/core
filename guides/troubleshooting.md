@@ -72,7 +72,7 @@ Confirm three things:
 Use typed resolution at composition boundaries:
 
 ```php
-$logger = $di->getTyped('logger', \Phalcon\Logger\LoggerInterface::class);
+$logger = $di->getTyped('logger', \Phalcon\Contracts\Logger\Logger::class);
 ```
 
 Avoid fixing a type mismatch with an unchecked cast or by widening every

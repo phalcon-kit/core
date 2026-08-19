@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Mvc\Model\Traits;
 
-use Phalcon\Db\Adapter\AdapterInterface;
+use Phalcon\Contracts\Db\Adapter\Adapter as AdapterContract;
 use Phalcon\Mvc\Model\Query\Builder;
 use PhalconKit\Di\ServiceResolver;
 use PhalconKit\Exception\ServiceException;
@@ -66,7 +66,7 @@ trait Count
         $rawSql = "SELECT COUNT(*) AS total_count FROM ({$querySql['sql']}) as query_count";
         
         // Execute the raw SQL query
-        $db = ServiceResolver::fromDefault('db', AdapterInterface::class, context: 'model count helpers');
+        $db = ServiceResolver::fromDefault('db', AdapterContract::class, context: 'model count helpers');
         $result = $db->query($rawSql, $querySql['bind'], $querySql['bindTypes']);
         
         // Fetch the total count

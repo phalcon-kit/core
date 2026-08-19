@@ -25,6 +25,12 @@ release notes.
   gate.
 - Documented the distinction between the core suite's 1 GB isolation ceiling
   and bounded bootstrap reuse in long-running application workers.
+- Migrated PhalconKit dispatcher, database, logger, DI-property,
+  scaffold, test, and public-guide surfaces from deprecated implementation
+  interfaces and dispatcher aliases to canonical `Phalcon\Contracts` APIs.
+- Added a stub-driven deprecation gate that audits published source and examples
+  while narrowly allowlisting native Phalcon 5.x override signatures that still
+  require legacy types.
 - Raised the package, CI, runtime example, and static-analysis baselines to
   Phalcon 5.19.0. Until a stable 5.19 stub tag is published, development tools
   use Phalcon's official `stubs/v5.19.0` branch.
@@ -49,6 +55,8 @@ release notes.
 - Added opt-in PDO auto-reconnect configuration and privacy-conscious
   `db:connectionLost` warning logs, and completed optional JWT expected-subject
   validation using Phalcon 5.17's validator API.
+- Restored the missing `pds/skeleton` development dependency required by the
+  package-skeleton validation script.
 - Restored the complete documentation generation pipeline behind `composer docs`
   so external API links and MkDocs navigation are regenerated with the API.
 - Removed the documentation generator's implicit write to the sibling website

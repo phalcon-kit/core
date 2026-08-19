@@ -21,6 +21,6 @@ namespace PhalconKit\Cli;
  * combined contract lets DI providers enforce both without depending on the
  * concrete dispatcher class.
  */
-interface DispatcherInterface extends \Phalcon\Cli\DispatcherInterface, \PhalconKit\Dispatcher\DispatcherInterface
+interface DispatcherInterface extends \Phalcon\Contracts\Cli\Dispatcher, \PhalconKit\Dispatcher\DispatcherInterface
 {
 }

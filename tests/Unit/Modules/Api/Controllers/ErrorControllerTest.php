@@ -123,7 +123,7 @@ class ErrorControllerTest extends AbstractUnit
         $dispatcher->setModuleName('api');
         $dispatcher->setControllerName('records');
         $dispatcher->setActionName('index');
-        $dispatcher->setParams([]);
+        $dispatcher->setParameters([]);
         $dispatcher->setReturnedValue(null);
 
         $listener = new DispatcherError();

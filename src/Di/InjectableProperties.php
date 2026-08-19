@@ -51,10 +51,10 @@ namespace PhalconKit\Di;
  * @property \Phalcon\Db\Adapter\AbstractAdapter $dbd
  * @property \Phalcon\Db\Adapter\AbstractAdapter $dbr
  * @property \Phalcon\Contracts\Events\Manager $eventsManager
- * @property \Phalcon\Flash\FlashInterface $flash
- * @property \Phalcon\Logger\LoggerInterface $logger
+ * @property \Phalcon\Contracts\Flash\Flash $flash
+ * @property \Phalcon\Contracts\Logger\Logger $logger
  * @property \Phalcon\Incubator\Mailer\Manager $mailer
- * @property \Phalcon\Cache\CacheInterface $modelsCache
+ * @property \Phalcon\Contracts\Cache\Cache $modelsCache
  * @property \Phalcon\Mvc\Model\MetaDataInterface $modelsMetadata
  * @property \Phalcon\Session\ManagerInterface $session
  * @property \Phalcon\Translate\Adapter\AdapterInterface $translate

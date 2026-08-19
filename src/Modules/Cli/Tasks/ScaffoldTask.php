@@ -12,8 +12,8 @@
 namespace PhalconKit\Modules\Cli\Tasks;
 
 use Phalcon\Db\Column;
-use Phalcon\Db\ColumnInterface;
-use Phalcon\Db\IndexInterface;
+use Phalcon\Contracts\Db\Column as ColumnContract;
+use Phalcon\Contracts\Db\Index as IndexContract;
 use PhalconKit\Modules\Cli\Task;
 use PhalconKit\Modules\Cli\Tasks\Traits\DescribesTrait;
 use PhalconKit\Modules\Cli\Tasks\Traits\ScaffoldTrait;
@@ -136,7 +136,7 @@ DOC;
     {
         $ret = [];
         
-        $force = $this->dispatcher->getParam('force') ?? false;
+        $force = $this->dispatcher->getParameter('force') ?? false;
         
         $tables = $this->db->listTables();
         foreach ($tables as $table) {
@@ -525,8 +525,8 @@ PHP;
     /**
      * Generates a string containing validation items for each column in the provided array.
      *
-     * @param array $columns An array of ColumnInterface objects.
-     * @param array $indexes An array of IndexInterface objects.
+     * @param array $columns An array of column contracts.
+     * @param array $indexes An array of index contracts.
      *
      * @return string The generated validation items string.
      */
@@ -539,7 +539,7 @@ PHP;
         $validationItems = [];
         
         foreach ($indexes as $index) {
-            assert($index instanceof IndexInterface);
+            assert($index instanceof IndexContract);
             $indexType = $index->getType();
             $indexName = $index->getName();
             $indexColumns = $index->getColumns();
@@ -557,7 +557,7 @@ PHP;
         }
         
         foreach ($columns as $column) {
-            assert($column instanceof ColumnInterface);
+            assert($column instanceof ColumnContract);
             $columnType = $column->getType();
             $columnName = $column->getName();
             
@@ -668,7 +668,7 @@ PHP;
                 if (str_starts_with($otherColumnName, $table . '_')) {
                     // foreach column of the current table
                     foreach ($columns as $column) {
-                        assert($column instanceof ColumnInterface);
+                        assert($column instanceof ColumnContract);
                         $columnName = $column->getName();
                         
                         // if the field is matching
@@ -697,7 +697,7 @@ PHP;
 PHP;
                             // check if we have many-to-many
                             foreach ($otherTableColumns as $manyTableColumn) {
-                                assert($manyTableColumn instanceof ColumnInterface);
+                                assert($manyTableColumn instanceof ColumnContract);
                                 $manyColumnName = $manyTableColumn->getName();
                                 $manyPropertyName = $this->getPropertyName($manyColumnName);
                                 
@@ -770,7 +770,7 @@ PHP;
         
         // Belongs To
         foreach ($columns as $column) {
-            assert($column instanceof ColumnInterface);
+            assert($column instanceof ColumnContract);
             $columnName = $column->getName();
             $propertyName = $this->getPropertyName($columnName);
             
@@ -905,7 +905,7 @@ PHP;
     }
 
     /**
-     * @param array<int, ColumnInterface> $columns
+     * @param array<int, ColumnContract> $columns
      * @param array<int, string> $tables
      * @return array<string, bool>
      */
@@ -921,7 +921,7 @@ PHP;
             $relationAlias = $this->getTableName($otherTable) . 'List';
 
             foreach ($this->describeColumns($otherTable) as $otherTableColumn) {
-                assert($otherTableColumn instanceof ColumnInterface);
+                assert($otherTableColumn instanceof ColumnContract);
                 $otherColumnName = $otherTableColumn->getName();
 
                 if (!str_starts_with($otherColumnName, $table . '_')) {
@@ -929,7 +929,7 @@ PHP;
                 }
 
                 foreach ($columns as $column) {
-                    assert($column instanceof ColumnInterface);
+                    assert($column instanceof ColumnContract);
 
                     if ($otherColumnName === $table . '_' . $column->getName()) {
                         $aliases[strtolower($relationAlias)] = true;
@@ -1021,7 +1021,7 @@ PHP;
     {
         $columnMapItems = [];
         foreach ($columns as $column) {
-            assert($column instanceof ColumnInterface);
+            assert($column instanceof ColumnContract);
             $columnName = $column->getName();
             $columnMap = $this->getPropertyName($columnName);
             $columnMapItems[] = <<<PHP
@@ -1034,7 +1034,7 @@ PHP;
     /**
      * Generates property items for each column in the given array.
      *
-     * @param array $columns An array of ColumnInterface objects.
+     * @param array $columns An array of column contracts.
      *
      * @return string The generated property items.
      */
@@ -1042,7 +1042,7 @@ PHP;
     {
         $propertyItems = [];
         foreach ($columns as $column) {
-            assert($column instanceof ColumnInterface);
+            assert($column instanceof ColumnContract);
             $definition = $this->getPropertyDefinitions($column);
             $propertyComment = $this->getPropertyComment($column, $definition);
             $propertyItems[] = <<<PHP
@@ -1057,12 +1057,12 @@ PHP;
     /**
      * Generates the comment for a property with the given column name and property type.
      *
-     * @param ColumnInterface $column The column object.
+     * @param ColumnContract $column The column object.
      * @param array $definitions The property definitions.
      *
      * @return string The generated property comment.
      */
-    public function getPropertyComment(ColumnInterface $column, array $definitions): string
+    public function getPropertyComment(ColumnContract $column, array $definitions): string
     {
         if ($this->isNoComments()) {
             return '';
@@ -1095,7 +1095,7 @@ PHP;
 
         $propertyItems = [];
         foreach ($columns as $column) {
-            assert($column instanceof ColumnInterface);
+            assert($column instanceof ColumnContract);
             $definition = $this->getPropertyDefinitions($column);
             
             $getMethod = 'get' . ucfirst($definition['name']);
@@ -1168,13 +1168,13 @@ PHP;
     /**
      * Generates a comment for a getter or setter method for a specific column.
      *
-     * @param ColumnInterface $column The column object.
+     * @param ColumnContract $column The column object.
      * @param array $definitions The property definitions.
      * @param bool $get Determines whether the comment is for a getter or setter method.
      *
      * @return string The generated comment.
      */
-    public function getSetMethodComment(ColumnInterface $column, array $definitions, bool $get): string
+    public function getSetMethodComment(ColumnContract $column, array $definitions, bool $get): string
     {
         if ($this->isNoComments()) {
             return '';
@@ -1208,7 +1208,7 @@ PHP;
         }
     }
     
-    public function getColumnAttributes(ColumnInterface $column): string
+    public function getColumnAttributes(ColumnContract $column): string
     {
         $attributes = [];
         if ($column->isFirst()) {
@@ -1241,7 +1241,7 @@ PHP;
         return implode(' | ', $attributes);
     }
     
-    public function getPropertyDefinitions(ColumnInterface $column): array
+    public function getPropertyDefinitions(ColumnContract $column): array
     {
         // column
         $columnName = $column->getName();

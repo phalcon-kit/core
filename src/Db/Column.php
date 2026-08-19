@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace PhalconKit\Db;
 
-use Phalcon\Db\ColumnInterface;
-
-class Column extends \Phalcon\Db\Column implements ColumnInterface
+class Column extends \Phalcon\Db\Column
 {
     // Boolean
     public const int YES = 1;

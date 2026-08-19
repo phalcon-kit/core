@@ -15,9 +15,9 @@ namespace PhalconKit\Tests\Unit\Provider;
 
 use Phalcon\Encryption\Security as PhalconSecurity;
 use Phalcon\Events\Manager;
+use Phalcon\Contracts\Logger\Logger as LoggerContract;
 use Phalcon\Logger\Adapter\Noop;
 use Phalcon\Logger\Formatter\Line;
-use Phalcon\Logger\LoggerInterface;
 use Phalcon\Mvc\Router as PhalconRouter;
 use PhalconKit\Bootstrap\Config as BootstrapConfig;
 use PhalconKit\Config\Config;
@@ -225,7 +225,7 @@ class CoreServiceProvidersTest extends AbstractUnit
         (new LoggerProvider($di))->register($di);
 
         $this->assertInstanceOf(Loggers::class, $di->get('loggers'));
-        $this->assertInstanceOf(LoggerInterface::class, $di->get('logger'));
+        $this->assertInstanceOf(LoggerContract::class, $di->get('logger'));
     }
 
     public function testUtilityProvidersRegisterSimpleServices(): void

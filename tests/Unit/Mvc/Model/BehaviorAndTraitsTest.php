@@ -16,7 +16,7 @@ namespace PhalconKit\Tests\Unit\Mvc\Model;
 use Phalcon\Acl\Adapter\Memory;
 use Phalcon\Cache\Cache;
 use Phalcon\Contracts\Acl\Adapter\Adapter as AclAdapter;
-use Phalcon\Db\Adapter\AdapterInterface;
+use Phalcon\Db\Adapter\AbstractAdapter;
 use Phalcon\Db\Column;
 use Phalcon\Db\RawValue;
 use Phalcon\Di\Di;
@@ -364,7 +364,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertTrue($behavior->notify('beforeValidation', $model));
         $this->assertSame(8, $model->position);
 
-        $connection = $this->createStub(AdapterInterface::class);
+        $connection = $this->createStub(AbstractAdapter::class);
 
         $this->di->setShared('db', $connection);
         $model->id = 42;
@@ -396,7 +396,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertStringContainsString('[position] = [position]+1', $manager->executeQueryCalls[1][0]);
         $this->assertSame('afterSave', $model->messages[0]->getMetaData()['context']);
 
-        $connectionDown = $this->createStub(AdapterInterface::class);
+        $connectionDown = $this->createStub(AbstractAdapter::class);
         $this->di->setShared('db', $connectionDown);
 
         $oldColumnRenaming = ini_get('phalcon.orm.column_renaming');
@@ -1205,8 +1205,8 @@ class BehaviorAndTraitsTest extends AbstractUnit
             ],
         ]);
 
-        $read = $this->createStub(AdapterInterface::class);
-        $write = $this->createStub(AdapterInterface::class);
+        $read = $this->createStub(AbstractAdapter::class);
+        $write = $this->createStub(AbstractAdapter::class);
         $this->di->setShared('read-connection', $read);
         $this->di->setShared('write-connection', $write);
 
@@ -1287,7 +1287,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $manager->setReadConnectionService($model, 'read-connection');
         $manager->setWriteConnectionService($model, 'write-connection');
         $this->di->setShared('read-connection', new \stdClass());
-        $this->di->setShared('write-connection', $this->createStub(AdapterInterface::class));
+        $this->di->setShared('write-connection', $this->createStub(AbstractAdapter::class));
 
         $this->expectException(\TypeError::class);
 
@@ -1300,12 +1300,12 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $model = new ModelBehaviorDouble();
         $model->setReadConnectionService('read-connection');
         $model->setWriteConnectionService('write-connection');
-        $this->di->setShared('read-connection', $this->createStub(AdapterInterface::class));
+        $this->di->setShared('read-connection', $this->createStub(AbstractAdapter::class));
         $this->di->setShared('write-connection', new \stdClass());
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage(
-            'Expected DI service "write-connection" to be an instance of "Phalcon\Db\Adapter\AdapterInterface"; got "stdClass".'
+            'Expected DI service "write-connection" to be an instance of "Phalcon\Contracts\Db\Adapter\Adapter"; got "stdClass".'
         );
 
         $model::setReplicationReadyAt(PHP_INT_MAX);
@@ -2108,7 +2108,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $foreignChild->id = 12;
         $foreignChild->parentId = 7;
 
-        $connection = $this->createStub(AdapterInterface::class);
+        $connection = $this->createStub(AbstractAdapter::class);
         $connection->method('begin')->willReturn(true);
         $connection->method('rollback')->willReturn(true);
         $connection->method('commit')->willReturn(true);
@@ -2142,7 +2142,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $child->fakeModelsManager = new FakeModelsManager();
         $child->initializeSoftDelete();
 
-        $connection = $this->createStub(AdapterInterface::class);
+        $connection = $this->createStub(AbstractAdapter::class);
         $connection->method('begin')->willReturn(true);
         $connection->method('rollback')->willReturn(true);
         $connection->method('commit')->willReturn(true);
@@ -2295,7 +2295,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
             $this->assertStringContainsString("using alias 'missing'", $exception->getMessage());
         }
 
-        $connection = $this->createStub(AdapterInterface::class);
+        $connection = $this->createStub(AbstractAdapter::class);
         $connection->method('begin')->willReturn(true);
         $connection->method('rollback')->willReturn(true);
         $connection->method('commit')->willReturn(true);
@@ -2412,7 +2412,7 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertTrue($model->postSaveRelatedThroughAfter($hasOneThrough, [$related], $visited));
         $this->assertSame(5, $existingIntermediate->parentId);
 
-        $connection = $this->createStub(AdapterInterface::class);
+        $connection = $this->createStub(AbstractAdapter::class);
         $connection->method('begin')->willReturn(true);
         $connection->method('rollback')->willReturn(true);
         $connection->method('commit')->willReturn(true);

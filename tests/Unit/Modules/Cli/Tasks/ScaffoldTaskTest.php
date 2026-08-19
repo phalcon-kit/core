@@ -414,7 +414,7 @@ PHP,
     private function createScaffoldTask(array $params = []): ScaffoldTask
     {
         $dispatcher = new Dispatcher();
-        $dispatcher->setParams(array_merge([
+        $dispatcher->setParameters(array_merge([
             'namespace' => 'App',
             'noAbstracts' => false,
             'noColumnMap' => false,

@@ -20,6 +20,6 @@ namespace PhalconKit\Ws;
  * shared dispatcher helpers so WebSocket tasks can be resolved and inspected
  * through the same contract as CLI tasks.
  */
-interface DispatcherInterface extends \Phalcon\Cli\DispatcherInterface, \PhalconKit\Dispatcher\DispatcherInterface
+interface DispatcherInterface extends \Phalcon\Contracts\Cli\Dispatcher, \PhalconKit\Dispatcher\DispatcherInterface
 {
 }

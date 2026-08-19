@@ -130,7 +130,7 @@ class Application extends \Phalcon\Mvc\Application
             $dispatcher->setTaskName($location['task'] ?? 'main');
         }
         $dispatcher->setActionName($location['action'] ?? 'index');
-        $dispatcher->setParams($location['params'] ?? []);
+        $dispatcher->setParameters($location['params'] ?? []);
         $dispatcher->dispatch();
         
         // Get and return value

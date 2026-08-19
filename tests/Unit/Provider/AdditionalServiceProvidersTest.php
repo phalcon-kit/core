@@ -99,8 +99,8 @@ class AdditionalServiceProvidersTest extends AbstractUnit
                 ],
             ],
         ]);
-        $read = $this->createStub(\Phalcon\Db\Adapter\AdapterInterface::class);
-        $write = $this->createStub(\Phalcon\Db\Adapter\AdapterInterface::class);
+        $read = $this->createStub(\Phalcon\Db\Adapter\AbstractAdapter::class);
+        $write = $this->createStub(\Phalcon\Db\Adapter\AbstractAdapter::class);
         $di->setShared('read-connection', $read);
         $di->setShared('write-connection', $write);
         (new ModelsManagerProvider($di))->register($di);

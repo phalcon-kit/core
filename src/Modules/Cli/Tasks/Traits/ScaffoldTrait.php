@@ -67,7 +67,7 @@ PHP;
      */
     public function getLicenseStamp(): ?string
     {
-        return $this->isNoLicense() ? '' : $this->dispatcher->getParam('license') ?? $this->licenseStamp;
+        return $this->isNoLicense() ? '' : $this->dispatcher->getParameter('license') ?? $this->licenseStamp;
     }
     
     /**
@@ -115,7 +115,7 @@ PHP;
     public function isWhitelistedTable(string $table): bool
     {
         if (!isset($this->whitelistedTables)) {
-            $this->whitelistedTables = array_filter(explode(',', $this->dispatcher->getParam('table') ?? ''));
+            $this->whitelistedTables = array_filter(explode(',', $this->dispatcher->getParameter('table') ?? ''));
         }
         return empty($this->whitelistedTables) || in_array($table, $this->whitelistedTables);
     }
@@ -128,7 +128,7 @@ PHP;
     public function isExcludedTable(string $table): bool
     {
         if (!isset($this->excludedTables)) {
-            $this->excludedTables = array_filter(explode(',', $this->dispatcher->getParam('exclude') ?? ''));
+            $this->excludedTables = array_filter(explode(',', $this->dispatcher->getParameter('exclude') ?? ''));
         }
         return !empty($this->excludedTables) && in_array($table, $this->excludedTables);
     }
@@ -274,94 +274,94 @@ PHP;
      */
     public function getDirectory(string $path = ''): string
     {
-        $fullPath = ($this->dispatcher->getParam('directory') ?? $this->directory) . '/' . $path;
+        $fullPath = ($this->dispatcher->getParameter('directory') ?? $this->directory) . '/' . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     public function getSrcDirectory(string $path = ''): string
     {
-        $fullPath = $this->getDirectory($this->dispatcher->getParam('srcDir') ?? $this->srcDirectory) . $path;
+        $fullPath = $this->getDirectory($this->dispatcher->getParameter('srcDir') ?? $this->srcDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Tests Directory
     public function getTestsDirectory(string $path = ''): string
     {
-        $fullPath = $this->getDirectory($this->dispatcher->getParam('testsDir') ?? $this->testsDirectory) . $path;
+        $fullPath = $this->getDirectory($this->dispatcher->getParameter('testsDir') ?? $this->testsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Controllers Directory
     public function getControllersDirectory(string $path = ''): string
     {
-        $fullPath = $this->getSrcDirectory($this->dispatcher->getParam('controllersDir') ?? $this->controllersDirectory) . $path;
+        $fullPath = $this->getSrcDirectory($this->dispatcher->getParameter('controllersDir') ?? $this->controllersDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Models Directory
     public function getModelsDirectory(string $path = ''): string
     {
-        $fullPath = $this->getSrcDirectory($this->dispatcher->getParam('modelsDir') ?? $this->modelsDirectory) . $path;
+        $fullPath = $this->getSrcDirectory($this->dispatcher->getParameter('modelsDir') ?? $this->modelsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Models Interfaces Directory
     public function getModelsInterfacesDirectory(string $path = ''): string
     {
-        $fullPath = $this->getModelsDirectory($this->dispatcher->getParam('interfacesDir') ?? $this->interfacesDirectory) . $path;
+        $fullPath = $this->getModelsDirectory($this->dispatcher->getParameter('interfacesDir') ?? $this->interfacesDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Models Enum Directory
     public function getEnumsDirectory(string $path = ''): string
     {
-        $fullPath = $this->getModelsDirectory($this->dispatcher->getParam('enumsDir') ?? $this->enumsDirectory) . $path;
+        $fullPath = $this->getModelsDirectory($this->dispatcher->getParameter('enumsDir') ?? $this->enumsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Models Abstracts Directory
     public function getAbstractsDirectory(string $path = ''): string
     {
-        $fullPath = $this->getModelsDirectory($this->dispatcher->getParam('abstractsDir') ?? $this->abstractsDirectory) . $path;
+        $fullPath = $this->getModelsDirectory($this->dispatcher->getParameter('abstractsDir') ?? $this->abstractsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Models Abstracts Interfaces Directory
     public function getAbstractsInterfacesDirectory(string $path = ''): string
     {
-        $fullPath = $this->getAbstractsDirectory($this->dispatcher->getParam('interfaceDir') ?? $this->interfacesDirectory) . $path;
+        $fullPath = $this->getAbstractsDirectory($this->dispatcher->getParameter('interfaceDir') ?? $this->interfacesDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Models Tests Directory
     public function getModelsTestsDirectory(string $path = ''): string
     {
-        $fullPath = $this->getTestsDirectory($this->dispatcher->getParam('modelsDir') ?? $this->modelsDirectory) . $path;
+        $fullPath = $this->getTestsDirectory($this->dispatcher->getParameter('modelsDir') ?? $this->modelsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
     // Models Extend Class
     public function getModelsExtend(): string
     {
-        return $this->dispatcher->getParam('modelsExtend') ?? $this->modelsExtend;
+        return $this->dispatcher->getParameter('modelsExtend') ?? $this->modelsExtend;
     }
     
     // Models Interface Extend Class
     public function getInterfacesExtend(): string
     {
-        return $this->dispatcher->getParam('interfacesExtend') ?? $this->interfacesExtend;
+        return $this->dispatcher->getParameter('interfacesExtend') ?? $this->interfacesExtend;
     }
     
     // Tests Extend Class
     public function getTestsExtend(): string
     {
-        return $this->dispatcher->getParam('testsExtend') ?? $this->testsExtend;
+        return $this->dispatcher->getParameter('testsExtend') ?? $this->testsExtend;
     }
     
     // Controllers Extend Class
     public function getControllersExtend(): string
     {
-        return $this->dispatcher->getParam('controllersExtend') ?? $this->controllersExtend;
+        return $this->dispatcher->getParameter('controllersExtend') ?? $this->controllersExtend;
     }
     
     
@@ -372,7 +372,7 @@ PHP;
      */
     public function getNamespaceFromPath(string $path): string
     {
-        $baseNamespace = ($this->dispatcher->getParam('namespace') ?? $this->namespace);
+        $baseNamespace = ($this->dispatcher->getParameter('namespace') ?? $this->namespace);
         $namespace = $baseNamespace . '\\' .
             Helper::camelize(
                 Helper::uncamelize(

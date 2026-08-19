@@ -45,7 +45,7 @@ class ErrorController extends Rest
     {
         $this->setErrorStatusAction($code, $message);
 
-        $exception = $this->dispatcher->getParam('exception');
+        $exception = $this->dispatcher->getParameter('exception');
         if (!$exception instanceof HttpException) {
             return;
         }

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Modules\Cli\Tasks;
 
 use Phalcon\Db\Column;
-use Phalcon\Db\ColumnInterface;
+use Phalcon\Contracts\Db\Column as ColumnContract;
 use Phalcon\Mvc\Model\Relation;
 use PhalconKit\Modules\Cli\Task;
 use PhalconKit\Mvc\Model;
@@ -83,7 +83,7 @@ DOC;
     {
         $ret = [];
         
-        $directory = $this->dispatcher->getParam('directory');
+        $directory = $this->dispatcher->getParameter('directory');
         $files = glob($directory . '*.ts') ?: [];
         
         $exports = [];
@@ -114,8 +114,8 @@ DOC;
             'abstracts' => [],
         ];
         
-        $force = $this->dispatcher->getParam('force') ?? false;
-        $whitelisted = array_filter(explode(',', $this->dispatcher->getParam('table') ?? ''));
+        $force = $this->dispatcher->getParameter('force') ?? false;
+        $whitelisted = array_filter(explode(',', $this->dispatcher->getParameter('table') ?? ''));
         $tables = $this->db->listTables();
         foreach ($tables as $table) {
             if (!empty($whitelisted) && !in_array($table, $whitelisted)) {
@@ -160,25 +160,25 @@ DOC;
         
         // interfaces
         $exportDirectory = $this->path . $this->modelsPath . $this->abstractsPath . $this->interfacesPath;
-        $this->dispatcher->setParam('directory', $exportDirectory);
+        $this->dispatcher->setParameter('directory', $exportDirectory);
         $this->generateExportsAction();
         $ret [] = 'Interfaces Export `index.ts` created';
         
         // abstracts
         $exportDirectory = $this->path . $this->modelsPath . $this->abstractsPath;
-        $this->dispatcher->setParam('directory', $exportDirectory);
+        $this->dispatcher->setParameter('directory', $exportDirectory);
         $this->generateExportsAction();
         $ret [] = 'Abstracts Export `index.ts` created';
         
         // models
         $exportDirectory = $this->path . $this->modelsPath;
-        $this->dispatcher->setParam('directory', $exportDirectory);
+        $this->dispatcher->setParameter('directory', $exportDirectory);
         $this->generateExportsAction();
         $ret [] = 'Models Export `index.ts` created';
         
         // services
         $exportDirectory = $this->path . $this->servicesPath;
-        $this->dispatcher->setParam('directory', $exportDirectory);
+        $this->dispatcher->setParameter('directory', $exportDirectory);
         $this->generateExportsAction();
         $ret [] = 'Services Export `index.ts` created';
         
@@ -317,7 +317,7 @@ EOT;
     /**
      * Returns a formatted string representation of the property items.
      *
-     * @param ColumnInterface[] $columns An array of column objects.
+     * @param ColumnContract[] $columns An array of column objects.
      * @return string A string representation of the property items.
      */
     public function getPropertyItems(array $columns): string
@@ -371,7 +371,7 @@ EOT;
         return $related;
     }
     
-    public function getColumnTsType(ColumnInterface $column): string
+    public function getColumnTsType(ColumnContract $column): string
     {
         $tsType = 'null';
         
@@ -425,7 +425,7 @@ EOT;
         return $tsType;
     }
     
-    public function getDefaultValue(ColumnInterface $column, string $type): ?string
+    public function getDefaultValue(ColumnContract $column, string $type): ?string
     {
         $default = null;
         $columnDefault = $column->getDefault();

@@ -52,7 +52,7 @@ trait DispatcherTrait
      *
      * @return array<int|string, mixed>
      */
-    abstract public function getParams(): array;
+    abstract public function getParameters(): array;
     
     /**
      * Return the resolved controller or task class name.
@@ -131,7 +131,7 @@ trait DispatcherTrait
             'namespace' => $this->getNamespaceName(),
             'module' => $this->getModuleName(),
             'action' => $this->getActionName(),
-            'params' => $this->getParams(),
+            'params' => $this->getParameters(),
         ];
         if (array_any($parts, fn(array|string|null $current, string $part): bool => isset($forward[$part]) && $current !== $forward[$part])) {
             return true;
@@ -225,7 +225,7 @@ trait DispatcherTrait
             'namespace' => $this->getNamespaceName(),
             'module' => $this->getModuleName(),
             'action' => $this->getActionName(),
-            'params' => $this->getParams(),
+            'params' => $this->getParameters(),
             'handlerClass' => $this->getHandlerClass(),
             'handlerSuffix' => $this->getHandlerSuffix(),
             'activeMethod' => $this->getActiveMethod(),

@@ -235,8 +235,8 @@ final class ServiceProvider extends AbstractServiceProvider
     {
         $di->setShared($this->getName(), function () use ($di) {
             return new ReportExporter(
-                $di->getTyped('db', \Phalcon\Db\Adapter\AdapterInterface::class),
-                $di->getTyped('logger', \Phalcon\Logger\LoggerInterface::class)
+                $di->getTyped('db', \Phalcon\Contracts\Db\Adapter\Adapter::class),
+                $di->getTyped('logger', \Phalcon\Contracts\Logger\Logger::class)
             );
         });
     }

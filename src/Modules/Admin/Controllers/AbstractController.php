@@ -20,7 +20,7 @@ abstract class AbstractController extends Controller
 {
     public function initialize(): void
     {
-        Tag::setAttr('html', ['lang' => $this->dispatcher->getParam('language', 'string', 'en')]);
+        Tag::setAttr('html', ['lang' => $this->dispatcher->getParameter('language', 'string', 'en')]);
         Tag::setTitle($this->config->path('core.name') ?: 'Phalcon Kit Admin');
         $this->assets->collection('head')->addCss('/style.css', true, true, [], null, true);
     }

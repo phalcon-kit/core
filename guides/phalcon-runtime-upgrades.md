@@ -112,13 +112,33 @@ rg 'Phalcon\\|ext-phalcon|phalcon/ide-stubs|PHALCON_VERSION' \
 Adjust the paths for the repository. Review every result rather than applying a
 blind namespace replacement.
 
+## Audit Deprecated Framework APIs
+
+Treat the matching `phalcon/ide-stubs` package as the machine-readable
+deprecation inventory. Search its PHPDoc for `@deprecated`, then map every
+deprecated class, interface, method, and constant back to source, tests, public
+examples, and reusable skills.
+
+Prefer canonical `Phalcon\Contracts\...` interfaces over legacy implementation
+namespace interfaces. Replace dispatcher aliases such as `getParam()`,
+`getParams()`, `setParam()`, and `setParams()` with their `Parameter` forms.
+Run `PhalconDeprecationTest` after every baseline upgrade so new upstream
+deprecations cannot silently enter published source or examples.
+
+Some Phalcon 5.x native override signatures and canonical contracts still name
+legacy interfaces. Keep those exact native boundaries until upstream changes
+the parent signature; broadening a child signature can claim support the parent
+cannot actually accept. The test's narrow allowlist documents these temporary
+holds and will fail when a hold moves or a deprecated type is reintroduced
+elsewhere.
+
 ## Validate In Increasing Scope
 
 Start with fast checks:
 
 ```bash
 php -m | rg '^phalcon$'
-composer validate --strict --no-check-publish
+composer validate --no-check-publish
 composer check-platform-reqs
 git diff --check
 ```

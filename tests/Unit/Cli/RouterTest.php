@@ -78,7 +78,7 @@ class RouterTest extends AbstractUnit
         $this->assertEquals('cli', $this->router->getModuleName());
         $this->assertEquals('error', $this->router->getTaskName());
         $this->assertEquals('not-found', $this->router->getActionName());
-        $this->assertEquals(['test' => 'test'], $this->router->getParams());
+        $this->assertEquals(['test' => 'test'], $this->router->getParameters());
     }
 
     public function testHandleUsesConfiguredDefaultsWhenPartsAreMissing(): void
@@ -92,7 +92,7 @@ class RouterTest extends AbstractUnit
         $this->assertSame('cli', $this->router->getModuleName());
         $this->assertSame('help', $this->router->getTaskName());
         $this->assertSame('main', $this->router->getActionName());
-        $this->assertSame([], $this->router->getParams());
+        $this->assertSame([], $this->router->getParameters());
     }
 
     public function testToArrayReflectsHandledRouteParts(): void

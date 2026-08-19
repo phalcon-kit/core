@@ -222,7 +222,7 @@ class Locale extends Injectable implements OptionsInterface
      */
     public function getFromDispatcher(?string $default = null): ?string
     {
-        return $this->lookup($this->dispatcher->getParams()['locale'] ?? $default);
+        return $this->lookup($this->dispatcher->getParameters()['locale'] ?? $default);
     }
     
     /**

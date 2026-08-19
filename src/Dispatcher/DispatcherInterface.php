@@ -23,7 +23,7 @@ namespace PhalconKit\Dispatcher;
  *
  * @see https://docs.phalcon.io/latest/dispatcher/
  */
-interface DispatcherInterface extends \Phalcon\Dispatcher\DispatcherInterface
+interface DispatcherInterface extends \Phalcon\Contracts\Dispatcher\Dispatcher
 {
     /**
      * Determine whether a forward target differs from the current dispatch.

@@ -460,7 +460,7 @@ unless a row says otherwise. The service name is the DI key.
 | `Tag` | `tag` | DI escaper/url | HTML tag helper. Use `$this->tag` in views/helpers when generating framework-managed HTML tags. |
 | `Assets` | `assets` | DI escaper/tag | Asset manager. Use `$this->assets->addCss(...)`, `$this->assets->addJs(...)`, and output collections in layouts. |
 | `Flash` | `flash` | `flash` | Flash message service. Use `$this->flash->success('Saved')`, `$this->flash->error('Failed')`, or the session driver when configured. |
-| `Escaper` | `escaper` | none | HTML escaper. Use `$this->escaper->escapeHtml($value)` or view helpers when outputting user-controlled data. |
+| `Escaper` | `escaper` | none | HTML escaper. Use `$this->escaper->html($value)` or view helpers when outputting user-controlled data. |
 
 ### Database, Models, And Cache
 

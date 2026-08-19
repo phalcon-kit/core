@@ -14,15 +14,15 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Db;
 
 use Phalcon\Contracts\Events\Event as EventContract;
+use Phalcon\Contracts\Logger\Logger as LoggerContract;
 use Phalcon\Db\Adapter\AbstractAdapter;
 use Phalcon\Logger\AbstractLogger;
-use Phalcon\Logger\LoggerInterface;
 use PhalconKit\Db\Events\Logger as DatabaseEventLogger;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class LoggerTest extends AbstractUnit
 {
-    public LoggerInterface $logger;
+    public LoggerContract $logger;
     
     protected function setUp(): void
     {
@@ -33,7 +33,7 @@ class LoggerTest extends AbstractUnit
     public function testLoggerFromDi(): void
     {
         $this->assertInstanceOf(AbstractLogger::class, $this->logger);
-        $this->assertInstanceOf(LoggerInterface::class, $this->logger);
+        $this->assertInstanceOf(LoggerContract::class, $this->logger);
     }
     
     public function testQueryEventLogger(): void

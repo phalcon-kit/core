@@ -41,7 +41,7 @@ class RouterTest extends AbstractUnit
         $this->assertSame('send', $router->getActionName());
         $this->assertSame([
             'channel' => 'alerts',
-        ], $router->getParams());
+        ], $router->getParameters());
         $this->assertSame([
             'module' => 'ws',
             'task' => 'broadcast',
