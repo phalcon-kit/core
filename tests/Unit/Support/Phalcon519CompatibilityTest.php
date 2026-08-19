@@ -202,15 +202,67 @@ class Phalcon519CompatibilityTest extends TestCase
 
             $this->writeAnimatedGif($gifFile);
             $animation = new PhalconImagick($gifFile);
+            $this->assertSame(5, $animation->getWidth());
+            $this->assertSame(4, $animation->getHeight());
+
             $renderedAnimation = new \Imagick();
             $renderedAnimation->readImageBlob($animation->reflection(1, 50)->render('gif'));
             $this->assertSame(2, $renderedAnimation->getNumberImages());
+            foreach ($renderedAnimation as $frame) {
+                $this->assertSame(5, $frame->getImageWidth());
+                $this->assertSame(5, $frame->getImageHeight());
+            }
 
             $animation->save($savedGifFile);
             $savedAnimation = new \Imagick($savedGifFile);
             $this->assertSame(2, $savedAnimation->getNumberImages());
         } finally {
             foreach ([$baseFile, $watermarkFile, $gifFile, $savedGifFile] as $file) {
+                if (is_file($file)) {
+                    unlink($file);
+                }
+            }
+        }
+    }
+
+    public function testImagickBackgroundTextAndSharpenKeepSubHundredAmounts(): void
+    {
+        if (!class_exists(\Imagick::class)) {
+            $this->markTestSkipped('Imagick extension is not available.');
+        }
+
+        $transparentFile = $this->temporaryFile('phalcon-519-transparent-');
+        $textFile = $this->temporaryFile('phalcon-519-text-');
+        $sharpFile = $this->temporaryFile('phalcon-519-sharp-');
+        $fontFile = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
+
+        try {
+            $this->writeSolidImage($transparentFile, 'transparent');
+            $background = new PhalconImagick($transparentFile);
+            $renderedBackground = new \Imagick();
+            $renderedBackground->readImageBlob($background->background('#00ff00', 50)->render('png'));
+            $backgroundPixel = $renderedBackground->getImagePixelColor(0, 0);
+            $backgroundColor = $backgroundPixel->getColor();
+            $backgroundAlpha = $backgroundPixel->getColorValue(\Imagick::COLOR_ALPHA);
+
+            $this->assertGreaterThan(0, $backgroundColor['g']);
+            $this->assertGreaterThan(0.0, $backgroundAlpha);
+            $this->assertLessThan(1.0, $backgroundAlpha);
+
+            $this->assertFileExists($fontFile, 'The CI image must provide the DejaVu Sans font fixture.');
+            $this->writeSolidImage($textFile, '#ffffff', 80, 30);
+            $text = new PhalconImagick($textFile);
+            $textBefore = $text->render('png');
+            $textAfter = $text->text('Phalcon', 2, 2, 50, '#000000', 14, $fontFile)->render('png');
+            $this->assertNotSame(hash('sha256', $textBefore), hash('sha256', $textAfter));
+
+            $this->writeSharpenFixture($sharpFile);
+            $sharp = new PhalconImagick($sharpFile);
+            $sharpBefore = $sharp->render('png');
+            $sharpAfter = $sharp->sharpen(50)->render('png');
+            $this->assertNotSame(hash('sha256', $sharpBefore), hash('sha256', $sharpAfter));
+        } finally {
+            foreach ([$transparentFile, $textFile, $sharpFile] as $file) {
                 if (is_file($file)) {
                     unlink($file);
                 }
@@ -246,10 +298,20 @@ class Phalcon519CompatibilityTest extends TestCase
         return $file;
     }
 
-    private function writeSolidImage(string $file, string $color): void
+    private function writeSolidImage(string $file, string $color, int $width = 4, int $height = 4): void
     {
         $image = new \Imagick();
-        $image->newImage(4, 4, new \ImagickPixel($color));
+        $image->newImage($width, $height, new \ImagickPixel($color));
+        $image->setImageFormat('png');
+        $image->writeImage($file);
+    }
+
+    private function writeSharpenFixture(string $file): void
+    {
+        $image = new \Imagick();
+        $image->newImage(9, 9, new \ImagickPixel('#808080'));
+        $image->setImagePixelColor(4, 4, new \ImagickPixel('#707070'));
+        $image->setImagePixelColor(4, 5, new \ImagickPixel('#909090'));
         $image->setImageFormat('png');
         $image->writeImage($file);
     }
@@ -258,11 +320,12 @@ class Phalcon519CompatibilityTest extends TestCase
     {
         $animation = new \Imagick();
 
-        foreach (['#ff0000', '#0000ff'] as $color) {
+        foreach ([['#ff0000', 0, 0], ['#0000ff', 2, 1]] as [$color, $x, $y]) {
             $frame = new \Imagick();
             $frame->newImage(3, 2, new \ImagickPixel($color));
             $frame->setImageFormat('gif');
             $frame->setImageDelay(5);
+            $frame->setImagePage(5, 4, $x, $y);
             $animation->addImage($frame);
         }
 

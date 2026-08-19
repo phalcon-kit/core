@@ -53,6 +53,18 @@ git diff --check
 Add targeted searches for changed paths, skill links, env names, service names,
 or claims that need support.
 
+## Memory And Reused Runtimes
+
+The core PHPUnit configuration permits 1 GB because isolated tests repeatedly
+construct the complete nested native `Phalcon\Config\Config` graph. Treat that
+as a test-runner ceiling, not as an application request budget.
+
+In a long-running worker, build the bootstrap and DI container once and use the
+existing request-boundary reset hooks for each logical request or WebSocket
+callback. Do not model worker behavior by constructing a new full bootstrap for
+every message. When changing a reused runtime, add a bounded loop that exercises
+the same bootstrap instance and check that its memory delta remains stable.
+
 ## Provider And Config Tests
 
 When adding or overriding providers, test:

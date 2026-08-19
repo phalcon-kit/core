@@ -19,6 +19,12 @@ release notes.
 
 ### Changed
 
+- Pinned the temporary Phalcon 5.19 IDE-stub branch to the audited commit and
+  hardened CI with release-archive checksum verification, lowest-dependency
+  coverage, package/platform validation, and a required Imagick compatibility
+  gate.
+- Documented the distinction between the core suite's 1 GB isolation ceiling
+  and bounded bootstrap reuse in long-running application workers.
 - Raised the package, CI, runtime example, and static-analysis baselines to
   Phalcon 5.19.0. Until a stable 5.19 stub tag is published, development tools
   use Phalcon's official `stubs/v5.19.0` branch.

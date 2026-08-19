@@ -4,6 +4,7 @@ set -euo pipefail
 
 required_version="${PHALCON_VERSION:?PHALCON_VERSION is required}"
 pecl_package_url="${PHALCON_PECL_URL:-https://github.com/phalcon/cphalcon/releases/download/v${required_version}/phalcon-pecl.tgz}"
+pecl_package_sha256="${PHALCON_PECL_SHA256:?PHALCON_PECL_SHA256 is required}"
 installed_version="$(php -r 'echo phpversion("phalcon") ?: "";')"
 
 if [[ "${installed_version}" != "${required_version}" ]]; then
@@ -20,6 +21,12 @@ if [[ "${installed_version}" != "${required_version}" ]]; then
   curl --fail --location --show-error --silent --retry 3 --retry-delay 2 \
     --output "${downloaded_package}" \
     "${pecl_package_url}"
+
+  actual_sha256="$(sha256sum "${downloaded_package}" | awk '{print $1}')"
+  if [[ "${actual_sha256}" != "${pecl_package_sha256}" ]]; then
+    echo "::error::Phalcon archive checksum mismatch: expected ${pecl_package_sha256}, got ${actual_sha256}"
+    exit 1
+  fi
 
   sudo "${pecl_bin}" install -f "${downloaded_package}"
 
