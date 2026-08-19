@@ -72,7 +72,9 @@
     "ext-sodium": "*",
     "docopt/docopt": "^1.0.6",
     "league/flysystem": "^3.35.2",
+    "league/flysystem-local": "^3.25.1",
     "league/fractal": "^0.21",
+    "league/mime-type-detection": "^1.16.0",
     "phalcon/incubator-mailer": "^3.0.0",
     "vlucas/phpdotenv": "^5.6.4"
   },

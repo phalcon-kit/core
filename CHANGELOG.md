@@ -23,6 +23,9 @@ release notes.
   hardened CI with release-archive checksum verification, lowest-dependency
   coverage, package/platform validation, and a required Imagick compatibility
   gate.
+- Declared the local Flysystem adapter and MIME detector as direct runtime
+  dependencies at their first PHP 8.5-clean releases, preventing deprecated
+  transitive floors from leaking output during filesystem initialization.
 - Documented the distinction between the core suite's 1 GB isolation ceiling
   and bounded bootstrap reuse in long-running application workers.
 - Migrated PhalconKit dispatcher, database, logger, DI-property,
