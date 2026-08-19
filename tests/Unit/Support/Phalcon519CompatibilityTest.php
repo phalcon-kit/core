@@ -187,7 +187,9 @@ class Phalcon519CompatibilityTest extends TestCase
 
         try {
             $this->writeSolidImage($baseFile, '#ff0000');
-            $this->writeSolidImage($watermarkFile, '#0000ff');
+            // Keep a real alpha channel in the PNG. ImageMagick may optimize an
+            // entirely opaque alpha channel away when it writes the fixture.
+            $this->writeSolidImage($watermarkFile, '#0000ff', alpha: 0.99);
 
             $base = new PhalconImagick($baseFile);
             $watermark = new PhalconImagick($watermarkFile);
@@ -298,11 +300,22 @@ class Phalcon519CompatibilityTest extends TestCase
         return $file;
     }
 
-    private function writeSolidImage(string $file, string $color, int $width = 4, int $height = 4): void
+    private function writeSolidImage(
+        string $file,
+        string $color,
+        int $width = 4,
+        int $height = 4,
+        float $alpha = 1.0
+    ): void
     {
         $image = new \Imagick();
         $image->newImage($width, $height, new \ImagickPixel($color));
         $image->setImageAlphaChannel(\Imagick::ALPHACHANNEL_SET);
+
+        if ($alpha < 1.0) {
+            $image->evaluateImage(\Imagick::EVALUATE_MULTIPLY, $alpha, \Imagick::CHANNEL_ALPHA);
+        }
+
         $image->setImageFormat('png');
         $image->writeImage($file);
     }
