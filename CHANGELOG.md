@@ -19,6 +19,9 @@ release notes.
 
 ### Changed
 
+- Refreshed the tested Composer dependency floors for the AWS SDK, Flysystem's
+  local adapter, and MIME-type detection. Guzzle remains on the compatible 7.x
+  line because the current OAuth2 client ecosystem does not yet accept Guzzle 8.
 - Replaced the temporary audited Phalcon 5.19 IDE-stub branch pin with the
   stable `phalcon/ide-stubs` 5.19 release constraint and restored strict
   Composer validation locally, in CI, and in the runtime-upgrade guide.
