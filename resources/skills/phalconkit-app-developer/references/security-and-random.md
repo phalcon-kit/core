@@ -8,12 +8,12 @@ login flows and ACL behavior, also read `identity-and-security.md`.
 
 Native Phalcon references:
 
-- Security and password hashing: https://docs.phalcon.io/5.18/encryption-security/
-- UUID factory: https://docs.phalcon.io/5.18/encryption-security/
-- JWT: https://docs.phalcon.io/5.18/encryption-security-jwt/
-- Cryptography: https://docs.phalcon.io/5.18/encryption-crypt/
-- Cookies and HTTP APIs: https://docs.phalcon.io/5.18/api/phalcon_http/
-- Response headers: https://docs.phalcon.io/5.18/response/
+- Security and password hashing: https://docs.phalcon.io/latest/encryption-security/
+- UUID factory: https://docs.phalcon.io/latest/encryption-security/
+- JWT: https://docs.phalcon.io/latest/encryption-security-jwt/
+- Cryptography: https://docs.phalcon.io/latest/encryption-crypt/
+- Cookies and HTTP APIs: https://docs.phalcon.io/latest/api/phalcon_http/
+- Response headers: https://docs.phalcon.io/latest/response/
 
 PhalconKit extends native Phalcon security by installing a custom random
 generator, keeping a `uuidv7()` convenience wrapper, and reading app config

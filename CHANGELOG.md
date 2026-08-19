@@ -19,6 +19,16 @@ release notes.
 
 ### Changed
 
+- Raised the package, CI, runtime example, and static-analysis baselines to
+  Phalcon 5.19.0. Until a stable 5.19 stub tag is published, development tools
+  use Phalcon's official `stubs/v5.19.0` branch.
+- Updated PhalconKit's shared string-length helper for Phalcon 5.19's inclusive
+  minimum and maximum defaults, preserving the documented model boundaries.
+- Added runtime compatibility coverage for Phalcon 5.19's callback validator,
+  string-length options, DataMapper lifecycle events and cancellation, direct
+  HTML input construction, and Imagick animation and opacity behavior.
+- Raised the test-only PHP memory ceiling to 1 GB so the full suite can finish
+  under Phalcon 5.19 instead of inheriting the application's 256 MB default.
 - Reworked the developer guides into a latest-version learning path with a
   complete resource walkthrough, practical cookbook, troubleshooting guide,
   clearer ownership rules, and more runnable verification examples. Official

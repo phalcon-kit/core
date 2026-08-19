@@ -9,11 +9,11 @@ service, and identity roles.
 
 Native Phalcon references:
 
-- Controllers: https://docs.phalcon.io/5.18/controllers/
-- Request: https://docs.phalcon.io/5.18/request/
-- Response: https://docs.phalcon.io/5.18/response/
-- Models: https://docs.phalcon.io/5.18/db-models/
-- PHQL: https://docs.phalcon.io/5.18/db-phql/
+- Controllers: https://docs.phalcon.io/latest/controllers/
+- Request: https://docs.phalcon.io/latest/request/
+- Response: https://docs.phalcon.io/latest/response/
+- Models: https://docs.phalcon.io/latest/db-models/
+- PHQL: https://docs.phalcon.io/latest/db-phql/
 
 PhalconKit REST controllers build on native Phalcon controllers, request and
 response services, models, and PHQL. Use native docs for base controller

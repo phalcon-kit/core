@@ -8,11 +8,11 @@ config, or security behaviors in a PhalconKit application.
 
 Native Phalcon references:
 
-- ACL: https://docs.phalcon.io/5.18/acl/
-- Security and password hashing: https://docs.phalcon.io/5.18/encryption-security/
-- JWT: https://docs.phalcon.io/5.18/encryption-security-jwt/
-- Sessions: https://docs.phalcon.io/5.18/session/
-- Controllers: https://docs.phalcon.io/5.18/controllers/
+- ACL: https://docs.phalcon.io/latest/acl/
+- Security and password hashing: https://docs.phalcon.io/latest/encryption-security/
+- JWT: https://docs.phalcon.io/latest/encryption-security-jwt/
+- Sessions: https://docs.phalcon.io/latest/session/
+- Controllers: https://docs.phalcon.io/latest/controllers/
 
 PhalconKit identity uses native Phalcon ACL, security, session, request, and
 controller services as its base. Use native docs for raw service behavior and

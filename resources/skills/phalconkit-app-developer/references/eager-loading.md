@@ -8,9 +8,9 @@ relation-level `QueryBuilder` closures.
 
 Native Phalcon references:
 
-- Models: https://docs.phalcon.io/5.18/db-models/
-- Relationships: https://docs.phalcon.io/5.18/db-models-relationships/
-- PHQL: https://docs.phalcon.io/5.18/db-phql/
+- Models: https://docs.phalcon.io/latest/db-models/
+- Relationships: https://docs.phalcon.io/latest/db-models-relationships/
+- PHQL: https://docs.phalcon.io/latest/db-phql/
 
 Phalcon 5.18 supports standard eager graphs through
 `Model::find(['eager' => [...]])` and `Criteria::eager()`. PhalconKit bridges

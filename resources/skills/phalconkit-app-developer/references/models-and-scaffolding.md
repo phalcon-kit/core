@@ -8,11 +8,11 @@ model events in a PhalconKit application.
 
 Native Phalcon references:
 
-- Models: https://docs.phalcon.io/5.18/db-models/
-- Relationships: https://docs.phalcon.io/5.18/db-models-relationships/
-- Model validation: https://docs.phalcon.io/5.18/db-models-validation/
-- Migrations: https://docs.phalcon.io/5.18/db-migrations/
-- Devtools: https://docs.phalcon.io/5.18/devtools/
+- Models: https://docs.phalcon.io/latest/db-models/
+- Relationships: https://docs.phalcon.io/latest/db-models-relationships/
+- Model validation: https://docs.phalcon.io/latest/db-models-validation/
+- Migrations: https://docs.phalcon.io/latest/db-migrations/
+- Devtools: https://docs.phalcon.io/latest/devtools/
 
 PhalconKit scaffolding reads the database and generates app model layers on top
 of native Phalcon ORM conventions. Use native docs for ORM vocabulary and

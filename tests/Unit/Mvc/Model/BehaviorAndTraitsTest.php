@@ -1475,6 +1475,19 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame(4.5, EventsTraitSubject::maximum());
     }
 
+    public function testStringLengthValidationUsesInclusiveBoundaries(): void
+    {
+        $model = new ModelBehaviorDouble();
+        $validator = new Validation();
+
+        $model->addStringLengthValidation($validator, 'string', 2, 4, true);
+
+        $this->assertCount(1, $validator->validate(['string' => 'a']));
+        $this->assertCount(0, $validator->validate(['string' => 'ab']));
+        $this->assertCount(0, $validator->validate(['string' => 'abcd']));
+        $this->assertCount(1, $validator->validate(['string' => 'abcde']));
+    }
+
     public function testValidationHelpers(): void
     {
         $model = new ModelBehaviorDouble();
