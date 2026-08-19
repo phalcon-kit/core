@@ -183,7 +183,7 @@ class Phalcon519CompatibilityTest extends TestCase
         $baseFile = $this->temporaryFile('phalcon-519-base-');
         $watermarkFile = $this->temporaryFile('phalcon-519-watermark-');
         $gifFile = $this->temporaryFile('phalcon-519-animation-');
-        $savedGifFile = $this->temporaryFile('phalcon-519-saved-animation-');
+        $savedGifFile = $this->temporaryFile('phalcon-519-saved-animation-', 'gif');
 
         try {
             $this->writeSolidImage($baseFile, '#ff0000');
@@ -289,7 +289,7 @@ class Phalcon519CompatibilityTest extends TestCase
         return $messages->count() === 0 ? null : (string) $messages->current()->getMessage();
     }
 
-    private function temporaryFile(string $prefix): string
+    private function temporaryFile(string $prefix, ?string $extension = null): string
     {
         $file = tempnam(sys_get_temp_dir(), $prefix);
 
@@ -297,7 +297,16 @@ class Phalcon519CompatibilityTest extends TestCase
             $this->fail(sprintf('Could not create temporary file with prefix "%s".', $prefix));
         }
 
-        return $file;
+        if ($extension === null) {
+            return $file;
+        }
+
+        $extendedFile = $file . '.' . ltrim($extension, '.');
+        if (!rename($file, $extendedFile)) {
+            $this->fail(sprintf('Could not add the "%s" extension to temporary file "%s".', $extension, $file));
+        }
+
+        return $extendedFile;
     }
 
     private function writeSolidImage(
@@ -306,8 +315,7 @@ class Phalcon519CompatibilityTest extends TestCase
         int $width = 4,
         int $height = 4,
         float $alpha = 1.0
-    ): void
-    {
+    ): void {
         $image = new \Imagick();
         $image->newImage($width, $height, new \ImagickPixel($color));
         $image->setImageAlphaChannel(\Imagick::ALPHACHANNEL_SET);
