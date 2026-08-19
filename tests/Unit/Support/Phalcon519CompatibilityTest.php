@@ -302,6 +302,7 @@ class Phalcon519CompatibilityTest extends TestCase
     {
         $image = new \Imagick();
         $image->newImage($width, $height, new \ImagickPixel($color));
+        $image->setImageAlphaChannel(\Imagick::ALPHACHANNEL_SET);
         $image->setImageFormat('png');
         $image->writeImage($file);
     }
@@ -309,9 +310,7 @@ class Phalcon519CompatibilityTest extends TestCase
     private function writeSharpenFixture(string $file): void
     {
         $image = new \Imagick();
-        $image->newImage(9, 9, new \ImagickPixel('#808080'));
-        $image->setImagePixelColor(4, 4, new \ImagickPixel('#707070'));
-        $image->setImagePixelColor(4, 5, new \ImagickPixel('#909090'));
+        $image->newPseudoImage(9, 9, 'gradient:#707070-#909090');
         $image->setImageFormat('png');
         $image->writeImage($file);
     }

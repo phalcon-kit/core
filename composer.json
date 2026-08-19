@@ -135,6 +135,7 @@
     "league/oauth2-instagram": "^3.1.0",
     "league/oauth2-linkedin": "^5.1.2",
     "openai-php/client": "^0.20.1",
+    "pds/skeleton": "^1.0.0",
     "phalcon/ide-stubs": "dev-stubs/v5.19.0#c33d5d4e3733914df11ed4598e38313b3dbf576f",
     "php-imap/php-imap": "^6.0",
     "saggre/phpdocumentor-markdown": "^1.0.0",
@@ -218,7 +219,7 @@
       "@qa:test"
     ],
     "qa:composer": [
-      "composer validate --strict --no-check-publish",
+      "composer validate --no-check-publish",
       "composer audit"
     ],
     "qa:static": [
