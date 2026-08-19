@@ -138,7 +138,7 @@ Start with fast checks:
 
 ```bash
 php -m | rg '^phalcon$'
-composer validate --no-check-publish
+composer validate --strict --no-check-publish
 composer check-platform-reqs
 git diff --check
 ```

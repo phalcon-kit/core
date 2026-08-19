@@ -15,6 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Changed
+
+- Replaced the temporary audited Phalcon 5.19 IDE-stub branch pin with the
+  stable `phalcon/ide-stubs` 5.19 release constraint and restored strict
+  Composer validation locally, in CI, and in the runtime-upgrade guide.
+
 ## 3.10.0 - 2026-08-19
 
 ### Changed

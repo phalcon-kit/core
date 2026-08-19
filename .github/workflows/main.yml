@@ -78,9 +78,7 @@ jobs:
           custom-cache-suffix: phalcon-kit-composer
 
       - name: Composer Validate
-        # The temporary audited IDE-stub commit ref intentionally emits a
-        # Composer warning; schema errors still fail non-strict validation.
-        run: composer validate --no-check-publish
+        run: composer validate --strict --no-check-publish
 
       - name: Composer Audit
         run: composer audit
