@@ -123,7 +123,7 @@ PhalconKit applications load Composer's PSR-4 autoloader, then run their
 project-owned `App\Bootstrap`.
 
 ```php
-require dirname(__DIR__) . '/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new \App\Bootstrap())->run();
 ```
@@ -173,7 +173,7 @@ defined('ROOT_PATH') || define('ROOT_PATH', __DIR__ . '/');
 defined('APP_PATH') || define('APP_PATH', ROOT_PATH . 'src/');
 defined('VENDOR_PATH') || define('VENDOR_PATH', ROOT_PATH . 'vendor/');
 
-$loader = require VENDOR_PATH . 'autoload.php';
+$loader = require_once VENDOR_PATH . 'autoload.php';
 
 return $loader;
 ```
@@ -183,7 +183,7 @@ return $loader;
 // public/index.php
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_MVC))->run();
 ```
@@ -194,7 +194,7 @@ echo (new Bootstrap(Bootstrap::MODE_MVC))->run();
 // bin/phalcon-kit
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 ```
@@ -205,7 +205,12 @@ echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 // Optional bin/websocket
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+if (!extension_loaded('swoole')) {
+    fwrite(STDERR, "The optional Swoole extension is required to run bin/websocket.\n");
+    exit(1);
+}
+
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_WS))->run();
 ```

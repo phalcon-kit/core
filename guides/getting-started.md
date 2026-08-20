@@ -144,7 +144,7 @@ Web entrypoint:
 
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_MVC))->run();
 ```
@@ -157,7 +157,7 @@ CLI entrypoint:
 
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 ```
@@ -170,7 +170,12 @@ WebSocket entrypoint:
 
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+if (!extension_loaded('swoole')) {
+    fwrite(STDERR, "The optional Swoole extension is required to run bin/websocket.\n");
+    exit(1);
+}
+
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_WS))->run();
 ```

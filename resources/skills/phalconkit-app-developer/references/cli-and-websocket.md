@@ -86,7 +86,7 @@ application bootstrap in CLI mode:
 <?php
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 ```
@@ -146,11 +146,11 @@ permissions:
     ],
 ],
 'swoole' => [
-    'host' => \PhalconKit\Support\Env::get('SWOOLE_HOST', '0.0.0.0'),
-    'port' => \PhalconKit\Support\Env::get('SWOOLE_PORT', '8081'),
+    'host' => \PhalconKit\Support\Env::get('SWOOLE_HOST', '127.0.0.1'),
+    'port' => (int) \PhalconKit\Support\Env::get('SWOOLE_PORT', 8081),
     'settings' => [
-        'worker_num' => \PhalconKit\Support\Env::get('SWOOLE_WORKER_NUM', 4),
-        'max_conn' => \PhalconKit\Support\Env::get('SWOOLE_MAX_CONN', 1000),
+        'worker_num' => (int) \PhalconKit\Support\Env::get('SWOOLE_WORKER_NUM', 1),
+        'max_conn' => (int) \PhalconKit\Support\Env::get('SWOOLE_MAX_CONNECTIONS', 1000),
         'heartbeat_check_interval' => 60,
         'heartbeat_idle_time' => 120,
     ],
@@ -159,7 +159,7 @@ permissions:
     'roles' => [
         'ws' => [
             'components' => [
-                \App\Modules\Ws\Tasks\MainTask::class => ['*'],
+                \App\Modules\Ws\Tasks\MainTask::class => ['listen'],
             ],
         ],
     ],
@@ -177,7 +177,12 @@ application bootstrap in WebSocket mode:
 <?php
 use App\Bootstrap;
 
-require dirname(__DIR__) . '/bootstrap.php';
+if (!extension_loaded('swoole')) {
+    fwrite(STDERR, "The optional Swoole extension is required to run bin/websocket.\n");
+    exit(1);
+}
+
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 echo (new Bootstrap(Bootstrap::MODE_WS))->run();
 ```
@@ -191,7 +196,7 @@ podman run -it --init --rm \
   -v /home/me/Projects:/app \
   --network="host" \
   localhost/php-app:8.5 \
-  php /app/my-app/websocket
+  php /app/my-app/bin/websocket
 ```
 
 If host networking is not appropriate, bind the WebSocket port locally and let
@@ -202,7 +207,7 @@ podman run -it --init --rm \
   -v /home/me/Projects:/app \
   -p 127.0.0.1:8081:8081 \
   localhost/php-app:8.5 \
-  php /app/my-app/websocket
+  php /app/my-app/bin/websocket
 ```
 
 ## Main WebSocket Task Shape
@@ -512,7 +517,7 @@ After=network.target
 [Service]
 User=appuser
 Group=appuser
-ExecStart=/opt/alt/php85/usr/bin/php /home/appuser/example.test/websocket
+ExecStart=/opt/alt/php85/usr/bin/php /home/appuser/example.test/bin/websocket
 
 KillSignal=SIGINT
 Restart=always
@@ -535,7 +540,7 @@ On shared hosting with CageFS or CloudLinux, the command may need the host's
 PHP wrapper instead of the raw PHP binary:
 
 ```ini
-ExecStart=/usr/bin/lve_suwrapper 1006 /opt/alt/php85/usr/bin/php /home/appuser/example.test/websocket
+ExecStart=/usr/bin/lve_suwrapper 1006 /opt/alt/php85/usr/bin/php /home/appuser/example.test/bin/websocket
 ```
 
 Process rules:

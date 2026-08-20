@@ -345,7 +345,7 @@ class Config extends \PhalconKit\Bootstrap\Config
                     ],
                     'ws' => [
                         'components' => [
-                            MainTask::class => ['*'],
+                            MainTask::class => ['listen'],
                         ],
                     ],
                     'everyone' => [
