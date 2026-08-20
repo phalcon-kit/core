@@ -65,7 +65,7 @@ final class Config extends \PhalconKit\Bootstrap\Config
             'modules' => [
                 \PhalconKit\Mvc\Module::NAME_API => [
                     'className' => \App\Modules\Api\Module::class,
-                    'path' => APP_PATH . '/Modules/Api/Module.php',
+                    'path' => APP_PATH . 'Modules/Api/Module.php',
                 ],
             ],
         ], $data);
@@ -95,7 +95,7 @@ Register app modules explicitly:
 'modules' => [
     \PhalconKit\Mvc\Module::NAME_API => [
         'className' => \App\Modules\Api\Module::class,
-        'path' => APP_PATH . '/Modules/Api/Module.php',
+        'path' => APP_PATH . 'Modules/Api/Module.php',
     ],
 ],
 ```

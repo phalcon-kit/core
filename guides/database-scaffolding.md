@@ -45,20 +45,14 @@ Official Phalcon references:
 
 ## 1. Run Migrations
 
-Applications commonly use Phalcon DevTools migrations:
+The App skeleton uses the maintained `phalcon/migrations` package:
 
 ```shell
-./vendor/bin/phalcon migration run \
-  --directory=./ \
-  --migrations=./resources/migrations \
-  --no-auto-increment \
-  --force \
-  --verbose \
-  --log-in-db
+./scripts/migration-run.sh
 ```
 
 Adjust the paths for the application skeleton in use. For team projects, wrap
-migration commands in `bin/` scripts so every developer uses the same config
+migration commands in `scripts/` so every developer uses the same config
 file, migration directory, and flags.
 
 ## 2. Run The Scaffolder
@@ -66,21 +60,13 @@ file, migration directory, and flags.
 Generate missing model files:
 
 ```shell
-./vendor/bin/phalcon-kit cli scaffold run \
-  --src-dir=app/ \
-  --namespace=App \
-  --models-extend=\\App\\Models\\AbstractModel
+./scripts/generate-models.sh
 ```
 
 Regenerate generated layers without overwriting concrete models:
 
 ```shell
-./vendor/bin/phalcon-kit cli scaffold run \
-  --src-dir=app/ \
-  --namespace=App \
-  --models-extend=\\App\\Models\\AbstractModel \
-  --force \
-  --no-models
+./scripts/regenerate-models.sh
 ```
 
 Use full `--force` only when overwriting concrete model shells is intentional.
@@ -162,7 +148,7 @@ Useful review commands:
 
 ```shell
 git status --short
-git diff -- app/Models
+git diff -- src/Models
 git diff --check
 ```
 

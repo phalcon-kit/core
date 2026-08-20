@@ -27,9 +27,8 @@ Use the existing app tree first; for new apps, this structure is a strong
 baseline:
 
 ```text
-app/
+src/
   Bootstrap.php
-  index.php
   Config/
     Config.php
     Exposers.php
@@ -91,9 +90,9 @@ app/
 
 Structure rules:
 
-- `app/Bootstrap.php` installs `App\Config\Config` before PhalconKit registers
+- `src/Bootstrap.php` installs `App\Config\Config` before PhalconKit registers
   services and modules.
-- `Config/Config.php` owns app-level overrides for modules, providers, models,
+- `src/Config/Config.php` owns app-level overrides for modules, providers, models,
   routes, services, and app settings.
 - `Config/Permissions/*Config.php` keeps per-resource permission definitions
   out of controllers.
@@ -107,7 +106,7 @@ Structure rules:
   says they are maintained manually.
 - `Models/Interfaces/` and concrete `Models/*.php` are the app-facing model
   contracts and behavior.
-- `Models/Enums/` holds model/domain enums; `app/Enums/` is useful for broader
+- `Models/Enums/` holds model/domain enums; `src/Enums/` is useful for broader
   app or integration enums that are not tied to one model layer.
 - `Modules/Api/Behaviors/` stores reusable REST controller behaviors.
 - `Modules/Api/Transformers/` stores Fractal transformers when the app uses
@@ -120,19 +119,13 @@ For a deeper root config and permission config recipe, read
 
 ## Bootstrap
 
-PhalconKit applications usually load Composer and the app namespace, then run
-`PhalconKit\Bootstrap`.
+PhalconKit applications load Composer's PSR-4 autoloader, then run their
+project-owned `App\Bootstrap`.
 
 ```php
-use Phalcon\Autoload\Loader;
-use PhalconKit\Bootstrap;
+require dirname(__DIR__) . '/bootstrap.php';
 
-$loader = new Loader();
-$loader->setFiles(['vendor/autoload.php']);
-$loader->setNamespaces(['App' => APP_PATH]);
-$loader->register();
-
-echo (new Bootstrap())->run();
+echo (new \App\Bootstrap())->run();
 ```
 
 `Bootstrap` decides the mode (`mvc`, `cli`, or `ws`), creates the default DI,
@@ -169,71 +162,61 @@ class Bootstrap extends \PhalconKit\Bootstrap
 }
 ```
 
-Common root entrypoints keep autoloading in one `loader.php`, then run the
-same app bootstrap in different modes:
+The root `bootstrap.php` defines normalized project paths and loads Composer.
+Every entrypoint derives that file from its own location, so commands do not
+depend on the caller's working directory:
 
 ```php
 <?php
-// loader.php
-use Phalcon\Autoload\Loader;
+// bootstrap.php
+defined('ROOT_PATH') || define('ROOT_PATH', __DIR__ . '/');
+defined('APP_PATH') || define('APP_PATH', ROOT_PATH . 'src/');
+defined('VENDOR_PATH') || define('VENDOR_PATH', ROOT_PATH . 'vendor/');
 
-const APP_NAMESPACE = 'App';
-const ROOT_PATH = __DIR__ . '/';
-const VENDOR_PATH = ROOT_PATH . 'vendor/';
-const APP_PATH = ROOT_PATH . 'app/';
-
-$loader = new Loader();
-$loader->setFiles([VENDOR_PATH . 'autoload.php']);
-$loader->setNamespaces([APP_NAMESPACE => APP_PATH]);
-$loader->setFileCheckingCallback(null);
-$loader->register();
+$loader = require VENDOR_PATH . 'autoload.php';
 
 return $loader;
 ```
 
 ```php
 <?php
-// index.php
-use App\Bootstrap;
-
-$loader = require 'loader.php';
-echo new Bootstrap()->run();
-```
-
-```php
-<?php
 // public/index.php
-require '../index.php';
+use App\Bootstrap;
+
+require dirname(__DIR__) . '/bootstrap.php';
+
+echo (new Bootstrap(Bootstrap::MODE_MVC))->run();
 ```
 
 ```php
 #!/usr/bin/env php
 <?php
-// cli
+// bin/phalcon-kit
 use App\Bootstrap;
 
-$loader = require 'loader.php';
-echo new Bootstrap('cli')->run();
+require dirname(__DIR__) . '/bootstrap.php';
+
+echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 ```
 
 ```php
 #!/usr/bin/env php
 <?php
-// websocket
+// Optional bin/websocket
 use App\Bootstrap;
 
-$loader = require 'loader.php';
-echo (new Bootstrap('ws'))->run();
+require dirname(__DIR__) . '/bootstrap.php';
+
+echo (new Bootstrap(Bootstrap::MODE_WS))->run();
 ```
 
 Entrypoint rules:
 
-- Keep constants such as `ROOT_PATH`, `VENDOR_PATH`, and `APP_PATH` in the
-  loader so every runtime resolves the same app tree.
-- Keep `public/index.php` thin. It should point web traffic at the root MVC
-  entrypoint without duplicating bootstrap logic.
-- Use `new Bootstrap('cli')` for CLI tasks and `new Bootstrap('ws')` for
-  Swoole/WebSocket tasks.
+- Keep constants such as `ROOT_PATH`, `VENDOR_PATH`, and `APP_PATH` in
+  `bootstrap.php` so every runtime resolves the same project tree.
+- Keep `public/index.php` thin and make `public/` the only web document root.
+- Use the `Bootstrap::MODE_*` constants instead of repeating mode strings.
+- Keep runtime entrypoints in `bin/` and maintainer helpers in `scripts/`.
 - Keep executable entrypoints extensionless if that is the app convention, but
   make sure deployment and process manager commands point at the real filename.
 
@@ -473,7 +456,7 @@ class Module extends \PhalconKit\Modules\Api\Module
     final public function getNamespaces(): array
     {
         return array_merge([
-            'App\\Models' => APP_PATH . '/Models/',
+            'App\\Models' => APP_PATH . 'Models/',
         ], parent::getNamespaces());
     }
 }
@@ -490,7 +473,7 @@ class Module extends \PhalconKit\Modules\Cli\Module
     final public function getNamespaces(): array
     {
         return array_merge([
-            'App\\Models' => APP_PATH . '/Models/',
+            'App\\Models' => APP_PATH . 'Models/',
         ], parent::getNamespaces());
     }
 }
@@ -504,7 +487,7 @@ class Module extends \PhalconKit\Modules\Ws\Module
     final public function getNamespaces(): array
     {
         return array_merge([
-            'App\\Models' => APP_PATH . '/Models/',
+            'App\\Models' => APP_PATH . 'Models/',
         ], parent::getNamespaces());
     }
 }
@@ -518,7 +501,7 @@ class Module extends \PhalconKit\Modules\Frontend\Module
     final public function getNamespaces(): array
     {
         return array_merge([
-            'App\\Models' => APP_PATH . '/Models/',
+            'App\\Models' => APP_PATH . 'Models/',
         ], parent::getNamespaces());
     }
 }

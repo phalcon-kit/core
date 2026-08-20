@@ -50,7 +50,7 @@ provides:
 Modules register a `Transformers` namespace by convention:
 
 ```text
-app/Modules/Api/Transformers/
+src/Modules/Api/Transformers/
   AbstractModelTransformer.php
   RecordTransformer.php
   RecordUserStatusTransformer.php

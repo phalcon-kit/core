@@ -108,7 +108,7 @@ For new projects, use the
 [`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
 
 ```shell
-composer create-project phalcon-kit/app my-api
+composer create-project phalcon-kit/app:^2.0 my-api
 ```
 
 or:

@@ -52,12 +52,20 @@ docker/
   data/
     mysql/
     valkey/
-websocket
-cli
-index.php
-loader.php
+bin/
+  phalcon-kit
+  websocket
+bootstrap.php
 public/
   index.php
+scripts/
+  migration-run.sh
+  regenerate-models.sh
+src/
+  Bootstrap.php
+  Config/
+  Models/
+  Modules/
 ```
 
 ```yaml
@@ -458,8 +466,8 @@ Common development commands:
 ```bash
 docker compose up -d mysql valkey php swoole apache
 docker compose exec php composer install
-docker compose exec php ./vendor/bin/phalcon-kit cli scaffold run --src-dir=app/ --namespace=App --models-extend=\\App\\Models\\AbstractModel --force --no-models
-docker compose exec php ./vendor/bin/phalcon migration run --config=./devtools.php --directory=./ --migrations=./resources/migrations/ --no-auto-increment --force --verbose --log-in-db
+docker compose exec php ./scripts/regenerate-models.sh
+docker compose exec php ./scripts/migration-run.sh
 docker compose logs -f swoole
 ```
 
@@ -508,8 +516,8 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=true
-StandardOutput=append:/home/appuser/example.test/storage/logs/websocket.out.log
-StandardError=append:/home/appuser/example.test/storage/logs/websocket.err.log
+StandardOutput=append:/home/appuser/example.test/storage/log/websocket.out.log
+StandardError=append:/home/appuser/example.test/storage/log/websocket.err.log
 
 [Install]
 WantedBy=multi-user.target

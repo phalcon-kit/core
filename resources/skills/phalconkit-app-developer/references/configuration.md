@@ -50,7 +50,7 @@ Use `PhalconKit\Bootstrap\Config` for the root application config. Use
 
 ## Permission Config Files
 
-Keep per-resource permissions in `app/Config/Permissions/*Config.php`. This
+Keep per-resource permissions in `src/Config/Permissions/*Config.php`. This
 keeps ACL, role feature grants, and behavior attachment out of controllers.
 
 ```php
@@ -270,19 +270,19 @@ class Config extends \PhalconKit\Bootstrap\Config
             'modules' => [
                 MvcModule::NAME_API => [
                     'className' => \App\Modules\Api\Module::class,
-                    'path' => APP_PATH . '/Modules/Api/Module.php',
+                    'path' => APP_PATH . 'Modules/Api/Module.php',
                 ],
                 MvcModule::NAME_FRONTEND => [
                     'className' => \App\Modules\Frontend\Module::class,
-                    'path' => APP_PATH . '/Modules/Frontend/Module.php',
+                    'path' => APP_PATH . 'Modules/Frontend/Module.php',
                 ],
                 CliModule::NAME_CLI => [
                     'className' => \App\Modules\Cli\Module::class,
-                    'path' => APP_PATH . '/Modules/Cli/Module.php',
+                    'path' => APP_PATH . 'Modules/Cli/Module.php',
                 ],
                 WebSocketModule::NAME_WS => [
                     'className' => \App\Modules\Ws\Module::class,
-                    'path' => APP_PATH . '/Modules/Ws/Module.php',
+                    'path' => APP_PATH . 'Modules/Ws/Module.php',
                 ],
             ],
 
@@ -381,7 +381,7 @@ class Config extends \PhalconKit\Bootstrap\Config
         ], $data);
 
         $data = $this->internalMergeAppend($data, new EventConfig()->toArray());
-        // Merge the rest of app/Config/Permissions/*Config.php here.
+        // Merge the rest of src/Config/Permissions/*Config.php here.
 
         parent::__construct($data, $insensitive);
 
@@ -446,7 +446,7 @@ When adding a new API resource, update these config surfaces together:
 1. Add app model aliases under `models` if the resource overrides a core model.
 2. Add `Config/Permissions/<Resource>Config.php` with `manage<Resource>` and
    `view<Resource>` features where appropriate.
-3. Merge the new permission config in `Config/Config.php`.
+3. Merge the new permission config in `src/Config/Config.php`.
 4. Add controller exposers in `Config/Exposers.php`.
 5. Add module/controller code under `Modules/Api/Controllers`.
 6. Run the app's ACL/controller tests or at least smoke-test allowed and denied

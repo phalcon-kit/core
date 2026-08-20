@@ -34,7 +34,7 @@ Start a new application from the
 [`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
 
 ```shell
-composer create-project phalcon-kit/app my-api
+composer create-project phalcon-kit/app:^2.0 my-api
 ```
 
 Add the core package to an existing Phalcon application:
@@ -141,17 +141,21 @@ complete schema-to-controller example with request and response payloads.
 Most applications using this package follow this shape:
 
 ```text
-app/
+src/
+  Bootstrap.php       application bootstrap
   Config/             app config, providers, permissions
   Models/             concrete business logic
   Models/Abstracts/   generated schema layer
   Modules/Api/        REST controllers
   Modules/Cli/        CLI tasks
+bin/                  application runtime entrypoints
+scripts/              migrations and scaffolding helpers
   Modules/Ws/         WebSocket tasks
 resources/
   migrations/         database migrations
 public/
   index.php           web front controller
+bootstrap.php         paths and Composer autoloading
 ```
 
 Generated files mirror the database. Your concrete models, controllers, config,
@@ -160,7 +164,7 @@ services, transformers, and tasks remain application-owned.
 ## Requirements
 
 - PHP `>= 8.5`
-- Phalcon `^5.15.0`
+- Phalcon `^5.19.0`
 - Composer
 - A PDO-compatible database supported by Phalcon
 - MySQL 8+ for the core test/scaffold baseline

@@ -52,7 +52,7 @@ class Module extends \PhalconKit\Modules\Cli\Module
     final public function getNamespaces(): array
     {
         return array_merge([
-            'App\\Models' => APP_PATH . '/Models/',
+            'App\\Models' => APP_PATH . 'Models/',
         ], parent::getNamespaces());
     }
 }
@@ -78,16 +78,17 @@ values are rendered by `afterExecuteRoute()` using the requested output format,
 defaulting to pretty JSON. Keep task actions focused and return arrays, strings,
 or scalar status payloads instead of echoing everywhere.
 
-CLI entrypoints should reuse the shared app loader and run bootstrap in `cli`
-mode:
+CLI entrypoints should reuse the root Composer bootstrap and run the
+application bootstrap in CLI mode:
 
 ```php
 #!/usr/bin/env php
 <?php
 use App\Bootstrap;
 
-$loader = require 'loader.php';
-echo new Bootstrap('cli')->run();
+require dirname(__DIR__) . '/bootstrap.php';
+
+echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 ```
 
 ## WebSocket Task Wrappers
@@ -120,7 +121,7 @@ class Module extends \PhalconKit\Modules\Ws\Module
     final public function getNamespaces(): array
     {
         return array_merge([
-            'App\\Models' => APP_PATH . '/Models/',
+            'App\\Models' => APP_PATH . 'Models/',
         ], parent::getNamespaces());
     }
 }
@@ -133,7 +134,7 @@ permissions:
 'modules' => [
     \App\Modules\Ws\Module::NAME_WS => [
         'className' => \App\Modules\Ws\Module::class,
-        'path' => APP_PATH . '/Modules/Ws/Module.php',
+        'path' => APP_PATH . 'Modules/Ws/Module.php',
     ],
 ],
 'router' => [
@@ -168,16 +169,17 @@ permissions:
 For Docker Compose, reverse-proxy WebSocket setup, and Swoole service setup,
 see `environment.md`.
 
-The WebSocket entrypoint should reuse the same loader and run bootstrap in
-`ws` mode:
+The WebSocket entrypoint should reuse the same root bootstrap and run the
+application bootstrap in WebSocket mode:
 
 ```php
 #!/usr/bin/env php
 <?php
 use App\Bootstrap;
 
-$loader = require 'loader.php';
-echo (new Bootstrap('ws'))->run();
+require dirname(__DIR__) . '/bootstrap.php';
+
+echo (new Bootstrap(Bootstrap::MODE_WS))->run();
 ```
 
 Run this entrypoint as a long-running process, not from a normal web request.
@@ -522,8 +524,8 @@ PrivateTmp=true
 ProtectSystem=full
 ProtectHome=true
 
-StandardOutput=append:/home/appuser/example.test/storage/logs/websocket.out.log
-StandardError=append:/home/appuser/example.test/storage/logs/websocket.err.log
+StandardOutput=append:/home/appuser/example.test/storage/log/websocket.out.log
+StandardError=append:/home/appuser/example.test/storage/log/websocket.err.log
 
 [Install]
 WantedBy=multi-user.target

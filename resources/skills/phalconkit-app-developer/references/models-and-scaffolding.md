@@ -24,7 +24,7 @@ and generated app contracts.
 Generated app model structure usually looks like this:
 
 ```text
-app/Models/
+src/Models/
   AbstractModel.php
   Abstracts/
     VoteAbstract.php
@@ -80,35 +80,31 @@ layer and preserve concrete models unless the overwrite is intentional.
 
 ## Migration Helper Scripts
 
-Apps often wrap Phalcon DevTools migrations in small `bin/` scripts so every
-developer uses the same config, directory, and deprecation flags.
+Apps should use the maintained `phalcon/migrations` package through small
+`scripts/` wrappers so every developer uses the same config and directories.
 
 Generate:
 
-```bash
-#!/bin/bash
-php -d "error_reporting=E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED" ./vendor/bin/phalcon migration generate --config=./devtools.php --directory=./ --migrations=./resources/migrations/ --no-auto-increment --force --verbose --log-in-db "$@"
+```shell
+./scripts/migration-generate.sh
 ```
 
 List:
 
-```bash
-#!/bin/bash
-php -d "error_reporting=E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED" ./vendor/bin/phalcon migration list --config=./devtools.php --directory=./ --migrations=./resources/migrations/ --log-in-db "$@"
+```shell
+./scripts/migration-list.sh
 ```
 
 Rollback:
 
-```bash
-#!/bin/bash
-php -d "error_reporting=E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED" ./vendor/bin/phalcon migration rollback --config=./devtools.php --directory=./ --migrations=./resources/migrations/ --no-auto-increment --force --verbose --log-in-db "$@"
+```shell
+./scripts/migration-rollback.sh --version=1.0.0
 ```
 
 Run:
 
-```bash
-#!/bin/bash
-php -d "error_reporting=E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED" ./vendor/bin/phalcon migration run --config=./devtools.php --directory=./ --migrations=./resources/migrations/ --no-auto-increment --force --verbose --log-in-db "$@"
+```shell
+./scripts/migration-run.sh
 ```
 
 Guidelines:
@@ -128,30 +124,26 @@ enums, and tests according to the selected options.
 
 Generate missing app model files only:
 
-```bash
-#!/bin/bash
-./vendor/bin/phalcon-kit cli scaffold run --src-dir=app/ --namespace=App --models-extend=\\App\\Models\\AbstractModel
+```shell
+./scripts/generate-models.sh
 ```
 
 Regenerate all model layers, including concrete models:
 
-```bash
-#!/bin/bash
-./vendor/bin/phalcon-kit cli scaffold run --src-dir=app/ --namespace=App --models-extend=\\App\\Models\\AbstractModel --force
+```shell
+./bin/phalcon-kit cli scaffold run --src-dir=src/ --namespace=App --force
 ```
 
 Regenerate generated layers without overwriting existing concrete models:
 
-```bash
-#!/bin/bash
-./vendor/bin/phalcon-kit cli scaffold run --src-dir=app/ --namespace=App --models-extend=\\App\\Models\\AbstractModel --force --no-models
+```shell
+./scripts/regenerate-models.sh
 ```
 
 Run an app CLI task:
 
-```bash
-#!/bin/bash
-./phalcon-kit cli cron run
+```shell
+./bin/phalcon-kit cli cron run
 ```
 
 Scaffold mode rules:

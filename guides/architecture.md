@@ -41,10 +41,10 @@ Official Phalcon references:
 ```text
 HTTP request
   → public/index.php
-  → project entrypoint
-  → loader.php
+  → bootstrap.php
+  → Composer autoloader
   → App\Bootstrap
-  → App\Config
+  → App\Config\Config
   → service providers / DI
   → module and router
   → dispatcher
@@ -71,13 +71,15 @@ model aliases, logging, identity rules, and application configuration.
 
 | Path | Owner | Typical contents |
 | --- | --- | --- |
-| `app/Bootstrap.php` | Application | Small composition overrides |
-| `app/Config/` | Application | Modules, providers, aliases, permissions, integrations |
-| `app/Models/Abstracts/` | Generator | Columns, relationships, validation, metadata |
-| `app/Models/` | Application | Domain behavior and custom relationships |
-| `app/Modules/Api/Controllers/` | Application | REST/query policy and workflow actions |
-| `app/Modules/Cli/Tasks/` | Application | Imports, exports, maintenance, scheduled work |
-| `app/Modules/Ws/Tasks/` | Application | WebSocket task handlers |
+| `src/Bootstrap.php` | Application | Small composition overrides |
+| `src/Config/` | Application | Modules, providers, aliases, permissions, integrations |
+| `src/Models/Abstracts/` | Generator | Columns, relationships, validation, metadata |
+| `src/Models/` | Application | Domain behavior and custom relationships |
+| `src/Modules/Api/Controllers/` | Application | REST/query policy and workflow actions |
+| `src/Modules/Cli/Tasks/` | Application | Imports, exports, maintenance, scheduled work |
+| `src/Modules/Ws/Tasks/` | Application | WebSocket task handlers |
+| `bin/` | Application | Runtime entrypoints such as the project CLI |
+| `scripts/` | Application | Migration, scaffolding, and maintainer helpers |
 | `resources/migrations/` | Application | Ordered schema history |
 | `vendor/phalcon-kit/core/` | Package manager | Framework code; never edit in an app |
 

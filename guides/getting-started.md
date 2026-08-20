@@ -33,8 +33,9 @@ For a new application, start from the
 [`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
 
 ```shell
-composer create-project phalcon-kit/app my-api
+composer create-project phalcon-kit/app:^2.0 my-api
 cd my-api
+cp .env.example .env
 ```
 
 For an existing Phalcon application:
@@ -61,30 +62,30 @@ DATABASE_PASSWORD=secret
 
 The app config reads environment values and registers modules, providers,
 aliases, permissions, and integrations. Keep secrets in `.env`; keep structure
-in `app/Config`.
+in `src/Config/Config.php`.
 
 ## 3. Check The Project Shape
 
 A normal app has a small bootstrap and clear ownership boundaries:
 
 ```text
-app/
+src/
   Bootstrap.php
   Config/
   Models/
   Modules/Api/
+bin/
+  phalcon-kit
+scripts/
+  migration-run.sh
 resources/
   migrations/
 public/
   index.php
-loader.php
-index.php
-cli
-websocket
+bootstrap.php
 ```
 
 Point the web server at `public/`, not the project root.
-
 ## 4. Run Locally
 
 For a quick local test:
@@ -112,14 +113,14 @@ After installing dependencies:
 
 ```shell
 composer validate --strict --no-check-publish
-composer phpunit
+composer qa
 ```
 
 If the application uses the database:
 
 ```shell
-./bin/migration-list.sh
-./bin/migration-run.sh
+./scripts/migration-list.sh
+./scripts/migration-run.sh
 ```
 
 ## 6. Build The First API Resource
@@ -143,9 +144,9 @@ Web entrypoint:
 
 use App\Bootstrap;
 
-require 'loader.php';
+require dirname(__DIR__) . '/bootstrap.php';
 
-echo (new Bootstrap())->run();
+echo (new Bootstrap(Bootstrap::MODE_MVC))->run();
 ```
 
 CLI entrypoint:
@@ -156,9 +157,9 @@ CLI entrypoint:
 
 use App\Bootstrap;
 
-require 'loader.php';
+require dirname(__DIR__) . '/bootstrap.php';
 
-echo (new Bootstrap('cli'))->run();
+echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 ```
 
 WebSocket entrypoint:
@@ -169,9 +170,9 @@ WebSocket entrypoint:
 
 use App\Bootstrap;
 
-require 'loader.php';
+require dirname(__DIR__) . '/bootstrap.php';
 
-echo (new Bootstrap('ws'))->run();
+echo (new Bootstrap(Bootstrap::MODE_WS))->run();
 ```
 
 ## Next Steps

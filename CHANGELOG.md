@@ -19,6 +19,10 @@ release notes.
 
 ### Changed
 
+- Updated guides and shipped agent references for the breaking App 2.0 layout:
+  Composer-autoloaded classes in `src/`, the preserved
+  `App\Config\Config` contract, runtime entrypoints in `bin/`, and maintainer
+  helpers in `scripts/`.
 - Refreshed the tested Composer dependency floors for the AWS SDK, Flysystem's
   local adapter, and MIME-type detection. Guzzle remains on the compatible 7.x
   line because the current OAuth2 client ecosystem does not yet accept Guzzle 8.

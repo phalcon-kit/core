@@ -60,12 +60,9 @@ CREATE TABLE project (
 Run the migration, then scaffold model artifacts from the live schema:
 
 ```bash
-./bin/migration-run.sh
+./scripts/migration-run.sh
 
-./vendor/bin/phalcon-kit cli scaffold run \
-  --src-dir=app/ \
-  --namespace=App \
-  --models-extend=\\App\\Models\\AbstractModel
+./scripts/generate-models.sh
 ```
 
 Review the generated diff. Confirm that `owner_id` produced the expected

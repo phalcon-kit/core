@@ -8,7 +8,7 @@ highest-value follow-up work.
 
 The app-developer skill now covers:
 
-- Real app structure under `app/`, including config, permissions, generated
+- Real app structure under `src/`, including config, permissions, generated
   model layers, modules, providers, bootstrap, and entrypoints.
 - Official Phalcon baseline map: native docs for MVC, DI, routing,
   controllers, models, relationships, filters, validation, security, sessions,

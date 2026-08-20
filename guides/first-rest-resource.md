@@ -55,12 +55,7 @@ the scaffolder reads that database to generate model structure.
 Regenerate generated layers without overwriting concrete model files:
 
 ```shell
-./vendor/bin/phalcon-kit cli scaffold run \
-  --src-dir=app/ \
-  --namespace=App \
-  --models-extend=\\App\\Models\\AbstractModel \
-  --force \
-  --no-models
+./scripts/regenerate-models.sh
 ```
 
 For this schema, review the generated diff for:

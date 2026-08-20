@@ -40,9 +40,10 @@ $loader->setFileCheckingCallback(null);
 
 Rules:
 
-- Keep shared constants and namespace registration in one `loader.php`.
-- Reuse that loader from MVC, CLI, and WebSocket entrypoints.
-- Prefer `PhalconKit\Autoload\Loader` for new apps.
+- Keep shared path constants and Composer loading in root `bootstrap.php`.
+- Reuse that bootstrap from MVC, CLI, and WebSocket entrypoints.
+- Prefer Composer PSR-4 autoloading for new apps. Preserve a native Phalcon
+  loader only when a migrated application still needs non-Composer paths.
 
 ## Composer-Loaded Functions
 

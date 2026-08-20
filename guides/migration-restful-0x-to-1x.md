@@ -270,17 +270,17 @@ $loader->setFiles([VENDOR_PATH . '/autoload.php']);
 $loader->setNamespaces([APP_NAMESPACE => APP_PATH]);
 ```
 
-The 1.x app convention can keep trailing slashes in the constants and simplify
-path concatenation:
+The App 3.10 skeleton uses Composer PSR-4 autoloading and keeps normalized
+project paths in one root `bootstrap.php`:
 
 ```php
-const ROOT_PATH = __DIR__ . '/';
-const VENDOR_PATH = ROOT_PATH . 'vendor/';
-const APP_PATH = ROOT_PATH . 'app/';
+defined('ROOT_PATH') || define('ROOT_PATH', __DIR__ . '/');
+defined('APP_PATH') || define('APP_PATH', ROOT_PATH . 'src/');
+defined('VENDOR_PATH') || define('VENDOR_PATH', ROOT_PATH . 'vendor/');
 
-$loader = new Loader();
-$loader->setFiles([VENDOR_PATH . 'autoload.php']);
-$loader->setNamespaces([APP_NAMESPACE => APP_PATH]);
+$loader = require VENDOR_PATH . 'autoload.php';
+
+return $loader;
 ```
 
 Pick one convention and apply it consistently. Mixing trailing-slash constants
@@ -302,13 +302,13 @@ $config = new Config();
 return new Devtools($config->toArray());
 ```
 
-The 1.x version keeps the same app config handoff:
+The current App skeleton keeps the same config handoff with Composer loading:
 
 ```php
 use PhalconKit\Bootstrap\Devtools;
 use App\Config\Config;
 
-$loader = require 'loader.php';
+require __DIR__ . '/bootstrap.php';
 
 $config = new Config();
 return new Devtools($config->toArray());
@@ -345,7 +345,8 @@ class Bootstrap extends \Zemit\Bootstrap
 }
 ```
 
-The 1.x version keeps the same app logic and swaps the framework namespace:
+The current App skeleton keeps the same app logic and swaps the framework
+namespace:
 
 ```php
 namespace App;
@@ -399,7 +400,7 @@ class Module extends \PhalconKit\Modules\Api\Module
     final public function getNamespaces(): array
     {
         return array_merge([
-            'App\\Models' => APP_PATH . '/Models/',
+            'App\\Models' => APP_PATH . 'Models/',
         ], parent::getNamespaces());
     }
 }
@@ -631,12 +632,7 @@ For an existing application, regenerate generated layers without overwriting
 concrete models while you are still porting custom logic:
 
 ```shell
-./vendor/bin/phalcon-kit cli scaffold run \
-  --src-dir=app/ \
-  --namespace=App \
-  --models-extend=\\App\\Models\\AbstractModel \
-  --force \
-  --no-models
+./scripts/regenerate-models.sh
 ```
 
 For a new application or a missing concrete model shell, omit `--no-models` so

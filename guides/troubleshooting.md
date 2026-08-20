@@ -119,10 +119,10 @@ the migration ran against the intended database, then regenerate and inspect
 the diff:
 
 ```bash
-./bin/migration-list.sh
-./bin/migration-run.sh
-./vendor/bin/phalcon-kit cli scaffold run --src-dir=app/ --namespace=App
-git diff -- app/Models
+./scripts/migration-list.sh
+./scripts/migration-run.sh
+./bin/phalcon-kit cli scaffold run --src-dir=src/ --namespace=App
+git diff -- src/Models
 ```
 
 Do not hand-edit generated abstract models to hide drift. Correct the migration

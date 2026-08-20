@@ -23,7 +23,7 @@ It is single-process and not suitable for production.
 ## Web Root Rules
 
 - Point the web server document root at `public/`.
-- Keep `.env`, `vendor/`, `app/`, `resources/`, and generated files outside the
+- Keep `.env`, `vendor/`, `src/`, `resources/`, and generated files outside the
   public document root.
 - Forward missing files to `public/index.php`.
 - Preserve the query string when rewriting.
@@ -91,9 +91,9 @@ WebSocket entrypoints normally bootstrap the app in `ws` mode:
 
 use App\Bootstrap;
 
-require 'loader.php';
+require dirname(__DIR__) . '/bootstrap.php';
 
-echo (new Bootstrap('ws'))->run();
+echo (new Bootstrap(Bootstrap::MODE_WS))->run();
 ```
 
 Run it with PHP directly, a container command, or a process supervisor:
@@ -147,8 +147,8 @@ KillSignal=SIGINT
 Restart=always
 RestartSec=3
 LimitNOFILE=65535
-StandardOutput=append:/var/www/app/storage/logs/websocket.out.log
-StandardError=append:/var/www/app/storage/logs/websocket.err.log
+StandardOutput=append:/var/www/app/storage/log/websocket.out.log
+StandardError=append:/var/www/app/storage/log/websocket.err.log
 
 [Install]
 WantedBy=multi-user.target
