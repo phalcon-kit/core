@@ -241,7 +241,7 @@ locale, provider overrides, model aliases, integration config, base roles, and
 per-resource permission configs.
 
 ```php
-namespace App\Config;
+namespace App;
 
 use App\Config\Permissions\EventConfig;
 use App\Modules\Cli\Tasks\CronTask;
@@ -446,7 +446,7 @@ When adding a new API resource, update these config surfaces together:
 1. Add app model aliases under `models` if the resource overrides a core model.
 2. Add `Config/Permissions/<Resource>Config.php` with `manage<Resource>` and
    `view<Resource>` features where appropriate.
-3. Merge the new permission config in `src/Config/Config.php`.
+3. Merge the new permission config in `src/Config.php`.
 4. Add controller exposers in `Config/Exposers.php`.
 5. Add module/controller code under `Modules/Api/Controllers`.
 6. Run the app's ACL/controller tests or at least smoke-test allowed and denied

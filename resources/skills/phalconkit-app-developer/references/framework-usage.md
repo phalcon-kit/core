@@ -29,8 +29,8 @@ baseline:
 ```text
 src/
   Bootstrap.php
+  Config.php
   Config/
-    Config.php
     Exposers.php
     Jsons/
       .gitkeep
@@ -90,9 +90,9 @@ src/
 
 Structure rules:
 
-- `src/Bootstrap.php` installs `App\Config\Config` before PhalconKit registers
+- `src/Bootstrap.php` installs `App\Config` before PhalconKit registers
   services and modules.
-- `src/Config/Config.php` owns app-level overrides for modules, providers, models,
+- `src/Config.php` owns app-level overrides for modules, providers, models,
   routes, services, and app settings.
 - `Config/Permissions/*Config.php` keeps per-resource permission definitions
   out of controllers.
@@ -139,7 +139,7 @@ final class AppBootstrap extends \PhalconKit\Bootstrap
 {
     public function initialize(): void
     {
-        $this->setConfig(new \App\Config\Config());
+        $this->setConfig(new \App\Config());
     }
 }
 ```
@@ -150,8 +150,6 @@ modules, and routes are registered.
 
 ```php
 namespace App;
-
-use App\Config\Config;
 
 class Bootstrap extends \PhalconKit\Bootstrap
 {
@@ -240,7 +238,7 @@ final class AppBootstrap extends \PhalconKit\Bootstrap
 {
     public function initialize(): void
     {
-        $this->setConfig(new \App\Config\Config());
+        $this->setConfig(new \App\Config());
     }
 }
 ```

@@ -14,7 +14,7 @@ The app-developer skill now covers:
   controllers, models, relationships, filters, validation, security, sessions,
   logging, testing, environment setup, plus quick native filter and validator
   lists.
-- Bootstrap and config flow: app bootstrap installs `App\Config\Config` before
+- Bootstrap and config flow: app bootstrap installs `App\Config` before
   provider/module registration.
 - Root config composition: modules, router defaults, locale, provider
   overrides, model aliases, integration config, role inheritance, and

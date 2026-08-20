@@ -50,7 +50,7 @@ reviewed and versioned.
 ```php
 <?php
 
-namespace App\Config;
+namespace App;
 
 use PhalconKit\Support\Env;
 

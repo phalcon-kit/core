@@ -62,7 +62,7 @@ DATABASE_PASSWORD=secret
 
 The app config reads environment values and registers modules, providers,
 aliases, permissions, and integrations. Keep secrets in `.env`; keep structure
-in `src/Config/Config.php`.
+in `src/Config.php`.
 
 ## 3. Check The Project Shape
 
@@ -71,7 +71,7 @@ A normal app has a small bootstrap and clear ownership boundaries:
 ```text
 src/
   Bootstrap.php
-  Config/
+  Config.php
   Models/
   Modules/Api/
 bin/

@@ -20,9 +20,9 @@ release notes.
 ### Changed
 
 - Updated guides and shipped agent references for the breaking App 2.0 layout:
-  Composer-autoloaded classes in `src/`, the preserved
-  `App\Config\Config` contract, runtime entrypoints in `bin/`, and maintainer
-  helpers in `scripts/`.
+  Composer-autoloaded classes in `src/`, the simplified `App\Config`
+  composition root at `src/Config.php`, runtime entrypoints in `bin/`, and
+  maintainer helpers in `scripts/`.
 - Aligned the optional WebSocket reference with App 2.0's `bin/websocket`
   entrypoint, loopback-first Swoole defaults, extension guard, and least-
   privilege `MainTask::listen` permission.

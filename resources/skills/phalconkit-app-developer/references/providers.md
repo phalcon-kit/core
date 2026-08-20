@@ -32,7 +32,7 @@ The normal lifecycle is:
 
 1. `Bootstrap` creates the DI and stores itself as `bootstrap`.
 2. `Bootstrap::initialize()` runs; app bootstraps should install custom config
-   here with `$this->setConfig(new \App\Config\Config())`.
+   here with `$this->setConfig(new \App\Config())`.
 3. `Bootstrap::registerConfig()` registers `config` first.
 4. `Bootstrap::registerServices()` reads `$config->pathToArray('providers')`.
 5. Each provider value must be a provider class-string. Bootstrap instantiates

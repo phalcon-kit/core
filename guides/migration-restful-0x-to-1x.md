@@ -306,7 +306,7 @@ The current App skeleton keeps the same config handoff with Composer loading:
 
 ```php
 use PhalconKit\Bootstrap\Devtools;
-use App\Config\Config;
+use App\Config;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -351,7 +351,6 @@ namespace:
 ```php
 namespace App;
 
-use App\Config\Config;
 use PhalconKit\Support\Env;
 
 class Bootstrap extends \PhalconKit\Bootstrap

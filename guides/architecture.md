@@ -44,7 +44,7 @@ HTTP request
   → bootstrap.php
   → Composer autoloader
   → App\Bootstrap
-  → App\Config\Config
+  → App\Config
   → service providers / DI
   → module and router
   → dispatcher
@@ -72,7 +72,7 @@ model aliases, logging, identity rules, and application configuration.
 | Path | Owner | Typical contents |
 | --- | --- | --- |
 | `src/Bootstrap.php` | Application | Small composition overrides |
-| `src/Config/` | Application | Modules, providers, aliases, permissions, integrations |
+| `src/Config.php` | Application | Modules, providers, aliases, permissions, integrations |
 | `src/Models/Abstracts/` | Generator | Columns, relationships, validation, metadata |
 | `src/Models/` | Application | Domain behavior and custom relationships |
 | `src/Modules/Api/Controllers/` | Application | REST/query policy and workflow actions |
