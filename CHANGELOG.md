@@ -17,6 +17,13 @@ release notes.
 
 ## Unreleased
 
+## 3.10.3 - 2026-08-25
+
+### Fixed
+
+- Corrected `PhalconKit\Support\Version` to report 3.10.3; release 3.10.2
+  inadvertently retained the previous 3.10.1 runtime version tuple.
+
 ## 3.10.2 - 2026-08-25
 
 ### Changed

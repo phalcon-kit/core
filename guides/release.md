@@ -12,7 +12,8 @@ under the current `Unreleased` heading in `CHANGELOG.md` until the tag is cut.
 1. Confirm the target version and release branch.
 2. Update `CHANGELOG.md` by moving the current unreleased section to a dated
    version heading.
-3. Update runtime version metadata if needed.
+3. Update `src/Support/Version.php` and its focused version test to the exact
+   release number.
 4. Confirm the README and guides describe the release accurately.
 5. Run the full local quality gate:
 
