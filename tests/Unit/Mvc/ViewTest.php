@@ -153,6 +153,44 @@ class ViewTest extends AbstractUnit
         $this->assertSame('Get render Ada', trim($content));
     }
 
+    public function testPartialCannotTraverseOutsideViewsDirectory(): void
+    {
+        $view = $this->createViewWithTemplate('safe.phtml', 'safe');
+        $viewsDir = $view->getViewsDir();
+        $this->assertIsString($viewsDir);
+
+        $secretName = 'phalconkit-view-secret-' . bin2hex(random_bytes(8));
+        $secretPath = rtrim($viewsDir, DIRECTORY_SEPARATOR)
+            . DIRECTORY_SEPARATOR
+            . '..'
+            . DIRECTORY_SEPARATOR
+            . $secretName
+            . '.phtml';
+        file_put_contents($secretPath, 'LEAKED-VIA-TRAVERSAL');
+
+        ob_start();
+        try {
+            try {
+                $view->partial('../' . $secretName);
+            }
+            catch (\Throwable) {
+                // A rejected path may surface as a missing-view exception.
+            }
+            $output = ob_get_clean();
+        }
+        catch (\Throwable $throwable) {
+            ob_end_clean();
+            throw $throwable;
+        }
+        finally {
+            if (is_file($secretPath)) {
+                unlink($secretPath);
+            }
+        }
+
+        $this->assertStringNotContainsString('LEAKED-VIA-TRAVERSAL', (string) $output);
+    }
+
     private function createViewWithTemplate(string $template, string $content): View
     {
         $viewsDir = sys_get_temp_dir() . '/phalconkit-view-' . bin2hex(random_bytes(8)) . '/';

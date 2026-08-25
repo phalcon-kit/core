@@ -24,6 +24,7 @@
       <exclude>tests/Unit/Modules/Cli/Tasks/Fixtures</exclude>
       <exclude>tests/Unit/Mvc/Controller/Traits/Fixtures</exclude>
       <exclude>tests/Unit/Mvc/Model/Fixtures</exclude>
+      <exclude>tests/Unit/Support/Fixtures</exclude>
     </testsuite>
   </testsuites>
   <coverage>

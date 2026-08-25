@@ -15,6 +15,25 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+## 3.10.2 - 2026-08-25
+
+### Changed
+
+- Raised the runtime, IDE-stub, CI, and Docker-example baseline to Phalcon
+  5.20.1 so applications receive its security hardening across HTML output,
+  redirects, storage, sessions, encryption, database dialects, logging,
+  filtering, images, trusted proxies, and routing.
+- Added focused compatibility coverage for the Phalcon APIs exposed through
+  PhalconKit's providers and wrappers.
+
+### Fixed
+
+- Suppressed only Phalcon 5.20.1's confirmed literal-route index notice while
+  rebuilding PhalconKit router indexes; later Phalcon releases use the native
+  fix without the compatibility handler.
+
 ## 3.10.1 - 2026-08-20
 
 ### Changed

@@ -19,12 +19,12 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PHALCON_VERSION: 5.19.0
-  PHALCON_PECL_URL: https://github.com/phalcon/cphalcon/releases/download/v5.19.0/phalcon-pecl.tgz
-  PHALCON_PECL_SHA256: 7586904d16a799a70bbc2cf6284c6ff45bdbfe10bd016c5971a20e3d943a8d15
+  PHALCON_VERSION: 5.20.1
+  PHALCON_PECL_URL: https://github.com/phalcon/cphalcon/releases/download/v5.20.1/phalcon-pecl.tgz
+  PHALCON_PECL_SHA256: d10b650444dfa855370ae4c51d1e319270432322a1b413cbbd0b728d0c150b4e
   # PHP extensions required by Composer
   EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, swoole, :memcache, :psr
-  EXTENSIONS_CACHE_KEY: php-ext-v4-php8.5-phalcon-helper-5.19.0
+  EXTENSIONS_CACHE_KEY: php-ext-v4-php8.5-phalcon-helper-5.20.1
 
 permissions:
   contents: read
@@ -69,7 +69,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer
 
-      - name: Ensure Phalcon 5.19.0
+      - name: Ensure Phalcon 5.20.1
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -127,7 +127,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpcs
 
-      - name: Ensure Phalcon 5.19.0
+      - name: Ensure Phalcon 5.20.1
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -176,7 +176,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpstan
 
-      - name: Ensure Phalcon 5.19.0
+      - name: Ensure Phalcon 5.20.1
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -230,7 +230,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, psalm
 
-      - name: Ensure Phalcon 5.19.0
+      - name: Ensure Phalcon 5.20.1
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -331,11 +331,11 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpunit
 
-      - name: Ensure Phalcon 5.19.0
+      - name: Ensure Phalcon 5.20.1
         run: bash .github/scripts/install-phalcon.sh
 
       - name: Require Imagick Compatibility Runtime
-        run: php -r 'if (!extension_loaded("imagick")) { fwrite(STDERR, "Imagick is required for the Phalcon 5.19 compatibility job.\n"); exit(1); }'
+        run: php -r 'if (!extension_loaded("imagick")) { fwrite(STDERR, "Imagick is required for the Phalcon 5.20.1 compatibility job.\n"); exit(1); }'
 
       - uses: ramsey/composer-install@v4
         with:
@@ -361,8 +361,8 @@ jobs:
           ./bin/migration-list.sh
           ./bin/migration-run.sh
 
-      - name: Phalcon 5.19 Compatibility
-        run: composer phpunit -- tests/Unit/Support/Phalcon519CompatibilityTest.php --display-skipped --display-errors
+      - name: Phalcon 5.20.1 Compatibility
+        run: composer phpunit -- tests/Unit/Support/Phalcon519CompatibilityTest.php tests/Unit/Support/Phalcon5201CompatibilityTest.php --display-skipped --display-errors
 
       - name: PHP Unit
         run: composer phpunit -- --display-skipped --display-errors

@@ -172,7 +172,7 @@ same extension setup:
 ```dockerfile
 ARG PHP_VARIANT=php:8.5-fpm
 ARG COMPOSER_VARIANT=composer:2
-ARG PHALCON_VERSION=5.19.0
+ARG PHALCON_VERSION=5.20.1
 
 FROM docker.io/library/${COMPOSER_VARIANT} AS composer
 FROM ${PHP_VARIANT}
