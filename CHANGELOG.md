@@ -17,6 +17,12 @@ release notes.
 
 ## Unreleased
 
+### Changed
+
+- Refreshed the GitHub Actions checkout and PHP setup actions to immutable,
+  Node.js 24-compatible releases and retriggered default CodeQL analysis after
+  GitHub recorded an infrastructure-only run with no executed steps.
+
 ## 3.10.4 - 2026-08-26
 
 ### Changed
