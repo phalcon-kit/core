@@ -17,6 +17,21 @@ release notes.
 
 ## Unreleased
 
+## 3.10.4 - 2026-08-26
+
+### Changed
+
+- Raised the runtime and CI baseline to Phalcon 5.20.2 with Zephir 1.3.0. The
+  latest official 5.20.1 IDE stubs remain the matching API surface because
+  Phalcon 5.20.2 changes no public API.
+- Aligned PHPUnit with Phalcon 5.20.2's stricter test posture by failing on
+  notices, deprecations, and PHPUnit deprecations and printing each trigger.
+
+### Removed
+
+- Removed the temporary Phalcon 5.20.1 literal-route notice suppression from
+  `PhalconKit\Mvc\Router`; Phalcon 5.20.2 fixes the index rebuild upstream.
+
 ## 3.10.3 - 2026-08-25
 
 ### Fixed

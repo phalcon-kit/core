@@ -161,7 +161,7 @@ class RouterTest extends AbstractUnit
         ], $routerToArray['matched']['paths']);
     }
 
-    public function testLiteralRouteIndexRebuildDoesNotEmitPhalcon5201Notice(): void
+    public function testLiteralRouteIndexRebuildUsesNativePhalconHandling(): void
     {
         $router = new Router(false, new Config());
         $router->add('/literal-route');

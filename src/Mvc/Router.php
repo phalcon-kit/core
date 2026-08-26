@@ -159,61 +159,6 @@ class Router extends \Phalcon\Mvc\Router implements PhalconMvcRouterInterface, R
     }
 
     /**
-     * Rebuild Phalcon's route indexes without leaking the 5.20.1 literal-route
-     * notice.
-     *
-     * Phalcon 5.20.1 unsets a nested shadow-map entry before its method bucket
-     * exists, emitting an `E_NOTICE` for each literal route. The upstream fix
-     * is merged for the next release. This compatibility boundary handles only
-     * that exact native notice on exactly 5.20.1 and delegates every other PHP
-     * error to the previously installed handler.
-     *
-     * @see https://github.com/phalcon/cphalcon/issues/17527
-     * @see https://github.com/phalcon/cphalcon/pull/17528
-     */
-    #[\Override]
-    protected function rebuildMethodIndex(): void
-    {
-        if (phpversion('phalcon') !== '5.20.1') {
-            parent::rebuildMethodIndex();
-
-            return;
-        }
-
-        $previousHandler = set_error_handler(
-            static fn(int $severity, string $message, string $file, int $line): bool => false
-        );
-        restore_error_handler();
-
-        set_error_handler(
-            static function (int $severity, string $message, string $file, int $line) use ($previousHandler): bool {
-                if (
-                    $severity === E_NOTICE
-                    && preg_match(
-                        '/^Undefined index: \S+ in phalcon\/Mvc\/Router\.zep on line 2293$/',
-                        $message
-                    ) === 1
-                ) {
-                    return true;
-                }
-
-                if ($previousHandler !== null) {
-                    return $previousHandler($severity, $message, $file, $line);
-                }
-
-                return false;
-            }
-        );
-
-        try {
-            parent::rebuildMethodIndex();
-        }
-        finally {
-            restore_error_handler();
-        }
-    }
-    
-    /**
      * Export the current router match state for diagnostics.
      *
      * @return array<string, mixed> Current namespace, module, controller,
