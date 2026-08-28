@@ -15,13 +15,37 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## Unreleased
+## 3.10.5 - 2026-08-28
 
 ### Changed
 
+- Raised the runtime, matching IDE-stub, CI installer, Docker example, and
+  documentation baselines to Phalcon 5.20.3. Compatibility coverage now checks
+  ACL delimiter rejection, collision-safe stream keys, restricted cache
+  deserialization, fail-closed URL/validator handling, escaped MySQL column
+  comments, strict JWT audiences, request-bag clearing, and per-call event
+  cancellation.
+- Exposed Phalcon 5.20.3's cache `allowedClasses` deserialization policy through
+  `CACHE_ALLOWED_CLASSES` while preserving object-cache compatibility by
+  default, documented safer scalar/list configurations, and reinforced
+  Argon2id/bcrypt guidance for Phalcon's deprecated legacy password hashes.
 - Refreshed the GitHub Actions checkout and PHP setup actions to immutable,
   Node.js 24-compatible releases and retriggered default CodeQL analysis after
   GitHub recorded an infrastructure-only run with no executed steps.
+- Made the release checklist require generated API synchronization, exact-SHA
+  CI before tagging, signed-tag verification, curated GitHub release notes,
+  Packagist SHA verification, and a successful Docs deployment.
+
+### Fixed
+
+- Made a `false` result from any `rest:beforeSave` listener final for that save,
+  so a later listener cannot accidentally override an authorization or policy
+  denial. The reusable events-aware trait also exposes the same per-call option
+  without mutating the manager's global setting.
+- Forced full phpDocumentor parsing during `composer docs` so regenerated API
+  output cannot retain stale signatures from the local documentation cache.
+- Kept generated coverage/NPM lock artifacts and Sonar-only QA configuration
+  out of Composer release archives.
 
 ## 3.10.4 - 2026-08-26
 

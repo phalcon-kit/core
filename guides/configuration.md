@@ -148,6 +148,13 @@ Use app providers when a service needs app configuration, app credentials, or a
 different implementation. Avoid replacing a core provider just to change one
 runtime option when config already supports it.
 
+Phalcon 5.20.3 and newer let storage-backed cache adapters restrict PHP object
+deserialization with `cache.default.allowedClasses`. PhalconKit defaults this
+to `true` for compatibility with model and application object caches. Set
+`CACHE_ALLOWED_CLASSES=false` when the cache stores only scalars and arrays, or
+set an explicit class-name list in application config when cached objects are
+required. Clear incompatible cache entries when tightening the policy.
+
 ## Event Listeners
 
 Use `eventsManager.listeners` for app-owned listeners that should attach to the

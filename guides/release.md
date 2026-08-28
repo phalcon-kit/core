@@ -34,7 +34,10 @@ composer audit
    - `SECURITY.md`
    - `SUPPORT.md`
    - `guides/`
-8. Check package contents:
+8. When public or protected APIs changed, regenerate the API reference with
+   `composer docs`, synchronize the generated API and guides into the Docs
+   repository, and build the complete MkDocs site.
+9. Check package contents:
 
 ```shell
 composer archive --format=tar --dir=/tmp
@@ -42,25 +45,41 @@ composer archive --format=tar --dir=/tmp
 
 Review the archive if package exclusions changed.
 
-## Tag
+## Commit And CI
 
-Use the reviewed SemVer release number and create a signed tag:
+1. Review `git status --short`, the complete diff, and `git diff --check`.
+2. Create and verify a signed release commit containing only the reviewed
+   release changes.
+3. Push the release commit to the release branch.
+4. Wait for every required workflow on that exact commit SHA. Do not tag while
+   a required check is pending or failing.
+
+## Tag And GitHub Release
+
+Only after the exact release commit passes CI, create and verify a signed tag:
 
 ```shell
 printf 'Release version: '
 read -r VERSION
 git tag -s "$VERSION" -m "Release $VERSION"
+git verify-tag "$VERSION"
 git push origin "$VERSION"
 ```
 
+Create the GitHub Release from the verified tag with curated notes and the
+correct previous-tag comparison link.
+
 ## After Release
 
-1. Verify the GitHub Actions workflow passed on the tag/default branch.
-2. Verify Packagist updated `phalcon-kit/core`.
-3. Check GitHub Code Scanning for fresh Psalm results.
-4. Confirm the old `zemit-cms/core` page still points users toward this
+1. Verify the GitHub Actions workflow passed on the tag and that the GitHub
+   Release targets the expected commit SHA.
+2. Verify Packagist updated `phalcon-kit/core` and resolves the exact tag SHA.
+3. Publish the synchronized Docs commit and verify its GitHub Pages workflow.
+4. Check GitHub Code Scanning for fresh Psalm results.
+5. Confirm the old `zemit-cms/core` page still points users toward this
    repository for historical context.
-5. Start a new unreleased section in `CHANGELOG.md`.
+6. Start a new unreleased section in `CHANGELOG.md` in the next development
+   commit.
 
 ## Legacy Package
 

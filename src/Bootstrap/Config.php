@@ -1062,6 +1062,7 @@ class Config extends \PhalconKit\Config\Config
                     'prefix' => Env::get('CACHE_PREFIX', Env::get('GLOBAL_PREFIX', 'phalcon_kit_') . 'cache_'),
                     'lifetime' => Env::get('CACHE_LIFETIME', 86400),
                     'defaultSerializer' => Env::get('CACHE_DEFAULT_SERIALIZER', 'Php'),
+                    'allowedClasses' => Env::get('CACHE_ALLOWED_CLASSES', true),
                 ],
             ],
             

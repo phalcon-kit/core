@@ -478,6 +478,11 @@ unless a row says otherwise. The service name is the DI key.
 | `Cache` | `cache` | `cache` | General cache service using memory, apcu, stream, memcached, or redis. Use `$this->cache->get($key)` and `$this->cache->set($key, $value)`. |
 | `Redis` | `redis` | `redis` | Native Redis client connection. Use `$this->redis` for Redis-specific operations not covered by cache/session adapters. |
 
+For Phalcon 5.20.3 or newer, storage-backed cache adapters accept
+`cache.default.allowedClasses`. The compatible default is `true`. Prefer
+`false` for scalar/array-only caches, or an explicit list of cached object
+classes, and clear entries that no longer satisfy the policy.
+
 ### Logging
 
 | Provider | Service | Config | Usage |

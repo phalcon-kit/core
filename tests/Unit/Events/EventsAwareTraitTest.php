@@ -112,6 +112,27 @@ class EventsAwareTraitTest extends AbstractUnit
         $this->assertSame('listener-result', $this->events->fire($task, ['payload' => true]));
     }
 
+    public function testFireCanMakeFalseFinalForOneCall(): void
+    {
+        $task = 'testFireCanMakeFalseFinalForOneCall';
+        $manager = new Manager();
+        $laterListenerRan = false;
+        $eventType = $this->events->getEventsPrefix() . ':' . $task;
+
+        $manager->attach($eventType, static fn(): bool => false);
+        $manager->attach($eventType, static function () use (&$laterListenerRan): bool {
+            $laterListenerRan = true;
+
+            return true;
+        });
+
+        $this->events->setEventsManager($manager);
+
+        $this->assertFalse($this->events->fire($task, cancelable: true, stopOnFalse: true));
+        $this->assertFalse($laterListenerRan);
+        $this->assertFalse($manager->isStopOnFalse());
+    }
+
     public function testFirePassesSubjectAndDataToListener(): void
     {
         $task = 'testFirePassesSubjectAndDataToListener';

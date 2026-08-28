@@ -2718,6 +2718,28 @@ class QueryStateTest extends AbstractUnit
         ], $controller->exposePersistAssignedModel($model, 'create'));
 
         $controller = $this->newQueryController();
+        $eventsManager = new \Phalcon\Events\Manager();
+        $laterListenerRan = false;
+        $eventsManager->attach('rest:beforeSave', static fn(): bool => false);
+        $eventsManager->attach(
+            'rest:beforeSave',
+            static function () use (&$laterListenerRan): bool {
+                $laterListenerRan = true;
+
+                return true;
+            }
+        );
+        $controller->setEventsManager($eventsManager);
+        $model = new QueryModelDouble();
+        $model->messages = ['denied'];
+
+        $this->assertSame([
+            'saved' => false,
+            'messages' => ['denied'],
+        ], $controller->exposePersistAssignedModel($model, 'create'));
+        $this->assertFalse($laterListenerRan);
+
+        $controller = $this->newQueryController();
         $model = new QueryModelDouble();
         $controller->setWith(new Collection(['Author']));
         $result = $controller->exposePersistAssignedModel($model, 'update');

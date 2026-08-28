@@ -126,6 +126,12 @@ public function afterValidation(): void
 `hash()` prepends `security.salt` and uses `security.workFactor` as the default
 cost. `checkHash()` applies the same salt before checking the stored hash.
 
+Keep `CRYPT_ARGON2ID` (the PhalconKit default) or bcrypt for password hashing.
+Do not select `CRYPT_MD5`, `CRYPT_SHA256`, or `CRYPT_SHA512`; Phalcon 5.20.3
+marks them as weak legacy algorithms scheduled for removal in a future major
+release. Verify existing legacy hashes at login, then replace them with a new
+Argon2id hash.
+
 Rules:
 
 - Hash passwords in model hooks or identity/domain services, not in controllers.

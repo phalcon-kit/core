@@ -17,7 +17,7 @@ cd "$project_root"
 rm -rf ./docs
 mkdir ./docs
 
-phpdoc -c phpdoc.xml "$@"
+phpdoc -c phpdoc.xml --force "$@"
 
 php ./bin/post-process-docs.php
 

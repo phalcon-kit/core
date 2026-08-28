@@ -15,6 +15,7 @@ namespace PhalconKit\Events;
 
 use Phalcon\Di\Di;
 use Phalcon\Contracts\Events\Manager as EventsManagerContract;
+use Phalcon\Events\Manager;
 use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Support\Helper;
 use PhalconKit\Support\Slug;
@@ -90,14 +91,26 @@ trait EventsAwareTrait
     /**
      * Fire an event.
      *
+     * A non-null stop-on-false override is supported by Phalcon's native
+     * manager without changing its global setting.
+     *
      * @param string $task The task to execute.
      * @param mixed|null $data The optional data to pass to the event.
      * @param bool $cancelable Whether the event is cancelable or not. Defaults to false.
+     * @param bool|null $stopOnFalse Per-call override; null uses the manager setting.
      *
      * @return mixed
+     *
+     * @throws InvalidArgumentException When the events manager is missing, or
+     *     when a per-call stop-on-false override is requested from a custom
+     *     manager that does not support Phalcon 5.20.3's fifth argument.
      */
-    public function fire(string $task, mixed $data = null, bool $cancelable = false): mixed
-    {
+    public function fire(
+        string $task,
+        mixed $data = null,
+        bool $cancelable = false,
+        ?bool $stopOnFalse = null
+    ): mixed {
         $eventType = $this->getEventsPrefix() . ':' . $task;
         $eventsManager = $this->getEventsManager();
         
@@ -107,6 +120,16 @@ trait EventsAwareTrait
             );
         }
         
+        if ($stopOnFalse !== null) {
+            if (!$eventsManager instanceof Manager) {
+                throw new InvalidArgumentException(
+                    'Per-call stop-on-false requires ' . Manager::class . '.'
+                );
+            }
+
+            return $eventsManager->fire($eventType, $this, $data, $cancelable, $stopOnFalse);
+        }
+
         return $eventsManager->fire($eventType, $this, $data, $cancelable);
     }
 }

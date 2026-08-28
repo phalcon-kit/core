@@ -309,6 +309,21 @@ class ConfigTest extends AbstractUnit
         }
     }
 
+    public function testCacheAllowedClassesUsesEnvironmentFlag(): void
+    {
+        $previous = Env::get('CACHE_ALLOWED_CLASSES');
+
+        try {
+            Env::set('CACHE_ALLOWED_CLASSES', null);
+            $this->assertTrue((new Config())->path('cache.default.allowedClasses'));
+
+            Env::set('CACHE_ALLOWED_CLASSES', 'false');
+            $this->assertFalse((new Config())->path('cache.default.allowedClasses'));
+        } finally {
+            Env::set('CACHE_ALLOWED_CLASSES', $previous);
+        }
+    }
+
     public function testGetDateTimeAppliesModifierFromProvidedDate(): void
     {
         $config = new Config();

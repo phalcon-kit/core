@@ -391,7 +391,7 @@ trait Save
      */
     protected function persistAssignedModel(ModelInterface $model, string $mode): array
     {
-        if ($this->eventsManager->fire('rest:beforeSave', $this, [&$model, $mode]) === false) {
+        if ($this->eventsManager->fire('rest:beforeSave', $this, [&$model, $mode], true, true) === false) {
             return [
                 'saved' => false,
                 'messages' => $model->getMessages(),
