@@ -15,6 +15,36 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.10.6 - 2026-09-11
+
+### Security
+
+- Enforced JWT validation at the identity consumer boundary. Invalid access
+  and refresh credentials now raise a generic HTTP 401 before their subjects
+  are trusted, session identity is accessed or rotated, or replacement tokens
+  are issued. This rejects expired tokens, signature failures, incorrect token
+  ids, issuer/audience mismatches, future time claims, and malformed inputs.
+- Prevented malformed explicit credentials from falling back to PHP session
+  authentication or being sanitized into valid tokens. Empty optional token
+  fields and requests without credentials retain their existing behavior.
+- Kept API authentication-error rendering independent of identity resolution,
+  including role behavior hooks, debug output, and cache headers, so rejected
+  credentials produce an uncacheable 401 without exposing token diagnostics.
+
+### Fixed
+
+- Added identity-consumer regressions using real Phalcon JWT validation,
+  synthetic signing keys, and isolated storage, including refresh atomicity,
+  stateless identity, impersonated identity preservation, and HTTP dispatch.
+  The public JWT validator still returns its error array; custom consumers must
+  explicitly reject non-empty results. See the
+  [consumer upgrade notes](guides/identity-and-permissions.md#jwt-validation-and-upgrades).
+
+### Changed
+
+- Aligned the security support policy with the maintained 3.10.x release line
+  and regenerated the API reference for the JWT validation and HTTP error contracts.
+
 ## 3.10.5 - 2026-08-28
 
 ### Changed

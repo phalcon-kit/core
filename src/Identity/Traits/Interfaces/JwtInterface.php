@@ -32,6 +32,8 @@ interface JwtInterface
      *     under the new key when possible.
      *
      * @return array{jwt: string, refreshToken: string, refreshed: bool}
+     * @throws \PhalconKit\Exception\HttpException With status 401 for invalid
+     *     credentials, before identity rotation or token issuance.
      */
     public function getJwt(bool $refresh = false): array;
     
@@ -44,6 +46,8 @@ interface JwtInterface
      *     sources again.
      *
      * @return array<string, mixed>
+     * @throws \PhalconKit\Exception\HttpException With status 401 for invalid
+     *     credentials. Rejection must not fall through to session fallback.
      */
     public function getClaim(bool $refresh = false, bool $force = false): array;
     
@@ -70,6 +74,8 @@ interface JwtInterface
      * @param string|null $claim Expected JWT id.
      *
      * @return array<string, mixed>
+     * @throws \PhalconKit\Exception\HttpException With status 401 when parsing
+     *     or validation fails, before the subject is trusted.
      */
     public function getClaimFromToken(string $token, ?string $claim = null): array;
     
@@ -80,6 +86,8 @@ interface JwtInterface
      *     `[Bearer, token]`.
      *
      * @return array<string, mixed>
+     * @throws \PhalconKit\Exception\HttpException With status 401 for a
+     *     malformed or invalid bearer credential.
      */
     public function getClaimFromAuthorization(array $authorization): array;
 }

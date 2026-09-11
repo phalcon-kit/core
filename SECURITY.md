@@ -7,9 +7,8 @@ receive fixes only when a low-risk backport is practical.
 
 | Version | Supported | Notes |
 | --- | --- | --- |
-| 1.1.x | Yes | Actively maintained. |
-| 1.0.x | No | Deprecated; upgrade recommended. |
-| < 1.0 | No | Unsupported pre-release versions. |
+| 3.10.x | Yes | Actively maintained; use 3.10.6 or newer for JWT validation enforcement. |
+| < 3.10 | No | Upgrade recommended; older backports are considered only when practical. |
 
 ## Reporting a Vulnerability
 

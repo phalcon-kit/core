@@ -200,7 +200,8 @@ class Jwt
      *
      * If no token or signer is passed, the helper uses the current token and
      * signer. The method returns Phalcon validator errors; an empty array means
-     * the token satisfied every enabled validation.
+     * the token satisfied every enabled validation. Callers must reject any
+     * non-empty result before trusting claims or performing identity operations.
      *
      * @param Token|null $token Token to validate, or null to use the current
      *        helper token.
@@ -213,7 +214,7 @@ class Jwt
      *        or null to use the current helper signer.
      * @return array<int|string, mixed> Validator errors.
      * @throws ServiceException When no token is available.
-     * @throws ValidatorException When the token fails validation.
+     * @throws ValidatorException When Phalcon cannot validate the token's structure.
      * @throws \DateMalformedStringException When a token date cannot be parsed.
      */
     public function validateToken(?Token $token = null, int $timeShift = 0, array $options = [], ?AbstractSigner $signer = null): array

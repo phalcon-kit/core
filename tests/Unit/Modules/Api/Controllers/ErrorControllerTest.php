@@ -107,16 +107,102 @@ class ErrorControllerTest extends AbstractUnit
         $this->assertSame('custom-client-error', $payload['view']['messages'][0]['message']);
     }
 
+    public function testInvalidJwtRendersUnauthorizedWithoutReenteringIdentity(): void
+    {
+        $identity = new \PhalconKit\Identity\Manager();
+        $identity->setDI($this->di);
+        $this->di->setShared('identity', $identity);
+        $this->di->getConfig()->identity->sessionFallback = false;
+        $this->di->getConfig()->response->cache->enable = true;
+        $this->di->setShared('request', new class extends \PhalconKit\Http\Request {
+            public function getHeader(string $header): string
+            {
+                return $header === 'X-Authorization' ? 'Bearer invalid-private-token' : '';
+            }
+        });
+
+        try {
+            $identity->isLoggedIn();
+            $this->fail('Malformed bearer token was accepted.');
+        } catch (HttpException $exception) {
+            [$response, $payload] = $this->dispatchApiException($exception, debug: true);
+        }
+
+        $this->assertSame(401, $response->getStatusCode());
+        $this->assertSame('Unauthorized', $payload['status']);
+        $this->assertSame('Invalid authentication token.', $payload['view']['messages'][0]['message']);
+        $this->assertArrayNotHasKey('debug', $payload);
+        $this->assertStringNotContainsString('invalid-private-token', $response->getContent());
+        $this->assertSame('no-store, no-cache, must-revalidate', $response->getHeaders()->get('Cache-Control'));
+    }
+
+    #[DataProvider('invalidDispatchCredentials')]
+    public function testNativeDispatchRendersInvalidCredentialAsUnauthorized(bool $refresh): void
+    {
+        $this->di->setShared('request', new class ($refresh) extends \PhalconKit\Http\Request {
+            public function __construct(private bool $refresh)
+            {
+            }
+
+            public function getHeader(string $header): string
+            {
+                return !$this->refresh && $header === 'X-Authorization' ? 'Bearer invalid-private-token' : '';
+            }
+
+            public function getJsonRawBody(bool $associative = false): \stdClass|array|bool
+            {
+                return (object)($this->refresh ? ['refreshToken' => 'invalid-private-token'] : []);
+            }
+        });
+        $config = $this->di->getConfig();
+        $config->app->debug = true;
+        $config->debug->enable = true;
+        $config->response->cache->enable = true;
+        $config->permissions = new \PhalconKit\Config\Config(['roles' => ['everyone' => ['components' => [
+            \PhalconKit\Modules\Api\Controllers\AuthController::class => ['*'],
+            ApiErrorController::class => ['*'],
+        ]]]]);
+        $config->router->httpException = new \PhalconKit\Config\Config([
+            'namespace' => 'PhalconKit\\Modules\\Api\\Controllers',
+            'controller' => 'error',
+            'action' => 'error',
+        ]);
+        $dispatcher = $this->di->getTyped('dispatcher', Dispatcher::class);
+        $dispatcher->setNamespaceName('PhalconKit\\Modules\\Api\\Controllers');
+        $dispatcher->setModuleName('api');
+        $dispatcher->setControllerName('auth');
+        $dispatcher->setActionName($refresh ? 'refresh' : 'getIdentity');
+        $dispatcher->setParameters([]);
+
+        $dispatcher->dispatch();
+
+        $response = $dispatcher->getReturnedValue();
+        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertSame(401, $response->getStatusCode());
+        $this->assertStringNotContainsString('invalid-private-token', $response->getContent());
+        $payload = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('Invalid authentication token.', $payload['view']['messages'][0]['message']);
+        $this->assertArrayNotHasKey('debug', $payload);
+        $this->assertArrayNotHasKey('jwt', $payload['view']);
+        $this->assertArrayNotHasKey('refreshToken', $payload['view']);
+    }
+
+    /** @return array<string, array{bool}> */
+    public static function invalidDispatchCredentials(): array
+    {
+        return ['access' => [false], 'refresh' => [true]];
+    }
+
     /**
      * Dispatch an exception through the listener and bundled API controller.
      *
      * @return array{ResponseInterface, array<string, mixed>}
      */
-    private function dispatchApiException(\Exception $exception): array
+    private function dispatchApiException(\Exception $exception, bool $debug = false): array
     {
         $config = $this->di->getConfig();
-        $config->app->debug = false;
-        $config->debug->enable = false;
+        $config->app->debug = $debug;
+        $config->debug->enable = $debug;
 
         $dispatcher = $this->di->getTyped('dispatcher', Dispatcher::class);
         $dispatcher->setNamespaceName('PhalconKit\\Modules\\Api\\Controllers');
@@ -136,6 +222,7 @@ class ErrorControllerTest extends AbstractUnit
 
         $controller = new ApiErrorController();
         $controller->setDI($this->di);
+        $controller->beforeExecuteRoute();
 
         if ($exception instanceof HttpException) {
             $controller->errorAction();

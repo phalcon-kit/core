@@ -64,6 +64,69 @@ final class AuthController extends \PhalconKit\Modules\Api\Controllers\AuthContr
 Keep unusual login behavior in the app controller while reusing identity,
 validation, messages, and response behavior from the core.
 
+## JWT Validation And Upgrades
+
+Starting with the 3.10.6 security fix, identity rejects invalid JWTs
+with `PhalconKit\Exception\HttpException` (401) and the public message
+`Invalid authentication token.`. Earlier identity code called `validateToken()`
+but discarded its error array, allowing invalid subjects to reach session
+lookup and refresh rotation.
+
+The validation boundary is shared by access authentication and refresh:
+
+- Access authentication resolves `jwt` or a bearer token from the configured
+  authorization header, then validates before reading the subject or looking
+  up `userId`/`asUserId` in session storage.
+- `getJwt(true)` force-resolves the refresh credential before reading, removing,
+  or copying the existing identity. A rejected refresh returns no token pair
+  and leaves persisted identity and any previously resolved claim unchanged.
+- Invalid credentials never fall through to PHP session authentication.
+  Malformed non-empty values are rejected without string sanitization. Missing,
+  null, or empty-string token fields retain the existing no-token behavior;
+  unsupported authorization schemes still produce no claim.
+- Access and refresh token ids remain distinct. A refresh token supplied as
+  `jwt`/bearer, or an access token supplied as `refreshToken`, is rejected.
+  The existing source precedence is unchanged: when `refreshToken` is absent,
+  `getJwt(true)` can still resolve a valid access credential or the configured
+  session fallback. This change does not introduce a refresh-token-only policy.
+- Stateful and stateless modes enforce the same checks. Numeric date claims
+  must be JSON numbers; malformed subject JSON and non-string subjects are
+  rejected. Missing subjects and valid JSON scalar subjects retain their
+  previous empty-claim behavior.
+
+The low-level `Provider\Jwt\Jwt::validateToken()` contract is unchanged: an
+empty error array means validation passed, and every non-empty result must be
+rejected by the caller. It can also throw for malformed input. Custom identity
+implementations overriding `getClaimFromToken()` must preserve this enforcement.
+Overrides of session persistence alone inherit the fix.
+
+Consumer rollout:
+
+1. Upgrade `phalcon-kit/core` through Composer to the fixed release and commit
+   the application lockfile. Do not patch the installed vendor directory.
+2. Check custom identity overrides and HTTP exception handlers. Use the normal
+   401 response without including token strings, validator diagnostics, or
+   request debug dumps. Custom API error controllers must avoid re-entering
+   identity resolution while rendering a rejected credential.
+3. Send `refreshToken` to the refresh endpoint without an expired access JWT in
+   the request/header: dispatch authorization may validate access credentials
+   before the refresh action runs. On refresh rejection, discard unusable
+   client credentials and require login. Login requests must also omit stale
+   invalid JWTs because the core login action resolves tokens first.
+4. Verify valid login/access/refresh/logout and impersonation in staging, plus
+   expired access and refresh rejection using the application's persistence
+   override. Replace stored tokens after successful stateless identity changes.
+
+Token lifetimes, clock allowances, idle and absolute session durations, and
+stateless revocation behavior are unchanged. Existing valid tokens keep their
+format and signing configuration; tokens previously accepted despite validation
+errors now fail. This fix does not revoke otherwise valid tokens or delete
+stored sessions. The package tests need no live application or database:
+
+```bash
+composer phpunit -- --filter JwtValidationTest
+```
+
 ## Permission Config
 
 Permissions are config-driven. Features group component permissions and optional

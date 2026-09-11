@@ -1140,9 +1140,10 @@ class ManagerTest extends AbstractUnit
                 };
             }
 
-            public function validateToken(object $token, int $leeway, array $validators): void
+            public function validateToken(object $token, int $leeway, array $validators): array
             {
                 $this->validated[] = $validators;
+                return [];
             }
         };
     }

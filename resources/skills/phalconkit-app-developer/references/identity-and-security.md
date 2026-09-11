@@ -189,6 +189,14 @@ bucket stores values such as:
 
 Core behavior:
 
+- Identity enforces JWT validator errors before trusting a subject or accessing
+  session identity. Invalid credentials raise a generic `HttpException` (401),
+  and rejected refreshes neither rotate identity nor issue tokens. Custom
+  `getClaimFromToken()` overrides must preserve this check; the low-level
+  `validateToken()` still returns an error array that its callers must enforce.
+- Read `guides/identity-and-permissions.md` in the package for JWT validation
+  compatibility and consumer upgrade steps, including refresh requests that
+  omit expired access credentials and custom 401 error rendering.
 - `getJwt()` creates a new key when none exists.
 - `refreshAction()` refreshes the claim key and can move the current session
   identity to the new key.

@@ -16,7 +16,7 @@ namespace PhalconKit\Identity\Traits;
 use Phalcon\Encryption\Security\Exception as SecurityException;
 use Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException;
 use PhalconKit\Di\AbstractInjectable;
-use Phalcon\Filter\Filter;
+use PhalconKit\Exception\HttpException;
 use stdClass;
 
 /**
@@ -56,7 +56,9 @@ trait Jwt
      * @return array{jwt: string, refreshToken: string, refreshed: bool}
      *
      * @throws SecurityException When token key generation fails.
-     * @throws ValidatorException When JWT validation fails.
+     * @throws ValidatorException When JWT creation fails.
+     * @throws HttpException With status 401 when a supplied token is invalid,
+     *     before session identity is read or rotated and before tokens are issued.
      */
     public function getJwt(bool $refresh = false): array
     {
@@ -124,6 +126,8 @@ trait Jwt
      *
      * @return array<string, mixed> Claim payload or an empty array when no
      *     supported credential is present.
+     * @throws HttpException With status 401 when a supplied token fails parsing
+     *     or validation. Invalid tokens never fall through to session fallback.
      */
     public function getClaim(bool $refresh = false, bool $force = false): array
     {
@@ -135,23 +139,29 @@ trait Jwt
         $json = $this->getJsonRawBody();
         
         if ($refresh) {
-            $refreshToken = $this->request->get('refreshToken', [Filter::FILTER_STRING], $json->refreshToken ?? null);
-            if (!empty($refreshToken)) {
+            $refreshToken = $this->request->get('refreshToken', null, $json->refreshToken ?? null);
+            if ($refreshToken !== null && $refreshToken !== '') {
+                if (!is_string($refreshToken)) {
+                    throw new HttpException('Invalid authentication token.', 401);
+                }
                 $this->setClaim($this->getClaimFromToken($refreshToken, $this->getSessionKey(true)));
                 return $this->claim;
             }
         }
         
         // Using JWT
-        $jwt = $this->request->get('jwt', [Filter::FILTER_STRING], $json->jwt ?? null);
-        if (!empty($jwt)) {
+        $jwt = $this->request->get('jwt', null, $json->jwt ?? null);
+        if ($jwt !== null && $jwt !== '') {
+            if (!is_string($jwt)) {
+                throw new HttpException('Invalid authentication token.', 401);
+            }
             $this->setClaim($this->getClaimFromToken($jwt, $this->getSessionKey()));
             return $this->claim;
         }
         
         // Using X-Authorization Header (recommended)
         $authorizationHeaderKey = $this->config->path('identity.authorizationHeader', 'X-Authorization');
-        $authorization = array_filter(explode(' ', $this->request->getHeader($authorizationHeaderKey)));
+        $authorization = preg_split('/\s+/', trim($this->request->getHeader($authorizationHeaderKey)), flags: PREG_SPLIT_NO_EMPTY) ?: [];
         if (!empty($authorization)) {
             $this->setClaim($this->getClaimFromAuthorization($authorization));
             return $this->claim;
@@ -221,21 +231,46 @@ trait Jwt
      *
      * @return array<string, mixed> Decoded `sub` payload or an empty array when
      *     the subject is missing/non-array.
+     * @throws HttpException With status 401 when parsing or validation fails.
+     *     Validation errors are enforced before decoding the subject; neither
+     *     the token nor the validator's diagnostics are exposed in the exception.
      */
     public function getClaimFromToken(string $token, ?string $claim = null): array
     {
         $uri = $this->request->getScheme() . '://' . $this->request->getHttpHost();
         
-        $token = $this->jwt->parseToken($token);
-        
-        $this->jwt->validateToken($token, 0, [
-            'issuer' => $uri,
-            'audience' => $uri,
-            'id' => $claim,
-        ]);
-        $claims = $token->getClaims();
-        
-        $ret = $claims->has('sub') ? json_decode($claims->get('sub'), true) : [];
+        try {
+            $token = $this->jwt->parseToken($token);
+            $claims = $token->getClaims();
+            // Native validation can coerce malformed dates; require NumericDate values.
+            foreach (['exp', 'nbf', 'iat'] as $dateClaim) {
+                if ($claims->has($dateClaim)) {
+                    $value = $claims->get($dateClaim);
+                    if (!is_int($value) && !is_float($value)) {
+                        throw new HttpException('Invalid authentication token.', 401);
+                    }
+                }
+            }
+            $errors = $this->jwt->validateToken($token, 0, [
+                'issuer' => $uri,
+                'audience' => $uri,
+                'id' => $claim,
+            ]);
+        }
+        catch (\InvalidArgumentException | ValidatorException | \DateMalformedStringException | \TypeError $exception) {
+            throw new HttpException('Invalid authentication token.', 401);
+        }
+
+        if ($errors !== []) {
+            throw new HttpException('Invalid authentication token.', 401);
+        }
+
+        try {
+            $ret = $claims->has('sub') ? json_decode($claims->get('sub'), true, flags: JSON_THROW_ON_ERROR) : [];
+        }
+        catch (\JsonException | \TypeError $exception) {
+            throw new HttpException('Invalid authentication token.', 401);
+        }
         return is_array($ret) ? $ret : [];
     }
     
@@ -247,13 +282,18 @@ trait Jwt
      *
      * @return array<string, mixed> Claim payload or an empty array when the
      *     header is not a bearer token.
+     * @throws HttpException With status 401 when the bearer credential is
+     *     malformed or its token is invalid. Unsupported schemes return [].
      */
     public function getClaimFromAuthorization(array $authorization): array
     {
         $authorizationType = $authorization[0] ?? null;
         $authorizationToken = $authorization[1] ?? null;
         
-        if ($authorizationType && $authorizationToken && strtolower($authorizationType) === 'bearer') {
+        if ($authorizationType && strtolower($authorizationType) === 'bearer') {
+            if (!$authorizationToken || count($authorization) !== 2) {
+                throw new HttpException('Invalid authentication token.', 401);
+            }
             return $this->getClaimFromToken($authorizationToken, $this->getSessionKey());
         }
         

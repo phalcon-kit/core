@@ -45,6 +45,15 @@ Keep for discussion:
   Replace the hard-coded `admin`/`dev` role gate only after a config-backed
   impersonation permission contract exists, including audit/session behavior for
   "login as" flows.
+- Stateless impersonation exit:
+  `src/Identity/Traits/Session.php`,
+  `src/Identity/Traits/Impersonation.php`.
+  The JWT enforcement regression work exposed an existing merge issue:
+  `logoutAs()` writes only the restored `userId`, but stateless
+  `setSessionIdentity()` retains the previous `asUserId`. Decide how replacement
+  and merge semantics should preserve custom claim fields while clearing
+  impersonation state. Validate a signed-token login-as/logout-as round trip
+  separately from JWT validation enforcement.
 - Identity role matching flag naming:
   `src/Identity/Traits/Role.php`,
   `src/Identity/Traits/Acl.php`.

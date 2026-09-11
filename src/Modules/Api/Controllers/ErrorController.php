@@ -35,6 +35,58 @@ class ErrorController extends Rest
     use StatusCode;
 
     /**
+     * Render a forwarded authentication failure without resolving roles again.
+     *
+     * The rejected credential remains in the request. Attaching identity-based
+     * behaviors here would repeat the failure instead of rendering the 401.
+     * Other error routes retain the usual controller behavior hooks.
+     */
+    #[\Override]
+    public function beforeExecuteRoute(): void
+    {
+        if (!$this->isUnauthorizedException()) {
+            parent::beforeExecuteRoute();
+        }
+    }
+
+    /**
+     * Omit request/identity debug context from authentication-error responses.
+     *
+     * Besides re-entering token validation, debug context can contain the
+     * rejected credential. This applies even when application debug is enabled.
+     */
+    #[\Override]
+    public function isDebugEnabled(): bool
+    {
+        return !$this->isUnauthorizedException() && parent::isDebugEnabled();
+    }
+
+    /**
+     * Make authentication failures uncacheable without reading identity state.
+     *
+     * @param array<array-key, mixed> $payload REST response envelope.
+     * @param int $code HTTP response status.
+     */
+    #[\Override]
+    protected function applyCacheHeaders(array $payload, int $code): void
+    {
+        if ($this->isUnauthorizedException()) {
+            $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+            $this->response->setHeader('Expires', '0');
+            $this->setVaryHeaders(false);
+            return;
+        }
+
+        parent::applyCacheHeaders($payload, $code);
+    }
+
+    private function isUnauthorizedException(): bool
+    {
+        $exception = $this->dispatcher->getParameter('exception');
+        return $exception instanceof HttpException && $exception->getCode() === 401;
+    }
+
+    /**
      * Render the configured HTTP-exception route through the REST envelope.
      *
      * The dispatcher owns status validation and preserves the exception as a
