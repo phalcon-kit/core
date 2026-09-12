@@ -93,6 +93,32 @@ Use the Core `Model` trait's implementation, or enforce equivalent identifier
 validation and HTTP 400 rejection in an override. The standard REST controller
 already includes it.
 
+## Nested Relationship Assignment
+
+Composite primary-key and relationship-key lookups now bind values in declared
+column order, independent of the order of request keys. Previously, reordered
+keys could select a different record. Direct-child ownership checks also now
+cover records found through the relationship-key fallback, before any incoming
+values are assigned. In combination, the old paths could select a foreign child,
+overwrite its owner fields, and pass the later ownership check during persistence.
+The regression suite reproduces that overwrite with the real ORM in an isolated
+database and verifies that the foreign row remains unchanged after the fix.
+
+Existing ownership violations use `InvalidArgumentException` with code 400.
+Models without primary-key metadata and calls without relationship-key
+definitions no longer perform unconstrained lookups. Valid related-record
+creation, sparse updates, and belongs-to saves retain their behavior.
+
+Ownership enforcement remains opt-in through
+`model.relationship.enforceDirectOwnership` or
+`MODEL_RELATIONSHIP_ENFORCE_DIRECT_OWNERSHIP`. Review this setting and the
+unowned-adoption policy for APIs accepting nested writes. It checks the declared
+direct relationship, not arbitrary application tenant rules. Keep parent query
+permissions, nested field allowlists, and separate authorization for shared
+belongs-to/many-to-many targets. Custom `getEntityFromData()` overrides must
+preserve the check against stored ownership before assignment. No schema change
+is required by these fixes.
+
 ## Encryption Keys And Existing Data
 
 The `crypt` service now requires a private key of at least 32 bytes. Set
@@ -188,15 +214,17 @@ does not enable it for every provider or change account-linking policy.
    run App QA, and verify a public Composer create-project installation.
 3. In existing applications, configure private keys and explicit CORS origins,
    review encryption migration needs, reset hooks, custom identity persistence,
-   OAuth callbacks, and computed query selectors, then update Core through
+   OAuth callbacks, nested write policies, and computed query selectors, then update Core through
    Composer and deploy the reviewed lockfile.
 4. Validate valid login/refresh/logout/impersonation, rejected credentials,
    deleted-account access, reset expiry/replay/rollback, encryption round trips,
-   OAuth expiry/replay/PKCE, CORS, and custom authorization before deployment.
+   OAuth expiry/replay/PKCE, CORS, nested relation ownership/composite keys,
+   and custom authorization before deployment.
 
 The regressions use the actual Core checkout with synthetic keys/users and
 isolated storage. They do not require live application databases. The opt-in
-`PasswordResetDatabaseTest` uses `PHALCONKIT_RESET_TEST_SOCKET` to create and
-remove a random synthetic schema on a disposable MariaDB/MySQL instance.
+`PasswordResetDatabaseTest` uses `PHALCONKIT_RESET_TEST_SOCKET`, and
+`RelationshipAssignmentDatabaseTest` uses `PHALCONKIT_RELATION_TEST_SOCKET`, to
+create and remove random synthetic schemas on a disposable MariaDB/MySQL instance.
 Never point it at an application database server. Application-specific identity
 overrides and other database engines remain consumer checks.

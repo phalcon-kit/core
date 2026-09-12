@@ -381,6 +381,12 @@ Important rules:
   form (`RoleList`) through Phalcon relationship access.
 - Controller save fields act as the write whitelist. If a relation alias is not
   whitelisted, the nested relation payload is skipped.
+- With `model.relationship.enforceDirectOwnership` enabled, existing `hasOne`
+  and `hasMany` children are checked against stored ownership before assignment
+  through either primary-key or relationship-key lookup. Composite keys match
+  by column name regardless of payload order. Keep application authorization
+  for the parent and for shared belongs-to/many-to-many targets; see
+  [relationship save options](../../../../guides/models-and-eager-loading.md#relationship-save-options).
 - A single relation can be assigned with a model instance, a scalar id, or an
   array of fields.
 - A many relation can be assigned with model instances, scalar ids, or arrays of

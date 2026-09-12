@@ -256,6 +256,9 @@ interface RelationshipInterface
 
     /**
      * Find one model row using the complete primary-key payload.
+     * Match values by column name, independently of payload order. Return null
+     * without querying when primary-key metadata is empty or the key is incomplete.
+     * Record authorization remains the caller's responsibility.
      *
      * @param array<string, mixed> $data Data that may contain primary-key
      *     values.
@@ -269,9 +272,13 @@ interface RelationshipInterface
      *
      * Implementations first try primary-key lookup, then relation-key lookup,
      * then instantiate a new related model when no existing entity is found.
+     * Both lookups match values by column name and require a non-empty key.
+     * Check configured direct-child ownership before assigning incoming values
+     * to an existing record, including records found through relationship keys.
      *
      * @param array<string, mixed> $data Related entity data.
      * @param array<string, mixed> $configuration Relation assignment metadata.
+     * @throws \PhalconKit\Exception\InvalidArgumentException When a direct child violates the configured ownership policy.
      */
     public function getEntityFromData(array $data, array $configuration = []): ModelInterface|Row|null;
 

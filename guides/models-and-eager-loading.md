@@ -145,9 +145,19 @@ The same defaults can be controlled with environment variables:
 - `MODEL_RELATIONSHIP_AUTO_RESTORE_DIRECT_RELATIONS`
 
 `enforceDirectOwnership` rejects direct child records that already point to a
-different parent before the save process rewrites their foreign key. When that
-guard is enabled, `allowUnownedDirectRelationAdoption` controls whether existing
-children with empty relationship keys may be attached to the current parent.
+different parent. Both primary-key and relationship-key lookup results are
+checked before incoming values are assigned, so a payload cannot conceal stored
+ownership by overwriting foreign keys. Rejection uses the framework's existing
+`InvalidArgumentException` with code 400. The save path also checks direct model
+instances before rewriting their foreign keys. When the guard is enabled,
+`allowUnownedDirectRelationAdoption` controls whether existing children with
+empty relationship keys may be attached to the current parent.
+
+Composite lookup values follow their named columns regardless of request key
+order. Lookup helpers require non-empty key definitions; missing keys cannot
+select an arbitrary existing row. These checks do not authorize the parent or
+shared belongs-to/many-to-many targets. Retain controller permission conditions,
+explicit nested save fields, and application policies for those records.
 
 `autoRestoreDirectRelations` only restores soft-deleted direct children that
 already belong to the current parent. Many-to-many through relations keep their

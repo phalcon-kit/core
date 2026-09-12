@@ -1279,11 +1279,14 @@ trait Relationship
     
     /**
      * Find the first record by its primary key attributes.
+     * Values are bound in metadata column order, independently of payload key
+     * order. Models without primary keys and incomplete key payloads do not
+     * trigger a lookup. This helper does not authorize the returned record.
      *
      * @param array $data The data containing the primary key values.
      * @param string|null $modelClass The class name of the model to search for. If not provided, the current model class will be used.
      * 
-     * @return ModelInterface|Model\Row|null The found record entity.
+     * @return ModelInterface|Model\Row|null The found record entity, or null when no complete key or record exists.
      */
     public function findFirstByPrimaryKeys(array $data, ?string $modelClass): ModelInterface|Row|null
     {
@@ -1298,12 +1301,12 @@ trait Relationship
         $relatedPrimaryKeys = $modelsMetaData->getPrimaryKeyAttributes($relatedModel);
         $relatedPrimaryValues = array_intersect_key($data, array_flip($relatedPrimaryKeys));
         
-        if (count($relatedPrimaryKeys) === count($relatedPrimaryValues)) {
+        if ($relatedPrimaryKeys !== [] && count($relatedPrimaryKeys) === count($relatedPrimaryValues)) {
             return $relatedModel::findFirst([
                 'conditions' => implode_sprintf($relatedPrimaryKeys, ' and ', '[' . $relatedModel::class . '].[%s] = ?%s'),
-                'bind' => array_values($relatedPrimaryValues),
+                'bind' => array_map(static fn (string $field): mixed => $relatedPrimaryValues[$field], $relatedPrimaryKeys),
                 'bindTypes' => array_fill(0, count($relatedPrimaryValues), Column::BIND_PARAM_STR),
-            ]);
+            ]) ?: null;
         }
         
         return null;
@@ -1314,6 +1317,9 @@ trait Relationship
      * It will try to find the existing record and then assign the new data.
      * - Will first try using the primary key of the related record
      * - Then will try using the defined relationship fields using the relationship alias
+     * Existing direct children resolved by either lookup are checked against
+     * the configured ownership/adoption policy before any data is assigned.
+     * Empty key definitions never perform an unconstrained record lookup.
      *
      * @param array $data The data array.
      * @param array $configuration The configuration options.
@@ -1326,6 +1332,7 @@ trait Relationship
      *                                - dataColumnMap: The data column map array.
      *
      * @return ModelInterface|Model\Row|null The entity object or null if not found.
+     * @throws InvalidArgumentException When configuration is invalid or an existing direct child violates the ownership policy.
      */
     public function getEntityFromData(array $data, array $configuration = []): ModelInterface|Row|null
     {
@@ -1350,15 +1357,6 @@ trait Relationship
         
         // using primary key first
         $entity = $this->findFirstByPrimaryKeys($data, $modelClass);
-        if ($entity instanceof EntityInterface) {
-            $this->assertDirectRelatedRecordCanBeAssigned(
-                $alias,
-                is_int($type) ? $type : null,
-                is_array($readFields) ? $readFields : [],
-                $fields,
-                $entity
-            );
-        }
         
         // not found, using the relationship fields instead
         if (!$entity) {
@@ -1381,7 +1379,7 @@ trait Relationship
             $dataKeys = array_intersect_key($data, array_flip($fields));
             
             // all keys were found
-            if (count($dataKeys) === count($fields)) {
+            if ($fields !== [] && count($dataKeys) === count($fields)) {
                 if ($type === Relation::HAS_MANY) {
                     $modelsMetaData = $this->getModelsMetaData();
                     $primaryKeys = $modelsMetaData->getPrimaryKeyAttributes($this);
@@ -1400,10 +1398,22 @@ trait Relationship
                 
                 $entity = $relatedModel::findFirst([
                     'conditions' => implode_sprintf($fields, ' and ', '[' . $relatedModel::class . '].[%s] = ?%s'),
-                    'bind' => array_values($dataKeys),
+                    'bind' => array_map(static fn (string $field): mixed => $dataKeys[$field], $fields),
                     'bindTypes' => array_fill(0, count($dataKeys), Column::BIND_PARAM_STR),
                 ]);
             }
+        }
+
+        // Check stored ownership before assignment can overwrite the owner keys,
+        // regardless of which lookup resolved the existing record.
+        if ($entity instanceof EntityInterface) {
+            $this->assertDirectRelatedRecordCanBeAssigned(
+                $alias,
+                is_int($type) ? $type : null,
+                is_array($readFields) ? $readFields : [],
+                $fields,
+                $entity
+            );
         }
         
         // not found, we will create a new related entity

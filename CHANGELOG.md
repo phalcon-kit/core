@@ -46,6 +46,13 @@ release notes.
   code exchange, and enforce validation in `getAccessToken()` itself. Preserve
   configured PKCE verifiers across requests and reject replay after failed
   exchanges as well as successful ones.
+- Enforce configured direct-child ownership after both primary-key and
+  relationship-key lookups, before nested assignment can mutate or expose a
+  foreign record. Rejections retain the existing HTTP 400 exception convention.
+- Bind composite lookup values by column name rather than request key order.
+  This prevents wrong-record selection and a combined nested-write bypass that
+  could overwrite/reparent a foreign child despite ownership enforcement.
+  Empty key definitions no longer trigger unconstrained record lookups.
 
 ### Upgrade Notes
 
@@ -56,6 +63,10 @@ release notes.
   Preserve existing encryption keys and associated data until a reviewed data
   migration is ready; key rotation is not automatic. JWT lifetimes and session
   revocation policy are unchanged.
+- Review nested write policies and custom related-record resolvers. Direct-child
+  ownership remains opt-in; existing adoption, belongs-to, through-relation,
+  and field-allowlist policies are unchanged. No schema migration is required
+  for these relationship fixes.
 
 ## 3.10.6 - 2026-09-11
 
