@@ -66,6 +66,9 @@ validation, messages, and response behavior from the core.
 
 ## JWT Validation And Upgrades
 
+For the additional unreleased signing-key, identity, CORS, and query protections,
+read the [security hardening upgrade notes](security-hardening.md).
+
 Starting with the 3.10.6 security fix, identity rejects invalid JWTs
 with `PhalconKit\Exception\HttpException` (401) and the public message
 `Invalid authentication token.`. Earlier identity code called `validateToken()`

@@ -47,6 +47,16 @@ release notes.
   configured PKCE verifiers across requests and reject replay after failed
   exchanges as well as successful ones.
 
+### Upgrade Notes
+
+- See [security hardening upgrade notes](guides/security-hardening.md) before
+  deploying. Applications using a default key, wildcard credentialed CORS,
+  request-supplied query expressions, or custom identity persistence need review.
+  Review reset hashing/delivery hooks and restart pending reset/OAuth flows.
+  Preserve existing encryption keys and associated data until a reviewed data
+  migration is ready; key rotation is not automatic. JWT lifetimes and session
+  revocation policy are unchanged.
+
 ## 3.10.6 - 2026-09-11
 
 ### Security

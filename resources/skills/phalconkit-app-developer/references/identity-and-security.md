@@ -4,6 +4,26 @@ Use this reference when changing authentication controllers, identity provider
 overrides, JWT/session behavior, impersonation, role checks, ACL permission
 config, or security behaviors in a PhalconKit application.
 
+## Password Reset Integration
+
+Core reset records are expiring and single-use (`v1:<expiry>:<hash>`).
+`identity.resetPassword.lifetime` / `IDENTITY_RESET_PASSWORD_LIFETIME` defaults
+to 1800 seconds; old undated records require a new request. Token hashing and
+verification share the configured salt. Tokens never appear in HTTP responses.
+
+Override `sendPasswordResetNotification()` to provide application mail/queue
+delivery; the default sends nothing. Use a trusted configured reset URL and
+rate-limit requests. Core hashes replacement passwords in
+`setPasswordAfterReset()`; override it when model hooks already hash plaintext
+to avoid double hashing. Model validation can reject the save transactionally.
+
+The default `persistPasswordReset()` claims the exact token and saves through
+model hooks using one write transaction. It rejects existing outer
+transactions. Custom stores must preserve atomic comparison, expiry,
+single-use, and rollback semantics. Test with the application's transactional
+storage and model hooks. Session revocation remains application policy.
+See `guides/security-hardening.md` in Core for migration details.
+
 ## Phalcon Baseline
 
 Native Phalcon references:
@@ -177,6 +197,11 @@ Rules for custom auth endpoints:
   accidental server errors.
 
 ## JWT And Session Identity
+
+Use an application-owned `SECURITY_JWT_PASSPHRASE`; Core no longer supplies a
+shared signing key. Read `guides/security-hardening.md` for key rotation, explicit
+CORS origins, stateless identity replacement, and the `clearIdentityCache()`
+requirement for custom identity persistence overrides.
 
 The JWT claim contains a generated `key`. By default, session identity is
 stored behind that key. This means a token identifies a session bucket, and the

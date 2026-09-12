@@ -177,8 +177,18 @@ registered DI services:
 - `crypt`: encryption/decryption service.
 - `cookies`: encrypted or signed cookie service depending on config.
 
-Keep real keys in environment variables or secret storage. Do not copy default
-example keys into production applications.
+The provider requires a private `CRYPT_KEY` / `crypt.key` of at least 32 bytes
+(`APP_CRYPT_KEY` is a fallback). It rejects missing, blank, short, and legacy
+public keys. For new data, generate `base64_encode(random_bytes(32))` and prefix
+it with `base64:`; the provider decodes the key before use. Unprefixed existing
+keys retain their bytes. Keep the key separate from the JWT signing key.
+
+AES-256-GCM uses authentication internally (`useSigning=false`) and defaults
+`crypt.authData` / `CRYPT_AUTH_DATA` to `phalcon-kit`. Preserve the original
+key, cipher, signing mode, and associated data for existing ciphertext. Review
+an offline re-encryption migration before rotating keys or changing these
+settings. No automatic migration occurs. See
+`guides/security-hardening.md` in the Core repository for upgrade details.
 
 ## Response Security Headers
 

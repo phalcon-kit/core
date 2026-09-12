@@ -74,9 +74,9 @@ Provider controllers set:
 The abstract controller provides:
 
 - `authorizationUrlAction()`: redirects to the provider authorization URL and
-  stores state in session.
-- `validateState()`: checks callback state against the session key.
-- `getAccessToken()`: exchanges callback code for an access token.
+  stores provider-bound state, expiry, and configured PKCE verifier in session.
+- `validateState()`: compares raw callback state and consumes the session record.
+- `getAccessToken()`: enforces state validation and allows one code exchange.
 - `refreshToken()`: refreshes a token.
 - `getResourceOwner()`: fetches the provider resource owner.
 
@@ -96,6 +96,13 @@ $owner = $this->getResourceOwner($token);
 Rules:
 
 - Use one session state key per provider.
+- `oauth2.stateLifetime` / `OAUTH2_STATE_LIFETIME` defaults to 600 seconds
+  (allowed range 1–86400). Old string-only pending states must restart.
+- Call `validateState()` at most once before exchange; `getAccessToken()` also
+  validates request state when necessary. Failed exchanges consume state too.
+- Session storage must serialize callbacks or implement equivalent atomic
+  consumption; separate get/remove calls alone do not protect a concurrent
+  custom session backend. Preserve configured PKCE across both requests.
 - Verify redirect URIs exactly match the provider console configuration.
 - Use HTTPS redirect URIs outside local development.
 - For Google hosted-domain restrictions, configure and verify the hosted domain
@@ -163,7 +170,9 @@ For OAuth2 work, test:
 
 - Provider service can be retrieved from DI with expected config.
 - Authorization redirects set a state value in session.
-- Callback rejects missing, wrong, or expired state.
+- Callback rejects missing, malformed, wrong-provider, replayed, or expired
+  state without sending a provider request. Failed exchanges cannot replay.
+- Separate authorization/callback requests retain configured PKCE verification.
 - Existing linked OAuth2 rows log in the mapped user.
 - First-time OAuth2 rows follow the app account-linking policy.
 - Deleted users and forbidden domains are rejected.
