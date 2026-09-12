@@ -1363,6 +1363,7 @@ class Config extends \PhalconKit\Config\Config
              * Oauth2
              */
             'oauth2' => [
+                'stateLifetime' => Env::get('OAUTH2_STATE_LIFETIME', 600),
                 'client' => [
                     'clientId' => Env::get('OAUTH2_CLIENT_ID'),
                     'clientSecret' => Env::get('OAUTH2_CLIENT_SECRET'),

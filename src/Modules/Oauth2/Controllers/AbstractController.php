@@ -21,6 +21,8 @@ use League\OAuth2\Client\Token\AccessToken;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Phalcon\Http\ResponseInterface;
 use PhalconKit\Modules\Oauth2\Controller;
+use PhalconKit\Exception\ConfigurationException;
+use PhalconKit\Exception\HttpException;
 
 /**
  * @property GenericProvider $oauth2Provider
@@ -39,42 +41,98 @@ abstract class AbstractController extends Controller
     public string $providerName = self::PROVIDER_CLIENT;
     
     public string $sessionKey = 'oauth2-generic-state';
+
+    /** @var array{state: string, expiresAt: int, provider: string, pkceCode: string|null}|null Validated context for one code exchange. */
+    private ?array $authorizationContext = null;
     
     /**
-     * Redirect to Authorization Url
+     * Start authorization and store a bounded, provider-specific state record.
+     *
+     * `oauth2.stateLifetime` controls its lifetime in seconds (default 600).
+     * A new attempt replaces the pending attempt for this provider/session.
+     * Configured League PKCE verifiers are retained for the callback request.
+     *
+     * @throws ConfigurationException When the state lifetime is invalid.
      */
     public function authorizationUrlAction(?string $scope = null): ResponseInterface
     {
+        $lifetime = filter_var($this->config->path('oauth2.stateLifetime', 600), FILTER_VALIDATE_INT);
+        if ($lifetime === false || $lifetime < 1 || $lifetime > 86400) {
+            throw new ConfigurationException('OAuth2 state lifetime must be between 1 and 86400 seconds.');
+        }
+        $this->authorizationContext = null;
         $redirectUrl = $this->oauth2Provider->getAuthorizationUrl([
             'scope' => explode(',', $scope ?: $this->request->get('scope', 'string', $this->defaultScope)),
         ]);
-        $this->session->set($this->sessionKey, $this->oauth2Provider->getState());
+        $this->session->set($this->sessionKey, [
+            'state' => $this->oauth2Provider->getState(),
+            'expiresAt' => time() + $lifetime,
+            'provider' => $this->providerName,
+            'pkceCode' => $this->oauth2Provider->getPkceCode(),
+        ]);
         return $this->response->redirect($redirectUrl);
     }
-    
+
     /**
-     * Validate State
+     * Validate and consume callback state before authorizing one code exchange.
+     *
+     * Values are compared verbatim; malformed, expired, legacy string, missing,
+     * and wrong-provider states fail closed. A successful call consumes stored
+     * state and allows getAccessToken() once in this controller instance.
+     * Session storage must serialize requests or provide equivalent atomic
+     * consumption when implementing a custom concurrent session backend.
      */
     public function validateState(?string $state = null): bool
     {
-        $state ??= $this->request->get('state', 'string');
-        if (empty($state) || !$this->session->has($this->sessionKey)) {
+        $this->authorizationContext = null;
+        $state ??= $this->request->get('state');
+        $context = $this->session->get($this->sessionKey);
+        if (!is_array($context) || !is_string($context['state'] ?? null)
+            || !is_int($context['expiresAt'] ?? null) || $context['expiresAt'] <= time()
+            || ($context['provider'] ?? null) !== $this->providerName
+        ) {
+            $this->session->remove($this->sessionKey);
             return false;
         }
-        
-        return $state === $this->session->get($this->sessionKey);
+        if (!is_string($state) || $state === '' || !hash_equals($context['state'], $state)) {
+            return false;
+        }
+        $this->session->remove($this->sessionKey);
+        $this->authorizationContext = [
+            'state' => $state,
+            'expiresAt' => $context['expiresAt'],
+            'provider' => $this->providerName,
+            'pkceCode' => is_string($context['pkceCode'] ?? null) ? $context['pkceCode'] : null,
+        ];
+        return true;
     }
-    
+
     /**
-     * Get Access Token
-     * @throws IdentityProviderException
+     * Exchange a callback code only after successful one-time state validation.
+     *
+     * Existing callbacks may call validateState() first; otherwise this method
+     * validates request state itself. The context is consumed before the remote
+     * exchange, including failed exchanges. Retry by starting authorization again.
+     *
+     * @throws HttpException With generic status 401 for invalid callback credentials.
+     * @throws IdentityProviderException When the provider rejects the exchange.
      */
     public function getAccessToken(?string $code = null): AccessTokenInterface
     {
-        $code ??= $this->request->get('code', 'string');
+        if ($this->authorizationContext === null && !$this->validateState()) {
+            throw new HttpException('Invalid OAuth2 authorization.', 401);
+        }
+        $context = $this->authorizationContext;
+        $this->authorizationContext = null;
+        $code ??= $this->request->get('code');
+        if ($context === null || $context['expiresAt'] <= time() || !is_string($code) || $code === '') {
+            throw new HttpException('Invalid OAuth2 authorization.', 401);
+        }
+        // Clear stale verifier state on reused provider instances as well.
+        $this->oauth2Provider->setPkceCode($context['pkceCode'] ?? '');
         return $this->oauth2Provider->getAccessToken('authorization_code', ['code' => $code]);
     }
-    
+
     /**
      * Refresh Token
      * @throws IdentityProviderException

@@ -42,6 +42,10 @@ release notes.
   transaction as the password update. Use matching salt policies for token
   hashing/verification, hash new passwords, reject legacy undated records,
   and expose protected notification and persistence/password hooks.
+- Bind OAuth2 state to the provider and session, expire and consume it before
+  code exchange, and enforce validation in `getAccessToken()` itself. Preserve
+  configured PKCE verifiers across requests and reject replay after failed
+  exchanges as well as successful ones.
 
 ## 3.10.6 - 2026-09-11
 
