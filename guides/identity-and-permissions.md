@@ -66,7 +66,7 @@ validation, messages, and response behavior from the core.
 
 ## JWT Validation And Upgrades
 
-For the additional unreleased signing-key, identity, CORS, and query protections,
+For the Core 3.10.7 signing-key, identity, CORS, and query protections,
 read the [security hardening upgrade notes](security-hardening.md).
 
 Starting with the 3.10.6 security fix, identity rejects invalid JWTs

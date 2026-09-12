@@ -1,8 +1,8 @@
 # Security Hardening Upgrade Notes
 
-These changes are in the Core **3.10.7 unreleased working tree**. Core 3.10.6
+These changes are included in Core **3.10.7**. Core 3.10.6
 already enforces JWT validator errors, but does not include the additional
-fixes below. Publish and install the fixed package before claiming these
+fixes below. Install the fixed package before claiming these
 protections in a consuming application.
 
 ## Signing Keys
@@ -47,6 +47,23 @@ that matches the custom storage implementation; otherwise call the helper.
 User lookup and model authorization restore their recursion guards in `finally`
 blocks. A caught exception no longer leaves subsequent model operations exempt
 from authorization. Nested guards retain their caller's state.
+
+Default PHP-session identity storage renews the PHP session ID before writing
+any authenticated replacement payload. This covers password/OAuth login,
+impersonation, direct SSO assignment, and authenticated refresh. The old session
+loses that identity before native regeneration saves it; unrelated session data
+is preserved and the old anonymous session expires normally. Clients must accept
+the renewed session cookie, including on refresh. An inactive session or failed
+renewal raises `ServiceException` before the replacement identity is written.
+Custom session services used with the default persistence implementation must
+support the native Phalcon session-manager lifecycle, including `getId()`,
+`exists()`, and `regenerateId()`.
+
+Stateless identity never resolves the PHP session for this renewal. Database
+persistence overrides remain responsible for their own credential-fixation
+protection and do not acquire a PHP-session dependency. Session fallback remains
+disabled by default; where enabled, an old anonymous cookie can no longer
+authenticate as the user after login.
 
 These changes do not alter access/refresh lifetimes, idle-session policy, or
 absolute session duration. Stateless logout still cannot revoke an already
@@ -108,6 +125,12 @@ Existing ownership violations use `InvalidArgumentException` with code 400.
 Models without primary-key metadata and calls without relationship-key
 definitions no longer perform unconstrained lookups. Valid related-record
 creation, sparse updates, and belongs-to saves retain their behavior.
+
+Nested `dataColumnMap` entries are now applied only to their related model.
+Forwarding an array map to native scalar assignment previously caused an
+`Illegal offset type` warning even for a valid related write. Scalar maps,
+array/JSON attribute values, nested allowlists, and strict relationship checks
+retain their behavior.
 
 Ownership enforcement remains opt-in through
 `model.relationship.enforceDirectOwnership` or

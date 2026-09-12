@@ -15,10 +15,16 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 3.10.7 - Unreleased
+## 3.10.7 - 2026-09-12
 
 ### Security
 
+- Renew the PHP session ID before persisting authenticated identity, including
+  password/OAuth login, impersonation, and refresh. Remove the old identity
+  before renewal so a known anonymous or previous cookie cannot inherit the
+  replacement identity. Preserve unrelated session data and reject failed
+  renewal before writing elevated identity. Stateless and custom database
+  identity storage retain their existing persistence contracts.
 - Remove the shared JWT signing-key fallback and reject missing, blank, or
   legacy public keys when signing or validating tokens. Configure a private
   `SECURITY_JWT_PASSPHRASE` before using JWT authentication; anonymous bootstrap
@@ -53,6 +59,12 @@ release notes.
   This prevents wrong-record selection and a combined nested-write bypass that
   could overwrite/reparent a foreign child despite ownership enforcement.
   Empty key definitions no longer trigger unconstrained record lookups.
+
+### Fixed
+
+- Keep nested relation column maps out of native scalar assignment, preventing
+  `Illegal offset type` warnings on valid mapped child payloads. Preserve scalar
+  mappings, array/JSON values, nested field allowlists, and strict relation checks.
 
 ### Upgrade Notes
 
