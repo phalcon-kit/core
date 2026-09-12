@@ -23,7 +23,12 @@ use PhalconKit\Provider\AbstractServiceProvider;
  *
  * The provider validates cipher, signing, padding, and key configuration before
  * returning Phalcon's `Crypt` service. It defaults to AES-256-GCM and requires
- * a key of at least 32 bytes, either from `crypt.key` or `APP_CRYPT_KEY`.
+ * a private key of at least 32 bytes from `crypt.key` (`CRYPT_KEY`, with
+ * `APP_CRYPT_KEY` as a fallback). A `base64:` prefix decodes binary key material
+ * before use; unprefixed keys retain their existing byte representation.
+ * The public legacy key is rejected. Default associated data is `phalcon-kit`;
+ * applications must retain their configured associated data when decrypting
+ * existing ciphertext. No key rotation or data migration is performed here.
  *
  * AEAD ciphers such as GCM/CCM authenticate internally and must not also enable
  * Phalcon's signing path. Stream modes are rejected with signing enabled
@@ -55,16 +60,19 @@ class ServiceProvider extends AbstractServiceProvider
             $options = $config->pathToArray('crypt') ?? [];
             
             $cipher ??= $options['cipher'] ?? 'aes-256-gcm';
-            $useSigning ??= $options['useSigning'] ?? true;
+            $lowerCipher = strtolower($cipher);
+            $isAEAD = str_ends_with($lowerCipher, '-gcm') || str_ends_with($lowerCipher, '-ccm');
+            // Preserve the existing signing fallback for custom non-AEAD configurations.
+            $useSigning ??= $options['useSigning'] ?? !$isAEAD;
             $hash = $options['hashAlgorithm'] ?? 'sha256';
-            $key = $options['key'] ?? ($_ENV['APP_CRYPT_KEY'] ?? null);
+            $key = $options['key'] ?? ($_ENV['CRYPT_KEY'] ?? $_ENV['APP_CRYPT_KEY'] ?? null);
             $padScheme = $options['padScheme'] ?? Crypt::PADDING_DEFAULT;
             $padFactoryClass = $options['padFactory'] ?? Crypt\PadFactory::class;
             if (!is_string($padFactoryClass) || !class_exists($padFactoryClass)) {
                 throw new ConfigurationException('Invalid crypt pad factory: expected an existing class name.');
             }
             
-            $authData = $options['authData'] ?? '';
+            $authData = $options['authData'] ?? 'phalcon-kit';
             $authTag = $options['authTag'] ?? '';
             $authTagLength = $options['authTagLength'] ?? 16;
             
@@ -77,10 +85,12 @@ class ServiceProvider extends AbstractServiceProvider
                 ));
             }
             
-            // Validate the key before creating a service that could encrypt
-            // unreadable data.
-            if (empty($key) || strlen($key) < 32) {
-                throw new ConfigurationException('Invalid encryption key: must be at least 32 bytes for AES-256 ciphers.');
+            if (is_string($key) && str_starts_with($key, 'base64:')) {
+                $key = base64_decode(substr($key, 7), true);
+            }
+            // Validate decoded key material before allowing encryption.
+            if (!is_string($key) || strlen($key) < 32 || trim($key) === '' || $key === 'T4\xb1\x8d\xa9\x98\x05\\x8c\xbe\x1d\x07&[\x99\x18\xa4~Lc1\xbeW\xb3') {
+                throw new ConfigurationException('Invalid encryption key: configure a private key of at least 32 bytes; the public legacy key is not accepted.');
             }
             
             // OpenSSL cipher availability depends on the PHP/OpenSSL build.
@@ -92,9 +102,6 @@ class ServiceProvider extends AbstractServiceProvider
                 ));
             }
             
-            $lowerCipher = strtolower($cipher);
-            
-            $isAEAD = str_ends_with($lowerCipher, '-gcm') || str_ends_with($lowerCipher, '-ccm');
             $isStreamMode = str_ends_with($lowerCipher, '-cfb')
                 || str_ends_with($lowerCipher, '-ofb')
                 || str_ends_with($lowerCipher, '-ctr');
@@ -115,6 +122,10 @@ class ServiceProvider extends AbstractServiceProvider
                 ));
             }
             
+            if ($isAEAD && (!is_string($authData) || $authData === '')) {
+                throw new ConfigurationException('AEAD encryption requires non-empty crypt.authData.');
+            }
+
             $crypt = new Crypt($cipher, $useSigning, $padFactory);
             $crypt->setKey($key);
             $crypt->setPadding($padScheme);

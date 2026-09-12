@@ -35,6 +35,9 @@ release notes.
   closing function/bracket query injection paths. Keep identifier/relation
   selectors, bound values, configured order aliases, and controller-owned
   default expressions supported.
+- Require a private encryption key, rejecting the shared legacy key before
+  resolving `crypt`. Support `base64:` encoded key bytes and operational
+  AES-256-GCM defaults with non-empty associated data.
 
 ## 3.10.6 - 2026-09-11
 
