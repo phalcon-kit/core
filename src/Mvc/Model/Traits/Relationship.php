@@ -407,7 +407,9 @@ trait Relationship
     
     /**
      * Assigns values to the model from an array, with options to control which fields are assigned.
-     * Handles related records using `assignRelated` method and passes remaining values to the parent's assign method.
+     * Handles related records using `assignRelated`. Nested relation maps are
+     * omitted from native scalar assignment, whose map values must be field
+     * names. Scalar maps and array/JSON attribute values retain native behavior.
      *
      * @param array $data The array of data to assign to the model.
      * @param array|null $whiteList An optional array specifying which fields in the model can be assigned.
@@ -419,6 +421,13 @@ trait Relationship
     public function assign(array $data, $whiteList = null, $dataColumnMap = null): ModelInterface
     {
         $this->assignRelated($data, $whiteList, $dataColumnMap);
+        if (is_array($dataColumnMap)) {
+            foreach ($dataColumnMap as $alias => $map) {
+                if (is_array($map) && $this->getModelsManager()->getRelationByAlias(static::class, (string)$alias)) {
+                    unset($dataColumnMap[$alias]);
+                }
+            }
+        }
         return parent::assign($data, $whiteList, $dataColumnMap);
     }
     

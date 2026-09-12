@@ -273,6 +273,88 @@ final class RelationshipAssignmentSecurityTest extends TestCase
         self::assertSame([], RelationshipAssignmentModel::$lookups);
     }
 
+    #[DataProvider('mappedRelationProvider')]
+    public function testNestedMapsPreserveScalarMapsAndChildAllowlists(int $type, bool $list): void
+    {
+        $parent = $this->parentWithRelation($type);
+        $child = $this->record(['id' => 10, 'parentId' => 5, 'secret' => 'Private']);
+        RelationshipAssignmentModel::$lookup = static fn () => $child;
+        $payload = ['id' => 10, 'label' => 'Updated child', 'privateLabel' => 'Denied'];
+        $parent->assign(
+            ['label' => 'Updated parent', 'child' => $list ? [$payload] : $payload],
+            ['name', 'child' => ['name']],
+            ['label' => 'name', 'child' => ['label' => 'name', 'privateLabel' => 'secret']]
+        );
+
+        self::assertSame('Updated parent', $parent->name);
+        self::assertSame('Updated child', $child->name);
+        self::assertSame('Private', $child->secret);
+        self::assertTrue($parent->hasDirtyRelatedAlias('child'));
+    }
+
+    public static function mappedRelationProvider(): array
+    {
+        return [
+            'has-one' => [Relation::HAS_ONE, false],
+            'has-many list' => [Relation::HAS_MANY, true],
+            'belongs-to' => [Relation::BELONGS_TO, false],
+        ];
+    }
+
+    public function testMapsRemainNestedAcrossMultipleRelationshipLevels(): void
+    {
+        $parent = $this->parentWithRelation(Relation::HAS_ONE);
+        $child = $this->record(['id' => 10, 'parentId' => 5]);
+        $grandchild = $this->record(['id' => 11, 'parentId' => 10]);
+        RelationshipAssignmentModel::$lookup = static fn (array $query) => $query['bind'] === [10] ? $child : $grandchild;
+        $parent->assign(
+            ['child' => ['id' => 10, 'label' => 'Child', 'child' => ['id' => 11, 'label' => 'Grandchild']]],
+            ['child' => ['name', 'child' => ['name']]],
+            ['child' => ['label' => 'name', 'child' => ['label' => 'name']]]
+        );
+
+        self::assertSame('Child', $child->name);
+        self::assertSame('Grandchild', $grandchild->name);
+        self::assertSame($grandchild, $child->getDirtyRelatedAlias('child'));
+    }
+
+    public function testRelationMapsDoNotDiscardArrayValuedModelAttributes(): void
+    {
+        $parent = $this->parentWithRelation(Relation::HAS_ONE);
+        $parent->setStrictRelatedAssignment(true);
+        $data = ['nested' => ['synthetic' => true]];
+        $parent->assign(
+            ['metadata' => $data, 'child' => ['label' => 'New child']],
+            ['secret', 'child' => ['name', 'parentId']],
+            ['metadata' => 'secret', 'child' => ['label' => 'name', 'parentId' => 'parentId']]
+        );
+
+        self::assertSame($data, $parent->secret);
+        self::assertSame('New child', $parent->getDirtyRelatedAlias('child')->name);
+    }
+
+    public function testNestedMapCannotBypassDeniedRelationAlias(): void
+    {
+        $parent = $this->parentWithRelation(Relation::HAS_ONE);
+        $parent->assign(['child' => ['label' => 'Denied']], ['name'], ['child' => ['label' => 'name']]);
+        self::assertFalse($parent->hasDirtyRelated());
+        self::assertSame([], RelationshipAssignmentModel::$lookups);
+
+        $parent->setStrictRelatedAssignment(true);
+        $this->expectException(InvalidArgumentException::class);
+        $parent->assign(['child' => ['label' => 'Denied']], ['name'], ['child' => ['label' => 'name']]);
+    }
+
+    public function testEmptyColumnMapRetainsNativeDenyAllScalarBehavior(): void
+    {
+        $parent = $this->parentWithRelation(Relation::HAS_ONE);
+        $parent->name = 'Original';
+        $parent->assign(['name' => 'Ignored'], ['name'], []);
+        self::assertSame('Original', $parent->name);
+        $parent->assign(['name' => 'Updated'], ['name'], null);
+        self::assertSame('Updated', $parent->name);
+    }
+
     private function parentWithRelation(
         int $type,
         string|array $fields = 'id',
