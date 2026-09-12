@@ -305,6 +305,8 @@ trait FilterConditions
                 [Filter::FILTER_STRING, Filter::FILTER_TRIM]
             );
 
+            $this->assertRequestField($rawField);
+
             if (!$this->isFilterAllowed($rawField, $allowedFilters)) {
                 throw new HttpException(sprintf('Unauthorized filter field "%s".', $rawField), 403);
             }

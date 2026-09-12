@@ -31,6 +31,10 @@ release notes.
 - Default CORS to no allowed origins and no browser credentials. Wildcards now
   emit `*` without credential grants; explicit origin allowlists support
   credentials and responses vary by Origin for shared caches.
+- Reject PHQL expressions in request filter, order, and group field selectors,
+  closing function/bracket query injection paths. Keep identifier/relation
+  selectors, bound values, configured order aliases, and controller-owned
+  default expressions supported.
 
 ## 3.10.6 - 2026-09-11
 

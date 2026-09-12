@@ -196,7 +196,8 @@ trait Order
     /**
      * Resolve a public order field to the query field used in PHQL.
      *
-     * Null order fields preserve legacy unrestricted ordering. Once a policy is
+     * Null order fields accept identifier selectors from requests, while trusted
+     * controller defaults may contain expressions. Once a policy is
      * configured, only public names in the normalized field map are accepted.
      *
      * @throws HttpException When the field is not enabled by the configured
@@ -205,6 +206,9 @@ trait Order
     protected function resolveOrderField(string $field): string
     {
         if ($this->getOrderFields() === null) {
+            if ($this->hasParam('order')) {
+                $this->assertRequestField($field);
+            }
             return $field;
         }
 

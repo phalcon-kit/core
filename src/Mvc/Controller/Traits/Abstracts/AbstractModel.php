@@ -31,5 +31,11 @@ trait AbstractModel
 
     abstract public function modelHasColumn(string $column, ?string $modelName = null): bool;
     
+    /**
+     * Reject request field selectors containing PHQL expressions with HTTP 400.
+     * Implementations must accept identifiers and supported relation scopes only.
+     */
+    abstract protected function assertRequestField(string $field): void;
+
     abstract public function appendModelName(string $field, ?string $modelName = null): string;
 }

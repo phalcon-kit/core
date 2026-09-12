@@ -225,6 +225,24 @@ trait Model
     }
 
     /**
+     * Require a REST field selector to contain identifiers rather than PHQL.
+     *
+     * Supports dotted relation paths and named relation scopes such as
+     * `Article[a].title`. Query expressions belong in controller-owned defaults
+     * or explicit order-field mappings, never in unrestricted request fields.
+     *
+     * @param string $field Public field selector from a request.
+     * @throws \PhalconKit\Exception\HttpException With status 400 for invalid selectors.
+     */
+    protected function assertRequestField(string $field): void
+    {
+        $identifier = '(?:[A-Za-z_][A-Za-z0-9_]*(?:\[[A-Za-z0-9_]+\])?|\[[A-Za-z_][A-Za-z0-9_]*\])';
+        if (!preg_match('/\A' . $identifier . '(?:\.' . $identifier . ')*\z/D', $field)) {
+            throw new \PhalconKit\Exception\HttpException('Invalid query field.', 400);
+        }
+    }
+
+    /**
      * Normalize and qualify a field reference with the model (alias) name.
      *
      * Responsibilities
@@ -233,7 +251,10 @@ trait Model
      * • Safely formats identifiers into PHQL bracket notation: [Alias].[column].
      * • Preserves SQL/PHQL function or expression calls (e.g. RAND(), COUNT(id)).
      * • Supports optional ORDER BY direction (ASC | DESC).
-     * • Rejects obvious injection vectors.
+     * • Rejects obvious injection vectors, but does not parse trusted expressions.
+     *
+     * Never pass arbitrary request input here. Use assertRequestField() first
+     * or resolve a controller-owned expression through an explicit field map.
      *
      * Assumptions
      * -----------

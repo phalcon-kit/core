@@ -39,6 +39,9 @@ trait Group
      * are appropriately trimmed and adjusted.
      *
      * @return void This method does not return a value but updates the group's state internally.
+     * Request fields must be identifiers; expressions are allowed only in controller defaults.
+     *
+     * @throws \PhalconKit\Exception\HttpException With status 400 for invalid request fields.
      * @throws FilterException When request parameter filtering fails.
      */
     public function initializeGroup(): void
@@ -67,6 +70,9 @@ trait Group
                 continue;
             }
 
+            if ($this->hasParam('group')) {
+                $this->assertRequestField($field);
+            }
             $collection->set(
                 $field,
                 $this->appendModelName($field)
