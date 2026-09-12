@@ -117,11 +117,13 @@ class Jwt
      * `issuedAt`, `issuer`, `audience`, `contentType`, `id`, and `subject`.
      *
      * @param array<string, mixed> $options Builder option overrides.
+     * @throws ConfigurationException When the signing key is missing or the public legacy key.
      * @throws ValidatorException
      */
     public function builder(array $options = []): Builder
     {
         $options = $this->getDefaultOptions($options);
+        $this->requirePassphrase($options['passphrase']);
         
         $this->builder = new Builder($this->signer);
         $this->builder->setPassphrase($options['passphrase']);
@@ -158,6 +160,7 @@ class Jwt
      *        helper token.
      * @param int $timeShift Clock skew allowance passed to Phalcon's
      *        validator.
+     * @throws ConfigurationException When the signing key is missing or the public legacy key.
      * @throws ServiceException When no token is available.
      */
     public function validator(?Token $token = null, int $timeShift = 0): Validator
@@ -175,6 +178,7 @@ class Jwt
      * @param Builder|null $builder Builder to use, or null to use the current
      *        helper builder.
      * @throws ServiceException When no builder is available.
+     * @throws ConfigurationException When the signing key is missing or the public legacy key.
      * @throws ValidatorException
      */
     public function buildToken(?Builder $builder = null): Token
@@ -213,6 +217,7 @@ class Jwt
      * @param AbstractSigner|null $signer Signer used for signature validation,
      *        or null to use the current helper signer.
      * @return array<int|string, mixed> Validator errors.
+     * @throws ConfigurationException When the signing key is missing or the public legacy key.
      * @throws ServiceException When no token is available.
      * @throws ValidatorException When Phalcon cannot validate the token's structure.
      * @throws \DateMalformedStringException When a token date cannot be parsed.
@@ -227,6 +232,7 @@ class Jwt
         $options['notBefore'] ??= $now->modify('-10 second')->getTimestamp();
         $options['issuedAt'] ??= $now->modify('+10 second')->getTimestamp();
         $options = $this->getDefaultOptions($options);
+        $this->requirePassphrase($options['passphrase']);
         
         $this->validator = $this->validator($token, $timeShift);
         
@@ -265,6 +271,16 @@ class Jwt
         $options['subject'] ??= $this->options['subject'] ?? '';
         
         return $options;
+    }
+
+    private function requirePassphrase(mixed $passphrase): void
+    {
+        // Reject the publicly shipped legacy key even when copied into app config.
+        if (!is_string($passphrase) || trim($passphrase) === ''
+            || $passphrase === 'Tf0PHY/^yDdJs*~)?x#xCNj_N[jW/`c*'
+        ) {
+            throw new ConfigurationException('Configure a private SECURITY_JWT_PASSPHRASE before using JWT authentication.');
+        }
     }
 
     private function createSigner(string $signer, string $algo): AbstractSigner

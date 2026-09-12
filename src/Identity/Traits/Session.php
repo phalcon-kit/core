@@ -62,13 +62,15 @@ trait Session
     }
     
     /**
-     * Remove the identity payload stored under the active claim key.
+     * Remove the identity payload and clear cached users and model ACL roles.
+     * Overrides using custom storage must also call clearIdentityCache().
      *
      * If no claim key is available, there is no addressable identity payload
      * and the method intentionally becomes a no-op.
      */
     public function removeSessionIdentity(): void
     {
+        $this->clearIdentityCache();
         if ($this->isStatelessIdentity()) {
             $this->setClaim(array_intersect_key($this->claim, self::TOKEN_CLAIM_KEYS));
             return;
@@ -81,15 +83,20 @@ trait Session
     }
     
     /**
-     * Store the identity payload under the active claim key.
+     * Replace the identity payload under the active claim key and clear user/ACL caches.
+     *
+     * Stateless storage preserves only token bookkeeping from the previous claim.
+     * Include any custom identity fields in the replacement payload explicitly.
+     * Overrides using custom storage must also call clearIdentityCache().
      *
      * @param array<string, mixed> $identity Identity payload, usually including
      *     `userId` and optionally `asUserId`.
      */
     public function setSessionIdentity(array $identity): void
     {
+        $this->clearIdentityCache();
         if ($this->isStatelessIdentity()) {
-            $this->setClaim(array_merge($this->claim, $identity));
+            $this->setClaim(array_merge(array_intersect_key($this->claim, self::TOKEN_CLAIM_KEYS), $identity));
             return;
         }
 

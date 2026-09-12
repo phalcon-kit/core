@@ -999,7 +999,7 @@ class Config extends \PhalconKit\Config\Config
                     'audience' => Env::get('SECURITY_JWT_AUDIENCE', 'PHALCON_KIT_DEFAULT_AUDIENCE'),
                     'id' => Env::get('SECURITY_JWT_ID', 'PHALCON_KIT_DEFAULT_ID'),
                     'subject' => Env::get('SECURITY_JWT_SUBJECT', 'PHALCON_KIT_DEFAULT_SUBJECT'),
-                    'passphrase' => Env::get('SECURITY_JWT_PASSPHRASE', 'Tf0PHY/^yDdJs*~)?x#xCNj_N[jW/`c*'),
+                    'passphrase' => Env::get('SECURITY_JWT_PASSPHRASE', ''),
                 ],
             ],
             

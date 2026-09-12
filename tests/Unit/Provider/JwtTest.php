@@ -26,6 +26,7 @@ use PhalconKit\Tests\Unit\AbstractUnit;
 
 class JwtTest extends AbstractUnit
 {
+    private ?string $testPassphrase = null;
     public function testDefaultOptionsMergeExplicitAndConfiguredValues(): void
     {
         $jwt = new Jwt([
@@ -149,11 +150,11 @@ class JwtTest extends AbstractUnit
      */
     private function defaultJwtOptions(): array
     {
-        return (new Config())->pathToArray('security.jwt');
+        return array_merge((new Config())->pathToArray('security.jwt'), ['passphrase' => $this->passphrase()]);
     }
 
     private function passphrase(): string
     {
-        return $this->defaultJwtOptions()['passphrase'];
+        return $this->testPassphrase ??= 'Synthetic!A9-' . bin2hex(random_bytes(64));
     }
 }

@@ -182,12 +182,13 @@ trait Jwt
     }
     
     /**
-     * Replace the cached claim for this manager instance.
+     * Replace the cached claim and invalidate cached users and model ACL roles.
      *
      * @param array<string, mixed> $claim Claim payload.
      */
     public function setClaim(array $claim): void
     {
+        $this->clearIdentityCache();
         $this->claim = $claim;
     }
     

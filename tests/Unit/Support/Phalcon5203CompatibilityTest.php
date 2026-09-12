@@ -248,7 +248,9 @@ final class Phalcon5203CompatibilityTest extends AbstractUnit
 
     public function testJwtAudienceComparisonRejectsBooleanClaim(): void
     {
-        $jwt = new Jwt((new Config())->pathToArray('security.jwt'));
+        $jwt = new Jwt(array_merge((new Config())->pathToArray('security.jwt'), [
+            'passphrase' => 'Synthetic!A9-' . bin2hex(random_bytes(64)),
+        ]));
         $token = $jwt->buildToken($jwt->builder());
         $segments = explode('.', $token->getToken());
         $payload = json_decode(

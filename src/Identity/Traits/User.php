@@ -51,16 +51,19 @@ trait User
      * @param bool|null $force Force a fresh lookup instead of using the cached
      *     model instance.
      *
-     * @return UserInterface|null User model or null when no identity is stored.
+     * Deleted users never authenticate. Model security suppression is restored
+     * even when a user lookup fails, including nested security operations.
+     *
+     * @return UserInterface|null Active user model or null when missing or deleted.
      */
     public function getUser(bool $as = false, ?bool $force = null): ?UserInterface
     {
         if (!$force) {
             if ($as && !empty($this->userAs)) {
-                return $this->userAs;
+                return $this->userAs->isDeleted() ? null : $this->userAs;
             }
             else if (!$as && !empty($this->user)) {
-                return $this->user;
+                return $this->user->isDeleted() ? null : $this->user;
             }
         }
         
@@ -72,23 +75,29 @@ trait User
         
         $user = null;
         if (!empty($userId)) {
+            $wasInProgress = SecurityBehavior::getStaticProgress();
             SecurityBehavior::staticStart();
-            
-            $user = $this->models->getUser()::findFirstWith([
-                'RoleList',
-                'GroupList',
-                'TypeList',
-            ], [
-                'id = :id:',
-                'bind' => ['id' => (int)$userId],
-                'bindTypes' => ['id' => Column::BIND_PARAM_INT],
-            ]);
-            
-            if ($user) {
-                $user = $this->requireIdentityUser($user);
+            try {
+                $user = $this->models->getUser()::findFirstWith([
+                    'RoleList',
+                    'GroupList',
+                    'TypeList',
+                ], [
+                    'id = :id:',
+                    'bind' => ['id' => (int)$userId],
+                    'bindTypes' => ['id' => Column::BIND_PARAM_INT],
+                ]);
+
+                if ($user) {
+                    $user = $this->requireIdentityUser($user);
+                    if ($user->isDeleted()) {
+                        $user = null;
+                    }
+                }
             }
-            
-            SecurityBehavior::staticStop();
+            finally {
+                SecurityBehavior::setStaticProgress($wasInProgress);
+            }
         }
         
         $as
@@ -96,6 +105,19 @@ trait User
             : $this->setUser($user);
         
         return $user ?: null;
+    }
+
+    /**
+     * Clear effective/original users and cached model ACL roles after an identity change.
+     *
+     * Custom identity persistence overrides must call this after replacing or
+     * removing their stored payload, before authorizing further model operations.
+     */
+    protected function clearIdentityCache(): void
+    {
+        $this->setUser(null);
+        $this->setUserAs(null);
+        SecurityBehavior::setRoles(null);
     }
 
     /**
@@ -128,13 +150,14 @@ trait User
     }
     
     /**
-     * Cache the effective user for this manager instance.
+     * Cache the effective user and invalidate cached model ACL roles.
      *
      * @param UserInterface|null $user User model or null to clear the cache.
      */
     public function setUser(?UserInterface $user): void
     {
         $this->user = $user;
+        SecurityBehavior::setRoles(null);
     }
     
     /**
@@ -148,13 +171,14 @@ trait User
     }
     
     /**
-     * Cache the original user for this manager instance.
+     * Cache the original user and invalidate cached model ACL roles.
      *
      * @param UserInterface|null $user User model or null to clear the cache.
      */
     public function setUserAs(?UserInterface $user): void
     {
         $this->userAs = $user;
+        SecurityBehavior::setRoles(null);
     }
     
     /**

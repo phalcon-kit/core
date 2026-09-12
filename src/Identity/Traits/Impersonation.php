@@ -37,7 +37,7 @@ trait Impersonation
      * Switch the current session to another user.
      *
      * The target `userId` must be present, numeric, and resolvable through the
-     * configured user model. If the target id equals the current `asUserId`, the
+     * configured user model and must not be deleted. If the target id equals the current `asUserId`, the
      * method treats the request as a return-to-self action and restores the
      * original session.
      *
@@ -74,7 +74,7 @@ trait Impersonation
             
             // login as using id
             $asUser = $this->findUserById((int)$params['userId']);
-            if ($asUser) {
+            if ($asUser && !$asUser->isDeleted()) {
                 $this->setSessionIdentity([
                     'userId' => (int)$params['userId'],
                     'asUserId' => $sessionIdentity['userId'],

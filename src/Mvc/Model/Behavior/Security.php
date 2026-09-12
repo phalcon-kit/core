@@ -155,7 +155,8 @@ class Security extends Behavior
      * Only `before*` finder, aggregate, write, restore, and reorder events are
      * checked. The behavior returns null when disabled or when it is already
      * resolving permissions, which prevents recursive checks while the identity
-     * service loads role data from models.
+     * service loads role data from models. The guard is restored even when
+     * authorization throws, so later operations cannot inherit a bypass.
      *
      * @param string $type Phalcon event name such as `beforeCreate`,
      *     `beforeFind`, or `beforeReorder`.
@@ -193,13 +194,15 @@ class Security extends Behavior
         ];
         
         if ($beforeEvents[$type] ?? false) {
+            $wasInProgress = self::getStaticProgress();
             self::staticStart();
-            
-            $type = (str_starts_with($type, 'before')) ? lcfirst(substr($type, 6)) : $type;
-            $isAllowed = $this->isAllowed($type, $model);
-            
-            self::staticStop();
-            return $isAllowed;
+            try {
+                $type = (str_starts_with($type, 'before')) ? lcfirst(substr($type, 6)) : $type;
+                return $this->isAllowed($type, $model);
+            }
+            finally {
+                self::setStaticProgress($wasInProgress);
+            }
         }
         
         return true;

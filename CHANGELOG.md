@@ -15,6 +15,20 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.10.7 - Unreleased
+
+### Security
+
+- Remove the shared JWT signing-key fallback and reject missing, blank, or
+  legacy public keys when signing or validating tokens. Configure a private
+  `SECURITY_JWT_PASSPHRASE` before using JWT authentication; anonymous bootstrap
+  remains available. Invalid credentials still receive a generic HTTP 401.
+- Reject deleted users during token-backed authentication and impersonation.
+  Replace stateless identity payloads instead of merging stale impersonation
+  fields into a new login or return-to-self token.
+- Clear cached users and model ACL roles on identity changes. Restore model
+  security guards after user-lookup or ACL exceptions, including nested guards.
+
 ## 3.10.6 - 2026-09-11
 
 ### Security
