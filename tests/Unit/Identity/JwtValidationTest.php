@@ -328,6 +328,8 @@ class JwtValidationTest extends TestCase
     private function configureIdentity(bool $stateless = false, bool $fallback = false): void
     {
         $this->session = new class {
+            use \PhalconKit\Tests\Unit\Identity\Fixtures\SessionLifecycleDouble;
+
             public array $data = [
                 'existing-key' => ['userId' => 42, 'asUserId' => 7],
                 Manager::SESSION_KEY => ['key' => 'existing-key'],

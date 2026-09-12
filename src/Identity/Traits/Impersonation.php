@@ -49,6 +49,8 @@ trait Impersonation
      *     generation fails.
      * @throws \Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException
      *     When stateless JWT creation fails.
+     * @throws \PhalconKit\Exception\ServiceException When default PHP-session
+     *     storage cannot renew the session before changing identity.
      */
     public function loginAs(array $params = []): array
     {
@@ -106,6 +108,8 @@ trait Impersonation
      *     generation fails.
      * @throws \Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException
      *     When stateless JWT creation fails.
+     * @throws \PhalconKit\Exception\ServiceException When default PHP-session
+     *     storage cannot renew the session before restoring identity.
      */
     public function logoutAs(): array
     {

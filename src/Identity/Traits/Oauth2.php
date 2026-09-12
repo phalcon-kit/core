@@ -57,6 +57,8 @@ trait Oauth2
      *     generation fails after a successful OAuth2 login.
      * @throws \Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException
      *     When stateless JWT creation fails after a successful OAuth2 login.
+     * @throws \PhalconKit\Exception\ServiceException When default PHP-session
+     *     storage cannot renew the session before authenticating.
      */
     public function oauth2(string $provider, string $providerUuid, string $accessToken, ?string $refreshToken = null, ?array $meta = []): array
     {

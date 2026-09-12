@@ -998,6 +998,8 @@ class ManagerTest extends AbstractUnit
     private function createSession(): object
     {
         return new class {
+            use \PhalconKit\Tests\Unit\Identity\Fixtures\SessionLifecycleDouble;
+
             public array $data = [];
 
             public function set(string $key, mixed $value): void

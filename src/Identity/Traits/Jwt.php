@@ -50,6 +50,8 @@ trait Jwt
      * in the claim so clients can carry it without PHP session storage; old
      * signed JWTs remain valid until expiration or an application-level
      * revocation strategy rejects them.
+     * Default PHP-session storage also renews its session ID during an
+     * authenticated refresh; clients must accept the replacement cookie.
      *
      * @param bool $refresh Rotate the claim key and invalidate previous tokens.
      *
@@ -59,6 +61,8 @@ trait Jwt
      * @throws ValidatorException When JWT creation fails.
      * @throws HttpException With status 401 when a supplied token is invalid,
      *     before session identity is read or rotated and before tokens are issued.
+     * @throws \PhalconKit\Exception\ServiceException When PHP-session identity
+     *     cannot be established after renewal.
      */
     public function getJwt(bool $refresh = false): array
     {

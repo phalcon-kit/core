@@ -317,6 +317,8 @@ final class SecurityTransitionsTest extends TestCase
             }
         });
         $di->setShared('session', new class {
+            use \PhalconKit\Tests\Unit\Identity\Fixtures\SessionLifecycleDouble;
+
             public array $data = ['audit-key' => ['userId' => 42]];
             public function get(string $key): mixed
             {

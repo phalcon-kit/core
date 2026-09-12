@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Identity\Traits;
 
 use PhalconKit\Di\AbstractInjectable;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Identity\Traits\Abstracts\AbstractJwt;
 
 /**
@@ -88,9 +89,16 @@ trait Session
      * Stateless storage preserves only token bookkeeping from the previous claim.
      * Include any custom identity fields in the replacement payload explicitly.
      * Overrides using custom storage must also call clearIdentityCache().
+     * PHP-session storage renews the session ID before writing a non-empty
+     * userId, including login, OAuth2, impersonation, and authenticated refresh.
+     * The old session keeps unrelated data but loses this identity. Custom
+     * persistence overrides own equivalent credential-fixation protection;
+     * stateless identity does not resolve or renew the PHP session service.
      *
      * @param array<string, mixed> $identity Identity payload, usually including
      *     `userId` and optionally `asUserId`.
+     * @throws ServiceException When the PHP session is inactive or cannot renew
+     *     its ID. The replacement identity is not written on failure.
      */
     public function setSessionIdentity(array $identity): void
     {
@@ -102,7 +110,46 @@ trait Session
 
         $key = $this->getKey();
         if ($key) {
+            if (!empty($identity['userId'])) {
+                $this->renewIdentitySession($key);
+            }
             $this->session->set($key, $identity);
+        }
+    }
+
+    /**
+     * Renew the active PHP session before assigning authenticated identity.
+     *
+     * Remove this identity before native regeneration persists the old session.
+     * Unrelated session values survive in both sessions; only the new session
+     * receives the replacement identity. The old anonymous session can expire
+     * normally, avoiding immediate deletion during concurrent requests.
+     *
+     * @param string $key Validated claim key identifying the payload to replace.
+     * @throws ServiceException When renewal fails; an unchanged session retains
+     *     its previous payload and never receives the replacement identity.
+     */
+    protected function renewIdentitySession(string $key): void
+    {
+        $session = $this->session;
+        $oldId = $session->getId();
+        if (!$session->exists() || $oldId === '') {
+            throw new ServiceException('An active session is required to establish identity.');
+        }
+
+        $previous = $session->get($key);
+        $session->remove($key);
+        try {
+            $session->regenerateId(false);
+            if ($session->getId() === $oldId || !$session->exists()) {
+                throw new ServiceException('Unable to renew authentication session.');
+            }
+        }
+        catch (\Throwable $exception) {
+            if ($session->getId() === $oldId && $previous !== null) {
+                $session->set($key, $previous);
+            }
+            throw new ServiceException('Unable to renew authentication session.', 0, $exception);
         }
     }
     

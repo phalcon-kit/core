@@ -148,6 +148,8 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
      *
      * @throws SecurityException When stateless token key generation fails.
      * @throws ValidatorException When stateless JWT creation fails.
+     * @throws \PhalconKit\Exception\ServiceException When default PHP-session
+     *     storage cannot renew the session before authenticating.
      */
     public function login(array $params = []): array
     {
@@ -196,7 +198,7 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
             
             // login success
             else {
-                // save userId into the configured identity storage
+                // The default storage renews the PHP session before authenticating.
                 $this->setSessionIdentity(['userId' => $user->getId()]);
 
                 // Update roles globally in the model security behavior
