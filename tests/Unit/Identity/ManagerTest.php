@@ -503,7 +503,7 @@ class ManagerTest extends AbstractUnit
         $result = $identity->reset(['email' => 'user@example.test']);
 
         $this->assertSame([], $result);
-        $this->assertSame('hash:plain-reset-token:user@example.test', $state['resetToken']);
+        $this->assertMatchesRegularExpression('/^v1:[0-9]+:hash:plain-reset-token:$/', $state['resetToken']);
         $this->assertSame(1, $state['saved']);
     }
 
@@ -537,7 +537,7 @@ class ManagerTest extends AbstractUnit
 
         $this->assertContains('NotValid', $this->messageTypes($result['messages']));
         $this->assertSame(0, $state['saved']);
-        $this->assertSame('stored-reset-token', $state['resetToken']);
+        $this->assertStringEndsWith(':stored-reset-token', $state['resetToken']);
     }
 
     public function testResetUpdatesPasswordWhenTokenIsValid(): void
@@ -554,11 +554,11 @@ class ManagerTest extends AbstractUnit
 
         $this->assertSame([], $result);
         $this->assertNull($state['resetToken']);
-        $this->assertSame('new-secret', $state['password']);
+        $this->assertSame('hash:new-secret:', $state['password']);
         $this->assertSame(1, $state['saved']);
     }
 
-    public function testResetReturnsModelMessagesWhenPasswordSaveFails(): void
+    public function testResetRejectsAndRestoresCredentialsWhenPasswordSaveFails(): void
     {
         $state = [];
         $messages = [new Message('save failed', 'password', 'SaveFailed')];
@@ -571,9 +571,9 @@ class ManagerTest extends AbstractUnit
             'password' => 'new-secret',
         ]);
 
-        $this->assertSame($messages, $result['messages']);
-        $this->assertNull($state['resetToken']);
-        $this->assertSame('new-secret', $state['password']);
+        $this->assertContains('NotValid', $this->messageTypes($result['messages']));
+        $this->assertStringEndsWith(':stored-reset-token', $state['resetToken']);
+        $this->assertNull($state['password']);
         $this->assertSame(1, $state['saved']);
     }
 
@@ -938,6 +938,21 @@ class ManagerTest extends AbstractUnit
         $identity = new class extends Manager {
             public ?UserInterface $unitUser = null;
 
+            // Legacy unit fixture only; PasswordResetSecurityTest exercises the
+            // real transactional helper and native password hashing.
+            protected function persistPasswordReset(UserInterface $user, string $record, string $password): bool
+            {
+                $oldPassword = $user->getPassword();
+                $user->setResetToken(null);
+                $this->setPasswordAfterReset($user, $password);
+                if (!$user->save()) {
+                    $user->setResetToken($record);
+                    $user->setPassword($oldPassword);
+                    return false;
+                }
+                return true;
+            }
+
             public function findUserByEmail(string $string): ?UserInterface
             {
                 return $this->unitUser;
@@ -1254,7 +1269,7 @@ class ManagerTest extends AbstractUnit
     ): UserInterface {
         $state = array_merge([
             'email' => 'user@example.test',
-            'resetToken' => 'stored-reset-token',
+            'resetToken' => 'v1:' . (time() + 3600) . ':stored-reset-token',
             'password' => null,
             'saved' => 0,
         ], $state);

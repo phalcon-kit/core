@@ -38,6 +38,10 @@ release notes.
 - Require a private encryption key, rejecting the shared legacy key before
   resolving `crypt`. Support `base64:` encoded key bytes and operational
   AES-256-GCM defaults with non-empty associated data.
+- Expire password-reset records and consume them conditionally in the same
+  transaction as the password update. Use matching salt policies for token
+  hashing/verification, hash new passwords, reject legacy undated records,
+  and expose protected notification and persistence/password hooks.
 
 ## 3.10.6 - 2026-09-11
 

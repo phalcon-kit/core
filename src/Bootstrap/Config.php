@@ -352,6 +352,7 @@ class Config extends \PhalconKit\Config\Config
                 ],
                 'resetPassword' => [
                     'disable' => Env::get('IDENTITY_RESET_PASSWORD_DISABLE', false),
+                    'lifetime' => Env::get('IDENTITY_RESET_PASSWORD_LIFETIME', 1800),
                     'url' => Env::get('IDENTITY_RESET_PASSWORD_URL', '/reset-password/'),
                     'viewPath' => Env::get('IDENTITY_RESET_PASSWORD_VIEW_PATH', 'email'),
                     'requestTemplateKey' => Env::get('IDENTITY_RESET_PASSWORD_REQUEST_TEMPLATE_KEY', 'reset-password-request'),

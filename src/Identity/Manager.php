@@ -239,107 +239,208 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     }
 
     /**
-     * Start or complete a password reset flow.
+     * Request or redeem a time-limited, single-use password reset token.
      *
-     * When only `email` is provided, the manager creates a random reset token,
-     * stores its hash on the user record, and returns an empty response on
-     * success. When `resetToken` and `password` are provided, the token is
-     * verified against the stored hash before the password is updated and the
-     * reset token is cleared.
+     * New reset records use `v1:<expiry>:<hash>` in the existing resetToken
+     * column; legacy records are rejected and require a new reset request.
+     * `identity.resetPassword.lifetime` is seconds (default 1800). Token hashes
+     * use the same configured salt as verification. Raw tokens are delivered
+     * only through sendPasswordResetNotification(), never returned to clients.
      *
-     * To prevent user enumeration, a valid request for a missing email returns
-     * the same empty response shape as a successful request. Validation failures
-     * and persistence failures still return messages because those are
-     * actionable by the caller. Notification delivery is intentionally left to
-     * application code until the framework has a mailer/event contract for this
-     * flow.
+     * Redemption atomically claims the stored token and saves the hashed password
+     * in one write-connection transaction. Custom persistence/password hooks must
+     * preserve the documented helper contracts. Existing sessions are not revoked
+     * automatically; applications own that policy and notification delivery.
      *
-     * @param array<string, mixed>|null $params Reset fields. Supported keys are
-     *     `email`, optional `resetToken`, and `password` when completing a
-     *     reset.
-     *
-     * @return array<string, mixed> Empty on successful or intentionally opaque
-     *     outcomes, or `messages` when validation/persistence fails.
-     *
-     * @throws SecurityException When token generation fails.
+     * @param array<string, mixed>|null $params Email, optional resetToken and password.
+     * @return array<string, mixed> Empty on success/unknown request email, or validation messages.
+     * @throws SecurityException When random generation or hashing fails.
+     * @throws \PhalconKit\Exception\ConfigurationException For invalid token lifetime.
+     * @throws \PhalconKit\Exception\ServiceException When a transaction cannot be owned or committed.
      */
     public function reset(?array $params = null): array
     {
-        // email is required and must be valid
+        $params ??= [];
         $validation = new Validation();
+        foreach (['email', 'resetToken', 'password'] as $field) {
+            if (isset($params[$field]) && !is_string($params[$field])) {
+                $validation->appendMessage(new Message('Invalid reset request', $field, 'NotValid', 400));
+                return ['messages' => $validation->getMessages()];
+            }
+        }
+        $redeeming = isset($params['resetToken']) && $params['resetToken'] !== '';
         $validation->add('email', new PresenceOf(['message' => 'required']));
         $validation->add('email', new Email(['message' => 'email-not-valid']));
+        if ($redeeming) {
+            $validation->add('password', new PresenceOf(['message' => 'required']));
+        }
         $validation->validate($params);
-
-        // reset password is disabled from config
-        $resetPasswordConfig = $this->config->pathToArray('identity.resetPassword') ?? [];
-        if ($resetPasswordConfig['disable'] ?? false) {
+        $options = $this->config->pathToArray('identity.resetPassword') ?? [];
+        if ($options['disable'] ?? false) {
             $validation->appendMessage(new Message('Reset password is disabled', 'resetPassword', 'ResetPasswordDisabled', 403));
         }
-        
-        // invalid email
-        $messages = $validation->getMessages();
-        if (count($messages)) {
-            return ['messages' => $messages];
+        if ($validation->getMessages()->count()) {
+            return ['messages' => $validation->getMessages()];
         }
-        
-        // retrieve the user using the provided email
-        $user = isset($params['email']) ? $this->findUserByEmail($params['email']) : false;
-        
-        // user not found
-        if (!$user) {
-            // OWASP: to prevent user enumeration, we return an empty array here
+
+        $user = $this->findUserByEmail($params['email']);
+        if (!$redeeming) {
+            if (!$user || $user->isDeleted()) {
+                return [];
+            }
+            $lifetime = filter_var($options['lifetime'] ?? 1800, FILTER_VALIDATE_INT);
+            if ($lifetime === false || $lifetime < 1 || $lifetime > 86400) {
+                throw new \PhalconKit\Exception\ConfigurationException('Password reset lifetime must be between 1 and 86400 seconds.');
+            }
+            $token = $this->security->getRandom()->base64Safe(32);
+            $expiresAt = time() + $lifetime;
+            $previous = $user->getResetToken();
+            $user->setResetToken('v1:' . $expiresAt . ':' . $user->hash($token));
+            try {
+                $saved = $user->save();
+            }
+            catch (\Throwable $exception) {
+                $user->setResetToken($previous);
+                throw $exception;
+            }
+            if (!$saved) {
+                $user->setResetToken($previous);
+                return ['messages' => $user->getMessages()];
+            }
+            $this->sendPasswordResetNotification($user, $token, $expiresAt);
             return [];
         }
-        
-        // password reset request
-        if (!empty($params['resetToken'])) {
-            // a password is required
-            $validation->add('password', new PresenceOf(['message' => 'required']));
-            $validation->validate($params);
-            
-            // check if the token is valid
-            if (!$user->checkHash($user->getResetToken(), $params['resetToken'])) {
-                $validation->appendMessage(new Message('not-valid', 'token', 'NotValid', 400));
-            }
-            
-            // validation failed, return messages
-            $messages = $validation->getMessages();
-            if (count($messages)) {
-                return ['messages' => $messages];
-            }
-            
-            // remove the reset token and set the new password
-            $user->setResetToken(null);
-            $user->setPassword($params['password']);
-            if (!$user->save()) {
-                return ['messages' => $user->getMessages()];
-            }
-            
-            // Notification delivery is app-specific until the identity manager
-            // has a mailer/event contract for password-reset confirmations.
+
+        $record = $user?->getResetToken();
+        if (!$user || $user->isDeleted() || !is_string($record)
+            || !$this->validatePasswordResetToken($user, $record, $params['resetToken'])
+            || !$this->persistPasswordReset($user, $record, $params['password'])
+        ) {
+            $validation->appendMessage(new Message('Invalid or expired reset token', 'token', 'NotValid', 400));
+            return ['messages' => $validation->getMessages()];
         }
-        
-        // reset token request
-        else {
-            // prepare reset token
-            $resetToken = $this->security->getRandom()->base64Safe(32);
-            $user->setResetToken($user->hash($resetToken, $user->getEmail()));
-            
-            // save hashed reset token
-            if (!$user->save()) {
-                return ['messages' => $user->getMessages()];
-            }
-            
-            // Notification delivery is app-specific until the identity manager
-            // has a mailer/event contract for reset-token messages.
-        }
-        
-        // everything went fine
-        // OWASP: to prevent user enumeration, we return an empty array here
+        $this->clearIdentityCache();
         return [];
     }
-    
+
+    /**
+     * Verify the stored reset record's format, expiry, and configured-salt hash.
+     *
+     * Custom record formats must retain expiry checks and reject legacy undated
+     * hashes. Validation alone does not consume the record; persistence must
+     * compare and consume the exact record atomically.
+     *
+     * @param \PhalconKit\Models\Interfaces\UserInterface $user User whose hash policy verifies the token.
+     * @param string $record Stored, versioned expiry/hash record.
+     * @param string $token Raw credential supplied by the client.
+     * @return bool Whether the token matches an unexpired record.
+     */
+    protected function validatePasswordResetToken(\PhalconKit\Models\Interfaces\UserInterface $user, string $record, string $token): bool
+    {
+        $parts = explode(':', $record, 3);
+        return count($parts) === 3 && $parts[0] === 'v1'
+            && ctype_digit($parts[1]) && strlen($parts[1]) <= 12
+            && (int)$parts[1] > time() && $token !== '' && strlen($token) <= 512
+            && $user->checkHash($parts[2], $token);
+    }
+
+    /**
+     * Atomically claim a reset record and persist the new password through model hooks.
+     *
+     * The default uses the mapped user id/resetToken columns and the user's write
+     * connection, which must support transactions. It refuses an existing outer
+     * transaction rather than committing or rolling back caller-owned work.
+     * Failed saves/claims roll back and restore the model's credential fields.
+     * Overrides for other stores must implement atomic compare-and-consume plus
+     * password persistence, and retain false-on-lost-race semantics.
+     *
+     * @param \PhalconKit\Models\Interfaces\UserInterface $user Existing active user.
+     * @param string $record Exact validated record to consume.
+     * @param string $password New plaintext password; never logged or returned.
+     * @return bool True only after a successful commit; false for lost claims or save rejection.
+     * @throws \PhalconKit\Exception\ServiceException When transaction setup/commit fails.
+     */
+    protected function persistPasswordReset(\PhalconKit\Models\Interfaces\UserInterface $user, string $record, string $password): bool
+    {
+        $connection = $user->getWriteConnection();
+        if ($connection->isUnderTransaction() || !$connection->begin()) {
+            throw new \PhalconKit\Exception\ServiceException('Password reset requires its own write transaction.');
+        }
+        $previousPassword = $user->getPassword();
+        $committed = false;
+        try {
+            $columns = array_flip($user->getModelsMetaData()->getColumnMap($user) ?? []);
+            $idColumn = $connection->escapeIdentifier($columns['id'] ?? 'id');
+            $tokenColumn = $connection->escapeIdentifier($columns['resetToken'] ?? 'resetToken');
+            $table = $connection->escapeIdentifier($user->getSource());
+            if ($user->getSchema()) {
+                $table = $connection->escapeIdentifier($user->getSchema()) . '.' . $table;
+            }
+            $claimed = $connection->execute(
+                'UPDATE ' . $table . ' SET ' . $tokenColumn . ' = NULL WHERE ' . $idColumn . ' = ? AND ' . $tokenColumn . ' = ?',
+                [$user->getId(), $record],
+                [\Phalcon\Db\Column::BIND_PARAM_INT, \Phalcon\Db\Column::BIND_PARAM_STR]
+            );
+            // The claim may have waited for another transaction's row lock.
+            if (!$claimed || $connection->affectedRows() !== 1
+                || (int)(explode(':', $record, 3)[1] ?? 0) <= time()
+            ) {
+                return false;
+            }
+            $user->setResetToken(null);
+            $this->setPasswordAfterReset($user, $password);
+            if (!$user->save()) {
+                return false;
+            }
+            if (!$connection->commit()) {
+                throw new \PhalconKit\Exception\ServiceException('Could not commit password reset.');
+            }
+            $committed = true;
+            return true;
+        }
+        finally {
+            if (!$committed) {
+                try {
+                    $connection->rollback();
+                }
+                finally {
+                    $user->setResetToken($record);
+                    $user->setPassword($previousPassword);
+                }
+            }
+        }
+    }
+
+    /**
+     * Set a securely hashed password before reset persistence.
+     *
+     * Applications with a model setter/save hook that already hashes plaintext
+     * must override this helper to avoid double hashing. Other password policy
+     * checks belong in model validation and can reject save() transactionally.
+     *
+     * @param \PhalconKit\Models\Interfaces\UserInterface $user Model participating in the reset transaction.
+     * @param string $password New plaintext password to hash and assign.
+     */
+    protected function setPasswordAfterReset(\PhalconKit\Models\Interfaces\UserInterface $user, string $password): void
+    {
+        $user->setPassword($user->hash($password));
+    }
+
+    /**
+     * Deliver a successfully persisted reset token through an application-owned channel.
+     *
+     * Override for mail/queue delivery. The default intentionally sends nothing;
+     * applications must provide delivery before exposing reset requests. Do not
+     * log tokens or expose them in HTTP responses. Delivery failures propagate.
+     *
+     * @param \PhalconKit\Models\Interfaces\UserInterface $user Recipient of the reset notification.
+     * @param string $token Raw credential for a trusted reset URL or message.
+     * @param int $expiresAt Unix timestamp after which the token must be rejected.
+     */
+    protected function sendPasswordResetNotification(\PhalconKit\Models\Interfaces\UserInterface $user, string $token, int $expiresAt): void
+    {
+    }
+
     /**
      * Normalize a related model list into a key-indexed map.
      *
