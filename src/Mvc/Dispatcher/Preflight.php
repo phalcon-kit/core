@@ -50,8 +50,8 @@ class Preflight extends Injectable
      * Set configured CORS headers on a response.
      *
      * The configured `Access-Control-Allow-Origin` value is treated specially:
-     * wildcard or explicitly allowed origins are reflected as the current
-     * request origin, while unrelated origins are ignored. Existing headers are
+     * wildcard origins produce `*` without credentials; only explicitly allowed
+     * origins are reflected, with `Vary: Origin` for shared caches. Existing headers are
      * preserved so controllers or earlier listeners can override framework
      * defaults.
      *
@@ -64,6 +64,13 @@ class Preflight extends Injectable
      */
     public function setCorsHeaders(ResponseInterface $response, string $origin, array $headers = []): void
     {
+        $originKey = 'Access-Control-Allow-Origin';
+        $allowedOrigins = (array)($headers[$originKey] ?? []);
+        $wildcard = in_array('*', $allowedOrigins, true);
+        if ($wildcard) {
+            $headers['Access-Control-Allow-Credentials'] = 'false';
+        }
+
         // Set cors headers
         foreach ($headers as $headerKey => $headerValue) {
             if (!$response->hasHeader($headerKey) && !is_array($headerValue)) {
@@ -83,15 +90,22 @@ class Preflight extends Injectable
         }
         
         // Set origin value if origin is allowed
-        $originKey = 'Access-Control-Allow-Origin';
-        $allowedOrigins = $headers[$originKey] ?? null;
-        if (!$response->hasHeader($originKey) &&
-            ($allowedOrigins === '*' || (
-                is_array($allowedOrigins) &&
-                (in_array($origin, $allowedOrigins, true) || in_array('*', $allowedOrigins, true)))
-            )
-        ) {
-            $response->setHeader($originKey, $origin);
+        if (!$response->hasHeader($originKey)) {
+            if ($wildcard) {
+                $response->setHeader($originKey, '*');
+            }
+            else {
+                // Vary even on denied origins so caches cannot reuse a prior grant.
+                $vary = (string)$response->getHeaders()->get('Vary');
+                $values = array_filter(array_map('trim', explode(',', $vary)));
+                if (!in_array('origin', array_map('strtolower', $values), true) && !in_array('*', $values, true)) {
+                    $values[] = 'Origin';
+                    $response->setHeader('Vary', implode(', ', $values));
+                }
+                if ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
+                    $response->setHeader($originKey, $origin);
+                }
+            }
         }
     }
     

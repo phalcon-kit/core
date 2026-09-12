@@ -317,10 +317,10 @@ class Config extends \PhalconKit\Config\Config
                     'X-XSS-Protection' => Env::get('RESPONSE_HEADER_XSS_PROTECTION', 0),
                 ],
                 'corsHeaders' => [
-                    'Access-Control-Allow-Origin' => array_map('trim', explode(',', Env::get('RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN', '*'))),
+                    'Access-Control-Allow-Origin' => array_map('trim', explode(',', Env::get('RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN', ''))),
                     'Access-Control-Allow-Methods' => Env::get('RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'),
                     'Access-Control-Allow-Headers' => Env::get('RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS', 'Origin, X-Requested-With, Content-Range, Content-Disposition, Content-Type, Authorization, X-Authorization'),
-                    'Access-Control-Allow-Credentials' => Env::get('RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS', 'true'),
+                    'Access-Control-Allow-Credentials' => Env::get('RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS', 'false'),
                     'Access-Control-Max-Age' => Env::get('RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE', '600'),
 //                    'Access-Control-Expose-Headers' => Env::get('RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS', '*'),
 //                    'Access-Control-Request-Headers' => Env::get('RESPONSE_HEADER_ACCESS_CONTROL_REQUEST_HEADERS', ''),

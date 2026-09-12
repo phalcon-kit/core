@@ -28,6 +28,9 @@ release notes.
   fields into a new login or return-to-self token.
 - Clear cached users and model ACL roles on identity changes. Restore model
   security guards after user-lookup or ACL exceptions, including nested guards.
+- Default CORS to no allowed origins and no browser credentials. Wildcards now
+  emit `*` without credential grants; explicit origin allowlists support
+  credentials and responses vary by Origin for shared caches.
 
 ## 3.10.6 - 2026-09-11
 
