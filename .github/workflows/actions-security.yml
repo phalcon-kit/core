@@ -24,7 +24,7 @@ jobs:
           persist-credentials: false
 
       - name: Run zizmor
-        uses: zizmorcore/zizmor-action@v0.5.6
+        uses: zizmorcore/zizmor-action@v0.6.3
         with:
           advanced-security: false
           annotations: true

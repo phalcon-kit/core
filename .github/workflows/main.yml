@@ -56,7 +56,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -114,7 +114,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -163,7 +163,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -217,7 +217,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -252,7 +252,7 @@ jobs:
 
       - name: Upload Psalm report to GitHub Code Scanning
         if: ${{ always() && hashFiles('results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@v4.36.2
+        uses: github/codeql-action/upload-sarif@v4.37.9
         with:
           sarif_file: results.sarif
           category: psalm
@@ -318,7 +318,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
