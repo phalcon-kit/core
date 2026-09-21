@@ -15,6 +15,42 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## Unreleased
+
+### Changed
+
+- Update the cache, CodeQL upload, OpenSSF Scorecard, and zizmor CI actions
+  and pin the upgraded versions to immutable commits.
+
+## 3.10.8 - 2026-09-21
+
+### Fixed
+
+- Inherit Phalcon 5.21.0's initialized `dirtyRelated` and `skipped` model
+  properties instead of redeclaring them, avoiding a PHP inheritance fatal error.
+  Applications upgrading the extension must install this Core release together with it.
+- Guard password-reset rollback cleanup when a save hook has already ended
+  the transaction, preserving the original failure under Phalcon 5.21.0.
+
+### Changed
+
+- Raise the native Phalcon and IDE-stub requirements to `^5.21.0`, pin CI to
+  the checksum-verified release built with Zephir 1.5.0, and update runtime
+  documentation and the application skill's container example.
+- Document the specialized inherited random helper type without redeclaring
+  its native property or maintaining duplicate Phalcon stubs for Psalm.
+- Rebase model IDE-stub patches on 5.21.0's reorganized declarations and
+  expanded PHPDoc, retaining the existing signature and iterable annotations.
+- Recheck the five remaining deprecated interface holds against native
+  signatures so upstream migration changes trigger a compatibility review.
+- Add compatibility coverage for inactive and nested transactions, native
+  `findFirst()` eager loading, validation, and form option isolation.
+- Load the CI database settings into the PHPUnit environment and fail the
+  native compatibility gate if any of its required checks are skipped.
+- Allow the abandonment status of the optional Instagram provider's
+  `jakeasmith/http_build_url` dependency in maintainer audits until that
+  integration is migrated. Vulnerability checks remain enforced.
+
 ## 3.10.7 - 2026-09-12
 
 ### Security

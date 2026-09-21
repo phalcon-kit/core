@@ -38,6 +38,8 @@ use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractOptions;
 /**
  * Adds relationship-aware assignment, persistence, and export helpers.
  *
+ * Uses the initialized dirtyRelated array inherited from Phalcon\Mvc\Model.
+ *
  * PhalconKit models call `assignRelated()` before native model assignment so
  * request payloads can contain nested relationship data. The default behavior
  * remains permissive for backward compatibility: unknown relation-looking
@@ -77,11 +79,6 @@ trait Relationship
     private bool $strictRelatedAssignment = false;
     
     private string $relationshipContext = '';
-    
-    /**
-     * @var ModelInterface[]
-     */
-    protected $dirtyRelated = [];
     
     /**
      * Eager-loaded relationship values that should be readable/exportable

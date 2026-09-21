@@ -352,6 +352,8 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
      * The default uses the mapped user id/resetToken columns and the user's write
      * connection, which must support transactions. It refuses an existing outer
      * transaction rather than committing or rolling back caller-owned work.
+     * Cleanup tolerates a save hook having already ended the transaction,
+     * preserving its original exception and restoring the in-memory credentials.
      * Failed saves/claims roll back and restore the model's credential fields.
      * Overrides for other stores must implement atomic compare-and-consume plus
      * password persistence, and retain false-on-lost-race semantics.
@@ -403,13 +405,21 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
         finally {
             if (!$committed) {
                 try {
-                    $connection->rollback();
+                    $this->rollbackActivePasswordResetTransaction($connection);
                 }
                 finally {
                     $user->setResetToken($record);
                     $user->setPassword($previousPassword);
                 }
             }
+        }
+    }
+
+    /** Roll back an owned transaction only if it remains active after save hooks. */
+    private function rollbackActivePasswordResetTransaction(\Phalcon\Contracts\Db\Adapter\Adapter $connection): void
+    {
+        if ($connection->isUnderTransaction()) {
+            $connection->rollback();
         }
     }
 

@@ -93,6 +93,43 @@ final class RelationshipAssignmentDatabaseTest extends TestCase
             self::assertTrue($owned->save());
             self::assertSame('Updated owned parent', RelationshipSecurityParent::findFirst(['conditions' => 'tenantId = 7 AND id = 5'])->name);
             self::assertSame('Foreign parent', RelationshipSecurityParent::findFirst(['conditions' => 'tenantId = 5 AND id = 7'])->name);
+            // Native findFirst eager loading must populate Core's read-only
+            // relationship cache without turning loaded relations into writes.
+            $eager = RelationshipSecurityParent::findFirst([
+                'conditions' => 'tenantId = 7 AND id = 5',
+                'eager' => ['children'],
+            ]);
+            self::assertTrue($eager->isRelationshipLoaded('children'));
+            self::assertTrue($eager->hasLoadedRelatedAlias('children'));
+            self::assertFalse($eager->hasDirtyRelated());
+            self::assertCount(1, $eager->getRelated('children'));
+            self::assertSame('Updated owned child', $eager->toArray()['children'][0]['name']);
+            self::assertNull(RelationshipSecurityParent::findFirst([
+                'conditions' => 'tenantId = -1',
+                'eager' => ['children'],
+            ]));
+
+            $empty = RelationshipSecurityParent::find(['conditions' => 'tenantId = -1']);
+            self::assertNull($empty->current());
+            self::assertNull($empty->current());
+
+            $manager = $di->getShared('modelsManager');
+            $complex = $manager->executeQuery(
+                'SELECT p.*, c.* FROM [' . RelationshipSecurityParent::class . '] p'
+                . ' JOIN [' . RelationshipSecurityChild::class . '] c'
+                . ' ON p.tenantId = c.parentTenantId AND p.id = c.parentId'
+            );
+            self::assertInstanceOf(\Phalcon\Mvc\Model\Resultset\Complex::class, $complex);
+            $cached = unserialize(serialize($complex));
+            self::assertInstanceOf(\Phalcon\Mvc\Model\Resultset\Complex::class, $cached);
+            self::assertTrue($cached->valid());
+            self::assertInstanceOf(\Phalcon\Mvc\Model\Row::class, $cached->current());
+
+            $literal = $manager->executeQuery(
+                'SELECT "line\\nbreak" AS value FROM [' . RelationshipSecurityParent::class . '] LIMIT 1'
+            );
+            self::assertSame("line\nbreak", $literal->getFirst()->value);
+
             self::assertFalse($connection->isUnderTransaction());
         } finally {
             if ($connection->isUnderTransaction()) {

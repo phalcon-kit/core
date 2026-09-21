@@ -43,6 +43,27 @@ class PhalconDeprecationTest extends TestCase
         ],
     ];
 
+    public function testLegacyTypeHoldsStillMatchNativeParameterBoundaries(): void
+    {
+        $boundaries = [
+            [\Phalcon\Mvc\Model::class, 'preSaveRelatedRecords', 0, 'Phalcon\\Db\\Adapter\\AdapterInterface'],
+            [\Phalcon\Mvc\Model::class, 'postSaveRelatedRecords', 0, 'Phalcon\\Db\\Adapter\\AdapterInterface'],
+            [\Phalcon\Db\Dialect\Mysql::class, 'getColumnDefinition', 0, 'Phalcon\\Db\\ColumnInterface'],
+            [\Phalcon\Logger\Logger::class, 'addAdapter', 1, 'Phalcon\\Logger\\Adapter\\AdapterInterface'],
+            [\Phalcon\Contracts\Logger\Adapter\Adapter::class, 'setFormatter', 0, 'Phalcon\\Logger\\Formatter\\FormatterInterface'],
+            [\Phalcon\Mvc\Model::class, 'doSave', 0, 'Phalcon\\Support\\Collection\\CollectionInterface'],
+        ];
+
+        foreach ($boundaries as [$class, $method, $parameter, $legacyType]) {
+            $reflection = new \ReflectionMethod($class, $method);
+            $this->assertSame(
+                $legacyType,
+                (string)$reflection->getParameters()[$parameter]->getType(),
+                $class . '::' . $method . ' changed; review and retire its legacy type hold.'
+            );
+        }
+    }
+
     public function testPublishedSourceUsesCanonicalPhalconContracts(): void
     {
         $actual = [];

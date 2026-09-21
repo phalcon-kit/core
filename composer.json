@@ -58,6 +58,13 @@
     "allow-plugins": {
       "cweagans/composer-patches": true,
       "php-http/discovery": true
+    },
+    "policy": {
+      "abandoned": {
+        "ignore": {
+          "jakeasmith/http_build_url": "Temporary compatibility hold for optional league/oauth2-instagram 3.1.0; remove when the provider no longer requires it. Security advisories remain enforced."
+        }
+      }
     }
   },
   "minimum-stability": "dev",
@@ -68,7 +75,7 @@
     "ext-json": "*",
     "ext-mbstring": "*",
     "ext-pdo": "*",
-    "ext-phalcon": "^5.20.3",
+    "ext-phalcon": "^5.21.0",
     "ext-sodium": "*",
     "docopt/docopt": "^1.0.6",
     "league/flysystem": "^3.35.2",
@@ -103,7 +110,7 @@
     "league/oauth2-instagram": "^3.1.0",
     "league/oauth2-linkedin": "^5.1.2",
     "openai-php/client": "^0.20.1",
-    "phalcon/ide-stubs": "^5.20.3",
+    "phalcon/ide-stubs": "^5.21.0",
     "php-imap/php-imap": "^6.0",
     "saggre/phpdocumentor-markdown": "^1.0.0",
     "shuchkin/simplexlsxgen": "^1.5.17",
@@ -138,7 +145,7 @@
     "league/oauth2-linkedin": "^5.1.2",
     "openai-php/client": "^0.20.1",
     "pds/skeleton": "^1.0.0",
-    "phalcon/ide-stubs": "^5.20.3",
+    "phalcon/ide-stubs": "^5.21.0",
     "php-imap/php-imap": "^6.0",
     "saggre/phpdocumentor-markdown": "^1.0.0",
     "shuchkin/simplexlsxgen": "^1.5.17",

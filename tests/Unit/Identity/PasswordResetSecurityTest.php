@@ -44,6 +44,7 @@ final class PasswordResetSecurityTest extends TestCase
             'dbRecord' => null, 'dbPassword' => null, 'snapshot' => null,
             'affected' => 0, 'transaction' => false, 'saves' => 0,
             'failSave' => false, 'throwSave' => false, 'failCommit' => false,
+            'endTransactionDuringSave' => false,
             'deleted' => false, 'exists' => true, 'claims' => 0,
         ];
         $this->state->dbPassword = $this->state->password;
@@ -77,6 +78,9 @@ final class PasswordResetSecurityTest extends TestCase
             return true;
         });
         $connection->method('rollback')->willReturnCallback(static function () use ($state): bool {
+            if (!$state->transaction) {
+                throw new \Phalcon\Db\Exceptions\NoActiveTransaction();
+            }
             [$state->dbRecord, $state->dbPassword] = $state->snapshot;
             $state->transaction = false;
             return true;
@@ -104,6 +108,10 @@ final class PasswordResetSecurityTest extends TestCase
         $user->method('getMessages')->willReturn([]);
         $user->method('save')->willReturnCallback(static function () use ($state): bool {
             ++$state->saves;
+            if ($state->endTransactionDuringSave) {
+                [$state->dbRecord, $state->dbPassword] = $state->snapshot;
+                $state->transaction = false;
+            }
             if ($state->throwSave) {
                 throw new \RuntimeException('Synthetic save failure');
             }
@@ -219,6 +227,24 @@ final class PasswordResetSecurityTest extends TestCase
         self::assertSame($before, [$this->state->record, $this->state->password]);
         self::assertSame($before, [$this->state->dbRecord, $this->state->dbPassword]);
         self::assertFalse($this->state->transaction);
+    }
+
+    public function testSaveThatEndsTransactionPreservesTheOriginalFailure(): void
+    {
+        $token = $this->issue();
+        $before = [$this->state->record, $this->state->password];
+        $this->state->throwSave = true;
+        $this->state->endTransactionDuringSave = true;
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Synthetic save failure');
+
+        try {
+            $this->redeem($token);
+        } finally {
+            self::assertSame($before, [$this->state->record, $this->state->password]);
+            self::assertSame($before, [$this->state->dbRecord, $this->state->dbPassword]);
+            self::assertFalse($this->state->transaction);
+        }
     }
 
     public function testExpiryIsRecheckedWhenClaimingAPreviouslyValidatedRecord(): void
