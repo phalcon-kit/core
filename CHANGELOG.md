@@ -40,6 +40,9 @@ release notes.
   `findFirst()` eager loading, validation, and form option isolation.
 - Load the CI database settings into the PHPUnit environment and fail the
   native compatibility gate if any of its required checks are skipped.
+- Allow the abandonment status of the optional Instagram provider's
+  `jakeasmith/http_build_url` dependency in maintainer audits until that
+  integration is migrated. Vulnerability checks remain enforced.
 
 ## 3.10.7 - 2026-09-12
 

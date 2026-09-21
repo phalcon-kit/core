@@ -268,6 +268,28 @@ Closed or clarified during review:
   scaffolding were either removed or captured above as explicit design
   questions.
 
+## Optional Instagram Provider Dependency
+
+- Status: Compatibility hold, reviewed for Core 3.10.8.
+- Area: Optional OAuth2 Instagram integration and maintainer dependencies.
+- Context: `league/oauth2-instagram` 3.1.0 depends on the abandoned
+  `jakeasmith/http_build_url` package. The provider is installed for Core
+  development coverage and suggested to applications, not required by the
+  default production dependency graph. Upstream recommends PHP 8.5's native
+  URI API, which is not a drop-in replacement for the provider's dependency.
+- Current stance: Retain the optional integration for compatibility and use a
+  package-specific Composer abandonment exception. Security advisories and
+  abandonment checks for every other package remain enforced. Use Composer
+  2.10 or newer for maintainer audits so `config.policy` is honored.
+- Possible future shape: Upgrade to a maintained compatible provider or plan
+  an explicit migration/removal of the integration. Avoid claiming a Composer
+  replacement without implementing and testing the dependency's public API.
+- Validation: Exercise authorization URL construction, callback state,
+  token exchange, and resource-owner mapping with mocked HTTP responses;
+  remove the exception and pass fresh lowest/highest dependency audits.
+- Discussion triggers: An upstream provider release removes the dependency,
+  a maintained alternative is selected, or a security advisory requires action.
+
 ## Entry Template
 
 - Status:
