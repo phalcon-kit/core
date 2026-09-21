@@ -38,6 +38,8 @@ release notes.
   signatures so upstream migration changes trigger a compatibility review.
 - Add compatibility coverage for inactive and nested transactions, native
   `findFirst()` eager loading, validation, and form option isolation.
+- Load the CI database settings into the PHPUnit environment and fail the
+  native compatibility gate if any of its required checks are skipped.
 
 ## 3.10.7 - 2026-09-12
 

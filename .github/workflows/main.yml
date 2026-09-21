@@ -355,6 +355,7 @@ jobs:
           mkdir -p .phalcon
           touch .env
           cp .env.github .env
+          cp .env.github .env.testing.local
 
       - name: Run migrations
         run: |
@@ -362,7 +363,7 @@ jobs:
           ./bin/migration-run.sh
 
       - name: Phalcon 5.21.0 Compatibility
-        run: composer phpunit -- tests/Unit/Support/Phalcon519CompatibilityTest.php tests/Unit/Support/Phalcon5201CompatibilityTest.php tests/Unit/Support/Phalcon5203CompatibilityTest.php tests/Unit/Support/Phalcon521CompatibilityTest.php --display-skipped --display-errors
+        run: composer phpunit -- tests/Unit/Support/Phalcon519CompatibilityTest.php tests/Unit/Support/Phalcon5201CompatibilityTest.php tests/Unit/Support/Phalcon5203CompatibilityTest.php tests/Unit/Support/Phalcon521CompatibilityTest.php --display-skipped --display-errors --fail-on-skipped
 
       - name: PHP Unit
         run: composer phpunit -- --display-skipped --display-errors
