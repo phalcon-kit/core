@@ -7,6 +7,37 @@ for exact PHP, Phalcon extension, and development-tool versions.
 Use this guide to verify that an application’s runtime matches those declared
 requirements without duplicating version numbers in application documentation.
 
+## Phalcon 5.21.0 Upgrade Notes
+
+The current source baseline requires Phalcon `^5.21.0` and matching
+`phalcon/ide-stubs` `^5.21.0`. CI installs the checksum-verified official
+5.21.0 release built with Zephir 1.5.0. This upgrade requires Core 3.10.8
+or newer: earlier Core releases redeclare model properties without the native
+types now required by Phalcon and fail when a model class loads. Update CLI, PHP-FPM, and long-lived
+workers together, then refresh dependencies and run the checks below.
+
+Review these upstream behavior changes before deploying:
+
+- `commit()` and `rollback()` throw
+  `Phalcon\Db\Exceptions\NoActiveTransaction` when no transaction is active.
+  Pair transaction operations and guard optional error cleanup with
+  `isUnderTransaction()` so cleanup does not hide the original exception.
+  Failed transaction operations now preserve the nesting level.
+- Native `findFirst(['eager' => ['RelationAlias']])` now loads relations.
+  Phalcon Kit's `findFirstWith()` remains supported. Review existing queries
+  that supplied an `eager` option previously ignored by native `findFirst()`.
+- PHQL string literals now resolve escape sequences. Prefer bound parameters
+  for user values; check intentional literal backslashes in hand-written PHQL.
+- File validators reject missing/non-upload values and unreadable images.
+  Declare optional-file behavior explicitly instead of relying on malformed
+  input passing validation. Per-field private/reserved IP options are honored.
+- Relation resolution, composite foreign keys, cached resultsets, form options,
+  Volt compilation, and concurrent stream-directory creation include fixes.
+
+See the [upstream release notes](https://github.com/phalcon/cphalcon/releases/tag/v5.21.0)
+for the complete list. The stub patches are rebased on 5.21.0 while retaining
+Phalcon Kit's existing model signature and iterable-result annotations.
+
 ## Compatibility Has Several Layers
 
 A working installation aligns all of these surfaces:
@@ -131,6 +162,26 @@ the parent signature; broadening a child signature can claim support the parent
 cannot actually accept. The test's narrow allowlist documents these temporary
 holds and will fail when a hold moves or a deprecated type is reintroduced
 elsewhere.
+
+### Remaining Native Signature Holds In 5.21.0
+
+The deprecation test checks these native parameter types with reflection as
+well as checking the source allowlist. Revisit each hold when upstream changes
+its signature:
+
+| Legacy interface | Native boundary still using it |
+| --- | --- |
+| `AdapterInterface` (database) | Model `preSaveRelatedRecords()` / `postSaveRelatedRecords()` |
+| `ColumnInterface` (database) | MySQL dialect `getColumnDefinition()` |
+| `AdapterInterface` (logger) | Logger `addAdapter()` |
+| `FormatterInterface` (logger) | Canonical logger adapter `setFormatter()` |
+| `CollectionInterface` (support) | Model `doSave()` |
+
+Use canonical contracts in new independent code. Preserve the holds above in
+this patch release: changing a protected parameter to a broader canonical
+interface can invalidate downstream overrides that still use the narrower
+legacy interface. A wrapper that forwards a canonical-only object to a native
+method expecting the legacy interface would also fail at runtime.
 
 ## Validate In Increasing Scope
 

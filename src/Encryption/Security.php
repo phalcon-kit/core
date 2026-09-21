@@ -24,6 +24,8 @@ use PhalconKit\Config\ConfigInterface;
  * with PhalconKit's implementation. When Argon2 hashing is selected, hash
  * options are completed from `security.argon2` config before falling back to
  * PHP's password defaults.
+ *
+ * @property Random $random Native protected helper initialized by the constructor.
  */
 class Security extends PhalconSecurity
 {

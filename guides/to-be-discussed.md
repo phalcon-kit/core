@@ -8,6 +8,20 @@ Actionable release blocks live in the [Project Roadmap](../ROADMAP.md). Promote
 an item there only after the expected behavior, compatibility risk, and
 validation plan are concrete.
 
+## Baseline Migration Schema Portability
+
+The `resources/migrations/1.0.0/` foreign-key definitions name `phalcon_kit`
+explicitly. During the Phalcon 5.21.0 upgrade checks, migrating into a different
+disposable database reported success, but related writes failed because their
+foreign keys still referenced `phalcon_kit`. The full ORM suite passed when
+the disposable schema used the expected name.
+
+Decide how fresh installations should derive the referenced schema from their
+connection, and how to handle installations that already ran these migrations.
+Avoid silently rewriting historical migrations without that compatibility
+decision. Validate both the default and a custom database name with migrations,
+foreign-key inspection, nested writes, and rollback tests.
+
 ## Reviewed Inline Follow-Ups
 
 Status: Reviewed; selected items remain open.
