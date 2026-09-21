@@ -1539,7 +1539,7 @@ class AdditionalServiceProvidersTest extends AbstractUnit
     private function createFakePdoAdapterClass(): string
     {
         return get_class(new class ([]) extends AbstractPdo {
-            public $descriptor;
+            public array $descriptor;
 
             public function __construct(array $descriptor)
             {

@@ -19,12 +19,12 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  PHALCON_VERSION: 5.20.3
-  PHALCON_PECL_URL: https://github.com/phalcon/cphalcon/releases/download/v5.20.3/phalcon-pecl.tgz
-  PHALCON_PECL_SHA256: 629c33700b591b633c13e851ffae8124758df658154e3bed828c828250508e00
+  PHALCON_VERSION: 5.21.0
+  PHALCON_PECL_URL: https://github.com/phalcon/cphalcon/releases/download/v5.21.0/phalcon-pecl.tgz
+  PHALCON_PECL_SHA256: e7e81858b2dc11f578a3a8c4924b37d86bec67945bcca725bc34a51ba50c43f0
   # PHP extensions required by Composer
   EXTENSIONS: apcu, gettext, gd, igbinary, imagick, intl, json, mbstring, msgpack, memcached, sqlite3, yaml, redis, openssl, swoole, :memcache, :psr
-  EXTENSIONS_CACHE_KEY: php-ext-v4-php8.5-phalcon-helper-5.20.3
+  EXTENSIONS_CACHE_KEY: php-ext-v4-php8.5-phalcon-helper-5.21.0
 
 permissions:
   contents: read
@@ -56,7 +56,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -69,7 +69,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer
 
-      - name: Ensure Phalcon 5.20.3
+      - name: Ensure Phalcon 5.21.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -114,7 +114,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -127,7 +127,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpcs
 
-      - name: Ensure Phalcon 5.20.3
+      - name: Ensure Phalcon 5.21.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -163,7 +163,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -176,7 +176,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpstan
 
-      - name: Ensure Phalcon 5.20.3
+      - name: Ensure Phalcon 5.21.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -217,7 +217,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -230,7 +230,7 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, psalm
 
-      - name: Ensure Phalcon 5.20.3
+      - name: Ensure Phalcon 5.21.0
         run: bash .github/scripts/install-phalcon.sh
 
       - uses: ramsey/composer-install@v4
@@ -252,7 +252,7 @@ jobs:
 
       - name: Upload Psalm report to GitHub Code Scanning
         if: ${{ always() && hashFiles('results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@v4.36.2
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
         with:
           sarif_file: results.sarif
           category: psalm
@@ -318,7 +318,7 @@ jobs:
           key: ${{ env.EXTENSIONS_CACHE_KEY }}
 
       - name: Cache PHP extensions
-        uses: actions/cache@v5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -331,11 +331,11 @@ jobs:
           extensions: ${{ env.EXTENSIONS }}
           tools: composer, phpunit
 
-      - name: Ensure Phalcon 5.20.3
+      - name: Ensure Phalcon 5.21.0
         run: bash .github/scripts/install-phalcon.sh
 
       - name: Require Imagick Compatibility Runtime
-        run: php -r 'if (!extension_loaded("imagick")) { fwrite(STDERR, "Imagick is required for the Phalcon 5.20.3 compatibility job.\n"); exit(1); }'
+        run: php -r 'if (!extension_loaded("imagick")) { fwrite(STDERR, "Imagick is required for the Phalcon 5.21.0 compatibility job.\n"); exit(1); }'
 
       - uses: ramsey/composer-install@v4
         with:
@@ -355,14 +355,15 @@ jobs:
           mkdir -p .phalcon
           touch .env
           cp .env.github .env
+          cp .env.github .env.testing.local
 
       - name: Run migrations
         run: |
           ./bin/migration-list.sh
           ./bin/migration-run.sh
 
-      - name: Phalcon 5.20.3 Compatibility
-        run: composer phpunit -- tests/Unit/Support/Phalcon519CompatibilityTest.php tests/Unit/Support/Phalcon5201CompatibilityTest.php tests/Unit/Support/Phalcon5203CompatibilityTest.php --display-skipped --display-errors
+      - name: Phalcon 5.21.0 Compatibility
+        run: composer phpunit -- tests/Unit/Support/Phalcon519CompatibilityTest.php tests/Unit/Support/Phalcon5201CompatibilityTest.php tests/Unit/Support/Phalcon5203CompatibilityTest.php tests/Unit/Support/Phalcon521CompatibilityTest.php --display-skipped --display-errors --fail-on-skipped
 
       - name: PHP Unit
         run: composer phpunit -- --display-skipped --display-errors

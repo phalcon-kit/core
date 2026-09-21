@@ -498,6 +498,17 @@ class ModelTest extends AbstractUnit
         $this->assertSame('protected-role', $nativeLoaded->getRelated('RoleList')->getFirst()->getKey());
         $this->assertSame('protected-role', $nativeLoaded->toArray()['rolelist'][0]['key']);
 
+        $nativeFirst = ProtectedRelationshipUser::findFirst([
+            'conditions' => 'email = :email:',
+            'bind' => ['email' => 'protected@test.tld'],
+            'eager' => ['RoleList'],
+        ]);
+        $this->assertInstanceOf(ProtectedRelationshipUser::class, $nativeFirst);
+        $this->assertTrue($nativeFirst->isRelationshipLoaded('RoleList'));
+        $this->assertTrue($nativeFirst->hasLoadedRelatedAlias('rolelist'));
+        $this->assertFalse($nativeFirst->hasDirtyRelated());
+        $this->assertSame('protected-role', $nativeFirst->toArray()['rolelist'][0]['key']);
+
         $criteria = ProtectedRelationshipUser::query();
         $this->assertInstanceOf(Criteria::class, $criteria);
         $criteria->where(

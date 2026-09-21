@@ -1,77 +1,85 @@
 --- a/src/Mvc/Model.php
 +++ b/src/Mvc/Model.php
-@@ -442,9 +442,9 @@
-      * ```
+@@ -403,7 +403,7 @@
       *
+      * @phpstan-param mvc_model_parameters $parameters
       * @param array $parameters
--     * @return float | ResultsetInterface
+-     * @return double|ResultsetInterface
 +     * @return ResultsetInterface|float
       */
      public static function average(array $parameters = []): ResultsetInterface|float
      {
-     }
- 
-@@ -538,9 +538,9 @@
-      * ```
-      *
+@@ -496,9 +496,9 @@
       * @param array|string|null $parameters
+      *
+      * @phpstan-param mvc_model_parameters|string|null $parameters
 -     * @return int|ResultsetInterface
-+     * @return ResultsetInterface|int
-      */
+-     */
 -    public static function count($parameters = null): ResultsetInterface|int
++     * @return ResultsetInterface|int
++     */
 +    public static function count(mixed $parameters = null): ResultsetInterface|int
      {
      }
  
-@@ -794,7 +794,7 @@
+@@ -678,11 +678,11 @@
+      *     ],
+      *     'hydration' => null
       * ]
 -     * @return \Phalcon\Mvc\Model\Resultset<int, T>
 +     * @return \Phalcon\Mvc\Model\Resultset<int, T>&\Traversable<int, T>
+      *
+      * @phpstan-param mvc_model_parameters|int|string|null $parameters
       */
 -    public static function find($parameters = null): ResultsetInterface
 +    public static function find(mixed $parameters = null): ResultsetInterface
      {
      }
  
-@@ -884,7 +884,7 @@
+@@ -774,7 +774,7 @@
       *
-      * @return T|\Phalcon\Mvc\Model\Row|null
+      * @phpstan-param mvc_model_parameters|scalar|null $parameters
       */
 -    public static function findFirst($parameters = null): mixed
 +    public static function findFirst(mixed $parameters = null): mixed
      {
      }
  
-@@ -1229,9 +1229,9 @@
+@@ -804,11 +804,11 @@
       * ```
       *
       * @param array $parameters
 -     * @return mixed
 +     * @return ResultsetInterface|float|false
+      *
+      * @phpstan-param mvc_model_parameters|string|null $parameters
       */
 -    public static function maximum($parameters = null): mixed
 +    public static function maximum(mixed $parameters = null): ResultsetInterface|float|false
      {
      }
  
-@@ -1261,9 +1261,9 @@
-      * ```
+@@ -839,9 +839,9 @@
       *
-      * @param array $parameters
+      * @param array $parameters *
+      * @phpstan-param mvc_model_parameters|string|null $parameters
 -     * @return mixed
-+     * @return ResultsetInterface|float|false
-      */
+-     */
 -    public static function minimum($parameters = null): mixed
++     * @return ResultsetInterface|float|false
++     */
 +    public static function minimum(mixed $parameters = null): ResultsetInterface|float|false
      {
      }
  
-@@ -1532,8 +1532,8 @@
+@@ -881,10 +881,10 @@
       * ```
       *
       * @param array $parameters
 -     * @return double | ResultsetInterface
 +     * @return ResultsetInterface|float
+      *
+      * @phpstan-param mvc_model_parameters|string|null $parameters
       */
 -    public static function sum($parameters = null): ResultsetInterface|float
 +    public static function sum(mixed $parameters = null): ResultsetInterface|float

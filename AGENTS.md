@@ -6,7 +6,7 @@ unless the task explicitly asks for regenerated docs.
 
 ## Repository Shape
 
-- This is a PHP 8.5 library package for Phalcon 5.13.x, published as
+- This is a PHP 8.5 library package for Phalcon 5.21.x, published as
   `phalcon-kit/core`.
 - Runtime code lives in `src/` under the `PhalconKit\` namespace.
 - Unit tests live in `tests/Unit/`.
