@@ -5,7 +5,7 @@
  *
  * (c) Phalcon Kit Team
  *
- * For the full copyright and license information, please view the LICENSE.txt
+ * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
@@ -15,9 +15,14 @@ use PhalconKit\Cli\Dispatcher;
 use PhalconKit\Support\Helper;
 
 /**
- * Trait DescribesTrait
+ * Resolve CLI scaffold options, generated PHP headers, paths, and namespaces.
  *
- * This trait provides methods to describe columns, references, and indexes of a database table.
+ * Requires Core's CLI dispatcher with normalized camelCase option keys. Paths are
+ * composed without creating directories or resolving real paths; relative roots
+ * stay relative and a leading slash bypasses the configured root. Directory
+ * fragments used below the project root should include their trailing slash.
+ * Table filters are cached on first use for the lifetime of the task. File writes
+ * and overwrite decisions belong to the consuming scaffold task.
  *
  * @property Dispatcher $dispatcher
  */
@@ -50,7 +55,7 @@ trait ScaffoldTrait
  *
  * (c) Phalcon Kit Team
  *
- * For the full copyright and license information, please view the LICENSE.txt
+ * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
@@ -62,8 +67,10 @@ declare(strict_types=1);
 PHP;
     
     /**
-     * Retrieves the license stamp.
-     * @return string|null The license stamp, or null if there is no license.
+     * Return the --license override or default header text.
+     *
+     * @return string|null Header text, or an empty string when --no-license is set.
+     *     The nullable signature is retained for task overrides.
      */
     public function getLicenseStamp(): ?string
     {
@@ -71,9 +78,10 @@ PHP;
     }
     
     /**
-     * Retrieves the value of the 'strictTypes' property.
+     * Return the strict_types declaration for a generated PHP file.
      *
-     * @return string|null The value of the 'strictTypes' property, or null if the 'no-strict-types' parameter is set.
+     * @return string|null Declaration text, or an empty string when --no-strict-types
+     *     is set. The nullable signature is retained for task overrides.
      */
     public function getStrictTypes(): ?string
     {
@@ -110,7 +118,7 @@ PHP;
     /**
      * Checks if the given table is whitelisted.
      * @param string $table The table name to check.
-     * @return bool Returns true if the table is whitelisted, false otherwise.
+     * @return bool True when --table is empty or includes this exact table name.
      */
     public function isWhitelistedTable(string $table): bool
     {
@@ -133,109 +141,109 @@ PHP;
         return !empty($this->excludedTables) && in_array($table, $this->excludedTables);
     }
     
-    // Method for --no-controllers
+    /** Skip controller generation when --no-controllers is set. */
     public function isNoControllers(): bool
     {
         return $this->dispatcher->getParameter('noControllers');
     }
     
-    // Method for --no-interfaces
+    /** Skip model interface generation when --no-interfaces is set. */
     public function isNoInterfaces(): bool
     {
         return $this->dispatcher->getParameter('noInterfaces');
     }
     
-    // Method for --no-abstracts
+    /** Skip abstract model generation when --no-abstracts is set. */
     public function isNoAbstracts(): bool
     {
         return $this->dispatcher->getParameter('noAbstracts');
     }
     
-    // Method for --no-models
+    /** Skip concrete model generation when --no-models is set. */
     public function isNoModels(): bool
     {
         return $this->dispatcher->getParameter('noModels');
     }
     
-    // Method for --no-enums
+    /** Skip enum generation when --no-enums is set. */
     public function isNoEnums(): bool
     {
         return $this->dispatcher->getParameter('noEnums');
     }
     
-    // Method for --no-tests
+    /** Skip test generation when --no-tests is set. */
     public function isNoTests(): bool
     {
         return $this->dispatcher->getParameter('noTests');
     }
 
-    // Method for --no-strict-types
+    /** Omit the strict_types declaration when --no-strict-types is set. */
     public function isNoStrictTypes(): bool
     {
         return $this->dispatcher->getParameter('noStrictTypes');
     }
     
-    // Method for --no-license
+    /** Omit the generated license header when --no-license is set. */
     public function isNoLicense(): bool
     {
         return $this->dispatcher->getParameter('noLicense');
     }
     
-    // Method for --no-comments
+    /** Omit optional generated documentation when --no-comments is set. */
     public function isNoComments(): bool
     {
         return $this->dispatcher->getParameter('noComments');
     }
     
-    // Method for --no-get-set-methods
+    /** Omit generated accessors when --no-get-set-methods is set. */
     public function isNoGetSetMethods(): bool
     {
         return $this->dispatcher->getParameter('noGetSetMethods');
     }
     
-    // Method for --no-validations
+    /** Omit generated validation methods when --no-validations is set. */
     public function isNoValidations(): bool
     {
         return $this->dispatcher->getParameter('noValidations');
     }
     
-    // Method for --no-relationships
+    /** Omit generated relation definitions when --no-relationships is set. */
     public function isNoRelationships(): bool
     {
         return $this->dispatcher->getParameter('noRelationships');
     }
     
-    // Method for --no-column-map
+    /** Omit generated column maps when --no-column-map is set. */
     public function isNoColumnMap(): bool
     {
         return $this->dispatcher->getParameter('noColumnMap');
     }
     
-    // Method for --no-set-source
+    /** Omit generated source-table assignment when --no-set-source is set. */
     public function isNoSetSource(): bool
     {
         return $this->dispatcher->getParameter('noSetSource');
     }
     
-    // Method for --no-typings
+    /** Omit optional generated type declarations when --no-typings is set. */
     public function isNoTypings(): bool
     {
         return $this->dispatcher->getParameter('noTypings');
     }
     
-    // Method for --granular-typings
+    /** Use the more specific scaffold type mappings requested by --granular-typings. */
     public function isGranularTypings(): bool
     {
         return $this->dispatcher->getParameter('granularTypings');
     }
     
-    // Method for --add-raw-value-type
+    /** Include Phalcon RawValue in generated types when --add-raw-value-type is set. */
     public function isAddRawValueType(): bool
     {
         return $this->dispatcher->getParameter('addRawValueType');
     }
     
-    // Method for --protected-properties
+    /** Generate protected model properties when --protected-properties is set. */
     public function isProtectedProperties(): bool
     {
         return $this->dispatcher->getParameter('protectedProperties');
@@ -243,7 +251,7 @@ PHP;
     
     /**
      * Determines if a given path is an absolute path.
-     * @param string $path The path to be checked. (default: null)
+     * @param string $path The path to be checked. (default: empty string)
      * @return bool Returns true if the path is an absolute path, false otherwise.
      */
     public function isAbsolutePath(string $path = ''): bool
@@ -270,7 +278,8 @@ PHP;
      *
      * @param string $path The relative or absolute path to the file or directory.
      *
-     * @return string The absolute directory path for the given file or directory path.
+     * @return string Path under --directory, or the unchanged absolute $path.
+     *     A relative --directory produces a relative result.
      */
     public function getDirectory(string $path = ''): string
     {
@@ -278,87 +287,133 @@ PHP;
         return $this->absolutePathOr($path, $fullPath);
     }
     
+    /**
+     * Compose a path using the `srcDir` dispatcher option under the project directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getSrcDirectory(string $path = ''): string
     {
         $fullPath = $this->getDirectory($this->dispatcher->getParameter('srcDir') ?? $this->srcDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Tests Directory
+    /**
+     * Compose a path using the `testsDir` dispatcher option under the project directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getTestsDirectory(string $path = ''): string
     {
         $fullPath = $this->getDirectory($this->dispatcher->getParameter('testsDir') ?? $this->testsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Controllers Directory
+    /**
+     * Compose a path using the `controllersDir` dispatcher option under the source directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getControllersDirectory(string $path = ''): string
     {
         $fullPath = $this->getSrcDirectory($this->dispatcher->getParameter('controllersDir') ?? $this->controllersDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Models Directory
+    /**
+     * Compose a path using the `modelsDir` dispatcher option under the source directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getModelsDirectory(string $path = ''): string
     {
         $fullPath = $this->getSrcDirectory($this->dispatcher->getParameter('modelsDir') ?? $this->modelsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Models Interfaces Directory
+    /**
+     * Compose a path using the `interfacesDir` dispatcher option under the models directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getModelsInterfacesDirectory(string $path = ''): string
     {
         $fullPath = $this->getModelsDirectory($this->dispatcher->getParameter('interfacesDir') ?? $this->interfacesDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Models Enum Directory
+    /**
+     * Compose a path using the `enumsDir` dispatcher option under the models directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getEnumsDirectory(string $path = ''): string
     {
         $fullPath = $this->getModelsDirectory($this->dispatcher->getParameter('enumsDir') ?? $this->enumsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Models Abstracts Directory
+    /**
+     * Compose a path using the `abstractsDir` dispatcher option under the models directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getAbstractsDirectory(string $path = ''): string
     {
         $fullPath = $this->getModelsDirectory($this->dispatcher->getParameter('abstractsDir') ?? $this->abstractsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Models Abstracts Interfaces Directory
+    /**
+     * Compose a path using the `interfaceDir` dispatcher option under the abstract models directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getAbstractsInterfacesDirectory(string $path = ''): string
     {
         $fullPath = $this->getAbstractsDirectory($this->dispatcher->getParameter('interfaceDir') ?? $this->interfacesDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Models Tests Directory
+    /**
+     * Compose a path using the `modelsDir` dispatcher option under the tests directory.
+     *
+     * @param string $path Suffix to append; a leading slash returns this path unchanged.
+     * @return string Composed path, which may remain relative to the working directory.
+     */
     public function getModelsTestsDirectory(string $path = ''): string
     {
         $fullPath = $this->getTestsDirectory($this->dispatcher->getParameter('modelsDir') ?? $this->modelsDirectory) . $path;
         return $this->absolutePathOr($path, $fullPath);
     }
     
-    // Models Extend Class
+    /** Return the model parent class name from `modelsExtend`, falling back to the task default. */
     public function getModelsExtend(): string
     {
         return $this->dispatcher->getParameter('modelsExtend') ?? $this->modelsExtend;
     }
     
-    // Models Interface Extend Class
+    /** Return the model parent interface name from `interfacesExtend`, falling back to the task default. */
     public function getInterfacesExtend(): string
     {
         return $this->dispatcher->getParameter('interfacesExtend') ?? $this->interfacesExtend;
     }
     
-    // Tests Extend Class
+    /** Return the test parent class name from `testsExtend`, falling back to the task default. */
     public function getTestsExtend(): string
     {
         return $this->dispatcher->getParameter('testsExtend') ?? $this->testsExtend;
     }
     
-    // Controllers Extend Class
+    /** Return the controller parent class name from `controllersExtend`, falling back to the task default. */
     public function getControllersExtend(): string
     {
         return $this->dispatcher->getParameter('controllersExtend') ?? $this->controllersExtend;
@@ -386,48 +441,49 @@ PHP;
         return trim(preg_replace('/\\\\+/', '\\', $namespace) ?? '', '\\');
     }
     
-    // Default namespace
+    /** Derive the project root namespace from its configured directory and base namespace. */
     public function getNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getDirectory());
     }
     
-    // Controllers Namespace
+    /** Derive the controllers namespace from its configured directory and base namespace. */
     public function getControllersNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getControllersDirectory());
     }
     
+    /** Derive the model enums namespace from its configured directory and base namespace. */
     public function getEnumsNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getEnumsDirectory());
     }
     
-    // Models Namespace
+    /** Derive the models namespace from its configured directory and base namespace. */
     public function getModelsNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getModelsDirectory());
     }
     
-    // Abstract Namespace
+    /** Derive the abstract models namespace from its configured directory and base namespace. */
     public function getAbstractsNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getAbstractsDirectory());
     }
     
-    // Models Interfaces Namespace
+    /** Derive the model interfaces namespace from its configured directory and base namespace. */
     public function getModelsInterfacesNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getModelsInterfacesDirectory());
     }
     
-    // Models Abstracts Interfaces Namespace
+    /** Derive the abstract model interfaces namespace from its configured directory and base namespace. */
     public function getAbstractsInterfacesNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getAbstractsInterfacesDirectory());
     }
     
-    // Models Tests Namespace
+    /** Derive the model tests namespace from its configured directory and base namespace. */
     public function getModelsTestsNamespace(): string
     {
         return $this->getNamespaceFromPath($this->getModelsTestsDirectory());

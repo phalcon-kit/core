@@ -60,7 +60,7 @@ class ScaffoldTaskTest extends AbstractUnit
  *
  * (c) Phalcon Kit Team
  *
- * For the full copyright and license information, please view the LICENSE.txt
+ * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 PHP;

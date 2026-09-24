@@ -51,23 +51,16 @@ Keep for discussion:
 
 - Identity password reset notifications:
   `src/Identity/Manager.php`.
-  Decide whether reset-token and reset-completed messages belong in events, a
-  notifier service, or app-owned callbacks. Any design must preserve the current
-  anti-user-enumeration response behavior.
+  Reset-token delivery already has the protected application hook
+  `sendPasswordResetNotification()`. Keep that extension contract. The remaining
+  question is whether a reset-completed notification or an optional shared
+  notifier is needed, and how delivery retries/failures should be exposed.
+  Preserve anti-user-enumeration responses and never return reset tokens to clients.
 - Impersonation authorization:
   `src/Identity/Traits/Impersonation.php`.
   Replace the hard-coded `admin`/`dev` role gate only after a config-backed
   impersonation permission contract exists, including audit/session behavior for
   "login as" flows.
-- Stateless impersonation exit:
-  `src/Identity/Traits/Session.php`,
-  `src/Identity/Traits/Impersonation.php`.
-  The JWT enforcement regression work exposed an existing merge issue:
-  `logoutAs()` writes only the restored `userId`, but stateless
-  `setSessionIdentity()` retains the previous `asUserId`. Decide how replacement
-  and merge semantics should preserve custom claim fields while clearing
-  impersonation state. Validate a signed-token login-as/logout-as round trip
-  separately from JWT validation enforcement.
 - Identity role matching flag naming:
   `src/Identity/Traits/Role.php`,
   `src/Identity/Traits/Acl.php`.
@@ -100,6 +93,9 @@ Keep for discussion:
   `src/Mvc/Model.php`.
   Revisit `notNullValidations => false` only after generated-model validation,
   database-nullability assumptions, and application migration risk are tested.
+  A historical inline note questioned `castOnHydrate` with binary columns, but
+  provided no reproducer. Keep the current true default; require native binary
+  and UUID round-trip evidence before proposing a change.
 - Dynamic model metadata:
   `src/Mvc/Model/Dynamic.php`.
   Replace APCu metadata key deletion with a metadata strategy or adapter wrapper
@@ -239,35 +235,6 @@ Keep for discussion:
   if a supported downstream editor or runtime requires it, because BOM output
   can affect headers and generated-file diffs.
 
-Closed or clarified during review:
-
-- Blank comments in flash, exposer, and dispatcher code were removed or
-  replaced with explicit current-behavior comments.
-- Commented translation coverage was restored with the real `Phalcon Kit`
-  message key; delimiter-containing nested translation keys remain an open
-  design question above.
-- Commented ClamAV file-positive coverage was removed because stream-based
-  EICAR coverage already asserts positive detection without storing an EICAR
-  fixture in the repository.
-- Commented debug dumps, obsolete fallback throws, and runtime `eval()` sketch
-  code were removed from source. Current behavior is now either executable code
-  or tracked in this discussion guide.
-- REST query initialization now carries the configured aggregate `column`
-  collection into prepared find options instead of leaving the live code
-  commented out.
-- Audit snapshot filtering was promoted to the project roadmap because the
-  desired behavior is concrete and testable.
-- JSON escaping of `null` remains `null` as a string because the helper is used
-  for `JSON.parse(decodeURIComponent(...))` payloads.
-- Event cancellation behavior is now asserted directly instead of questioned in
-  a comment.
-- The disabled multibyte sprintf encoding test was removed because the example
-  used Chinese text with an encoding that cannot represent it.
-- Stale commented-out examples in model relationship tests, dispatcher
-  security, eager loading, export helpers, relationship assignment, and
-  scaffolding were either removed or captured above as explicit design
-  questions.
-
 ## Optional Instagram Provider Dependency
 
 - Status: Compatibility hold, reviewed for Core 3.10.8.
@@ -289,6 +256,85 @@ Closed or clarified during review:
   remove the exception and pass fresh lowest/highest dependency audits.
 - Discussion triggers: An upstream provider release removes the dependency,
   a maintained alternative is selected, or a security advisory requires action.
+
+## REST Controller Scaffold Ownership
+
+Status: Design; resolve generated-file ownership before scheduling implementation.
+
+Why:
+
+- Scaffolding REST controllers can save application work, but it can also
+  freeze bad defaults or overwrite application-owned decisions if started too
+  early.
+- The REST controller contracts are much more stable after recent policy work,
+  but generated output still needs a precise ownership
+  model.
+
+Scope:
+
+- Inventory the stable controller extension points: permissions, filters,
+  search fields, save fields, order fields, distinct fields, response fields,
+  `with` graphs, transformers, and action enablement.
+- Define which files are generated once, which files are regenerated, and which
+  files are app-owned.
+- Decide whether scaffolded controllers are abstract bases, concrete shells, or
+  an opt-in pair similar to model abstract/concrete scaffolding.
+- Add scaffold tests in temporary directories before generating any real
+  application-facing controller output.
+- Align generated controller comments with the existing model/scaffolder
+  documentation style.
+
+Validation:
+
+- Scaffold output assertions against temporary directories.
+- No hand edits to generated API documentation.
+- Full QA before release because scaffolding changes can affect package
+  consumers even when runtime code is untouched.
+
+## Ideas Requiring A Concrete Consumer Need
+
+### JetBrains Attributes
+
+Status: Parking Lot
+
+Scope:
+
+- Add `#[Deprecated]`, `#[Pure]`, or other JetBrains attributes only where they
+  materially improve IDE feedback.
+- Do not add vendor-specific attributes broadly until there is a clear policy
+  for dependency and PHPDoc compatibility.
+
+### CMS Models And Controllers
+
+Status: Parking Lot
+
+Scope:
+
+- Do not start this without a product-level CMS contract.
+- If revived, split it into separate model, permission, REST controller,
+  migration, and documentation blocks.
+
+### OpenAPI Generation
+
+Status: Parking Lot
+
+Scope:
+
+- Do not revive the old controller-introspection idea. REST policies can be
+  dynamic, identity-aware, and action-specific.
+- Revisit only as an explicit resource metadata contract after REST request and
+  response contracts stabilize and a real consumer needs generated OpenAPI
+  output.
+
+### Dynamic Expose Property Creation
+
+Status: Parking Lot
+
+Scope:
+
+- Do not automatically create undefined expose properties.
+- Revisit only if an application has a concrete, safe use case that cannot be
+  solved with explicit exposer configuration.
 
 ## Entry Template
 

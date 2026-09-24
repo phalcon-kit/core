@@ -63,7 +63,7 @@ trait EagerLoad
      * $limit = 100;
      * $offset = max(0, $this->request->getQuery('page', 'int') - 1) * $limit;
      *
-     * $manufacturers = Manufacturer::with('Robots.Parts', [
+     * $manufacturers = Manufacturer::findWith(['Robots.Parts'], [
      *     'limit' => [$limit, $offset]
      * ]);
      *
@@ -89,7 +89,7 @@ trait EagerLoad
     }
     
     /**
-     * Same as EagerLoadingTrait::findWith() for a single record
+     * Same as EagerLoad::findWith() for a single record
      *
      * @param array ...$arguments
      * @return ?ModelInterface
@@ -107,8 +107,8 @@ trait EagerLoad
     }
     
     /**
-     * @deprecated
-     * @link static::findWith()
+     * @deprecated Since 1.0; use findWith() with the same array arguments.
+     * @see static::findWith()
      * @param array ...$arguments
      * @return array
      */
@@ -122,8 +122,8 @@ trait EagerLoad
     }
     
     /**
-     * @deprecated
-     * @link static::findFirstWith()
+     * @deprecated Since 1.0; use findFirstWith() with the same array arguments.
+     * @see static::findFirstWith()
      * @param array ...$arguments
      * @return ?ModelInterface
      */
@@ -215,7 +215,10 @@ trait EagerLoad
      * ```php
      * $manufacturer = Manufacturer::findFirstById(51);
      *
-     * $manufacturer->load('Robots.Parts');
+     * if (!$manufacturer) {
+     *     return;
+     * }
+     * $manufacturer->load(['Robots.Parts']);
      *
      * foreach ($manufacturer->robots as $robot) {
      *    foreach ($robot->parts as $part) { ... }

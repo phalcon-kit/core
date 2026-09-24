@@ -27,6 +27,8 @@ release notes.
 - Adapt all five native Swoole worker-error arguments to the existing public
   four-argument hook. Pass the actual exit code and retain the worker PID and
   signal without breaking application hook signatures.
+- Correct eager-loading examples, database CLI help, misleading drop-table
+  comments, and scaffold header templates referencing the wrong license filename.
 
 ### Changed
 
@@ -34,6 +36,12 @@ release notes.
   aggregate database regressions in both CI dependency jobs with fail-on-skipped.
   Add shared explicit disposable-database host/socket settings while preserving
   existing local test variables.
+- Document model persistence and ORM setup, validation contracts, scaffold
+  options/paths and file ownership, and WebSocket callback/lifetime expectations.
+- Document isolated maintainer tool setup, database test prerequisites, and
+  deprecated API replacements. Refresh the roadmap, remove the resolved stateless
+  impersonation defect from discussion, and retain remaining delivery/migration
+  questions with their compatibility boundaries.
 
 ## 3.11.1 - 2026-09-24
 

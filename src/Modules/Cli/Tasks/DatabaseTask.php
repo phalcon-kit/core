@@ -34,7 +34,7 @@ Usage:
   phalcon-kit cli database insert
 
 Options:
-  main:         truncate, drop, fix-engine, insert, optimize, analyze
+  main:         fix-engine, optimize, analyze
   drop:         Drop deprecated tables
   truncate:     Truncate tables
   fix-engine:   Force table engines to `InnoDB`

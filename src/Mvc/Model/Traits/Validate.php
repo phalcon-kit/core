@@ -31,6 +31,7 @@ use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractEntity;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractLocale;
 use PhalconKit\Mvc\Model\Traits\Abstracts\AbstractMetaData;
 
+/** Build translated validation rules for mapped model attributes and convention fields. */
 trait Validate
 {
     use AbstractLocale;
@@ -55,11 +56,18 @@ trait Validate
         }
     }
 
+    /**
+     * Return Phalcon's explicit null/empty-string exemption, preserving false and zero.
+     */
     protected function getAllowEmptyOption(bool $allowEmpty = true): bool|array
     {
         return $allowEmpty ? [null, ''] : false;
     }
 
+    /**
+     * Skip an optional single attribute containing an empty value or SQL NULL sentinel.
+     * RawValue sentinels are inspected as strings; field arrays are left to native validators.
+     */
     protected function shouldSkipOptionalValidation(array|string $field, bool $allowEmpty): bool
     {
         if (!$allowEmpty || is_array($field)) {
@@ -74,6 +82,9 @@ trait Validate
         return $this->isOptionalEmptyValue($value);
     }
 
+    /**
+     * Recognize null, an empty string, and trimmed case-insensitive SQL NULL strings.
+     */
     protected function isOptionalEmptyValue(mixed $value): bool
     {
         return $value === null ||

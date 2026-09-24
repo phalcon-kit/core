@@ -1,175 +1,58 @@
 # Roadmap
 
-This file is the active release roadmap for Phalcon Kit Core. It replaced the
-retired GitHub Project board, but it should not become an archive of finished
-work.
-
-Use this file for deliverables that are concrete enough to schedule and test.
-Keep design questions in [To Be Discussed](guides/to-be-discussed.md), keep
-completed public changes in [CHANGELOG.md](CHANGELOG.md), and keep durable usage
-guidance in the relevant guide or shipped skill reference.
-
-## How To Use This File
-
-- Keep entries scoped to a deliverable that can be implemented, tested, and
-  released.
-- Promote a design question only when the problem, compatibility risk, expected
-  behavior, and validation plan are clear.
-- Prefer opt-in behavior for new framework capabilities unless a breaking
-  release explicitly changes the default.
-- Keep `Current Focus` short enough that the next block is obvious.
-- Remove completed blocks after the changelog and user-facing docs capture the
-  result. Do not leave historical `Done` sections here.
-- Keep cancelled or speculative ideas out of the roadmap unless they prevent a
-  likely future misstep; otherwise track them in To Be Discussed.
-
-## Status Values
-
-- `Next`: ready to implement in the current release train.
-- `Planned`: valuable, but should wait until the current focus is stable.
-- `Design`: needs an API contract, migration plan, or application use case.
-- `Parking Lot`: valid idea, but not worth scheduling yet.
+This is the active release roadmap for Phalcon Kit Core. Completed changes
+belong in [CHANGELOG.md](CHANGELOG.md), durable usage notes belong in the guides,
+and unresolved API or migration decisions belong in
+[To Be Discussed](guides/to-be-discussed.md).
 
 ## Current Focus
 
-Target: `3.2.0` REST controller scaffold readiness
+Target: `3.11.2` maintenance release on PHP 8.5 / Phalcon 5.22.
 
-Theme: turn the now-stable REST controller policy surface into a cautious,
-tested scaffold contract without overwriting app-owned decisions.
+Keep the release focused on native behavior, enforced regression coverage, and
+accurate consumer documentation. The implemented maintenance changes are listed
+under the unreleased changelog; this file tracks the remaining work.
 
-Decision:
+## Release Verification
 
-- Completed `3.0.4` coverage and maintenance work belongs in the changelog, not
-  active roadmap blocks.
-- The `3.1.x` REST policy ergonomics and controller-attribute work is shipped;
-  durable usage guidance belongs in the REST and identity guides.
-- The next schedulable block is REST controller scaffold readiness. Start with
-  generated-file ownership before adding public scaffolding behavior.
-- Attribute and array-policy regressions should still be covered when scaffolded
-  controllers begin emitting those declarations.
+Status: Next — target `3.11.2`.
 
-Release principles:
+- Run CI against the final release commit with both lowest and highest
+  dependencies. Require the selected native database tests to execute without
+  skips on the MySQL service, and exercise the worker-error callback with Swoole.
+- Review the aggregate return-type compatibility note: minimum/maximum preserve
+  native values, including integers, strings, and null.
+- Verify a fresh Composer installation and the rebased IDE-stub patches using
+  the [release process](guides/release.md) before tagging.
 
-- Add focused regression tests before changing framework defaults.
-- Keep no-database harnesses available for REST policy and model trait behavior.
-- Run full QA before any tag, and document skipped integration prerequisites
-  when optional services are unavailable.
-- Public API additions need PHPDoc, guide updates, changelog entries, and tests
-  that show the compatibility path.
+## Public Contract Documentation
 
-## Next Blocks
+Status: Next — small follow-up batches in the `3.11.x` maintenance line.
 
-### REST Controller Scaffold Readiness
+- Document relationship assignment input shapes, ownership checks, sparse
+  payload behavior, transaction ownership, and eager-loading extension points.
+- Document dynamic record/model metadata lifetime and required DI services.
+- Continue through scaffold output helpers and TypeScript generation: array
+  shapes, supported options, generated-file ownership, and overwrite behavior.
+- Review remaining public/protected declarations for missing or misleading
+  contracts. Inherit unchanged native contracts and keep simple accessors concise.
 
-Status: Next
+For each batch, compare comments with implementation and relevant tests. Validate
+important examples against the public API, run focused checks for any behavior
+changes, and leave generated API pages to an intentional documentation build.
 
-Target: `3.2.0`
+## Analysis And Mechanical Hygiene
 
-Why:
+Status: Planned — after the current maintenance release is verified.
 
-- Scaffolding REST controllers can save application work, but it can also
-  freeze bad defaults or overwrite application-owned decisions if started too
-  early.
-- The REST controller contracts are much more stable after recent policy work,
-  but generated output still needs a precise ownership
-  model.
+- Narrow mixed-value flows and broad signature suppressions at touched model,
+  query, and scaffold boundaries using precise types and behavior tests.
+- Correct existing `LICENSE.txt` headers in one separate mechanical change;
+  the generation templates now point to the shipped `LICENSE` file.
+- Prune disposable merged work branches after checking their tips; preserve
+  historical release branches, signed commits, and tags.
 
-Scope:
-
-- Inventory the stable controller extension points: permissions, filters,
-  search fields, save fields, order fields, distinct fields, response fields,
-  `with` graphs, transformers, and action enablement.
-- Define which files are generated once, which files are regenerated, and which
-  files are app-owned.
-- Decide whether scaffolded controllers are abstract bases, concrete shells, or
-  an opt-in pair similar to model abstract/concrete scaffolding.
-- Add scaffold tests in temporary directories before generating any real
-  application-facing controller output.
-- Align generated controller comments with the existing model/scaffolder
-  documentation style.
-
-Validation:
-
-- Scaffold output assertions against temporary directories.
-- No hand edits to generated API documentation.
-- Full QA before release because scaffolding changes can affect package
-  consumers even when runtime code is untouched.
-
-## Design Backlog
-
-These areas remain in [To Be Discussed](guides/to-be-discussed.md) until there
-is a concrete application need and a compatible API shape:
-
-- Identity password reset notifications.
-- Impersonation authorization.
-- Identity role matching naming.
-- Tag factory and legacy tag service split.
-- Database logger correlation context.
-- CLI router interface compatibility.
-- Model setup defaults.
-- Model cache key registration, reverse indexes, relation invalidation, and
-  pre-warming.
-- Dynamic model metadata and dynamic record model identity.
-- Relationship sparse payload behavior.
-- Controller behavior response and permission merging.
-- Additional `findIn*` helpers.
-- Soft-delete event-state configuration.
-- Eager-loading magic, option propagation, and limitation cleanup.
-- Lifecycle query ownership.
-- Dynamic join optimization and filter hoisting.
-- REST save initialization hooks.
-- Aggregate `WHERE`/`HAVING` promotion.
-- Faker task table scope and seed modes.
-- Binary UUID fetch-time conversion.
-- Locale `__isset()` and `__unset()` semantics.
-- Dispatcher listener public surface.
-- Translation keys containing delimiters inside nested arrays.
-- Environment loader invalid-type strictness.
-- ClamAV positive scan fixture strategy.
-- TypeScript scaffold defaults.
-- Scaffold output encoding.
-
-## Parking Lot
-
-### JetBrains Attributes
-
-Status: Parking Lot
-
-Scope:
-
-- Add `#[Deprecated]`, `#[Pure]`, or other JetBrains attributes only where they
-  materially improve IDE feedback.
-- Do not add vendor-specific attributes broadly until there is a clear policy
-  for dependency and PHPDoc compatibility.
-
-### CMS Models And Controllers
-
-Status: Parking Lot
-
-Scope:
-
-- Do not start this without a product-level CMS contract.
-- If revived, split it into separate model, permission, REST controller,
-  migration, and documentation blocks.
-
-### OpenAPI Generation
-
-Status: Parking Lot
-
-Scope:
-
-- Do not revive the old controller-introspection idea. REST policies can be
-  dynamic, identity-aware, and action-specific.
-- Revisit only as an explicit resource metadata contract after REST request and
-  response contracts stabilize and a real consumer needs generated OpenAPI
-  output.
-
-### Dynamic Expose Property Creation
-
-Status: Parking Lot
-
-Scope:
-
-- Do not automatically create undefined expose properties.
-- Revisit only if an application has a concrete, safe use case that cannot be
-  solved with explicit exposer configuration.
+Migration schema portability, REST controller scaffold ownership, and public API
+removal remain design work in [To Be Discussed](guides/to-be-discussed.md).
+Follow the [deprecation replacement table](guides/quality-and-maintenance.md#comment-and-deprecation-maintenance)
+when updating consumers; do not remove public aliases in a maintenance release.

@@ -18,7 +18,15 @@ use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Support\Collection\CollectionInterface;
 
 /**
- * Events
+ * Base model combining Core persistence, relationships, validation, and lifecycle features.
+ *
+ * Requires the model manager, metadata, and connection services expected by Phalcon,
+ * plus Core's config/helper services for feature options. Subclasses that override
+ * initialize() should call parent::initialize() when they need Core's behaviors.
+ * Persistence methods delegate transaction and event handling to Phalcon after
+ * normalizing SQL NULL sentinels; they do not create a separate Core transaction.
+ *
+ * Supported lifecycle events include:
  * - afterCreate
  * - afterDelete
  * - afterFetch
@@ -74,6 +82,16 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
     use Model\Traits\Uuid;
     use Model\Traits\Validate;
 
+    /**
+     * Insert or update this model using native Phalcon persistence and lifecycle events.
+     *
+     * Normalize case-insensitive "NULL" strings on nullable mapped attributes and
+     * snapshots before persistence, and again after a successful write. Non-nullable
+     * attributes retain their values for model/database validation.
+     *
+     * @return bool Whether persistence succeeded; inspect getMessages() on false.
+     * @throws \Phalcon\Mvc\Model\Exception When native persistence rejects the operation by exception.
+     */
     #[\Override]
     public function save(): bool
     {
@@ -86,6 +104,16 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         return $saved;
     }
 
+    /**
+     * Insert this model using native Phalcon persistence and lifecycle events.
+     *
+     * Normalize case-insensitive "NULL" strings on nullable mapped attributes and
+     * snapshots before persistence, and again after a successful write. Non-nullable
+     * attributes retain their values for model/database validation.
+     *
+     * @return bool Whether persistence succeeded; inspect getMessages() on false.
+     * @throws \Phalcon\Mvc\Model\Exception When native persistence rejects the operation by exception.
+     */
     #[\Override]
     public function create(): bool
     {
@@ -98,6 +126,16 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         return $created;
     }
 
+    /**
+     * Update this model using native Phalcon persistence and lifecycle events.
+     *
+     * Normalize case-insensitive "NULL" strings on nullable mapped attributes and
+     * snapshots before persistence, and again after a successful write. Non-nullable
+     * attributes retain their values for model/database validation.
+     *
+     * @return bool Whether persistence succeeded; inspect getMessages() on false.
+     * @throws \Phalcon\Mvc\Model\Exception When native persistence rejects the operation by exception.
+     */
     #[\Override]
     public function update(): bool
     {
@@ -110,6 +148,16 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         return $updated;
     }
 
+    /**
+     * Apply the same NULL normalization during native recursive relationship saves.
+     *
+     * This is a Phalcon persistence hook. Pass the existing visited collection on
+     * delegation so native cycle detection and transaction handling stay intact.
+     *
+     * @param CollectionInterface $visited Models visited in the current save traversal.
+     * @return bool Whether native persistence succeeded.
+     * @throws \Phalcon\Mvc\Model\Exception When native persistence rejects the operation by exception.
+     */
     #[\Override]
     public function doSave(CollectionInterface $visited): bool
     {
@@ -122,6 +170,14 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         return $saved;
     }
 
+    /**
+     * Initialize feature options, ORM defaults, events, and model behaviors.
+     *
+     * Phalcon initializes each model class through its modelsManager. This method
+     * installs a model events manager, enables dynamic updates, and registers the
+     * enabled feature behaviors. Its setup options also affect the process-wide ORM.
+     * Call the parent first before customizing Core's event manager or behaviors.
+     */
     public function initialize(): void
     {
         // Initialize options manager
@@ -280,6 +336,13 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         return $reflection->isInitialized($this) ? $reflection->getValue($this) : null;
     }
 
+    /**
+     * Replace trimmed, case-insensitive SQL NULL strings in nullable attributes.
+     *
+     * Resolve property names through metadata and its column map, then normalize
+     * current and old snapshots too, avoiding false dirty changes. If metadata is
+     * unavailable, leave values untouched. This method does not write to the database.
+     */
     protected function normalizeNullableNullStrings(): void
     {
         $nullableAttributes = $this->getNullableMappedAttributes();
@@ -363,29 +426,16 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
     }
 
     /**
-     * Enables/disables options in the ORM
-     * - We do this here in order to keep behaviour consistencies between different environments
-     * --------------------------------
-     *  caseInsensitiveColumnMap - false - Case insensitive column map
-     *  castLastInsertIdToInt - false - Casts the lastInsertId to an integer
-     *  castOnHydrate - false - Automatic cast to original types on hydration
-     *  columnRenaming - true - Column renaming
-     *  disableAssignSetters - false - Disable setters
-     *  enableImplicitJoins - true - Enable implicit joins
-     *  events - true - Callbacks, hooks and event notifications from all the models
-     *  exceptionOnFailedMetaDataSave - false - Throw an exception when there is a failed meta-data save
-     *  exceptionOnFailedSave - false - Throw an exception when there is a failed save()
-     *  ignoreUnknownColumns - false - Ignore unknown columns on the model
-     *  lateStateBinding - false - Late state binding of the Phalcon\Mvc\Model::cloneResultMap() method
-     *  notNullValidations - true - Automatically validate the not null columns present
-     *  phqlLiterals - true - Literals in the PHQL parser
-     *  prefetchRecords - 0 - The number of records to prefetch when getting data from the ORM
-     *  updateSnapshotOnSave - true - Update snapshots on save()
-     *  virtualForeignKeys - true - Virtual foreign keys
-     * --------------------------------
-     * @link https://docs.phalcon.io/latest/db-models#model-features
+     * Apply Core's defaults and caller overrides to Phalcon's process-wide ORM options.
      *
-     * @param array|null $options
+     * Core enables castLastInsertIdToInt and castOnHydrate, and disables
+     * notNullValidations for compatibility with generated-model validators. The
+     * remaining defaults are listed in the implementation below. Caller options win.
+     * Each initialize() call reapplies these defaults plus the model's setup options;
+     * these settings are not isolated per model or per request in persistent workers.
+     *
+     * @param array<string, mixed>|null $options Native Phalcon ORM options; null applies Core defaults.
+     * @see \Phalcon\Mvc\Model::setup()
      */
     #[\Override]
     public static function setup(?array $options = null): void
@@ -394,7 +444,6 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
             'caseInsensitiveColumnMap' => false,
             'castLastInsertIdToInt' => true, // changed from default
             'castOnHydrate' => true, // changed from default
-//            'castOnHydrate' => false, // problems with binary when true
             'columnRenaming' => true,
             'disableAssignSetters' => false,
             'enableImplicitJoins' => true,

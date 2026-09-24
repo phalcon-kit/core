@@ -21,6 +21,13 @@ use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Support\Helper;
 use PhalconKit\Support\Slug;
 
+/**
+ * Generate model layers, interfaces, enums, and tests from the shared db service.
+ *
+ * Uses dispatcher options documented by cliDoc. Existing files are preserved unless
+ * --force is set, which also permits overwriting concrete application models. Use
+ * the --no-* switches to restrict regeneration to files owned by the scaffolder.
+ */
 class ScaffoldTask extends Task
 {
     use ScaffoldTrait;
@@ -91,6 +98,16 @@ Options:
   --protected-properties                      Make the properties `protected` in models
 DOC;
     
+    /**
+     * Build output names for one database table without writing files.
+     *
+     * @param string $name Source table name.
+     * @return array{table: string, source: string, slug: string,
+     *     enums: array{name: string, file: string}, controller: array{name: string, file: string},
+     *     controllerInterface: array{name: string, file: string}, abstract: array{name: string, file: string},
+     *     abstractInterface: array{name: string, file: string}, model: array{name: string, file: string},
+     *     modelInterface: array{name: string, file: string}, modelTest: array{name: string, file: string}}
+     */
     public function getDefinitionsAction(string $name): array
     {
         $definitions = [];
@@ -135,6 +152,18 @@ DOC;
         return $definitions;
     }
     
+    /**
+     * Inspect selected tables and write the enabled model, interface, enum, and test files.
+     *
+     * --table and --exclude select tables. --force allows replacing existing files,
+     * including concrete model shells; no merge with application code is attempted.
+     * Output directories are created by saveFile(). Controller generation is not
+     * dispatched here even though controller template helpers are available.
+     *
+     * @return list<string> Descriptions of the generation attempts for enabled output.
+     * @throws \Phalcon\Db\Exception When schema inspection fails.
+     * @throws \PDOException When the database rejects a schema query.
+     */
     public function runAction(): array
     {
         $ret = [];

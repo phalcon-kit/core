@@ -91,15 +91,14 @@ trait DatabaseTrait
     }
     
     /**
-     * The dropAction method is responsible for dropping database tables specified in the $this->drop array.
-     * Dropping a table means permanently removing it from the database schema. This method iterates through
-     * a list of table names and executes an SQL DROP TABLE command for each of them, with a safety check to
-     * ensure that the table is only dropped if it exists.
+     * Permanently drop every table listed in the configured $drop array.
      *
-     * Use Case:
-     * This method is commonly used when performing database schema changes or cleanup tasks, where you need
-     * to remove tables that are no longer needed. The IF EXISTS clause is a safety measure to prevent
-     * accidental deletion of tables.
+     * IF EXISTS suppresses errors for absent tables; an existing table and its data
+     * are still removed. Table identifiers are escaped through the shared db service.
+     *
+     * @return array<string, bool> Execution result keyed by configured table name.
+     * @throws \Phalcon\Db\Exception When the adapter rejects a statement.
+     * @throws \PDOException When the database rejects a statement.
      */
     public function dropAction(): array
     {
