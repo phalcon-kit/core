@@ -134,6 +134,55 @@ The scaffolder tries to infer safe conventions:
 These rules depend on database naming. If a relationship is too app-specific to
 infer safely, override it in the concrete model.
 
+### Boolean flags stored in integer columns
+
+MySQL/MariaDB can describe a boolean column as `TINYINT`. Integer width (including
+`TINYINT(1)`) does not distinguish a flag from a count or status code. Identify
+integer-backed flags when scaffolding. MySQL/MariaDB `BOOL` and `BOOLEAN` are
+aliases for `TINYINT(1)`, so changing the SQL spelling does not remove the need
+for explicit flag selections. No column-type migration is required.
+
+```shell
+phalcon-kit cli scaffold run --table=project --no-models --force \
+  --boolean-columns=project.pilot,project.quality_control,project.ai_use_allowed
+```
+
+The generated `addDefaultValidations()` method contains direct rules:
+
+```php
+$this->normalizeBooleanAttribute('pilot', false);
+$this->addBooleanValidation($validator, 'pilot', false);
+$this->normalizeBooleanAttribute('qualityControl', false);
+$this->addBooleanValidation($validator, 'qualityControl', false);
+$this->addUnsignedIntValidation($validator, 'pilotCompletionPercentage', false);
+```
+
+Both calls use column nullability. For integer-backed flags, the generated
+normalization step converts accepted input to `0`/`1` before registering the
+boolean rule. Native `TYPE_BOOLEAN` columns receive boolean validation without
+integer normalization. `--no-validations` suppresses these rules.
+
+Keep integer flag selections in the application's scaffold command or script
+so regeneration reproduces them. They are generation-time configuration; models
+have no runtime field registry. Model consumers can override
+`addDefaultValidations()` or call `addBooleanValidation()` directly with their
+own validator and nullability choices. Concrete models can use or omit the
+protected normalization helper. Existing three-argument `addBooleanValidation()`
+overrides remain compatible. Keep customizations in concrete models.
+
+Accepted values are exactly `true`, `false`, `1`, `0`, `'1'` and `'0'`. When
+using the normalization helper, optional null/empty strings and Core's SQL
+`NULL` sentinel become null. Required flags reject empty input. Invalid strings,
+other numbers, floats, arrays and objects remain unchanged and fail validation.
+Custom setters must preserve invalid input for validation instead of casting
+it indiscriminately. Assignment alone does not normalize values.
+
+Phalcon 5.20.3 moved Numericality's empty-value check before its string cast.
+Previously, `false` could become `''` and skip numeric validation. Boolean rules
+avoid that accidental bypass while ordinary numeric fields retain their rules.
+Regenerate existing flag validations when adopting this change and test both
+boolean values, nullable flags, and database save/reload behavior.
+
 ## 5. Review Connected API Code
 
 After a schema/scaffold pass:

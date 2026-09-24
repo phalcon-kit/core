@@ -411,6 +411,109 @@ PHP,
         $this->assertSame(0, substr_count($relationships['items'], "['alias' => 'UserList']"));
     }
 
+    public function testBooleanColumnsAreExplicitAndKeepOtherIntegersNumeric(): void
+    {
+        $task = $this->createScaffoldTask(['booleanColumns' => 'widgets.is_enabled,widgets.signed_flag,other.quantity']);
+        $columns = [
+            $this->createIdColumn(),
+            new Column('is_enabled', ['type' => Column::TYPE_TINYINTEGER, 'unsigned' => true, 'notNull' => true]),
+            new Column('signed_flag', ['type' => Column::TYPE_TINYINTEGER, 'notNull' => false]),
+            new Column('quantity', ['type' => Column::TYPE_TINYINTEGER, 'unsigned' => true, 'notNull' => true]),
+            new Column('native_flag', ['type' => Column::TYPE_BOOLEAN, 'notNull' => true]),
+        ];
+        $output = $task->createAbstractOutput($task->getDefinitionsAction('widgets'), $columns, $this->createEmptyRelationships(), []);
+
+        self::assertStringNotContainsString('function getBooleanAttributes', $output);
+        self::assertStringContainsString("\$this->normalizeBooleanAttribute('isEnabled', false);", $output);
+        self::assertStringContainsString("\$this->normalizeBooleanAttribute('signedFlag', true);", $output);
+        self::assertStringContainsString("\$this->addBooleanValidation(\$validator, 'isEnabled', false);", $output);
+        self::assertStringContainsString("\$this->addBooleanValidation(\$validator, 'signedFlag', true);", $output);
+        self::assertStringContainsString("\$this->addUnsignedIntValidation(\$validator, 'quantity', false);", $output);
+        self::assertStringContainsString("\$this->addBooleanValidation(\$validator, 'nativeFlag', false);", $output);
+    }
+
+    public function testTinyIntegerWidthDoesNotImplyABooleanFlag(): void
+    {
+        $task = $this->createScaffoldTask();
+        $columns = [new Column('quantity', ['type' => Column::TYPE_TINYINTEGER, 'size' => 1, 'unsigned' => true])];
+        $output = $task->createAbstractOutput($task->getDefinitionsAction('widgets'), $columns, $this->createEmptyRelationships(), []);
+        self::assertStringNotContainsString('function getBooleanAttributes', $output);
+        self::assertStringContainsString("addUnsignedIntValidation(\$validator, 'quantity'", $output);
+    }
+
+    public function testGeneratedBooleanModelValidatesAndNormalizesAtRuntime(): void
+    {
+        $task = $this->createScaffoldTask([
+            'namespace' => 'PhalconKit\\Tests\\GeneratedBoolean',
+            'booleanColumns' => 'widget.is_enabled',
+        ]);
+        $columns = [
+            new Column('is_enabled', ['type' => Column::TYPE_TINYINTEGER, 'notNull' => true]),
+            new Column('quantity', ['type' => Column::TYPE_TINYINTEGER, 'unsigned' => true, 'notNull' => true]),
+        ];
+        $definitions = $task->getDefinitionsAction('widget');
+        $relationships = $this->createEmptyRelationships();
+        eval(substr($task->createAbstractInterfaceOutput($definitions, $columns, $relationships), 5));
+        eval(substr($task->createAbstractOutput($definitions, $columns, $relationships, []), 5));
+        $model = new class extends \PhalconKit\Tests\GeneratedBoolean\Models\Abstracts\WidgetAbstract {
+            public function initialize(): void
+            {
+                $this->setSource('widget');
+            }
+        };
+        $model->setIsEnabled(false);
+        $model->setQuantity(42);
+        $validation = $model->addDefaultValidations();
+        self::assertCount(0, $validation->validate(null, $model));
+        self::assertSame(0, $model->getIsEnabled());
+        self::assertSame(42, $model->getQuantity());
+        $model->setIsEnabled('invalid');
+        self::assertNotCount(0, $model->addDefaultValidations()->validate(null, $model));
+
+        $custom = new class extends \PhalconKit\Tests\GeneratedBoolean\Models\Abstracts\WidgetAbstract {
+            public function initialize(): void
+            {
+                $this->setSource('widget');
+            }
+
+            public function addDefaultValidations(?\PhalconKit\Filter\Validation $validator = null): \PhalconKit\Filter\Validation
+            {
+                return $this->addInclusionValidation($validator ?? new \PhalconKit\Filter\Validation(), 'isEnabled', ['custom']);
+            }
+        };
+        $custom->setIsEnabled('custom');
+        $validation = $custom->addDefaultValidations($custom->genericValidation());
+        self::assertCount(0, $validation->validate(null, $custom));
+        self::assertSame('custom', $custom->getIsEnabled());
+    }
+
+    #[DataProvider('invalidBooleanColumns')]
+    public function testInvalidBooleanDeclarationsAreRejected(string $option): void
+    {
+        $task = $this->createScaffoldTask(['booleanColumns' => $option]);
+        $this->expectException(\PhalconKit\Exception\InvalidArgumentException::class);
+        $task->createAbstractOutput($task->getDefinitionsAction('widgets'), [
+            $this->createIdColumn(),
+            new Column('label', ['type' => Column::TYPE_VARCHAR, 'size' => 255]),
+        ], $this->createEmptyRelationships(), []);
+    }
+
+    public static function invalidBooleanColumns(): array
+    {
+        return [['missingTable'], ['widgets.unknown'], ['widgets.label'], ['widgets.id']];
+    }
+
+    public function testNoValidationsAlsoSuppressesSignedBooleanValidators(): void
+    {
+        $task = $this->createScaffoldTask(['booleanColumns' => 'widgets.flag', 'noValidations' => true]);
+        $output = $task->createAbstractOutput($task->getDefinitionsAction('widgets'), [
+            new Column('flag', ['type' => Column::TYPE_TINYINTEGER]),
+        ], $this->createEmptyRelationships(), []);
+        self::assertStringNotContainsString('addUnsignedIntValidation(', $output);
+        self::assertStringNotContainsString('addBooleanValidation(', $output);
+        self::assertStringNotContainsString('function getBooleanAttributes', $output);
+    }
+
     private function createScaffoldTask(array $params = []): ScaffoldTask
     {
         $dispatcher = new Dispatcher();

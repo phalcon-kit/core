@@ -366,5 +366,7 @@ jobs:
         run: composer phpunit -- tests/Unit/Support/Phalcon519CompatibilityTest.php tests/Unit/Support/Phalcon5201CompatibilityTest.php tests/Unit/Support/Phalcon5203CompatibilityTest.php tests/Unit/Support/Phalcon521CompatibilityTest.php --display-skipped --display-errors --fail-on-skipped
 
       - name: PHP Unit
+        env:
+          PHALCONKIT_BOOLEAN_TEST_HOST: 127.0.0.1
         run: composer phpunit -- --display-skipped --display-errors
         

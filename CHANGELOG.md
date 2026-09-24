@@ -15,7 +15,24 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## Unreleased
+## 3.11.0 - Unreleased
+
+### Fixed
+
+- Generate direct boolean rules in `addDefaultValidations()` for native boolean
+  columns and integer-backed flags selected with `--boolean-columns=table.column,...`.
+  Signed flags receive rules too, while ordinary integer columns retain numeric
+  validation. No runtime attribute registry is needed; concrete models can
+  customize the normal validation methods.
+- Make `addBooleanValidation()` enforce strict accepted values (`true`, `false`,
+  `1`, `0`, `'1'`, `'0'`) and nullability. Generated rules use the protected
+  `normalizeBooleanAttribute()` helper to convert accepted integer-backed flags
+  to 0/1 before validation/save, with optional empty values becoming null.
+  Invalid input remains rejectable. The existing three-argument validation
+  method and interface signatures remain compatible with downstream overrides.
+- Normalize accepted soft-delete flag input before existing lifecycle rules.
+  Boolean validation no longer relies on Numericality's pre-5.20.3 empty-value
+  bypass. See the scaffolding guide for generation and customization examples.
 
 ### Changed
 

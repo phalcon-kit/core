@@ -37,6 +37,24 @@ trait Validate
     use AbstractMetaData;
     use AbstractEntity;
 
+    /**
+     * Normalize a valid integer-backed boolean without coercing invalid input.
+     *
+     * Optional empty values (including Core's SQL NULL sentinel) become null;
+     * required empty values and invalid input are left for the validators.
+     * This writes the model attribute directly, avoiding custom setter casts
+     * that could otherwise turn invalid input into an accepted zero or one.
+     */
+    protected function normalizeBooleanAttribute(string $field, bool $allowEmpty): void
+    {
+        $value = $this->readAttribute($field);
+        if ($allowEmpty && $this->isOptionalEmptyValue($value)) {
+            $this->writeAttribute($field, null);
+        } elseif (in_array($value, [true, false, 1, 0, '1', '0'], true)) {
+            $this->writeAttribute($field, (int)$value);
+        }
+    }
+
     protected function getAllowEmptyOption(bool $allowEmpty = true): bool|array
     {
         return $allowEmpty ? [null, ''] : false;
@@ -273,9 +291,12 @@ trait Validate
     }
     
     /**
-     * Add basic validations for a boolean field
-     * - Must not be empty
-     * - Must be a boolean value (1, 0, true, false)
+     * Validate only true, false, 1, 0, '1' and '0', using strict comparisons.
+     *
+     * Optional fields also accept null and the empty string. False and zero
+     * are real values, never empty-value exemptions. This helper preserves
+     * values and their types. Integer-backed model flags can first call
+     * normalizeBooleanAttribute() to normalize accepted inputs to 0/1.
      *
      * @param Validation $validator The validation object to add the validations to
      * @param array|string $field The name of the field to validate
@@ -289,8 +310,9 @@ trait Validate
         
         $validator->add($field, new InclusionIn([
             'message' => $this->_('not-boolean'),
-            'domain' => [1, 0, true, false],
-            'allowEmpty' => true,
+            'domain' => [1, 0, true, false, '1', '0'],
+            'strict' => true,
+            'allowEmpty' => $this->getAllowEmptyOption($allowEmpty),
         ]));
         
         return $validator;
@@ -532,6 +554,7 @@ trait Validate
     
     /**
      * Add soft delete validation to a validator object.
+     * Normalize accepted flag inputs to integer YES/NO before lifecycle checks.
      *
      * @param Validation $validator The validator object to add the validation rules to.
      * @param string $field The field name to apply the validation rules to. Default is 'deleted'.
@@ -542,6 +565,7 @@ trait Validate
     public function addSoftDeleteValidation(Validation $validator, string $field = 'deleted', bool $allowEmpty = true): Validation
     {
         if (property_exists($this, $field)) {
+            $this->normalizeBooleanAttribute($field, $allowEmpty);
             $this->addNotEmptyValidation($validator, $field, $allowEmpty);
             
             // Must be YES or NO

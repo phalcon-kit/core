@@ -17,6 +17,7 @@ use Phalcon\Contracts\Db\Index as IndexContract;
 use PhalconKit\Modules\Cli\Task;
 use PhalconKit\Modules\Cli\Tasks\Traits\DescribesTrait;
 use PhalconKit\Modules\Cli\Tasks\Traits\ScaffoldTrait;
+use PhalconKit\Exception\InvalidArgumentException;
 use PhalconKit\Support\Helper;
 use PhalconKit\Support\Slug;
 
@@ -38,6 +39,7 @@ Usage:
                               [--no-strict-types] [--no-license] [--no-comments] [--no-get-set-methods]
                               [--no-validations] [--no-relationships] [--no-column-map] [--no-set-source]
                               [--no-typings] [--granular-typings] [--add-raw-value-type] [--protected-properties]
+                              [--boolean-columns=<table.column,...>]
 
 Actions:
   models
@@ -46,6 +48,7 @@ Actions:
   enums
 
 Options:
+  --boolean-columns=<table.column,...>        Explicit integer-backed boolean columns (no width/name inference)
   --force                                     Overwrite existing files
   --table=<table>                             Comma seperated list of table to generate
   --exclude=<table>                           Comma seperated list of table to exclude
@@ -306,6 +309,19 @@ PHP;
         $getSetMethods = $this->getGetSetMethods($columns);
         $columnMapMethod = $this->getColumnMapMethod($columns);
         $validationItems = $this->getValidationItems($columns, $indexes);
+        $booleanAttributes = $this->getBooleanColumnAttributes($columns, $definitions['source']);
+        if (!$this->isNoValidations()) {
+            foreach ($booleanAttributes as $attribute => $allowEmpty) {
+                $optional = $allowEmpty ? 'true' : 'false';
+                $numericRule = "\$this->addUnsignedIntValidation(\$validator, '{$attribute}', {$optional});";
+                $booleanRule = "\$this->normalizeBooleanAttribute('{$attribute}', {$optional});\n        "
+                    . "\$this->addBooleanValidation(\$validator, '{$attribute}', {$optional});";
+                // Replace the ordinary integer rule; signed columns have no such rule.
+                $validationItems = str_contains($validationItems, $numericRule)
+                    ? str_replace($numericRule, $booleanRule, $validationItems)
+                    : $validationItems . "\n        " . $booleanRule;
+            }
+        }
         $modelsExtend = ltrim($this->getModelsExtend(), '\\');
         $modelsExtendBaseName = basename(str_replace('\\', '/', $modelsExtend));
         $sourceMethod = '';
@@ -568,6 +584,12 @@ PHP;
             $maxSize = is_int($column->getSize()) ? $column->getSize() : 0;
             
             $allowEmpty = $column->isNotNull() && !$column->isAutoIncrement() ? 'false' : 'true';
+
+            if ($columnType === Column::TYPE_BOOLEAN) {
+                $validationItems [] = <<<PHP
+        \$this->addBooleanValidation(\$validator, '{$propertyName}', {$allowEmpty});
+PHP;
+            }
             
             if ($columnType === Column::TYPE_DATE) {
                 $validationItems [] = <<<PHP
@@ -609,6 +631,52 @@ PHP;
             }
         }
         return trim(implode("\n", $validationItems));
+    }
+
+    /**
+     * Resolve explicitly configured table.column flags to model attributes.
+     *
+     * The boolean-columns CLI option applies only to named integer columns.
+     * Unknown columns, non-integers and identity columns on the current table
+     * are rejected before generating its abstract. No database changes occur.
+     *
+     * @param array<ColumnContract> $columns Columns described for this table.
+     * @param string $table Original SQL table name.
+     * @return array<string, bool> Mapped attributes => allowEmpty.
+     * @throws InvalidArgumentException For an invalid flag declaration.
+     */
+    protected function getBooleanColumnAttributes(array $columns, string $table): array
+    {
+        $option = $this->dispatcher->getParameter('booleanColumns');
+        if ($option === null || $option === '') {
+            return [];
+        }
+        if (!is_string($option)) {
+            throw new InvalidArgumentException('boolean-columns must be a comma-separated list of table.column names.');
+        }
+
+        $attributes = [];
+        foreach (explode(',', $option) as $entry) {
+            $entry = trim($entry);
+            if (!str_contains($entry, '.') || str_starts_with($entry, '.') || str_ends_with($entry, '.')) {
+                throw new InvalidArgumentException('Boolean columns must use table.column names.');
+            }
+            if (!str_starts_with($entry, $table . '.')) {
+                continue;
+            }
+            $name = substr($entry, strlen($table) + 1);
+            $matches = array_filter($columns, static fn (ColumnContract $column): bool => $column->getName() === $name);
+            $column = reset($matches);
+            if (!$column || !in_array($column->getType(), [
+                Column::TYPE_TINYINTEGER, Column::TYPE_SMALLINTEGER,
+                Column::TYPE_MEDIUMINTEGER, Column::TYPE_INTEGER, Column::TYPE_BIGINTEGER,
+            ], true) || $column->isAutoIncrement()) {
+                throw new InvalidArgumentException("Boolean column '{$entry}' must name a non-identity integer column.");
+            }
+            $attributes[$this->getPropertyName($name)] = !$column->isNotNull();
+        }
+
+        return $attributes;
     }
     
     /**
