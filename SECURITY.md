@@ -2,18 +2,19 @@
 
 ## Supported Versions
 
-`master` contains unreleased Core 4.0 development. Security support applies to
-tagged releases independently of the repository's branch layout; removing a
-version branch does not remove the releases or change the support table below.
+Only the **4.x line** is maintained. All earlier versions are end of life and
+receive no support, bug fixes, security fixes, or backports. This includes
+historical releases published as `zemit-cms/core`.
 
-The current maintained minor line receives security fixes. Older minor lines may
-receive fixes only when a low-risk backport is practical.
-
-| Version | Supported | Notes |
+| Version line | Maintained | Notes |
 | --- | --- | --- |
-| 3.11.x | Yes | Actively maintained; use the latest patch release. |
-| 3.10.x | Yes | Actively maintained; use 3.10.6 or newer for JWT validation enforcement. |
-| < 3.10 | No | Upgrade recommended; older backports are considered only when practical. |
+| 4.x | Yes | Development on `master`; Core 4.0 is still unreleased. |
+| 0.x, 1.x, 2.x, 3.x | No | End of life; no fixes or backports. |
+
+There is currently **no supported stable release** while Core 4.0 is in
+development. Older tags remain available for historical use and reproducible
+installs. See the [Core 4.0 upgrade guide](guides/upgrading-4.0.md) for migration
+requirements and the remaining stable-release gates.
 
 ## Reporting a Vulnerability
 

@@ -1,8 +1,10 @@
 # Runtime Compatibility
 
-Phalcon Kit documentation supports the latest stable package release. The
-package’s `composer.json`, CI workflow, and release notes are the authorities
-for exact PHP, Phalcon extension, and development-tool versions.
+Phalcon Kit documentation follows the maintained Core 4.x line, currently
+unreleased on `master`. Earlier package releases are unsupported; references
+to them below describe compatibility history. The package’s `composer.json`,
+CI workflow, and release notes are the authorities for exact PHP, Phalcon
+extension, and development-tool versions.
 
 Use this guide to verify that an application’s runtime matches those declared
 requirements without duplicating version numbers in application documentation.
@@ -105,15 +107,18 @@ php --ri phalcon
 
 ## Install Or Update An Application
 
-Evergreen install instructions deliberately omit a Phalcon Kit version:
+Core 4.0 is still unreleased, so there is currently no supported stable release.
+An unconstrained install can select an unsupported older release. For isolated
+Core 4.0 evaluation, follow the [upgrade guide](upgrading-4.0.md) and explicitly
+select the development branch:
 
 ```bash
-composer require phalcon-kit/core
+composer require phalcon-kit/core:dev-master
 ```
 
-Composer selects the newest release compatible with the application’s PHP and
-platform extensions. Applications that commit `composer.lock` should review and
-commit the resulting lock-file change.
+Review the dependency and lockfile changes against the application's PHP and
+platform extensions. Once a stable Core 4.x release is published, use a suitable
+tagged 4.x constraint and commit the application's lockfile.
 
 For a focused update:
 

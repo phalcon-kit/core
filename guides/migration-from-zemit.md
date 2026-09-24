@@ -6,6 +6,11 @@ Phalcon Kit Core is the continuation of the package previously published as
 Use this guide if you maintain an older application that still depends on the
 old package name.
 
+This is a historical package-name migration guide. Its 1.x examples and all
+other releases before Core 4.x are unmaintained and unsupported. Only 4.x is
+maintained, and Core 4.0 is still unreleased. Renaming the dependency alone
+does not complete the [Core 4.0 upgrade](upgrading-4.0.md).
+
 ## What Changed
 
 - New package name: `phalcon-kit/core`
@@ -104,15 +109,7 @@ and revert if a legacy app exposes an unexpected compatibility issue.
 
 ## New Project Rule
 
-For new projects, use the
-[`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
-
-```shell
-composer create-project phalcon-kit/app:^2.0 my-api
-```
-
-or:
-
-```shell
-composer require phalcon-kit/core
-```
+Use the maintained `phalcon-kit/core` 4.x line. While Core 4.0 is unreleased,
+follow [Getting Started](getting-started.md) for evaluation instructions and
+the remaining fresh-install limitations. The `phalcon-kit/app` 2.x skeleton
+targets unsupported Core 3.x.

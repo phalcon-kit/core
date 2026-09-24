@@ -4,6 +4,12 @@ Status: unreleased development work on `master`. This guide describes implemente
 changes and the checks still required before a stable release. PHP 8.5 and
 Phalcon 5.22 remain the runtime baseline.
 
+Only Core 4.x is maintained. All earlier versions, including `zemit-cms/core`,
+are end of life and receive no support, bug fixes, security fixes, or backports.
+There is currently no supported stable release while Core 4.0 is in development.
+Older tags remain available for reproducible installs during migration; see
+the [security policy](../SECURITY.md).
+
 Core 4.0 focuses on reusable Phalcon extensions and common application features.
 Application schemas belong to the applications that use them. This change
 retires the old spreadsheet/catalog application and CMS runtime while keeping
@@ -146,8 +152,9 @@ other persisted features schema-free.
    permission config, routes, CLI schedules, and seed code for the exact retired
    namespaces above. Remove unused imports and permission-only references too.
 3. Preserve app-owned schemas and adapt any actual Core-domain dependencies.
-   Applications that still need the retired runtime should stay on 3.x until
-   they own the equivalent feature. No compatibility shim is provided.
+   Applications that still need the retired runtime must own the equivalent
+   feature before upgrading. Remaining on 3.x means using an unsupported release
+   without security fixes or backports. No compatibility shim is provided.
 4. Supply explicit database-maintenance instructions. Verify app overrides,
    seed models, and empty defaults with disposable data.
 5. Test authentication and reset delivery, authorization, model substitution,
@@ -174,7 +181,7 @@ Before 4.0 is tagged:
 - Pass the release CI matrix, mandatory native database regressions, and a fresh
   Composer install; regenerate API documentation deliberately from the final
   retained public surface.
-- Publish the upgrade notes and review the supported-version policy in
-  `SECURITY.md`. `master` is the sole long-lived branch; signed tags identify
+- Publish the upgrade notes with the 4.x-only support policy in `SECURITY.md`.
+  `master` is the sole long-lived branch; signed tags identify
   releases. Complete branch-consumer migration checks before recommending 4.0
   for existing applications.

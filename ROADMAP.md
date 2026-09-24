@@ -44,7 +44,7 @@ Status: Required before tagging 4.0.
 - Pass lowest/highest dependency CI, required native database regressions,
   Swoole callback coverage, and a fresh Composer installation with stub patches.
 - Regenerate API docs from the settled public surface and verify guide examples.
-- Publish the upgrade guide and review supported versions in `SECURITY.md`.
+- Publish the upgrade guide with the 4.x-only support policy in `SECURITY.md`.
   Migrate existing `dev-master` consumers deliberately; that constraint now
   follows 4.0 development, while their existing lockfiles retain the old commit.
 

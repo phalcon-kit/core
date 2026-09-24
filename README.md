@@ -3,9 +3,11 @@
 `master` carries **unreleased Core 4.0 development**. Core 4.0 removes the legacy
 catalog/CMS runtime and makes database maintenance data application-owned.
 Read the [upgrade guide](guides/upgrading-4.0.md) before testing this branch.
-The current stable releases remain available through 3.x tags. `master` is the
-only long-lived branch; tagged releases are the supported installation path.
-Composer's `dev-master` now tracks the breaking 4.0 development work.
+**Only 4.x is maintained.** All earlier versions are end of life, with no bug
+fixes, security fixes, or backports; their tags remain available for historical
+use. There is currently no supported stable release. `master` is the only
+long-lived branch, and Composer's `dev-master` tracks its breaking 4.0 work.
+See the [security policy](SECURITY.md) for the support boundary.
 
 [![CI](https://github.com/phalcon-kit/core/actions/workflows/main.yml/badge.svg)](https://github.com/phalcon-kit/core/actions/workflows/main.yml)
 ![Version](https://img.shields.io/packagist/v/phalcon-kit/core)
@@ -37,23 +39,20 @@ describe compatibility with the upstream framework.
 
 ## Quick Start
 
-Start a new application from the
-[`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
+Core 4.0 is available for evaluation in an isolated application checkout:
 
 ```shell
-composer create-project phalcon-kit/app:^2.0 my-api
+composer require phalcon-kit/core:dev-master
 ```
 
-Add the core package to an existing Phalcon application:
+Read the [upgrade guide](guides/upgrading-4.0.md) first and review the resulting
+Composer changes. The current `phalcon-kit/app` 2.x skeleton targets unsupported
+Core 3.x. A Core 4.0 skeleton and a validated fresh-install schema path are
+required before the stable release; see [Getting Started](guides/getting-started.md).
 
-```shell
-composer require phalcon-kit/core
-```
-
-New projects should use `phalcon-kit/core`. Older projects may still reference
-[`zemit-cms/core`](https://packagist.org/packages/zemit-cms/core), the previous
-package name. Keep old projects pinned until you are ready to test the package
-name migration.
+The previous package, `zemit-cms/core`, is also unsupported. Existing applications
+need the [package-name migration](guides/migration-from-zemit.md) as well as the
+Core 4.0 upgrade checks.
 
 ## Why Use It
 

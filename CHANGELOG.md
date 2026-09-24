@@ -54,6 +54,10 @@ release notes.
 - Consolidate development on `master` and preserve published releases through
   tags. Retire version and merged work branches; fold the untagged 3.11.2
   maintenance work into this release. `dev-master` now follows breaking 4.0 work.
+- Maintain only Core 4.x. End support for all earlier versions, including
+  `zemit-cms/core`, with no bug fixes, security fixes, or backports. Preserve
+  historical tags and clarify that no supported stable release is available
+  while Core 4.0 is unreleased. Align installation and release guidance.
 - Retain the draft base-model service and initialization contracts; discard
   documentation for the retired dynamic runtime and the superseded scope proposal.
 - Require password-reset, relationship-ownership, boolean-persistence, and

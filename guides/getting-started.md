@@ -1,10 +1,12 @@
 # Getting Started
 
-This guide gets you from install to a runnable Phalcon Kit application. If your
-main goal is a REST API, read this first and then continue with the
-[Build Your First REST Resource](first-rest-resource.md).
+Only Core 4.x is maintained. Core 4.0 is still unreleased, and its app skeleton
+and fresh-install schema path are being prepared. There is currently no
+supported stable release; see the [support policy](../SUPPORT.md) and
+[Core 4.0 release gates](upgrading-4.0.md#stable-release-gates).
 
-By the end, you will have:
+The sections below describe application setup and workflows to validate during
+Core 4.0 evaluation:
 
 - dependencies installed against the current package requirements;
 - environment-backed application configuration;
@@ -29,23 +31,21 @@ composer --version
 
 ## 1. Create Or Install
 
-For a new application, start from the
-[`phalcon-kit/app`](https://packagist.org/packages/phalcon-kit/app) skeleton:
+The current `phalcon-kit/app` 2.x skeleton installs unsupported Core 3.x. A
+validated Core 4.0 fresh-install recipe is a stable-release requirement. Until
+4.0 is released, an unconstrained `composer require phalcon-kit/core` also
+selects an older stable release under Composer's default stability policy.
+
+For Core 4.0 evaluation in an isolated checkout of an existing application,
+read the [upgrade guide](upgrading-4.0.md), then require the development branch:
 
 ```shell
-composer create-project phalcon-kit/app:^2.0 my-api
-cd my-api
-cp .env.example .env
+composer require phalcon-kit/core:dev-master
 ```
 
-For an existing Phalcon application:
-
-```shell
-composer require phalcon-kit/core
-```
-
-Use `phalcon-kit/core` for new projects. The old `zemit-cms/core` package name
-exists only for historical projects and pinned legacy installs.
+Review dependency and lockfile changes and test the application's own flows.
+`dev-master` follows breaking development work. All earlier Core versions and
+the old `zemit-cms/core` package are unmaintained and unsupported.
 
 ## 2. Configure The Environment
 

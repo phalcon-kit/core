@@ -18,15 +18,14 @@ Publish releases with signed version tags. Applications should use tagged-versio
 constraints and keep their lockfiles; `dev-master` intentionally follows current
 development and can introduce breaking changes during a major-version transition.
 
-Security support is defined in [SECURITY.md](../SECURITY.md), independently of
-branch names. If an older supported release needs a fix, prepare it from the
-appropriate tag and publish a signed patch tag. Keep unrelated breaking changes
-out of that patch; a standing maintenance branch is not required.
+Only Core 4.x is maintained, as defined in [SECURITY.md](../SECURITY.md).
+All earlier versions are end of life: do not prepare maintenance releases or
+security backports for them. Preserve their existing tags as historical records.
+Core 4.0 is still unreleased, so there is currently no supported stable release.
 
 ## Before Release
 
-1. Confirm the target version and commit. Normal development releases come from
-   `master`; older-version fixes must start from the appropriate release tag.
+1. Confirm the target 4.x version and commit on `master`.
 2. Update `CHANGELOG.md` by moving the current unreleased section to a dated
    version heading.
 3. Update `src/Support/Version.php` and its focused version test to the exact
@@ -67,7 +66,7 @@ Review the archive if package exclusions changed.
 1. Review `git status --short`, the complete diff, and `git diff --check`.
 2. Create and verify a signed release commit containing only the reviewed
    release changes.
-3. Push the release commit to the release branch.
+3. Push the release commit to `master`.
 4. Wait for every required workflow on that exact commit SHA. Do not tag while
    a required check is pending or failing.
 
@@ -100,6 +99,6 @@ correct previous-tag comparison link.
 
 ## Legacy Package
 
-The old `zemit-cms/core` package should be treated as historical continuity for
-existing users. Do not make it the primary install path in new documentation.
+The old `zemit-cms/core` package is unmaintained and unsupported. Preserve it as
+historical continuity for existing users; direct new documentation to Core 4.x.
 If it is marked abandoned later, point users to `phalcon-kit/core`.

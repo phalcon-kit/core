@@ -4,10 +4,14 @@ Use the right channel so issues stay actionable.
 
 ## Development And Releases
 
-`master` carries unreleased Core 4.0 development. Published versions remain
-available through their tags; there are no standing version branches. Use a
-suitable tagged-version constraint and lockfile for applications. See the
-[branch policy](guides/release.md#branch-policy) and
+Only Core **4.x** is maintained and supported. All earlier versions are end of
+life, with no support, bug fixes, security fixes, or backports.
+
+`master` carries unreleased Core 4.0 development, so there is currently no
+supported stable release. Published versions remain available through their
+tags for historical use and reproducible installs; there are no standing version
+branches. Keep existing application lockfiles while preparing an isolated
+migration. See the [branch policy](guides/release.md#branch-policy) and
 [Core 4.0 upgrade guide](guides/upgrading-4.0.md) before following `dev-master`.
 
 ## Questions
@@ -41,8 +45,7 @@ See [SECURITY.md](SECURITY.md).
 ## Legacy Package
 
 The previous Packagist package,
-[`zemit-cms/core`](https://packagist.org/packages/zemit-cms/core), remains
-available for existing applications and historical releases. New projects
-should use [`phalcon-kit/core`](https://packagist.org/packages/phalcon-kit/core).
-If you are maintaining an older project, keep your pinned constraint until you
-are ready to test the package-name migration.
+[`zemit-cms/core`](https://packagist.org/packages/zemit-cms/core), is unmaintained
+and unsupported. Its releases remain available for historical use. Migration to
+the maintained line requires both the [package-name migration](guides/migration-from-zemit.md)
+and the Core 4.0 upgrade checks; renaming the dependency alone is insufficient.
