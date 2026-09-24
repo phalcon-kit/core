@@ -137,6 +137,13 @@ only as an intentional documentation build. Unresolved behavior belongs in
 [To Be Discussed](to-be-discussed.md), with compatibility risks and a validation
 plan, rather than vague TODO comments.
 
+`composer docs` runs phpDocumentor, post-processes its Markdown, generates the
+model-enum pages, and rebuilds the API navigation. The enum supplement reads cases
+and backing values from PHP reflection because the Markdown template omits them.
+It deliberately fails if an enum gains custom methods or the template starts
+emitting that namespace; update the generator instead of publishing an incomplete
+or duplicate reference.
+
 These deprecated Core aliases remain available in the Core 4.0 development
 line. Update consumers and routes to their replacements before considering
 removal in a future major release:

@@ -34,6 +34,7 @@ release notes.
 
 ### Added
 
+- Include model-enum cases and backing values in generated API pages and navigation.
 - Document retained feature storage, services, model replacement contracts, and
   application-owned registration, session, email/file, and settings workflows.
 - Add reusable `PhalconKit\Migrations\SqlMigration` helpers for one statement

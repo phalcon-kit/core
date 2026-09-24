@@ -20,6 +20,7 @@ mkdir ./docs
 phpdoc -c phpdoc.xml --force "$@"
 
 php ./bin/post-process-docs.php
+php ./bin/generate-enum-docs.php
 
 # Generate the API menu consumed by the documentation website.
 ./bin/generate-docs-menu.sh
