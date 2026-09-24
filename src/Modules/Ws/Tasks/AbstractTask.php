@@ -19,6 +19,14 @@ use Swoole\Http\Response;
 use Swoole\WebSocket\Frame;
 use PhalconKit\Modules\Ws\Task;
 
+/**
+ * WebSocket task with overridable Swoole event hooks.
+ *
+ * Requires the shared `swoole` DI service to provide a WebSocket server using
+ * positional event arguments (`event_object` disabled). Request/message callbacks
+ * reset model connection state before invoking application hooks. Subscriptions
+ * belong to the current worker process; applications coordinate other workers.
+ */
 abstract class AbstractTask extends Task
 {
     public static array $subscriptions = [];
@@ -35,6 +43,10 @@ abstract class AbstractTask extends Task
     
     public Server $server;
     
+    /**
+     * Resolve the shared `swoole` service, build callbacks, and register them.
+     * Call the parent when overriding initialization to retain event dispatch.
+     */
     public function initialize(): void
     {
         $this->initializeOpen();
@@ -51,6 +63,9 @@ abstract class AbstractTask extends Task
         $this->handleWebSocket();
     }
     
+    /**
+     * Register the initialized callbacks on the server without starting its event loop.
+     */
     public function handleWebSocket(): void
     {
         $this->server->on('start', $this->onStart);
@@ -64,6 +79,9 @@ abstract class AbstractTask extends Task
         $this->server->on('pipeMessage', $this->onPipeMessage);
     }
     
+    /**
+     * Start the configured server event loop; returns after the server stops.
+     */
     public function listenAction(): void
     {
         $this->server->start();
@@ -71,6 +89,9 @@ abstract class AbstractTask extends Task
     
     // --- Initialization methods ---
     
+    /**
+     * Install the open callback, resetting model connection state before the hook.
+     */
     public function initializeOpen(): void
     {
         $this->onOpen = function (Server $server, Request $request): void {
@@ -79,6 +100,9 @@ abstract class AbstractTask extends Task
         };
     }
     
+    /**
+     * Install the message callback, resetting model connection state before the hook.
+     */
     public function initializeMessage(): void
     {
         $this->onMessage = function (Server $server, Frame $frame): void {
@@ -87,6 +111,9 @@ abstract class AbstractTask extends Task
         };
     }
     
+    /**
+     * Install the close callback, resetting model connection state before the hook.
+     */
     public function initializeClose(): void
     {
         $this->onClose = function (Server $server, int $fd): void {
@@ -95,26 +122,46 @@ abstract class AbstractTask extends Task
         };
     }
     
+    /**
+     * Adapt Swoole's five worker-error arguments to the existing four-argument hook.
+     *
+     * Keep onWorkerError() overrides compatible while passing the actual exit code
+     * and retaining both the worker PID and termination signal in the reason text.
+     */
     public function initializeWorkerError(): void
     {
-        $this->onWorkerError = fn(Server $server, int $fd, int $code, string $reason): null => $this->onWorkerError($server, $fd, $code, $reason);
+        $this->onWorkerError = function (Server $server, int $workerId, int $workerPid, int $exitCode, int $signal): void {
+            $this->onWorkerError($server, $workerId, $exitCode, "pid={$workerPid}, signal={$signal}");
+        };
     }
     
+    /**
+     * Install the master-process startup callback.
+     */
     public function initializeStart(): void
     {
         $this->onStart = fn(Server $server): null => $this->onStart($server);
     }
     
+    /**
+     * Install the worker startup callback with its worker ID.
+     */
     public function initializeWorkerStart(): void
     {
         $this->onWorkerStart = fn(Server $server, int $workerId): null => $this->onWorkerStart($server, $workerId);
     }
     
+    /**
+     * Install the server shutdown callback.
+     */
     public function initializeShutdown(): void
     {
         $this->onShutdown = fn(Server $server): null => $this->onShutdown($server);
     }
     
+    /**
+     * Install the HTTP callback, resetting model connection state before the hook.
+     */
     public function initializeRequest(): void
     {
         $this->onRequest = function (Request $request, Response $response): void {
@@ -123,6 +170,9 @@ abstract class AbstractTask extends Task
         };
     }
     
+    /**
+     * Install the inter-worker message callback, resetting model connection state first.
+     */
     public function initializePipeMessage(): void
     {
         $this->onPipeMessage = function (Server $server, int $srcWorkerId, mixed $data): void {
@@ -133,47 +183,81 @@ abstract class AbstractTask extends Task
     
     // --- Event handlers to override in child classes ---
     
+    /**
+     * Handle a completed WebSocket handshake; the default logs the client descriptor.
+     */
     public function onOpen(Server $server, Request $request): void
     {
         $this->log("Client connected: fd={$request->fd}");
     }
     
+    /**
+     * Handle a received WebSocket frame; the default logs its descriptor and payload.
+     */
     public function onMessage(Server $server, Frame $frame): void
     {
         $this->log("Received message from fd={$frame->fd} data={$frame->data}");
     }
     
+    /**
+     * Handle a closed client descriptor; override to clean application subscription state.
+     */
     public function onClose(Server $server, int $fd): void
     {
         $this->log("Client fd={$fd} disconnected");
     }
     
+    /**
+     * Handle a failed worker; override to integrate application monitoring.
+     *
+     * @param Server $server Server whose worker failed.
+     * @param int $fd Worker ID, despite the historical parameter name; not a client descriptor.
+     * @param int $code Worker exit code.
+     * @param string $reason Worker process details, formatted as "pid=<pid>, signal=<signal>".
+     */
     public function onWorkerError(Server $server, int $fd, int $code, string $reason): void
     {
-        $this->log("Worker error: fd={$fd}, code={$code}, reason={$reason}");
+        $this->log("Worker error: workerId={$fd}, exitCode={$code}, {$reason}");
     }
     
+    /**
+     * Handle master-process startup; the default logs the listening address.
+     */
     public function onStart(Server $server): void
     {
         $this->log("WebSocket server started on {$server->host}:{$server->port}");
     }
     
+    /**
+     * Handle worker startup; override for resources owned by this worker process.
+     */
     public function onWorkerStart(Server $server, int $workerId): void
     {
         $this->log("Worker #{$workerId} started");
     }
     
+    /**
+     * Handle server shutdown; the default logs completion.
+     */
     public function onShutdown(Server $server): void
     {
         $this->log('Server shutting down');
     }
     
+    /**
+     * Handle an HTTP request on the WebSocket server.
+     * The default logs the path and ends the response with a placeholder body.
+     */
     public function onRequest(Request $request, Response $response): void
     {
         $this->log("HTTP request received from {$request->server['remote_addr']}: {$request->server['request_uri']}");
         $response->end('Default HTTP handler');
     }
     
+    /**
+     * Handle data sent by another worker.
+     * The default logs string-compatible data; override for structured messages.
+     */
     public function onPipeMessage(Server $server, int $srcWorkerId, mixed $data): void
     {
         $this->log("Pipe message received from worker #{$srcWorkerId}: data={$data}");

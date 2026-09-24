@@ -179,3 +179,21 @@ curl --include https://app.example/assets/app.css
 Use [Troubleshooting](troubleshooting.md) when only one runtime mode fails, and
 [Runtime Compatibility](phalcon-runtime-upgrades.md) when PHP or Phalcon differs
 between processes.
+
+## WebSocket Event Hooks
+
+`PhalconKit\Modules\Ws\Tasks\AbstractTask` resolves the shared `swoole`
+service and registers positional callbacks. Keep Swoole's `event_object` setting
+disabled for this task. Override the `on*()` methods to implement application
+behavior; call `parent::initialize()` when customizing task initialization.
+
+The worker-error adapter receives Swoole's server, worker ID, worker PID, exit
+code, and signal. For compatibility, the existing four-argument
+`onWorkerError($server, $fd, $code, $reason)` hook remains: `$fd` means worker ID,
+`$code` is the exit code, and `$reason` contains `pid=<pid>, signal=<signal>`.
+Applications overriding that hook keep the same signature.
+
+The static subscription map is local to each worker process. Application hooks
+must remove closed client subscriptions and coordinate cross-worker delivery
+when needed. Request, frame, open, close, and pipe-message callbacks reset Core's
+model connection state before calling the application hook.

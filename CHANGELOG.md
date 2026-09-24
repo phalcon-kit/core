@@ -24,6 +24,9 @@ release notes.
   results, and empty-result nulls. Keep before-event cancellation as false and
   align the abstract contracts and IDE-stub patches. Consumers requiring floats
   must explicitly convert known numeric results after checking null/false.
+- Adapt all five native Swoole worker-error arguments to the existing public
+  four-argument hook. Pass the actual exit code and retain the worker PID and
+  signal without breaking application hook signatures.
 
 ### Changed
 
