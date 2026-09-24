@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc\Model;
 
-use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Di\Di;
 use Phalcon\Mvc\Model\MetaData\Memory;
 use PhalconKit\Config\Config;
@@ -14,21 +13,17 @@ use PhalconKit\Support\Helper;
 use PhalconKit\Support\HelperFactory;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\RelationshipSecurityChild;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\RelationshipSecurityParent;
-use PHPUnit\Framework\TestCase;
+use PhalconKit\Tests\Unit\Support\Fixtures\DatabaseTestCase;
 
 /** Opt-in regression exercising native PHQL, assignment and nested persistence. */
-final class RelationshipAssignmentDatabaseTest extends TestCase
+final class RelationshipAssignmentDatabaseTest extends DatabaseTestCase
 {
     public function testForeignChildCannotBeOverwrittenThroughRelationKeyFallback(): void
     {
-        $socket = getenv('PHALCONKIT_RELATION_TEST_SOCKET');
-        if (!$socket) {
-            self::markTestSkipped('Set PHALCONKIT_RELATION_TEST_SOCKET to an isolated disposable database socket.');
-        }
+        $connection = $this->connectTestDatabase('PHALCONKIT_RELATION_TEST_SOCKET');
         $previousDi = Di::getDefault();
         $previousHelperFactory = Helper::$helperFactory;
         $database = 'phalconkit_relation_' . bin2hex(random_bytes(8));
-        $connection = new Mysql(['unix_socket' => $socket, 'username' => 'root', 'password' => '']);
         $connection->execute('CREATE DATABASE `' . $database . '`');
         try {
             $connection->execute('USE `' . $database . '`');

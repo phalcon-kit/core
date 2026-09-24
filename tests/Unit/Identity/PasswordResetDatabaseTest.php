@@ -4,28 +4,23 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Identity;
 
-use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Di\Di;
 use Phalcon\Encryption\Security;
 use PhalconKit\Config\Config;
 use PhalconKit\Identity\Manager;
 use PhalconKit\Models\Interfaces\UserInterface;
 use PhalconKit\Tests\Unit\Identity\Fixtures\PasswordResetUser;
-use PHPUnit\Framework\TestCase;
+use PhalconKit\Tests\Unit\Support\Fixtures\DatabaseTestCase;
 
-/** Opt-in test against a disposable, socket-only MariaDB/MySQL instance. */
-final class PasswordResetDatabaseTest extends TestCase
+/** Opt-in test against a disposable MariaDB/MySQL instance. */
+final class PasswordResetDatabaseTest extends DatabaseTestCase
 {
     public function testNativeOrmCommitsOnceAndRollsBackRejectedPassword(): void
     {
-        $socket = getenv('PHALCONKIT_RESET_TEST_SOCKET');
-        if (!$socket) {
-            self::markTestSkipped('Set PHALCONKIT_RESET_TEST_SOCKET to an isolated disposable database socket.');
-        }
+        $connection = $this->connectTestDatabase('PHALCONKIT_RESET_TEST_SOCKET');
         $previousDi = Di::getDefault();
         $previousHelperFactory = \PhalconKit\Support\Helper::$helperFactory;
         $database = 'phalconkit_reset_' . bin2hex(random_bytes(8));
-        $connection = new Mysql(['unix_socket' => $socket, 'username' => 'root', 'password' => '']);
         $connection->execute('CREATE DATABASE `' . $database . '`');
         try {
             $connection->execute('USE `' . $database . '`');

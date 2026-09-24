@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Mvc\Model;
 
-use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Di\Di;
 use Phalcon\Mvc\Model\MetaData\Memory;
 use PhalconKit\Config\Config;
@@ -13,22 +12,17 @@ use PhalconKit\Mvc\Model\Manager;
 use PhalconKit\Support\Helper;
 use PhalconKit\Support\HelperFactory;
 use PhalconKit\Tests\Unit\Mvc\Model\Fixtures\BooleanPersistenceModel;
-use PHPUnit\Framework\TestCase;
+use PhalconKit\Tests\Unit\Support\Fixtures\DatabaseTestCase;
 
 /** Opt-in test using an isolated disposable MariaDB or CI MySQL server. */
-final class BooleanPersistenceDatabaseTest extends TestCase
+final class BooleanPersistenceDatabaseTest extends DatabaseTestCase
 {
     public function testBooleanCreateUpdateAndReloadWithRealMetadata(): void
     {
-        $socket = getenv('PHALCONKIT_RELATION_TEST_SOCKET');
-        $host = getenv('PHALCONKIT_BOOLEAN_TEST_HOST');
-        if (!$socket && !$host) {
-            self::markTestSkipped('Set PHALCONKIT_RELATION_TEST_SOCKET or PHALCONKIT_BOOLEAN_TEST_HOST to an isolated disposable database.');
-        }
+        $db = $this->connectTestDatabase('PHALCONKIT_RELATION_TEST_SOCKET', 'PHALCONKIT_BOOLEAN_TEST_HOST');
         $previousDi = Di::getDefault();
         $previousHelper = Helper::$helperFactory;
         $database = 'phalconkit_boolean_' . bin2hex(random_bytes(8));
-        $db = new Mysql(($socket ? ['unix_socket' => $socket] : ['host' => $host]) + ['username' => 'root', 'password' => '']);
         $db->execute('CREATE DATABASE `' . $database . '`');
         try {
             $db->execute('USE `' . $database . '`');

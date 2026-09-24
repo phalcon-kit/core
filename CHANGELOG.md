@@ -25,6 +25,13 @@ release notes.
   align the abstract contracts and IDE-stub patches. Consumers requiring floats
   must explicitly convert known numeric results after checking null/false.
 
+### Changed
+
+- Require password-reset, relationship-ownership, boolean-persistence, and
+  aggregate database regressions in both CI dependency jobs with fail-on-skipped.
+  Add shared explicit disposable-database host/socket settings while preserving
+  existing local test variables.
+
 ## 3.11.1 - 2026-09-24
 
 ### Changed
