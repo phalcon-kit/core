@@ -110,6 +110,6 @@ and revert if a legacy app exposes an unexpected compatibility issue.
 ## New Project Rule
 
 Use the maintained `phalcon-kit/core` 4.x line. While Core 4.0 is unreleased,
-follow [Getting Started](getting-started.md) for evaluation instructions and
-the remaining fresh-install limitations. The `phalcon-kit/app` 2.x skeleton
-targets unsupported Core 3.x.
+follow [Getting Started](getting-started.md) for App 4.0 evaluation instructions
+and the remaining schema-installation limitations. The latest released App 2.x
+skeleton targets unsupported Core 3.x.

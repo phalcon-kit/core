@@ -30,6 +30,7 @@ $nativeClasses = [
     'Exception',
     'InvalidArgumentException',
     'LogicException',
+    'PDOException',
     'ReflectionException',
     'RuntimeException',
     'Throwable',
@@ -56,7 +57,7 @@ foreach ($iterator as $file) {
     }
 
     $contents = preg_replace_callback(
-        '~\]\(([^)]+\.md)\)~',
+        '~]\(([^)]+\.md)\)~',
         static function (array $matches) use ($filePath, $nativeTargets, $normalizePath): string {
             $target = $matches[1];
             $externalUrl = match (true) {

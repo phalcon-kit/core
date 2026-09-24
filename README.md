@@ -39,16 +39,23 @@ describe compatibility with the upstream framework.
 
 ## Quick Start
 
-Core 4.0 is available for evaluation in an isolated application checkout:
+Evaluate the App 4.0 skeleton in an isolated directory:
+
+```shell
+composer create-project phalcon-kit/app:dev-master my-api
+```
+
+For an isolated checkout of an existing application:
 
 ```shell
 composer require phalcon-kit/core:dev-master
 ```
 
 Read the [upgrade guide](guides/upgrading-4.0.md) first and review the resulting
-Composer changes. The current `phalcon-kit/app` 2.x skeleton targets unsupported
-Core 3.x. A Core 4.0 skeleton and a validated fresh-install schema path are
-required before the stable release; see [Getting Started](guides/getting-started.md).
+Composer changes. App and Core are preparing matching **4.0.0** releases; both
+commands select development previews. The latest released App 2.x targets
+unsupported Core 3.x. A validated schema path for persisted Core features is
+still required before the stable release; see [Getting Started](guides/getting-started.md).
 
 The previous package, `zemit-cms/core`, is also unsupported. Existing applications
 need the [package-name migration](guides/migration-from-zemit.md) as well as the

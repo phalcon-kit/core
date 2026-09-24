@@ -1,7 +1,8 @@
 # Getting Started
 
-Only Core 4.x is maintained. Core 4.0 is still unreleased, and its app skeleton
-and fresh-install schema path are being prepared. There is currently no
+Only Core 4.x is maintained. Core and the App skeleton are preparing matching
+**4.0.0** releases. Their development previews are available, while the schema
+path for persisted Core features is still being prepared. There is currently no
 supported stable release; see the [support policy](../SUPPORT.md) and
 [Core 4.0 release gates](upgrading-4.0.md#stable-release-gates).
 
@@ -31,10 +32,22 @@ composer --version
 
 ## 1. Create Or Install
 
-The current `phalcon-kit/app` 2.x skeleton installs unsupported Core 3.x. A
-validated Core 4.0 fresh-install recipe is a stable-release requirement. Until
-4.0 is released, an unconstrained `composer require phalcon-kit/core` also
-selects an older stable release under Composer's default stability policy.
+Evaluate the App 4.0 development skeleton in an isolated directory:
+
+```shell
+composer create-project phalcon-kit/app:dev-master my-api
+cd my-api
+cp .env.example .env
+composer qa
+```
+
+The preview uses Core `^4.0@dev` with a committed lockfile. The stable App 4.0.0
+release will use Core `^4.0` and lock the tested stable release. App deliberately
+skips 3.x to match Core's major version.
+
+The latest released App 2.x skeleton installs unsupported Core 3.x. Until 4.0 is
+released, an unconstrained `composer require phalcon-kit/core` also selects an
+older stable release under Composer's default stability policy.
 
 For Core 4.0 evaluation in an isolated checkout of an existing application,
 read the [upgrade guide](upgrading-4.0.md), then require the development branch:
@@ -46,6 +59,10 @@ composer require phalcon-kit/core:dev-master
 Review dependency and lockfile changes and test the application's own flows.
 `dev-master` follows breaking development work. All earlier Core versions and
 the old `zemit-cms/core` package are unmaintained and unsupported.
+
+The preview can run its basic routes and CLI without a database. Features such
+as identity, audit, and templates require their tables; the validated Core 4.0
+schema installation path remains a [stable-release gate](upgrading-4.0.md#stable-release-gates).
 
 ## 2. Configure The Environment
 

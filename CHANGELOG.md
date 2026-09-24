@@ -61,6 +61,11 @@ release notes.
 - Align the upcoming Core and App releases at 4.0.0. Expose `master` as
   `4.0.x-dev` through Composer's branch alias for explicit preview consumers,
   and document the stable constraint, lockfile, and installation release gates.
+- Document the aligned App 4.0 development skeleton and its explicit preview
+  installation path. Keep schema installation for persisted features as a
+  stable-release gate.
+- Regenerate the public API reference for the retained Core 4 surface and link
+  native `PDOException` references to the PHP manual.
 - Retain the draft base-model service and initialization contracts; discard
   documentation for the retired dynamic runtime and the superseded scope proposal.
 - Require password-reset, relationship-ownership, boolean-persistence, and

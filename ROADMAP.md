@@ -14,7 +14,6 @@ Status: Next — required before a stable 4.0 release.
   database names and application-owned migration history.
 - Test fresh installs and existing-schema upgrades with nested writes and
   foreign-key inspection. Preserve historical migration files and user data.
-- Align the app skeleton with the retained runtime and explicit maintenance data.
 
 Resolve the remaining compatibility choices in
 [To Be Discussed](guides/to-be-discussed.md#baseline-migration-schema-portability)

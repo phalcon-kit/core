@@ -171,7 +171,7 @@ Before 4.0 is tagged:
 
 - Provide and test the supported fresh-install schema path with a custom database
   name; validate existing-schema upgrades without rewriting historical migrations.
-- Align the app skeleton and document each retained feature's required models,
+- Document each retained feature's required models,
   tables, services, and supported substitution contract.
 - Exercise real consumer acceptance suites in isolated checkouts, including
   custom identity/session overrides, reset delivery, REST compatibility routes,
