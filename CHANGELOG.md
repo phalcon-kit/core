@@ -29,18 +29,6 @@ release notes.
   implicit development account. Historical migration files remain unchanged;
   upgrading the package does not delete database tables or data.
 
-### Changed
-
-- Make database maintenance instructions explicit through `config.deployment`
-  or an application task's arrays. Configured keys replace task defaults;
-  omitted keys preserve them. Keep `drop`, `truncate`, `fix-engine`, `insert`,
-  `optimize`, `analyze`, and `reset`. Unconfigured operations issue no queries.
-- Start the isolated 4.x development line with alpha version metadata, an
-  upgrade/retirement inventory, and release gates for schema ownership and
-  consumer acceptance. Remove resolved legacy-runtime design questions.
-
-## 3.11.2 - Unreleased
-
 ### Fixed
 
 - Preserve native Phalcon values and types in model/controller `minimum()` and
@@ -56,6 +44,18 @@ release notes.
 
 ### Changed
 
+- Make database maintenance instructions explicit through `config.deployment`
+  or an application task's arrays. Configured keys replace task defaults;
+  omitted keys preserve them. Keep `drop`, `truncate`, `fix-engine`, `insert`,
+  `optimize`, `analyze`, and `reset`. Unconfigured operations issue no queries.
+- Prepare Core 4.0 with alpha version metadata, an upgrade/retirement inventory,
+  and release gates for schema ownership and consumer acceptance. Remove resolved
+  legacy-runtime design questions.
+- Consolidate development on `master` and preserve published releases through
+  tags. Retire version and merged work branches; fold the untagged 3.11.2
+  maintenance work into this release. `dev-master` now follows breaking 4.0 work.
+- Retain the draft base-model service and initialization contracts; discard
+  documentation for the retired dynamic runtime and the superseded scope proposal.
 - Require password-reset, relationship-ownership, boolean-persistence, and
   aggregate database regressions in both CI dependency jobs with fail-on-skipped.
   Add shared explicit disposable-database host/socket settings while preserving

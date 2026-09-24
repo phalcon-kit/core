@@ -1,9 +1,10 @@
 # Roadmap
 
-This is the active release roadmap for the **4.x development branch**.
+This is the active release roadmap for **Core 4.0 on `master`**.
 Implemented changes belong in [CHANGELOG.md](CHANGELOG.md); consumer guidance
 and the removal inventory live in [Upgrading To Core 4.0](guides/upgrading-4.0.md).
-The 3.11.x maintenance line remains separate.
+Published releases remain available through tags. The repository keeps a single
+long-lived branch; see the [release policy](guides/release.md#branch-policy).
 
 ## Schema Ownership And Fresh Installation
 
@@ -43,8 +44,9 @@ Status: Required before tagging 4.0.
 - Pass lowest/highest dependency CI, required native database regressions,
   Swoole callback coverage, and a fresh Composer installation with stub patches.
 - Regenerate API docs from the settled public surface and verify guide examples.
-- Publish the upgrade guide and a 3.x maintenance policy. Resolve consumers of
-  `dev-master` before moving breaking changes to the default release branch.
+- Publish the upgrade guide and review supported versions in `SECURITY.md`.
+  Migrate existing `dev-master` consumers deliberately; that constraint now
+  follows 4.0 development, while their existing lockfiles retain the old commit.
 
-Broader integration packaging, framework upgrades, mass renaming, license-header
-cleanup, and historical branch pruning remain separate from the 4.0 scope.
+Broader integration packaging, framework upgrades, mass renaming, and
+license-header cleanup remain separate from the 4.0 scope.

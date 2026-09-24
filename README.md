@@ -1,9 +1,11 @@
 # Phalcon Kit Core
 
-This is the **unreleased 4.x development branch**. Core 4.0 removes the legacy
+`master` carries **unreleased Core 4.0 development**. Core 4.0 removes the legacy
 catalog/CMS runtime and makes database maintenance data application-owned.
 Read the [upgrade guide](guides/upgrading-4.0.md) before testing this branch.
-The current stable releases remain on the 3.x line.
+The current stable releases remain available through 3.x tags. `master` is the
+only long-lived branch; tagged releases are the supported installation path.
+Composer's `dev-master` now tracks the breaking 4.0 development work.
 
 [![CI](https://github.com/phalcon-kit/core/actions/workflows/main.yml/badge.svg)](https://github.com/phalcon-kit/core/actions/workflows/main.yml)
 ![Version](https://img.shields.io/packagist/v/phalcon-kit/core)

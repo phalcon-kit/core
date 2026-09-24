@@ -21,8 +21,10 @@ use Phalcon\Support\Collection\CollectionInterface;
  * Base model combining Core persistence, relationships, validation, and lifecycle features.
  *
  * Requires the model manager, metadata, and connection services expected by Phalcon,
- * plus Core's config/helper services for feature options. Subclasses that override
- * initialize() should call parent::initialize() when they need Core's behaviors.
+ * plus Core's config/helper services. Default initialization also resolves the
+ * `models` class map, `modelsCache`, and `security` services for cache invalidation
+ * and UUID behavior. Subclasses that override initialize() should call the parent
+ * when they need Core's behaviors.
  * Persistence methods delegate transaction and event handling to Phalcon after
  * normalizing SQL NULL sentinels; they do not create a separate Core transaction.
  *
@@ -177,6 +179,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
      * installs a model events manager, enables dynamic updates, and registers the
      * enabled feature behaviors. Its setup options also affect the process-wide ORM.
      * Call the parent first before customizing Core's event manager or behaviors.
+     *
+     * @throws \PhalconKit\Exception\ServiceException When required typed model services cannot be resolved.
      */
     public function initialize(): void
     {

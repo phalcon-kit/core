@@ -2,6 +2,10 @@
 
 ## Supported Versions
 
+`master` contains unreleased Core 4.0 development. Security support applies to
+tagged releases independently of the repository's branch layout; removing a
+version branch does not remove the releases or change the support table below.
+
 The current maintained minor line receives security fixes. Older minor lines may
 receive fixes only when a low-risk backport is practical.
 

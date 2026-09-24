@@ -129,7 +129,7 @@ only as an intentional documentation build. Unresolved behavior belongs in
 [To Be Discussed](to-be-discussed.md), with compatibility risks and a validation
 plan, rather than vague TODO comments.
 
-These deprecated Core aliases remain available throughout the 3.x maintenance
+These deprecated Core aliases remain available in the Core 4.0 development
 line. Update consumers and routes to their replacements before considering
 removal in a future major release:
 

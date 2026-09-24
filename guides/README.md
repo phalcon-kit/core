@@ -2,8 +2,8 @@
 
 Build a complete Phalcon Kit application one workflow at a time. These guides
 document the current branch of `phalcon-kit/core`; Composer metadata is the
-authority for runtime and dependency requirements. This is the unreleased 4.x
-development branch. See [Upgrading To Core 4.0](upgrading-4.0.md) for its breaking
+authority for runtime and dependency requirements. `master` now carries
+unreleased Core 4.0 development. See [Upgrading To Core 4.0](upgrading-4.0.md) for its breaking
 changes and remaining release gates; use the matching 3.x tag for stable docs.
 
 !!! tip "New to Phalcon Kit?"

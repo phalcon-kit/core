@@ -7,9 +7,26 @@ Use this checklist when preparing a public release.
 Phalcon Kit follows SemVer for tagged public releases. Keep unreleased work
 under the current `Unreleased` heading in `CHANGELOG.md` until the tag is cut.
 
+## Branch Policy
+
+`master` is the sole long-lived branch and currently contains unreleased Core
+4.0 development. Version branches are not kept as release archives; existing
+tags preserve published releases. Short-lived contribution branches may
+be removed once their work is merged or otherwise preserved.
+
+Publish releases with signed version tags. Applications should use tagged-version
+constraints and keep their lockfiles; `dev-master` intentionally follows current
+development and can introduce breaking changes during a major-version transition.
+
+Security support is defined in [SECURITY.md](../SECURITY.md), independently of
+branch names. If an older supported release needs a fix, prepare it from the
+appropriate tag and publish a signed patch tag. Keep unrelated breaking changes
+out of that patch; a standing maintenance branch is not required.
+
 ## Before Release
 
-1. Confirm the target version and release branch.
+1. Confirm the target version and commit. Normal development releases come from
+   `master`; older-version fixes must start from the appropriate release tag.
 2. Update `CHANGELOG.md` by moving the current unreleased section to a dated
    version heading.
 3. Update `src/Support/Version.php` and its focused version test to the exact

@@ -1,6 +1,6 @@
 # Upgrading To Core 4.0
 
-Status: unreleased development work on `4.x`. This guide describes implemented
+Status: unreleased development work on `master`. This guide describes implemented
 changes and the checks still required before a stable release. PHP 8.5 and
 Phalcon 5.22 remain the runtime baseline.
 
@@ -136,9 +136,12 @@ other persisted features schema-free.
 
 ## Application Upgrade Checks
 
-1. Keep the application on a supported 3.x version while preparing an isolated
-   upgrade checkout. Branch constraints such as `dev-master` need deliberate
-   review before changing the project's release branch.
+1. Keep the application's existing lockfile and a suitable tagged-version
+   constraint while preparing an isolated upgrade checkout. `dev-master` now
+   follows breaking 4.0 development; a dependency update can select it. The old
+   `0.4.x`, `1.0.x`, and temporary `4.x` branches have been retired. Applications
+   using branch constraints must select an appropriate tagged release or opt
+   into testing `dev-master` deliberately.
 2. Search imports, parent classes, interfaces, DI registrations, model mappings,
    permission config, routes, CLI schedules, and seed code for the exact retired
    namespaces above. Remove unused imports and permission-only references too.
@@ -171,5 +174,7 @@ Before 4.0 is tagged:
 - Pass the release CI matrix, mandatory native database regressions, and a fresh
   Composer install; regenerate API documentation deliberately from the final
   retained public surface.
-- Publish the upgrade notes and the 3.x maintenance policy together with the
-  release. Keep breaking development on `4.x` until branch consumers are migrated.
+- Publish the upgrade notes and review the supported-version policy in
+  `SECURITY.md`. `master` is the sole long-lived branch; signed tags identify
+  releases. Complete branch-consumer migration checks before recommending 4.0
+  for existing applications.

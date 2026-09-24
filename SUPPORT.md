@@ -2,6 +2,14 @@
 
 Use the right channel so issues stay actionable.
 
+## Development And Releases
+
+`master` carries unreleased Core 4.0 development. Published versions remain
+available through their tags; there are no standing version branches. Use a
+suitable tagged-version constraint and lockfile for applications. See the
+[branch policy](guides/release.md#branch-policy) and
+[Core 4.0 upgrade guide](guides/upgrading-4.0.md) before following `dev-master`.
+
 ## Questions
 
 Use GitHub Discussions for usage questions, architecture questions, and general
