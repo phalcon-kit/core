@@ -17,6 +17,13 @@ release notes.
 
 ## 3.11.1 - 2026-09-24
 
+### Changed
+
+- Require Phalcon `^5.22.0` with matching IDE stubs. Align CI with the
+  checksum-verified 5.22.0 release and document its opt-in PHP attribute reader
+  and annotation metadata aliases. Existing docblock annotations remain the
+  default; applications must upgrade their extension before installing this release.
+
 ### Fixed
 
 - Make the shared `canForward()` guard compare effective routes using dispatcher
