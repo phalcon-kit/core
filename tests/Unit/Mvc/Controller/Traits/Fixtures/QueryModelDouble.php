@@ -99,14 +99,14 @@ class QueryModelDouble extends Model implements EagerLoadInterface
     {
         self::$calls['maximum'] = $parameters;
 
-        return self::$aggregateResults['maximum'] ?? false;
+        return array_key_exists('maximum', self::$aggregateResults) ? self::$aggregateResults['maximum'] : false;
     }
 
     public static function minimum($parameters = null)
     {
         self::$calls['minimum'] = $parameters;
 
-        return self::$aggregateResults['minimum'] ?? false;
+        return array_key_exists('minimum', self::$aggregateResults) ? self::$aggregateResults['minimum'] : false;
     }
 
     public static function findWith(array ...$arguments): array

@@ -107,18 +107,22 @@ trait AbstractQuery
     abstract public function sum(?array $find = null): ResultsetInterface|float|false;
     
     /**
-     * Execute a maximum aggregate query.
+     * Execute a maximum aggregate query without coercing the native result.
      *
-     * @param array<string|int, mixed>|null $find Optional aggregate options.
+     * @param array<string|int, mixed>|null $find Optional aggregate options; null uses request criteria.
+     * @return ResultsetInterface|int|float|string|false|null Native scalar, empty value,
+     *     grouped results, or false when the model cancels the query.
      */
-    abstract public function maximum(?array $find = null): ResultsetInterface|float|false;
+    abstract public function maximum(?array $find = null): mixed;
     
     /**
-     * Execute a minimum aggregate query.
+     * Execute a minimum aggregate query without coercing the native result.
      *
-     * @param array<string|int, mixed>|null $find Optional aggregate options.
+     * @param array<string|int, mixed>|null $find Optional aggregate options; null uses request criteria.
+     * @return ResultsetInterface|int|float|string|false|null Native scalar, empty value,
+     *     grouped results, or false when the model cancels the query.
      */
-    abstract public function minimum(?array $find = null): ResultsetInterface|float|false;
+    abstract public function minimum(?array $find = null): mixed;
     
     /**
      * Normalize find options before aggregate execution.

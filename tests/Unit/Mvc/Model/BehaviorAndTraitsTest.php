@@ -1484,8 +1484,32 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $this->assertSame(7, EventsTraitSubject::count());
         $this->assertSame(1.5, EventsTraitSubject::sum());
         $this->assertSame(2.5, EventsTraitSubject::average());
-        $this->assertSame(3.5, EventsTraitSubject::minimum());
-        $this->assertSame(4.5, EventsTraitSubject::maximum());
+        $this->assertSame('3.5', EventsTraitSubject::minimum());
+        $this->assertSame('4.5', EventsTraitSubject::maximum());
+    }
+
+    public function testMinimumAndMaximumPreserveNativeValuesAndEvents(): void
+    {
+        $values = ['Alpha', '2026-09-25 10:00:00', '3.50', 7, 3.5, null, false, new EventsTraitResultsetDouble()];
+
+        try {
+            foreach (['minimum', 'maximum'] as $method) {
+                $property = $method . 'Result';
+                foreach ($values as $value) {
+                    EventsTraitSubject::resetEvents();
+                    EventsTraitSubject::${$property} = $value;
+                    $this->assertSame($value, EventsTraitSubject::$method(['column' => 'value']));
+                    $this->assertSame(
+                        ['before' . ucfirst($method), 'after' . ucfirst($method)],
+                        EventsTraitSubject::$firedEvents
+                    );
+                }
+            }
+        } finally {
+            EventsTraitSubject::$minimumResult = '3.5';
+            EventsTraitSubject::$maximumResult = '4.5';
+            EventsTraitSubject::resetEvents();
+        }
     }
 
     public function testStringLengthValidationUsesInclusiveBoundaries(): void

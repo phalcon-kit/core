@@ -163,41 +163,37 @@ trait Events
     }
     
     /**
-     * Calculates the minimum value of a specified column in the database according to the given conditions.
+     * Return the native minimum of a column, with cancellable before/after events.
      *
-     * @param mixed $parameters Native Phalcon parameters to customize the query,
-     *     such as conditions, column selection, or groupings.
-     * @return ResultsetInterface|float|false Returns the minimum value as a float, a ResultsetInterface object, or false if no matching records are found or the operation fails.
+     * Values retain the database driver's type, including strings for text, dates,
+     * or decimals. An ungrouped query without a value returns null; grouped queries
+     * return a resultset. A cancelled beforeMinimum event returns false.
+     *
+     * @param mixed $parameters Native Phalcon conditions and options, including
+     *     column, bind values, and optional group expressions.
+     * @return ResultsetInterface|int|float|string|false|null The unchanged native result, or false on cancellation.
      */
     #[\Override]
-    public static function minimum(mixed $parameters = null): ResultsetInterface|float|false
+    public static function minimum(mixed $parameters = null): mixed
     {
-        $minimum = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::minimum($parameters));
-        
-        if (is_string($minimum)) {
-            return (float)$minimum;
-        }
-        
-        return $minimum;
+        return self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::minimum($parameters));
     }
     
     /**
-     * Calculates the maximum value of a specified column in the database based on the given conditions.
+     * Return the native maximum of a column, with cancellable before/after events.
      *
-     * @param mixed $parameters Native Phalcon parameters to customize the query,
-     *     such as conditions, column selection, or groupings.
-     * @return ResultsetInterface|float|false Returns the computed maximum value as a float, a ResultsetInterface object for detailed results, or false on failure.
+     * Values retain the database driver's type, including strings for text, dates,
+     * or decimals. An ungrouped query without a value returns null; grouped queries
+     * return a resultset. A cancelled beforeMaximum event returns false.
+     *
+     * @param mixed $parameters Native Phalcon conditions and options, including
+     *     column, bind values, and optional group expressions.
+     * @return ResultsetInterface|int|float|string|false|null The unchanged native result, or false on cancellation.
      */
     #[\Override]
-    public static function maximum(mixed $parameters = null): ResultsetInterface|float|false
+    public static function maximum(mixed $parameters = null): mixed
     {
-        $maximum = self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::maximum($parameters));
-        
-        if (is_string($maximum)) {
-            return (float)$maximum;
-        }
-        
-        return $maximum;
+        return self::fireEventCancelCall(__FUNCTION__, fn(): mixed => parent::maximum($parameters));
     }
     
     /**

@@ -15,6 +15,16 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.11.2 - Unreleased
+
+### Fixed
+
+- Preserve native Phalcon values and types in model/controller `minimum()` and
+  `maximum()` calls, including text, datetime, exact decimals, integers, grouped
+  results, and empty-result nulls. Keep before-event cancellation as false and
+  align the abstract contracts and IDE-stub patches. Consumers requiring floats
+  must explicitly convert known numeric results after checking null/false.
+
 ## 3.11.1 - 2026-09-24
 
 ### Changed

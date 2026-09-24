@@ -17,6 +17,9 @@ use Phalcon\Mvc\Model\ResultsetInterface;
 
 class EventsTraitBase
 {
+    public static mixed $minimumResult = '3.5';
+    public static mixed $maximumResult = '4.5';
+
     public static function find(mixed $parameters = null): ResultsetInterface
     {
         return new EventsTraitResultsetDouble();
@@ -44,11 +47,11 @@ class EventsTraitBase
 
     public static function minimum(mixed $parameters = null): mixed
     {
-        return '3.5';
+        return self::$minimumResult;
     }
 
     public static function maximum(mixed $parameters = null): mixed
     {
-        return '4.5';
+        return self::$maximumResult;
     }
 }

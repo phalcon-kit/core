@@ -53,6 +53,26 @@ final class Project extends Abstracts\ProjectAbstract
 When the schema changes, regenerate the abstract layer and review concrete
 models for new domain rules.
 
+## Minimum And Maximum Results
+
+`minimum()` and `maximum()` preserve the installed Phalcon/database driver's
+value and type. This also applies to the REST controller query helpers.
+Text and datetime columns can return strings; numeric columns can return an
+integer, float, or decimal string. An ungrouped aggregate with no value returns
+`null`, grouped queries return a resultset, and a cancelled Core before-event
+returns `false`.
+
+```php
+$firstLabel = Project::minimum(['column' => 'label']);
+$lastUpdated = Project::maximum(['column' => 'updatedAt']);
+$byStatus = Project::maximum(['column' => 'updatedAt', 'group' => 'status']);
+```
+
+Before 3.11.2, Core coerced string results to floats and could throw a `TypeError`
+for empty results. Code that intentionally needs a float should explicitly
+convert a known numeric result after handling `null` and `false`. Avoid casting
+text, timestamps, or exact decimal values as a general aggregate policy.
+
 ## Relationship Payloads
 
 Generated relationship aliases are used by REST save payloads and eager loading.

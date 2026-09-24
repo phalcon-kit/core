@@ -66,15 +66,15 @@ class EagerLoadTest extends AbstractUnit
         $this->assertSame('mixed', $findFirstReturnType->getName());
     }
 
-    public function testEventAggregateContractsMatchPatchedPhalconSignatures(): void
+    public function testEventAggregateContractsMatchPhalconResultContracts(): void
     {
         $trait = new ReflectionClass(Events::class);
 
         $this->assertModelAggregateSignature($trait, 'count', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|int');
         $this->assertModelAggregateSignature($trait, 'sum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float');
         $this->assertModelAggregateSignature($trait, 'average', 'array', 'Phalcon\Mvc\Model\ResultsetInterface|float');
-        $this->assertModelAggregateSignature($trait, 'minimum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
-        $this->assertModelAggregateSignature($trait, 'maximum', 'null', 'Phalcon\Mvc\Model\ResultsetInterface|float|false');
+        $this->assertModelAggregateSignature($trait, 'minimum', 'null', 'mixed');
+        $this->assertModelAggregateSignature($trait, 'maximum', 'null', 'mixed');
     }
 
     public function testFindWithByRejectsUnexpectedNativeFinderReturn(): void

@@ -2196,12 +2196,32 @@ class QueryStateTest extends AbstractUnit
         $this->assertSame(12.5, $controller->average());
         $this->assertSame(7, $controller->count());
         $this->assertSame(99.9, $controller->sum());
-        $this->assertSame(50.0, $controller->maximum());
-        $this->assertSame(2.0, $controller->minimum());
+        $this->assertSame(50, $controller->maximum());
+        $this->assertSame(2, $controller->minimum());
         $this->assertSame([
             'conditions' => '(active = 1)',
             'group' => 'status',
         ], QueryModelDouble::$calls['minimum']);
+    }
+
+    public function testMinimumAndMaximumPreserveModelResults(): void
+    {
+        QueryModelDouble::reset();
+        $controller = $this->newStaticQueryController();
+        $controller->unitModel = new QueryModelDouble();
+        $values = ['Alpha', '2026-09-25 10:00:00', '3.50', 7, 3.5, null, false, $this->createStub(ResultsetInterface::class)];
+
+        try {
+            foreach (['minimum', 'maximum'] as $method) {
+                foreach ($values as $value) {
+                    QueryModelDouble::$aggregateResults[$method] = $value;
+                    $this->assertSame($value, $controller->$method(['column' => 'value']));
+                    $this->assertSame(['column' => 'value'], QueryModelDouble::$calls[$method]);
+                }
+            }
+        } finally {
+            QueryModelDouble::reset();
+        }
     }
 
     public function testWithQueriesRequireEagerLoadModelContract(): void

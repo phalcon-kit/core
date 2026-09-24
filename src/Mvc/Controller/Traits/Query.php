@@ -460,28 +460,28 @@ trait Query
     }
     
     /**
-     * Retrieves the minimum value.
+     * Query the maximum while preserving the model's scalar type or grouped result.
      *
-     * @param array|null $find Optional: The criteria to find the maximum value from.
-     *                         Default: null (will retrieve the `find` from $this->getFind())
-     *
-     * @return ResultsetInterface|float|false The maximum value from the dataset or a `ResultsetInterface` that represents the grouped maximum values.
+     * @param array<string|int, mixed>|null $find Aggregate criteria; null prepares
+     *     the current request criteria. Pagination limits and offsets are removed.
+     * @return ResultsetInterface|int|float|string|false|null Native value, null when
+     *     no value matches, a grouped resultset, or false if the model cancels the query.
      */
-    public function maximum(?array $find = null): ResultsetInterface|float|false
+    public function maximum(?array $find = null): mixed
     {
         $find ??= $this->prepareFind();
         return $this->loadModel()::maximum($this->getCalculationFind($find));
     }
     
     /**
-     * Retrieves the minimum value.
+     * Query the minimum while preserving the model's scalar type or grouped result.
      *
-     * @param array|null $find Optional: The criteria to find the minimum value from.
-     *                         Default: null (will retrieve the `find` from $this->getFind())
-     *
-     * @return ResultsetInterface|float|false The minimum value from the dataset or a `ResultsetInterface` that represents the grouped minimum values.
+     * @param array<string|int, mixed>|null $find Aggregate criteria; null prepares
+     *     the current request criteria. Pagination limits and offsets are removed.
+     * @return ResultsetInterface|int|float|string|false|null Native value, null when
+     *     no value matches, a grouped resultset, or false if the model cancels the query.
      */
-    public function minimum(?array $find = null): ResultsetInterface|float|false
+    public function minimum(?array $find = null): mixed
     {
         $find ??= $this->prepareFind();
         return $this->loadModel()::minimum($this->getCalculationFind($find));

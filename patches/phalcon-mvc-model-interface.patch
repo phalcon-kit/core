@@ -26,7 +26,7 @@
  
      /**
       * Allows to query the first record that match the specified conditions
-@@ -118,25 +118,25 @@
+@@ -118,7 +118,7 @@
       * @see https://github.com/phalcon/cphalcon/issues/15212
       * @see https://github.com/phalcon/cphalcon/issues/15883
       */
@@ -35,27 +35,21 @@
  
      /**
       * Allows to get the maximum value of a column that match the specified
-      * conditions
-      *
+@@ -127,7 +127,7 @@
       * @param array $parameters
--     * @return mixed
--     */
+      * @return mixed
+      */
 -    public static function maximum($parameters = null): mixed;
-+     * @return ResultsetInterface|float|false
-+     */
-+    public static function maximum(mixed $parameters = null): ResultsetInterface|float|false;
++    public static function maximum(mixed $parameters = null): mixed;
  
      /**
       * Allows to get the minimum value of a column that match the specified
-      * conditions
-      *
+@@ -136,7 +136,7 @@
       * @param array $parameters
--     * @return mixed
--     */
+      * @return mixed
+      */
 -    public static function minimum($parameters = null): mixed;
-+     * @return ResultsetInterface|float|false
-+     */
-+    public static function minimum(mixed $parameters = null): ResultsetInterface|float|false;
++    public static function minimum(mixed $parameters = null): mixed;
  
      /**
       * Create a criteria for a specific model
