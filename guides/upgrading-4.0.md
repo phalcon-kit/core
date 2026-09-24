@@ -34,6 +34,9 @@ application import alone is insufficient evidence for removing them.
 Core remains one package. No new repository abstraction or optional legacy
 package is introduced by this change.
 
+See [Retained Feature Contracts](feature-contracts.md) for model replacement,
+required services/tables, and workflows owned by the application.
+
 ## Removed Model Inventory
 
 All names in this table are under `PhalconKit\Models\`. For each name, the

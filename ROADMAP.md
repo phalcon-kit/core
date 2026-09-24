@@ -23,10 +23,8 @@ belongs in the changelog; existing application acceptance remains separate.
 
 Status: Next — focused batches with consumer fixtures.
 
-- Document required models/tables/services for identity, permissions, templates,
-  email, files, audit, and settings.
-- Review hard-coded model lookups and generated-interface coupling. Keep the
-  existing model resolver; correct specific gaps with focused behavior tests.
+- Validate [retained feature contracts](guides/feature-contracts.md) through
+  consumer fixtures, including generated-interface and relationship compatibility.
 - Document relationship payloads, ownership checks, transactions, and eager
   loading, then scaffold output ownership and TypeScript generation.
 - Review the remaining prepared models only after service/relationship closure

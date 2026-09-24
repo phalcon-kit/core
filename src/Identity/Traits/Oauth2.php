@@ -17,9 +17,11 @@ use Phalcon\Db\Column;
 use Phalcon\Filter\Exception as FilterException;
 use Phalcon\Filter\Validation\Validator\PresenceOf;
 use Phalcon\Messages\Message;
+use PhalconKit\Exception\ServiceException;
 use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Traits\Abstracts\AbstractSession;
 use PhalconKit\Identity\Traits\Abstracts\AbstractUser;
+use PhalconKit\Models\Interfaces\Oauth2Interface;
 
 /**
  * Links provider OAuth2 identities to local users.
@@ -44,6 +46,11 @@ trait Oauth2
      * saved provider identity must already contain a user id before login can
      * succeed.
      *
+     * The models service resolves the configured OAuth2 class. Replacements must
+     * implement Oauth2Interface and return model instances (or null when absent)
+     * from findFirst(). New records use a fresh instance, never the cached model
+     * held by the resolver. Application validation and save hooks remain active.
+     *
      * @param string $provider Provider key.
      * @param string $providerUuid Stable provider-side user identifier.
      * @param string $accessToken Provider access token.
@@ -53,19 +60,21 @@ trait Oauth2
      * @return array{saved: bool, loggedIn: bool, loggedInAs: bool, messages: \Phalcon\Messages\Messages, jwt?: string, refreshToken?: string, refreshed?: bool}
      *
      * @throws FilterException When OAuth provider fields cannot be sanitized.
+     * @throws \Phalcon\Filter\Validation\Exception When validation cannot be configured.
      * @throws \Phalcon\Encryption\Security\Exception When stateless token key
      *     generation fails after a successful OAuth2 login.
      * @throws \Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException
      *     When stateless JWT creation fails after a successful OAuth2 login.
-     * @throws \PhalconKit\Exception\ServiceException When default PHP-session
-     *     storage cannot renew the session before authenticating.
+     * @throws ServiceException When the model mapping/lookup violates the OAuth2
+     *     contract, or PHP-session storage cannot renew before authenticating.
      */
     public function oauth2(string $provider, string $providerUuid, string $accessToken, ?string $refreshToken = null, ?array $meta = []): array
     {
         $statelessJwt = [];
         
-        // retrieve and prepare oauth2 entity
-        $oauth2 = \PhalconKit\Models\Oauth2::findFirst([
+        /** @var class-string<Oauth2Interface> $oauth2Class */
+        $oauth2Class = $this->models->getOauth2()::class;
+        $oauth2 = $oauth2Class::findFirst([
             'provider = :provider: and provider_uuid = :providerUuid:',
             'bind' => [
                 'provider' => $this->filter->sanitize($provider, 'string'),
@@ -76,10 +85,18 @@ trait Oauth2
                 'providerUuid' => Column::BIND_PARAM_STR,
             ],
         ]);
-        if (!($oauth2 instanceof \PhalconKit\Models\Oauth2)) {
-            $oauth2 = new \PhalconKit\Models\Oauth2();
+        if ($oauth2 === null) {
+            $oauth2 = new $oauth2Class();
             $oauth2->setProvider($provider);
             $oauth2->setProviderUuid($providerUuid);
+        }
+        if (!$oauth2 instanceof Oauth2Interface) {
+            throw new ServiceException(sprintf(
+                'Expected "%s::findFirst()" to return "%s" or null; got "%s".',
+                $oauth2Class,
+                Oauth2Interface::class,
+                get_debug_type($oauth2)
+            ));
         }
         $oauth2->setAccessToken($accessToken);
         $oauth2->setRefreshToken($refreshToken);
@@ -106,14 +123,14 @@ trait Oauth2
         // save the oauth2 entity
         $saved = $oauth2->save();
         
-        // append oauth2 error messages
+        // user id is required
+        $validation->add('userId', new PresenceOf(['message' => 'userId is required']));
+        $validation->validate(['userId' => $oauth2->getUserId()]);
+
+        // validate() resets its message collection; retain model errors afterwards.
         foreach ($oauth2->getMessages() as $message) {
             $validation->appendMessage($message);
         }
-        
-        // user id is required
-        $validation->add('userId', new PresenceOf(['message' => 'userId is required']));
-        $validation->validate($oauth2->toArray());
         
         // All validation passed
         if ($saved && !$validation->getMessages()->count()) {

@@ -4,53 +4,44 @@ declare(strict_types=1);
 
 namespace PhalconKit\Tests\Unit\Identity\Fixtures;
 
-/** Isolated OAuth account storage for the real identity OAuth consumer. */
-final class SessionOauth2Double
+use Phalcon\Mvc\ModelInterface;
+use PhalconKit\Models\Abstracts\Oauth2Abstract;
+use PhalconKit\Models\Interfaces\Oauth2Interface;
+
+/** App-owned OAuth model contract with synthetic persistence and real field accessors. */
+final class SessionOauth2Double extends Oauth2Abstract implements Oauth2Interface
 {
-    public static int $userId = 42;
+    public static self|false|null $found = null;
+    public static array $queries = [];
+    public static array $saved = [];
+    public array $legacyFields = [];
+    public array $errors = [];
+    public bool $saveResult = true;
 
-    public static function findFirst(array $params): self
-    {
-        return new self();
-    }
-
-    public function setAccessToken(string $token): void
-    {
-    }
-
-    public function setRefreshToken(?string $token): void
+    public function initialize(): void
     {
     }
 
-    public function setMeta(?string $meta): void
+    public static function findFirst(mixed $parameters = null): self|false|null
     {
+        self::$queries[] = $parameters;
+        return self::$found;
     }
 
-    public function setEmail(?string $email): void
+    public function assign(array $data, $whiteList = null, $dataColumnMap = null): ModelInterface
     {
-    }
-
-    public function assign(array $data): void
-    {
-    }
-
-    public function getUserId(): int
-    {
-        return self::$userId;
+        $this->legacyFields = $data;
+        return $this;
     }
 
     public function save(): bool
     {
-        return true;
+        self::$saved[] = $this;
+        return $this->saveResult;
     }
 
-    public function getMessages(): array
+    public function getMessages($filter = null): array
     {
-        return [];
-    }
-
-    public function toArray(): array
-    {
-        return ['userId' => self::$userId];
+        return $this->errors;
     }
 }

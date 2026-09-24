@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Identity;
 
 use Phalcon\Filter\FilterFactory;
+use Phalcon\Messages\Message;
+use Phalcon\Mvc\Model\Manager as ModelsManager;
 use Phalcon\Session\Adapter\Stream;
 use Phalcon\Session\Manager as SessionManager;
 use Phalcon\Session\ManagerInterface;
@@ -15,7 +17,9 @@ use PhalconKit\Exception\HttpException;
 use PhalconKit\Exception\ServiceException;
 use PhalconKit\Http\Request;
 use PhalconKit\Models\Interfaces\UserInterface;
+use PhalconKit\Models\Oauth2;
 use PhalconKit\Provider\Jwt\Jwt;
+use PhalconKit\Support\Models;
 use PhalconKit\Tests\Unit\Identity\Fixtures\SessionIdentityManager;
 use PhalconKit\Tests\Unit\Identity\Fixtures\SessionOauth2Double;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -57,6 +61,8 @@ final class SessionFixationTest extends TestCase
         $this->di = new Di();
         Di::setDefault($this->di);
         $this->di->setShared('filter', new FilterFactory()->newInstance());
+        $this->di->setShared('modelsManager', new ModelsManager());
+        $this->di->setShared('models', new Models([Oauth2::class => SessionOauth2Double::class]));
         $this->di->setShared('security', new Security());
         $this->di->setShared('jwt', new Jwt(['passphrase' => 'Synthetic!A9-' . bin2hex(random_bytes(64))]));
         $this->configure();
@@ -157,16 +163,88 @@ final class SessionFixationTest extends TestCase
 
     public function testOAuthLoginRenewsSessionBeforeEstablishingIdentity(): void
     {
-        class_alias(SessionOauth2Double::class, 'PhalconKit\\Models\\Oauth2');
+        $oauth2 = new SessionOauth2Double();
+        $oauth2->setUserId(42);
+        SessionOauth2Double::$found = $oauth2;
         $this->anonymousTokens();
         $oldId = $this->session->getId();
         $result = $this->identity->oauth2('synthetic', 'synthetic-user', 'synthetic-provider-token');
         self::assertTrue($result['saved']);
         self::assertTrue($result['loggedIn']);
+        self::assertSame([$oauth2], SessionOauth2Double::$saved);
+        self::assertSame('synthetic-provider-token', $oauth2->getAccessToken());
+        self::assertSame('synthetic-user', SessionOauth2Double::$queries[0]['bind']['providerUuid']);
         self::assertNotSame($oldId, $this->session->getId());
         self::assertSame(['synthetic-item'], $this->session->get('cart'));
         $this->request($oldId);
         self::assertFalse($this->identity->isLoggedIn());
+    }
+
+    public function testOAuthCreatesSeparateMappedRecordsWithoutMutatingTheResolverInstance(): void
+    {
+        $this->anonymousTokens();
+        $this->login();
+        $prototype = $this->di->getShared('models')->getOauth2();
+        foreach (['first-provider-id', 'second-provider-id'] as $providerUuid) {
+            $result = $this->identity->oauth2('synthetic', $providerUuid, 'synthetic-token-' . $providerUuid);
+            self::assertTrue($result['saved']);
+            self::assertTrue($result['loggedIn']);
+        }
+        self::assertCount(2, SessionOauth2Double::$saved);
+        [$first, $second] = SessionOauth2Double::$saved;
+        self::assertNotSame($first, $second);
+        self::assertNotSame($prototype, $first);
+        self::assertNotSame($prototype, $second);
+        self::assertNull($prototype->getProviderUuid());
+        self::assertSame('first-provider-id', $first->getProviderUuid());
+        self::assertSame('second-provider-id', $second->getProviderUuid());
+        self::assertSame(42, $first->getUserId());
+        self::assertSame(42, $second->getUserId());
+    }
+
+    public function testMappedOAuthSaveFailureDoesNotEstablishIdentity(): void
+    {
+        $oauth2 = new SessionOauth2Double();
+        $oauth2->setUserId(42);
+        $oauth2->saveResult = false;
+        $oauth2->errors = [new Message('Synthetic validation failure', 'accessToken')];
+        SessionOauth2Double::$found = $oauth2;
+        $this->anonymousTokens();
+        $oldId = $this->session->getId();
+        $result = $this->identity->oauth2('synthetic', 'synthetic-id', 'synthetic-token');
+        self::assertFalse($result['saved']);
+        self::assertFalse($result['loggedIn']);
+        self::assertCount(1, $result['messages']);
+        self::assertSame($oldId, $this->session->getId());
+        self::assertSame([], $this->identity->getSessionIdentity());
+    }
+
+    public function testCanceledOAuthLookupNeverCreatesAnAccount(): void
+    {
+        SessionOauth2Double::$found = false;
+        $this->anonymousTokens();
+        try {
+            $this->identity->oauth2('synthetic', 'synthetic-id', 'synthetic-token');
+            self::fail('Canceled lookup must not fall through to account creation.');
+        } catch (ServiceException $exception) {
+            self::assertStringContainsString('findFirst()', $exception->getMessage());
+        }
+        self::assertSame([], SessionOauth2Double::$saved);
+        self::assertFalse($this->identity->isLoggedIn());
+    }
+
+    public function testInvalidOAuthMappingFailsBeforeLookupOrSave(): void
+    {
+        $this->di->remove('models');
+        $this->di->setShared('models', new Models([Oauth2::class => \stdClass::class]));
+        try {
+            $this->identity->oauth2('synthetic', 'synthetic-id', 'synthetic-token');
+            self::fail('Invalid model mapping must fail before persistence.');
+        } catch (ServiceException $exception) {
+            self::assertStringContainsString('Expected mapped model class', $exception->getMessage());
+        }
+        self::assertSame([], SessionOauth2Double::$queries);
+        self::assertSame([], SessionOauth2Double::$saved);
     }
 
     public function testDirectSsoIdentityAssignmentAlsoRejectsCookieFixation(): void

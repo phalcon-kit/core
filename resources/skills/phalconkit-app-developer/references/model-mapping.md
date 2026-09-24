@@ -60,6 +60,11 @@ Rules:
 - For new app domain models that are not replacements for core models, use
   normal app namespaces and do not add them to the core model map unless a
   core service must resolve them.
+- Typed getters cache lookup instances. Create a fresh instance of the resolved
+  class for inserts; do not populate the shared lookup instance with record data.
+- Mapping does not rewrite generated relationship class names or direct static
+  model calls. App-generated relationships must target app models and preserve
+  the aliases expected by the feature. Keep mappings stable during the DI lifetime.
 
 ## Interface Contract
 
@@ -86,11 +91,17 @@ Mapping affects framework code that asks the `models` service for core model
 classes, including:
 
 - Identity and auth lookup.
+- OAuth2 lookup and new account records, including independent app models that
+  implement the Core OAuth2 interface. Failed saves retain model errors, and a
+  cancelled lookup cannot fall through to account creation.
 - Session identity implementations.
 - ACL and role-related models.
 - Blameable/audit behavior.
 - Cache behavior exclusions for session/audit models.
 - Providers or tasks that access core data models.
+
+See [Retained Feature Contracts](../../../../guides/feature-contracts.md) for
+required tables/services, cached-instance behavior, and application-owned flows.
 
 Example from app config:
 

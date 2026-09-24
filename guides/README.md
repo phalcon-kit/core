@@ -88,6 +88,7 @@ Use these guides as the durable reference while building:
 | --- | --- |
 | [Architecture](architecture.md) | Where should bootstrap, config, generated code, models, controllers, and tasks live? |
 | [Configuration](configuration.md) | How do modules, providers, aliases, events, identity, and permissions fit together? |
+| [Retained Feature Contracts](feature-contracts.md) | Which tables, services, model interfaces, and application workflows does each Core feature require? |
 | [Database And Scaffolding](database-scaffolding.md) | Which files are generated, which files are app-owned, and how do schema changes flow into code? |
 | [Models And Eager Loading](models-and-eager-loading.md) | How do relationships, nested saves, eager loading, behaviors, snapshots, and cache invalidation work? |
 | [REST APIs](rest-api.md) | How are fields, filters, joins, counts, transformers, and response envelopes configured? |

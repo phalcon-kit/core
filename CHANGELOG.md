@@ -34,6 +34,8 @@ release notes.
 
 ### Added
 
+- Document retained feature storage, services, model replacement contracts, and
+  application-owned registration, session, email/file, and settings workflows.
 - Add reusable `PhalconKit\Migrations\SqlMigration` helpers for one statement
   per SQL file and ordered batches. Validate all files before execution, preserve
   driver errors, and retain the standard Phalcon version/history runner. Document
@@ -41,6 +43,10 @@ release notes.
 
 ### Fixed
 
+- Honor the configured OAuth2 model for lookups and fresh record creation,
+  including application models implementing the Core interface without extending
+  its concrete model. Reject cancelled/incompatible lookups before writes and
+  retain model validation errors in failed OAuth responses.
 - Keep baseline foreign keys in the selected database and enabled during creation.
   Reject existing schemas/history, active transactions, disabled integrity checks,
   and destructive rollback. Explicitly use InnoDB and `utf8mb4_unicode_ci`, with
