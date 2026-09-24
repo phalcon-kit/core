@@ -58,6 +58,9 @@ release notes.
   `zemit-cms/core`, with no bug fixes, security fixes, or backports. Preserve
   historical tags and clarify that no supported stable release is available
   while Core 4.0 is unreleased. Align installation and release guidance.
+- Align the upcoming Core and App releases at 4.0.0. Expose `master` as
+  `4.0.x-dev` through Composer's branch alias for explicit preview consumers,
+  and document the stable constraint, lockfile, and installation release gates.
 - Retain the draft base-model service and initialization contracts; discard
   documentation for the retired dynamic runtime and the superseded scope proposal.
 - Require password-reset, relationship-ownership, boolean-persistence, and

@@ -169,6 +169,9 @@
     }
   },
   "extra": {
+    "branch-alias": {
+      "dev-master": "4.0.x-dev"
+    },
     "patches": {
       "phalcon/ide-stubs": {
         "Phalcon\\Mvc\\Model": "patches/phalcon-mvc-model.patch",

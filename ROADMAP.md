@@ -43,6 +43,9 @@ Status: Required before tagging 4.0.
 - Preserve REST aliases until SDK and wrapper callers have an explicit migration.
 - Pass lowest/highest dependency CI, required native database regressions,
   Swoole callback coverage, and a fresh Composer installation with stub patches.
+- Coordinate Core and App **4.0.0** tags. After Core is published, replace App's
+  temporary `^4.0@dev` constraint with `^4.0`, lock the stable Core tag, pass
+  App CI, and verify a fresh public project install before tagging App.
 - Regenerate API docs from the settled public surface and verify guide examples.
 - Publish the upgrade guide with the 4.x-only support policy in `SECURITY.md`.
   Migrate existing `dev-master` consumers deliberately; that constraint now
