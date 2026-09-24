@@ -40,8 +40,8 @@ class ServiceProvider extends AbstractServiceProvider
      * Optional configured driver name forced by a specialized provider.
      *
      * Null means the provider uses `database.default`. Subclasses such as the
-     * read-only and dynamic database providers set this value to select a named
-     * driver while reusing the base connection-building logic.
+     * read-only provider and application-defined providers set this value to
+     * select a named driver while reusing the base connection-building logic.
      */
     protected ?string $driverName = null;
 

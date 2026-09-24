@@ -468,7 +468,6 @@ unless a row says otherwise. The service name is the DI key.
 | --- | --- | --- | --- |
 | `Database` | `db` | `database.default`, `database.drivers` | Primary database adapter. Models use it automatically; use `$this->db->fetchAll($sql, \Phalcon\Db\Enum::FETCH_ASSOC, $bind)` for explicit queries. `DATABASE_AUTO_RECONNECT` is opt-in and connection loss is logged through database events. |
 | `DatabaseReadOnly` | `dbr` | `database.drivers.readonly` | Read-only database adapter that extends the database provider. Use `$this->dbr` for read-heavy queries when a read replica is configured. |
-| `DatabaseDynamic` | `dbd` | `database.drivers.dynamic` | Dynamic database adapter that extends the database provider. Use `$this->dbd` when an app switches to a separate dynamic database connection. |
 | `ModelsManager` | `modelsManager` | model metadata/events | PhalconKit model manager. Use indirectly through models; retrieve for advanced relationship/query setup. |
 | `Models` | `models` | `models` | Core-to-app model class map. Use `$this->models->getInstance(\PhalconKit\Models\User::class)` or generated helpers such as `$this->models->getUser()` when resolving overridden model classes. |
 | `Profiler` | `profiler` | database profiler/loggers | Database profiler used by database events. Use `$this->profiler` when collecting or inspecting query profile data. |

@@ -96,15 +96,6 @@ Keep for discussion:
   A historical inline note questioned `castOnHydrate` with binary columns, but
   provided no reproducer. Keep the current true default; require native binary
   and UUID round-trip evidence before proposing a change.
-- Dynamic model metadata:
-  `src/Mvc/Model/Dynamic.php`.
-  Replace APCu metadata key deletion with a metadata strategy or adapter wrapper
-  only if it handles dynamic sources without changing normal model caching.
-- Dynamic record model identity:
-  `src/Modules/Api/Controllers/RecordController.php`.
-  The controller now uses `Dynamic::createInstance()` instead of runtime
-  `eval()`-generated subclasses. Revisit only if a real app needs distinct
-  model class names per dynamic source for metadata, events, or policy hooks.
 - Relationship assignment:
   `src/Mvc/Model/Traits/Relationship.php`,
   `tests/Unit/Mvc/Model/ModelTest.php`.
@@ -177,11 +168,6 @@ Keep for discussion:
   Controller generation was previously sketched but is not active. Decide
   whether scaffolding should own concrete API controllers, or whether generated
   model abstracts/interfaces should remain the only core-owned scaffold output.
-- Faker task table scope:
-  `src/Modules/Cli/Tasks/FakerTask.php`.
-  The current task generates data for the first non-deleted table. Generating
-  all dynamic tables needs explicit limits, table filtering, and safety rules
-  before it can be enabled.
 - Eager loading limitations:
   `src/Mvc/Model/EagerLoading/Loader.php`,
   `src/Mvc/Model/EagerLoading/EagerLoad.php`.
@@ -217,12 +203,6 @@ Keep for discussion:
   `tests/Unit/Provider/ClamavTest.php`.
   Add EICAR coverage only with a CI-safe fixture/download strategy that does
   not trigger repository, package, or local antivirus scanners unexpectedly.
-- Faker seed modes:
-  `src/Modules/Cli/Tasks/FakerTask.php`.
-  The built-in faker task currently inserts generated structure and curated
-  real-data fixtures. Re-enable synthetic record insertion only behind an
-  explicit CLI flag or config option so test/demo data volume, randomness, and
-  repeatability are predictable.
 - TypeScript scaffold defaults:
   `src/Modules/Cli/Tasks/TsScaffoldTask.php`.
   Default values and related default objects are helper methods but are not

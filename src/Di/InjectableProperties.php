@@ -48,7 +48,6 @@ namespace PhalconKit\Di;
  * @property \Phalcon\Http\Response\Cookies $cookies
  * @property \Phalcon\Encryption\Crypt $crypt
  * @property \Phalcon\Db\Adapter\AbstractAdapter $db
- * @property \Phalcon\Db\Adapter\AbstractAdapter $dbd
  * @property \Phalcon\Db\Adapter\AbstractAdapter $dbr
  * @property \Phalcon\Contracts\Events\Manager $eventsManager
  * @property \Phalcon\Contracts\Flash\Flash $flash

@@ -1,58 +1,50 @@
 # Roadmap
 
-This is the active release roadmap for Phalcon Kit Core. Completed changes
-belong in [CHANGELOG.md](CHANGELOG.md), durable usage notes belong in the guides,
-and unresolved API or migration decisions belong in
-[To Be Discussed](guides/to-be-discussed.md).
+This is the active release roadmap for the **4.x development branch**.
+Implemented changes belong in [CHANGELOG.md](CHANGELOG.md); consumer guidance
+and the removal inventory live in [Upgrading To Core 4.0](guides/upgrading-4.0.md).
+The 3.11.x maintenance line remains separate.
 
-## Current Focus
+## Schema Ownership And Fresh Installation
 
-Target: `3.11.2` maintenance release on PHP 8.5 / Phalcon 5.22.
+Status: Next — required before a stable 4.0 release.
 
-Keep the release focused on native behavior, enforced regression coverage, and
-accurate consumer documentation. The implemented maintenance changes are listed
-under the unreleased changelog; this file tracks the remaining work.
+- Define the supported schema path for retained features, including custom
+  database names and application-owned migration history.
+- Test fresh installs and existing-schema upgrades with nested writes and
+  foreign-key inspection. Preserve historical migration files and user data.
+- Align the app skeleton with the retained runtime and explicit maintenance data.
 
-## Release Verification
+Resolve the remaining compatibility choices in
+[To Be Discussed](guides/to-be-discussed.md#baseline-migration-schema-portability)
+before implementing the migration path.
 
-Status: Next — target `3.11.2`.
+## Retained Feature Contracts
 
-- Run CI against the final release commit with both lowest and highest
-  dependencies. Require the selected native database tests to execute without
-  skips on the MySQL service, and exercise the worker-error callback with Swoole.
-- Review the aggregate return-type compatibility note: minimum/maximum preserve
-  native values, including integers, strings, and null.
-- Verify a fresh Composer installation and the rebased IDE-stub patches using
-  the [release process](guides/release.md) before tagging.
+Status: Next — focused batches with consumer fixtures.
 
-## Public Contract Documentation
+- Document required models/tables/services for identity, permissions, templates,
+  email, files, audit, and settings.
+- Review hard-coded model lookups and generated-interface coupling. Keep the
+  existing model resolver; correct specific gaps with focused behavior tests.
+- Document relationship payloads, ownership checks, transactions, and eager
+  loading, then scaffold output ownership and TypeScript generation.
+- Review the remaining prepared models only after service/relationship closure
+  and consumer need are understood. Do not expand the removal list by name alone.
 
-Status: Next — small follow-up batches in the `3.11.x` maintenance line.
+## Consumer And Distribution Acceptance
 
-- Document relationship assignment input shapes, ownership checks, sparse
-  payload behavior, transaction ownership, and eager-loading extension points.
-- Document dynamic record/model metadata lifetime and required DI services.
-- Continue through scaffold output helpers and TypeScript generation: array
-  shapes, supported options, generated-file ownership, and overwrite behavior.
-- Review remaining public/protected declarations for missing or misleading
-  contracts. Inherit unchanged native contracts and keep simple accessors concise.
+Status: Required before tagging 4.0.
 
-For each batch, compare comments with implementation and relevant tests. Validate
-important examples against the public API, run focused checks for any behavior
-changes, and leave generated API pages to an intentional documentation build.
+- Exercise isolated application upgrades: login/registration/reset/session
+  behavior, permission and tenant filters, REST response contracts, nested
+  writes/eager loading, file/audit behavior, and CLI/WebSocket extension points.
+- Preserve REST aliases until SDK and wrapper callers have an explicit migration.
+- Pass lowest/highest dependency CI, required native database regressions,
+  Swoole callback coverage, and a fresh Composer installation with stub patches.
+- Regenerate API docs from the settled public surface and verify guide examples.
+- Publish the upgrade guide and a 3.x maintenance policy. Resolve consumers of
+  `dev-master` before moving breaking changes to the default release branch.
 
-## Analysis And Mechanical Hygiene
-
-Status: Planned — after the current maintenance release is verified.
-
-- Narrow mixed-value flows and broad signature suppressions at touched model,
-  query, and scaffold boundaries using precise types and behavior tests.
-- Correct existing `LICENSE.txt` headers in one separate mechanical change;
-  the generation templates now point to the shipped `LICENSE` file.
-- Prune disposable merged work branches after checking their tips; preserve
-  historical release branches, signed commits, and tags.
-
-Migration schema portability, REST controller scaffold ownership, and public API
-removal remain design work in [To Be Discussed](guides/to-be-discussed.md).
-Follow the [deprecation replacement table](guides/quality-and-maintenance.md#comment-and-deprecation-maintenance)
-when updating consumers; do not remove public aliases in a maintenance release.
+Broader integration packaging, framework upgrades, mass renaming, license-header
+cleanup, and historical branch pruning remain separate from the 4.0 scope.

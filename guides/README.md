@@ -1,8 +1,10 @@
 # Developer Guides
 
 Build a complete Phalcon Kit application one workflow at a time. These guides
-document the latest stable `phalcon-kit/core` release; Composer metadata is the
-authority for runtime and dependency requirements.
+document the current branch of `phalcon-kit/core`; Composer metadata is the
+authority for runtime and dependency requirements. This is the unreleased 4.x
+development branch. See [Upgrading To Core 4.0](upgrading-4.0.md) for its breaking
+changes and remaining release gates; use the matching 3.x tag for stable docs.
 
 !!! tip "New to Phalcon Kit?"
 
@@ -61,6 +63,7 @@ authority for runtime and dependency requirements.
 
     1. [From zemit-cms/core](migration-from-zemit.md)
     2. [RESTful 0.x To 1.x](migration-restful-0x-to-1x.md)
+    3. [Upgrading To Core 4.0](upgrading-4.0.md)
 
 -   :material-hammer-wrench:{ .lg .middle } **Contribute**
 

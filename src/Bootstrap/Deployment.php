@@ -14,156 +14,42 @@ declare(strict_types=1);
 namespace PhalconKit\Bootstrap;
 
 use Phalcon\Config\Config as PhalconConfig;
-use PhalconKit\Models\Lang;
-use PhalconKit\Models\Role;
-use PhalconKit\Models\Setting;
-use PhalconKit\Models\Template;
-use PhalconKit\Models\User;
-use PhalconKit\Models\UserRole;
-use PhalconKit\Models\Workspace;
 
 /**
- * Default database deployment/scaffolding configuration.
+ * Application-owned instructions for the database maintenance task.
  *
- * This config drives maintenance tasks that prepare a fresh PhalconKit
- * database: tables to drop, tables to truncate, storage engines, and seed
- * records for core lookup/user tables. Applications can merge additional data
- * into the constructor without editing the framework defaults.
+ * All operations are empty by default. Configure `deployment` on the shared
+ * config service, or set the corresponding arrays on an application's
+ * DatabaseTask. Core does not assume a schema, truncate tables, or create
+ * accounts when no instructions have been supplied.
  *
- * @property PhalconConfig $drop
- * @property PhalconConfig $truncate
- * @property PhalconConfig $engine
- * @property PhalconConfig $insert
+ * @property PhalconConfig $drop Table names to drop, including their data.
+ * @property PhalconConfig $truncate Table names to empty.
+ * @property PhalconConfig $engine Map of table names to trusted engine names.
+ * @property PhalconConfig $insert Map of model class names to seed row arrays.
+ * @property PhalconConfig $optimize Table names to optimize.
+ * @property PhalconConfig $analyze Table names to analyze.
  */
 class Deployment extends \PhalconKit\Config\Config
 {
     /**
-     * Merge default deployment instructions with application overrides.
+     * Normalize application instructions without adding tables or seed records.
      *
-     * @param array<string, mixed> $data Deployment overrides or additional seed
-     *     records.
+     * This constructor performs no database operations. Seed keys must name the
+     * concrete model to instantiate; model mappings are not applied by the task.
+     *
+     * @param array<string, mixed> $data Explicit maintenance lists and seed data.
      * @param bool $insensitive Whether config keys should be case-insensitive.
      */
     public function __construct(array $data = [], bool $insensitive = true)
     {
-        $data = $this->internalMergeAppend([
-            /**
-             * Tables to drop
-             */
+        parent::__construct($this->internalMergeAppend([
             'drop' => [],
-            
-            /**
-             * Tables to truncate
-             */
-            'truncate' => [
-                'audit',
-                'audit_detail',
-                'category',
-                'table',
-                'data',
-                'email',
-                'email_file',
-                'column',
-                'file',
-                'file_relation',
-                'flag',
-                'group',
-                'group_role',
-                'group_type',
-                'lang',
-                'log',
-                'menu',
-                'meta',
-                'page',
-                'phalcon_migrations',
-                'post',
-                'post_category',
-                'record',
-                'role',
-                'session',
-                'setting',
-                'workspace',
-                'workspace_lang',
-                'template',
-                'translate',
-                'type',
-                'user',
-                'user_group',
-                'user_role',
-                'user_type',
-                'validator',
-            ],
-            
-            /**
-             * Table engines
-             */
-            'engine' => [
-                'audit' => 'InnoDB',
-                'audit_detail' => 'InnoDB',
-                'category' => 'InnoDB',
-                'table' => 'InnoDB',
-                'data' => 'InnoDB',
-                'email' => 'InnoDB',
-                'email_file' => 'InnoDB',
-                'column' => 'InnoDB',
-                'file' => 'InnoDB',
-                'file_relation' => 'InnoDB',
-                'flag' => 'InnoDB',
-                'group' => 'InnoDB',
-                'group_role' => 'InnoDB',
-                'group_type' => 'InnoDB',
-                'lang' => 'InnoDB',
-                'log' => 'InnoDB',
-                'menu' => 'InnoDB',
-                'meta' => 'InnoDB',
-                'page' => 'InnoDB',
-                'phalcon_migrations' => 'InnoDB',
-                'post' => 'InnoDB',
-                'post_category' => 'InnoDB',
-                'role' => 'InnoDB',
-                'session' => 'InnoDB',
-                'setting' => 'InnoDB',
-                'workspace' => 'InnoDB',
-                'workspace_lang' => 'InnoDB',
-                'template' => 'InnoDB',
-                'translate' => 'InnoDB',
-                'type' => 'InnoDB',
-                'user' => 'InnoDB',
-                'user_group' => 'InnoDB',
-                'user_role' => 'InnoDB',
-                'user_type' => 'InnoDB',
-                'validator' => 'InnoDB',
-            ],
-            
-            /**
-             * Insert records
-             */
-            'insert' => [
-                UserRole::class => [],
-                Role::class => [
-                    ['key' => 'dev', 'label' => 'Developer'],
-                    ['key' => 'admin', 'label' => 'Administrator'],
-                    ['key' => 'user', 'label' => 'User'],
-                    ['key' => 'guest', 'label' => 'Guest'],
-                    ['key' => 'everyone', 'label' => 'Everyone'],
-                ],
-                User::class => [
-                    ['username' => 'dev', 'email' => 'dev@localhost', 'firstName' => 'Developer', 'lastName' => 'Phalcon Kit', 'rolelist' => [1]],
-                ],
-                Lang::class => [
-                    ['label' => 'Francais', 'code' => 'fr'],
-                    ['label' => 'English', 'code' => 'en'],
-                    ['label' => 'Spanish', 'code' => 'sp'],
-                ],
-                Workspace::class => [
-                ],
-                Template::class => [
-                ],
-                Setting::class => [
-                ],
-            ],
-        ], $data);
-        
-        parent::__construct($data, $insensitive);
+            'truncate' => [],
+            'engine' => [],
+            'insert' => [],
+            'optimize' => [],
+            'analyze' => [],
+        ], $data), $insensitive);
     }
 }

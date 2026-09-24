@@ -18,12 +18,7 @@ use Phalcon\Config\Config as PhalconConfig;
 use Phalcon\Db\Column;
 use Phalcon\Encryption\Security;
 use Phalcon\Support\Version as PhalconVersion;
-use PhalconKit\Bootstrap\Permissions\ColumnConfig;
-use PhalconKit\Bootstrap\Permissions\DynamicConfig;
-use PhalconKit\Bootstrap\Permissions\RecordConfig;
-use PhalconKit\Bootstrap\Permissions\TableConfig;
 use PhalconKit\Bootstrap\Permissions\TemplateConfig;
-use PhalconKit\Bootstrap\Permissions\WorkspaceConfig;
 use PhalconKit\Locale;
 use PhalconKit\Models;
 use PhalconKit\Modules\Frontend;
@@ -53,6 +48,7 @@ use PhalconKit\Support\Version;
  * @property PhalconConfig $identity
  * @property PhalconConfig $model
  * @property PhalconConfig $models
+ * @property PhalconConfig $deployment
  * @property PhalconConfig $providers
  * @property PhalconConfig $logger
  * @property PhalconConfig $filters
@@ -372,7 +368,8 @@ class Config extends \PhalconKit\Config\Config
             ],
 
             /**
-             *
+             * Core feature models that applications may replace with their own
+             * schema implementations through the models service.
              */
             'models' => [
                 \PhalconKit\Models\Backup::class => Env::get('MODEL_BACKUP', \PhalconKit\Models\Backup::class),
@@ -383,16 +380,8 @@ class Config extends \PhalconKit\Config\Config
                 \PhalconKit\Models\Job::class => Env::get('MODEL_JOB', \PhalconKit\Models\Job::class),
                 \PhalconKit\Models\File::class => Env::get('MODEL_FILE', \PhalconKit\Models\File::class),
                 \PhalconKit\Models\Session::class => Env::get('MODEL_SESSION', \PhalconKit\Models\Session::class),
-                \PhalconKit\Models\Flag::class => Env::get('MODEL_FLAG', \PhalconKit\Models\Flag::class),
                 \PhalconKit\Models\Setting::class => Env::get('MODEL_SETTING', \PhalconKit\Models\Setting::class),
-                \PhalconKit\Models\Lang::class => Env::get('MODEL_LANG', \PhalconKit\Models\Lang::class),
-                \PhalconKit\Models\Translate::class => Env::get('MODEL_TRANSLATE', \PhalconKit\Models\Translate::class),
-                \PhalconKit\Models\Workspace::class => Env::get('MODEL_WORKSPACE', \PhalconKit\Models\Workspace::class),
-                \PhalconKit\Models\WorkspaceLang::class => Env::get('MODEL_WORKSPACE_LANG', \PhalconKit\Models\WorkspaceLang::class),
-                \PhalconKit\Models\Page::class => Env::get('MODEL_PAGE', \PhalconKit\Models\Page::class),
-                \PhalconKit\Models\Post::class => Env::get('MODEL_POST', \PhalconKit\Models\Post::class),
                 \PhalconKit\Models\Template::class => Env::get('MODEL_TEMPLATE', \PhalconKit\Models\Template::class),
-                \PhalconKit\Models\Table::class => Env::get('MODEL_TABLE', \PhalconKit\Models\Table::class),
                 \PhalconKit\Models\Oauth2::class => Env::get('MODEL_OAUTH_2', \PhalconKit\Models\Oauth2::class),
                 \PhalconKit\Models\Profile::class => Env::get('MODEL_PROFILE', \PhalconKit\Models\Profile::class),
                 \PhalconKit\Models\User::class => Env::get('MODEL_USER', \PhalconKit\Models\User::class),
@@ -411,6 +400,13 @@ class Config extends \PhalconKit\Config\Config
                 \PhalconKit\Models\Feature::class => Env::get('MODEL_FEATURE', \PhalconKit\Models\Feature::class),
             ],
             
+            /**
+             * Explicit database maintenance instructions. Omitted keys preserve
+             * application task defaults; Core supplies no table lists or seeds.
+             * See Deployment for the supported keys and their purpose.
+             */
+            'deployment' => [],
+
             'dataLifeCycle' => [
                 'models' => [
                     Models\Log::class => Env::get('DATA_LIFE_CYCLE_LOG', 'triennially'),
@@ -513,7 +509,6 @@ class Config extends \PhalconKit\Config\Config
                 
                 // Database & Models
                 Provider\Database\ServiceProvider::class => Env::get('PROVIDER_DATABASE', Provider\Database\ServiceProvider::class),
-                Provider\DatabaseDynamic\ServiceProvider::class => Env::get('PROVIDER_DATABASE_DYNAMIC', Provider\DatabaseDynamic\ServiceProvider::class),
                 Provider\DatabaseReadOnly\ServiceProvider::class => Env::get('PROVIDER_DATABASE_READ_ONLY', Provider\DatabaseReadOnly\ServiceProvider::class),
                 Provider\ModelsManager\ServiceProvider::class => Env::get('PROVIDER_MODELS_MANAGER', Provider\ModelsManager\ServiceProvider::class),
                 Provider\Models\ServiceProvider::class => Env::get('PROVIDER_MODELS', Provider\Models\ServiceProvider::class),
@@ -1184,19 +1179,6 @@ class Config extends \PhalconKit\Config\Config
                         'charset' => Env::get('DATABASE_READONLY_CHARSET'),
                     ],
                     
-                    /**
-                     * Dynamic Database Configuration
-                     */
-                    'dynamic' => [
-                        'extends' => Env::get('DATABASE_DYNAMIC_EXTENDS', 'mysql'),
-                        'enable' => Env::get('DATABASE_DYNAMIC_ENABLE', false),
-                        'host' => Env::get('DATABASE_DYNAMIC_HOST'),
-                        'port' => Env::get('DATABASE_DYNAMIC_PORT'),
-                        'dbname' => Env::get('DATABASE_DYNAMIC_DBNAME'),
-                        'username' => Env::get('DATABASE_DYNAMIC_USERNAME'),
-                        'password' => Env::get('DATABASE_DYNAMIC_PASSWORD'),
-                        'charset' => Env::get('DATABASE_DYNAMIC_CHARSET'),
-                    ],
                 ],
             ],
             
@@ -1480,7 +1462,6 @@ class Config extends \PhalconKit\Config\Config
                             Cli\Tasks\CronTask::class => ['*'],
                             Cli\Tasks\ErrorTask::class => ['*'],
                             Cli\Tasks\DatabaseTask::class => ['*'],
-                            Cli\Tasks\FakerTask::class => ['*'],
                             Cli\Tasks\DataLifeCycleTask::class => ['*'],
                             Cli\Tasks\HelpTask::class => ['*'],
                             Cli\Tasks\ScaffoldTask::class => ['*'],

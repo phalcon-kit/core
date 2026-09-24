@@ -15,6 +15,30 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.0.0 - Unreleased
+
+### Removed
+
+- Retire the legacy dynamic catalog and CMS runtime: 18 table-model families,
+  their API controllers and generated contracts, catalog permission presets,
+  schema enums, `Mvc\Model\Dynamic`, the `dbd` provider/configuration, and the
+  catalog-specific faker task/script. Remove their model mappings and typed
+  registry helpers. Application-owned models with the same short names are
+  unaffected; see the exact inventory in [the upgrade guide](guides/upgrading-4.0.md).
+- Remove the built-in deployment table lists and seed records, including the
+  implicit development account. Historical migration files remain unchanged;
+  upgrading the package does not delete database tables or data.
+
+### Changed
+
+- Make database maintenance instructions explicit through `config.deployment`
+  or an application task's arrays. Configured keys replace task defaults;
+  omitted keys preserve them. Keep `drop`, `truncate`, `fix-engine`, `insert`,
+  `optimize`, `analyze`, and `reset`. Unconfigured operations issue no queries.
+- Start the isolated 4.x development line with alpha version metadata, an
+  upgrade/retirement inventory, and release gates for schema ownership and
+  consumer acceptance. Remove resolved legacy-runtime design questions.
+
 ## 3.11.2 - Unreleased
 
 ### Fixed

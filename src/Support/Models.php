@@ -34,26 +34,10 @@ use PhalconKit\Models\File;
 use PhalconKit\Models\Interfaces\FileInterface;
 use PhalconKit\Models\Session;
 use PhalconKit\Models\Interfaces\SessionInterface;
-use PhalconKit\Models\Flag;
-use PhalconKit\Models\Interfaces\FlagInterface;
 use PhalconKit\Models\Setting;
 use PhalconKit\Models\Interfaces\SettingInterface;
-use PhalconKit\Models\Lang;
-use PhalconKit\Models\Interfaces\LangInterface;
-use PhalconKit\Models\Translate;
-use PhalconKit\Models\Interfaces\TranslateInterface;
-use PhalconKit\Models\Workspace;
-use PhalconKit\Models\Interfaces\WorkspaceInterface;
-use PhalconKit\Models\WorkspaceLang;
-use PhalconKit\Models\Interfaces\WorkspaceLangInterface;
-use PhalconKit\Models\Page;
-use PhalconKit\Models\Interfaces\PageInterface;
-use PhalconKit\Models\Post;
-use PhalconKit\Models\Interfaces\PostInterface;
 use PhalconKit\Models\Template;
 use PhalconKit\Models\Interfaces\TemplateInterface;
-use PhalconKit\Models\Table;
-use PhalconKit\Models\Interfaces\TableInterface;
 use PhalconKit\Models\Profile;
 use PhalconKit\Models\Interfaces\ProfileInterface;
 use PhalconKit\Models\Oauth2;
@@ -350,18 +334,6 @@ class Models extends Injectable
     }
     
     /**
-     * Return the configured feature-flag model instance.
-     *
-     * @return FlagInterface Cached instance for `Flag::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the feature-flag model contract.
-     */
-    public function getFlag(): FlagInterface
-    {
-        return $this->getTypedInstance(Flag::class, FlagInterface::class);
-    }
-    
-    /**
      * Return the configured setting model instance.
      *
      * @return SettingInterface Cached instance for `Setting::class`.
@@ -374,78 +346,6 @@ class Models extends Injectable
     }
     
     /**
-     * Return the configured language model instance.
-     *
-     * @return LangInterface Cached instance for `Lang::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the language model contract.
-     */
-    public function getLang(): LangInterface
-    {
-        return $this->getTypedInstance(Lang::class, LangInterface::class);
-    }
-    
-    /**
-     * Return the configured translation model instance.
-     *
-     * @return TranslateInterface Cached instance for `Translate::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the translation model contract.
-     */
-    public function getTranslate(): TranslateInterface
-    {
-        return $this->getTypedInstance(Translate::class, TranslateInterface::class);
-    }
-    
-    /**
-     * Return the configured workspace model instance.
-     *
-     * @return WorkspaceInterface Cached instance for `Workspace::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the workspace model contract.
-     */
-    public function getWorkspace(): WorkspaceInterface
-    {
-        return $this->getTypedInstance(Workspace::class, WorkspaceInterface::class);
-    }
-    
-    /**
-     * Return the configured workspace-language model instance.
-     *
-     * @return WorkspaceLangInterface Cached instance for `WorkspaceLang::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the workspace-language model contract.
-     */
-    public function getWorkspaceLang(): WorkspaceLangInterface
-    {
-        return $this->getTypedInstance(WorkspaceLang::class, WorkspaceLangInterface::class);
-    }
-    
-    /**
-     * Return the configured page model instance.
-     *
-     * @return PageInterface Cached instance for `Page::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the page model contract.
-     */
-    public function getPage(): PageInterface
-    {
-        return $this->getTypedInstance(Page::class, PageInterface::class);
-    }
-    
-    /**
-     * Return the configured post model instance.
-     *
-     * @return PostInterface Cached instance for `Post::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the post model contract.
-     */
-    public function getPost(): PostInterface
-    {
-        return $this->getTypedInstance(Post::class, PostInterface::class);
-    }
-    
-    /**
      * Return the configured template model instance.
      *
      * @return TemplateInterface Cached instance for `Template::class`.
@@ -455,18 +355,6 @@ class Models extends Injectable
     public function getTemplate(): TemplateInterface
     {
         return $this->getTypedInstance(Template::class, TemplateInterface::class);
-    }
-    
-    /**
-     * Return the configured table model instance.
-     *
-     * @return TableInterface Cached instance for `Table::class`.
-     * @throws ServiceException When the configured model does not implement
-     *     the table model contract.
-     */
-    public function getTable(): TableInterface
-    {
-        return $this->getTypedInstance(Table::class, TableInterface::class);
     }
     
     /**

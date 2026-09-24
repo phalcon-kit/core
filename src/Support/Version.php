@@ -40,6 +40,6 @@ class Version extends \Phalcon\Support\Version
     #[\Override]
     protected function getVersion(): array
     {
-        return [3, 11, 1, 4, 0];
+        return [4, 0, 0, 1, 1];
     }
 }

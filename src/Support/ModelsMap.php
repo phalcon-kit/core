@@ -26,16 +26,8 @@ use PhalconKit\Models\Job;
 use PhalconKit\Models\File;
 use PhalconKit\Models\Oauth2;
 use PhalconKit\Models\Session;
-use PhalconKit\Models\Flag;
 use PhalconKit\Models\Setting;
-use PhalconKit\Models\Lang;
-use PhalconKit\Models\Translate;
-use PhalconKit\Models\Workspace;
-use PhalconKit\Models\WorkspaceLang;
-use PhalconKit\Models\Page;
-use PhalconKit\Models\Post;
 use PhalconKit\Models\Template;
-use PhalconKit\Models\Table;
 use PhalconKit\Models\Profile;
 use PhalconKit\Models\User;
 use PhalconKit\Models\UserType;
@@ -255,17 +247,6 @@ trait ModelsMap
     }
     
     /**
-     * Return the configured flag model class.
-     *
-     * @return string Replacement for `Flag::class`, or the core class when no
-     *     mapping is configured.
-     */
-    public function getFlagClass(): string
-    {
-        return $this->getClassMap(Flag::class);
-    }
-    
-    /**
      * Return the configured setting model class.
      *
      * @return string Replacement for `Setting::class`, or the core class when
@@ -277,72 +258,6 @@ trait ModelsMap
     }
     
     /**
-     * Return the configured language model class.
-     *
-     * @return string Replacement for `Lang::class`, or the core class when no
-     *     mapping is configured.
-     */
-    public function getLangClass(): string
-    {
-        return $this->getClassMap(Lang::class);
-    }
-    
-    /**
-     * Return the configured translate model class.
-     *
-     * @return string Replacement for `Translate::class`, or the core class
-     *     when no mapping is configured.
-     */
-    public function getTranslateClass(): string
-    {
-        return $this->getClassMap(Translate::class);
-    }
-    
-    /**
-     * Return the configured workspace model class.
-     *
-     * @return string Replacement for `Workspace::class`, or the core class
-     *     when no mapping is configured.
-     */
-    public function getWorkspaceClass(): string
-    {
-        return $this->getClassMap(Workspace::class);
-    }
-    
-    /**
-     * Return the configured workspace-language model class.
-     *
-     * @return string Replacement for `WorkspaceLang::class`, or the core class
-     *     when no mapping is configured.
-     */
-    public function getWorkspaceLangClass(): string
-    {
-        return $this->getClassMap(WorkspaceLang::class);
-    }
-    
-    /**
-     * Return the configured page model class.
-     *
-     * @return string Replacement for `Page::class`, or the core class when no
-     *     mapping is configured.
-     */
-    public function getPageClass(): string
-    {
-        return $this->getClassMap(Page::class);
-    }
-    
-    /**
-     * Return the configured post model class.
-     *
-     * @return string Replacement for `Post::class`, or the core class when no
-     *     mapping is configured.
-     */
-    public function getPostClass(): string
-    {
-        return $this->getClassMap(Post::class);
-    }
-    
-    /**
      * Return the configured template model class.
      *
      * @return string Replacement for `Template::class`, or the core class when
@@ -351,17 +266,6 @@ trait ModelsMap
     public function getTemplateClass(): string
     {
         return $this->getClassMap(Template::class);
-    }
-    
-    /**
-     * Return the configured table model class.
-     *
-     * @return string Replacement for `Table::class`, or the core class when no
-     *     mapping is configured.
-     */
-    public function getTableClass(): string
-    {
-        return $this->getClassMap(Table::class);
     }
     
     /**
