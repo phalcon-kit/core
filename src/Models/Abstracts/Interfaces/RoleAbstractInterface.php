@@ -58,7 +58,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -66,7 +66,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -177,7 +177,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedBy(): mixed;
@@ -185,7 +185,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -211,7 +211,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getUpdatedBy(): mixed;
@@ -219,7 +219,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -245,7 +245,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getDeletedBy(): mixed;
@@ -253,7 +253,7 @@ interface RoleAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */

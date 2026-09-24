@@ -6,18 +6,18 @@ and the removal inventory live in [Upgrading To Core 4.0](guides/upgrading-4.0.m
 Published releases remain available through tags. The repository keeps a single
 long-lived branch; see the [release policy](guides/release.md#branch-policy).
 
-## Schema Ownership And Fresh Installation
+## Existing Application Schema Acceptance
 
-Status: Next — required before a stable 4.0 release.
+Status: Required before a stable 4.0 release.
 
-- Define the supported schema path for retained features, including custom
-  database names and application-owned migration history.
-- Test fresh installs and existing-schema upgrades with nested writes and
-  foreign-key inspection. Preserve historical migration files and user data.
+- Exercise application-owned upgrade migrations against isolated existing schemas.
+  The new fresh baseline deliberately refuses existing tables and history.
+- Review actual consumer engine/collation/index differences and data compatibility
+  before converting them. Preserve application migration history and retained data.
 
-Resolve the remaining compatibility choices in
-[To Be Discussed](guides/to-be-discussed.md#baseline-migration-schema-portability)
-before implementing the migration path.
+The fresh baseline and reusable SQL migration pattern are documented in
+[Database Migrations](guides/database-migrations.md). Its shipped validation
+belongs in the changelog; existing application acceptance remains separate.
 
 ## Retained Feature Contracts
 

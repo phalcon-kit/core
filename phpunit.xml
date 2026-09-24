@@ -50,7 +50,6 @@
     <exclude>
       <directory suffix=".php">./tests</directory>
       <directory suffix=".php">./vendor</directory>
-      <directory suffix=".php">./src/Migrations</directory>
     </exclude>
   </source>
 </phpunit>

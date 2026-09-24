@@ -1,8 +1,8 @@
 # Getting Started
 
 Only Core 4.x is maintained. Core and the App skeleton are preparing matching
-**4.0.0** releases. Their development previews are available, while the schema
-path for persisted Core features is still being prepared. There is currently no
+**4.0.0** releases. Their development previews include an opt-in
+[fresh database baseline](database-migrations.md#fresh-core-installation). There is currently no
 supported stable release; see the [support policy](../SUPPORT.md) and
 [Core 4.0 release gates](upgrading-4.0.md#stable-release-gates).
 
@@ -62,7 +62,8 @@ the old `zemit-cms/core` package are unmaintained and unsupported.
 
 The preview can run its basic routes and CLI without a database. Features such
 as identity, audit, and templates require their tables; the validated Core 4.0
-schema installation path remains a [stable-release gate](upgrading-4.0.md#stable-release-gates).
+schema is available through the [fresh-install migration guide](database-migrations.md).
+Existing applications keep their migration history and need their own upgrade review.
 
 ## 2. Configure The Environment
 
@@ -139,6 +140,10 @@ If the application uses the database:
 ./scripts/migration-list.sh
 ./scripts/migration-run.sh
 ```
+
+For retained Core models, first follow [Fresh Core Installation](database-migrations.md#fresh-core-installation).
+The App migration directory starts empty; the Core baseline is an explicit choice.
+For application-owned migrations, use the [SQL-file pattern](database-migrations.md#application-owned-sql-migrations).
 
 ## 6. Build The First API Resource
 

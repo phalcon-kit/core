@@ -30,7 +30,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -38,7 +38,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -64,7 +64,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "fileId"
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getFileId(): mixed;
@@ -72,7 +72,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "fileId"
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $fileId
      * @return void
      */
@@ -81,7 +81,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "relationTable"
      * Column: relation_table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @return mixed
      */
     public function getRelationTable(): mixed;
@@ -89,7 +89,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "relationTable"
      * Column: relation_table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @param mixed $relationTable
      * @return void
      */
@@ -98,7 +98,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "relationId"
      * Column: relation_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getRelationId(): mixed;
@@ -106,7 +106,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "relationId"
      * Column: relation_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $relationId
      * @return void
      */
@@ -149,7 +149,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedBy(): mixed;
@@ -157,7 +157,7 @@ interface FileRelationAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */

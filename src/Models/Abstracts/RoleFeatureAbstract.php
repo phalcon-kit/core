@@ -51,7 +51,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -65,14 +65,14 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
         
     /**
      * Column: role_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $roleId = null;
         
     /**
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $featureId = null;
@@ -100,7 +100,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -114,7 +114,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
         
     /**
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $updatedBy = null;
@@ -128,7 +128,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
         
     /**
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $deletedBy = null;
@@ -136,7 +136,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -148,7 +148,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -186,7 +186,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Returns the value of the field "roleId"
      * Column: role_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -198,7 +198,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Sets the value of the field "roleId"
      * Column: role_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $roleId
      * @return void
      */
@@ -211,7 +211,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Returns the value of the field "featureId"
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -223,7 +223,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Sets the value of the field "featureId"
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $featureId
      * @return void
      */
@@ -311,7 +311,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -323,7 +323,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -361,7 +361,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -373,7 +373,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -411,7 +411,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -423,7 +423,7 @@ abstract class RoleFeatureAbstract extends AbstractModel implements RoleFeatureA
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */

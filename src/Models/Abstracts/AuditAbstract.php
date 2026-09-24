@@ -47,14 +47,14 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
         
     /**
      * Column: parent_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $parentId = 0;
@@ -75,14 +75,14 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
         
     /**
      * Column: table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @var mixed
      */
     public mixed $table = null;
         
     /**
      * Column: primary
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $primary = null;
@@ -117,14 +117,14 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
         
     /**
      * Column: created_as
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdAs = 0;
@@ -132,7 +132,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -144,7 +144,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -157,7 +157,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Returns the value of the field "parentId"
      * Column: parent_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -169,7 +169,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Sets the value of the field "parentId"
      * Column: parent_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $parentId
      * @return void
      */
@@ -232,7 +232,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Returns the value of the field "table"
      * Column: table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @return mixed
      */
     #[\Override]
@@ -244,7 +244,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Sets the value of the field "table"
      * Column: table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @param mixed $table
      * @return void
      */
@@ -257,7 +257,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Returns the value of the field "primary"
      * Column: primary
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -269,7 +269,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Sets the value of the field "primary"
      * Column: primary
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $primary
      * @return void
      */
@@ -382,7 +382,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -394,7 +394,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -407,7 +407,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Returns the value of the field "createdAs"
      * Column: created_as
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -419,7 +419,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
     /**
      * Sets the value of the field "createdAs"
      * Column: created_as
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdAs
      * @return void
      */
@@ -459,7 +459,7 @@ abstract class AuditAbstract extends AbstractModel implements AuditAbstractInter
         $this->addUnsignedIntValidation($validator, 'parentId', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addStringLengthValidation($validator, 'model', 0, 255, false);
-        $this->addStringLengthValidation($validator, 'table', 0, 60, false);
+        $this->addStringLengthValidation($validator, 'table', 0, 64, false);
         $this->addUnsignedIntValidation($validator, 'primary', false);
         $this->addInclusionInValidation($validator, 'event', ['create','update','delete','restore','other'], false);
         $this->addDateTimeValidation($validator, 'createdAt', false);

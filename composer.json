@@ -111,6 +111,7 @@
     "league/oauth2-linkedin": "^5.1.2",
     "openai-php/client": "^0.20.1",
     "phalcon/ide-stubs": "^5.22.0",
+    "phalcon/migrations": "^3.0.1",
     "php-imap/php-imap": "^6.0",
     "saggre/phpdocumentor-markdown": "^1.0.0",
     "shuchkin/simplexlsxgen": "^1.5.17",
@@ -146,6 +147,7 @@
     "openai-php/client": "^0.20.1",
     "pds/skeleton": "^1.0.0",
     "phalcon/ide-stubs": "^5.22.0",
+    "phalcon/migrations": "^3.0.1",
     "php-imap/php-imap": "^6.0",
     "saggre/phpdocumentor-markdown": "^1.0.0",
     "shuchkin/simplexlsxgen": "^1.5.17",
@@ -177,6 +179,9 @@
         "Phalcon\\Mvc\\Model": "patches/phalcon-mvc-model.patch",
         "Phalcon\\Mvc\\ModelInterface": "patches/phalcon-mvc-model-interface.patch",
         "Phalcon\\Mvc\\EntityInterface": "patches/phalcon-mvc-entity-interface.patch"
+      },
+      "phalcon/migrations": {
+        "Explicit nullable parameter types for PHP 8.4+": "patches/phalcon-migrations-php85.patch"
       }
     }
   },

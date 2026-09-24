@@ -34,7 +34,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -42,7 +42,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -85,7 +85,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "task"
      * Column: task
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @return mixed
      */
     public function getTask(): mixed;
@@ -93,7 +93,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "task"
      * Column: task
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @param mixed $task
      * @return void
      */
@@ -102,7 +102,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "action"
      * Column: action
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @return mixed
      */
     public function getAction(): mixed;
@@ -110,7 +110,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "action"
      * Column: action
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @param mixed $action
      * @return void
      */
@@ -238,7 +238,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedBy(): mixed;
@@ -246,7 +246,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -272,7 +272,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getUpdatedBy(): mixed;
@@ -280,7 +280,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -306,7 +306,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getDeletedBy(): mixed;
@@ -314,7 +314,7 @@ interface JobAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */

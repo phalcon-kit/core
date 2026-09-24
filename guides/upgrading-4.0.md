@@ -129,16 +129,20 @@ Keep application-owned migration history and existing schemas intact while
 upgrading PHP code. Deleting unused database tables is a separate application
 migration with its own data review and rollback plan.
 
-`resources/migrations/1.0.0/` remains the historical complete schema, unchanged.
-It includes retired tables and hard-coded `phalcon_kit` foreign-key schemas.
-The maintainer migration scripts still target that history; it is not a minimal
-Core 4.0 fresh-install recipe. Do not run it against an existing app as a cleanup
-step. A portable, feature-based fresh-install path is a stable-release gate.
+The package now ships `resources/migrations/4.0.0/` for **fresh databases**,
+with only the 29 retained Core tables. The old packaged `1.0.0/` directory is
+removed; historical tags still contain it. Do not remove or rename migrations
+already owned/applied by an application.
 
-See [migration schema portability](to-be-discussed.md#baseline-migration-schema-portability)
-for the unresolved schema/upgrade contract. Retained models still have real
-storage requirements; removing the catalog does not make identity, audit, or
-other persisted features schema-free.
+The baseline uses InnoDB, connection-local foreign keys, Unicode text defaults,
+case-sensitive credential/token comparisons, larger OAuth token storage, and
+64-character audit/file relation identifiers. It refuses existing tables/history
+and never drops retired tables. Review these changes against actual application
+data and introduce separate, explicit upgrade migrations where appropriate.
+
+See [Database Migrations](database-migrations.md) for the fresh installation and
+reusable SQL helper. Retained models still require their tables; the baseline
+contains no accounts, roles, or other seed records.
 
 ## Application Upgrade Checks
 
@@ -169,8 +173,8 @@ maintenance data. It does not claim a completed application migration.
 
 Before 4.0 is tagged:
 
-- Provide and test the supported fresh-install schema path with a custom database
-  name; validate existing-schema upgrades without rewriting historical migrations.
+- Validate actual consumer schema upgrades with application-owned migrations,
+  without rewriting historical migrations or running the fresh baseline over data.
 - Document each retained feature's required models,
   tables, services, and supported substitution contract.
 - Exercise real consumer acceptance suites in isolated checkouts, including

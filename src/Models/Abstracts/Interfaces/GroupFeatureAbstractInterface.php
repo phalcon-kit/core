@@ -34,7 +34,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -42,7 +42,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -68,7 +68,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "groupId"
      * Column: group_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getGroupId(): mixed;
@@ -76,7 +76,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "groupId"
      * Column: group_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $groupId
      * @return void
      */
@@ -85,7 +85,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "featureId"
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getFeatureId(): mixed;
@@ -93,7 +93,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "featureId"
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $featureId
      * @return void
      */
@@ -153,7 +153,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedBy(): mixed;
@@ -161,7 +161,7 @@ interface GroupFeatureAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */

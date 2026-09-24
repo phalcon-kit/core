@@ -38,7 +38,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -52,21 +52,21 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
         
     /**
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $fileId = null;
         
     /**
      * Column: relation_table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @var mixed
      */
     public mixed $relationTable = null;
         
     /**
      * Column: relation_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $relationId = null;
@@ -87,7 +87,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -95,7 +95,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -107,7 +107,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -145,7 +145,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Returns the value of the field "fileId"
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -157,7 +157,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Sets the value of the field "fileId"
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $fileId
      * @return void
      */
@@ -170,7 +170,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Returns the value of the field "relationTable"
      * Column: relation_table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @return mixed
      */
     #[\Override]
@@ -182,7 +182,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Sets the value of the field "relationTable"
      * Column: relation_table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @param mixed $relationTable
      * @return void
      */
@@ -195,7 +195,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Returns the value of the field "relationId"
      * Column: relation_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -207,7 +207,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Sets the value of the field "relationId"
      * Column: relation_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $relationId
      * @return void
      */
@@ -270,7 +270,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -282,7 +282,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -318,7 +318,7 @@ abstract class FileRelationAbstract extends AbstractModel implements FileRelatio
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'fileId', false);
-        $this->addStringLengthValidation($validator, 'relationTable', 0, 60, false);
+        $this->addStringLengthValidation($validator, 'relationTable', 0, 64, false);
         $this->addUnsignedIntValidation($validator, 'relationId', false);
         $this->addUnsignedIntValidation($validator, 'deleted', false);
         $this->addDateTimeValidation($validator, 'createdAt', false);

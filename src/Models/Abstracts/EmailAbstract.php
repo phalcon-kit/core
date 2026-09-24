@@ -56,7 +56,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -70,7 +70,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
         
     /**
      * Column: template_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $templateId = 0;
@@ -182,7 +182,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -196,7 +196,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
         
     /**
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $updatedBy = null;
@@ -210,7 +210,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
         
     /**
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $deletedBy = null;
@@ -218,7 +218,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -230,7 +230,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -268,7 +268,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Returns the value of the field "templateId"
      * Column: template_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -280,7 +280,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Sets the value of the field "templateId"
      * Column: template_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $templateId
      * @return void
      */
@@ -668,7 +668,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -680,7 +680,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -718,7 +718,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -730,7 +730,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -768,7 +768,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -780,7 +780,7 @@ abstract class EmailAbstract extends AbstractModel implements EmailAbstractInter
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */

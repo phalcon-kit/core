@@ -43,7 +43,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -57,14 +57,14 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
         
     /**
      * Column: email_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $emailId = null;
         
     /**
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $fileId = null;
@@ -85,7 +85,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -93,7 +93,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -105,7 +105,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -143,7 +143,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Returns the value of the field "emailId"
      * Column: email_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -155,7 +155,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Sets the value of the field "emailId"
      * Column: email_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $emailId
      * @return void
      */
@@ -168,7 +168,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Returns the value of the field "fileId"
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -180,7 +180,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Sets the value of the field "fileId"
      * Column: file_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $fileId
      * @return void
      */
@@ -243,7 +243,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -255,7 +255,7 @@ abstract class EmailFileAbstract extends AbstractModel implements EmailFileAbstr
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */

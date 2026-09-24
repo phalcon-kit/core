@@ -33,9 +33,10 @@ release gates. There is currently no supported stable release.
 
     Turn migrations into typed models, relationships, validation, and API data.
 
-    1. [Database And Scaffolding](database-scaffolding.md)
-    2. [Models And Eager Loading](models-and-eager-loading.md)
-    3. [REST APIs](rest-api.md)
+    1. [Database Migrations](database-migrations.md)
+    2. [Database And Scaffolding](database-scaffolding.md)
+    3. [Models And Eager Loading](models-and-eager-loading.md)
+    4. [REST APIs](rest-api.md)
 
 -   :material-shield-account:{ .lg .middle } **Secure APIs**
 

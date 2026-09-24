@@ -41,7 +41,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -62,14 +62,14 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
         
     /**
      * Column: task
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @var mixed
      */
     public mixed $task = null;
         
     /**
      * Column: action
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @var mixed
      */
     public mixed $action = null;
@@ -125,7 +125,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -139,7 +139,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
         
     /**
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $updatedBy = null;
@@ -153,7 +153,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
         
     /**
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $deletedBy = null;
@@ -161,7 +161,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -173,7 +173,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -236,7 +236,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Returns the value of the field "task"
      * Column: task
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @return mixed
      */
     #[\Override]
@@ -248,7 +248,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Sets the value of the field "task"
      * Column: task
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @param mixed $task
      * @return void
      */
@@ -261,7 +261,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Returns the value of the field "action"
      * Column: action
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @return mixed
      */
     #[\Override]
@@ -273,7 +273,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Sets the value of the field "action"
      * Column: action
-     * Attributes: NotNull | Size(100) | Type(5)
+     * Attributes: NotNull | Size(100) | Type(2)
      * @param mixed $action
      * @return void
      */
@@ -461,7 +461,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -473,7 +473,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -511,7 +511,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -523,7 +523,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -561,7 +561,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -573,7 +573,7 @@ abstract class JobAbstract extends AbstractModel implements JobAbstractInterface
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */

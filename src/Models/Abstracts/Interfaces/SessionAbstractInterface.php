@@ -30,7 +30,7 @@ interface SessionAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -38,7 +38,7 @@ interface SessionAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -64,7 +64,7 @@ interface SessionAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "userId"
      * Column: user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getUserId(): mixed;
@@ -72,7 +72,7 @@ interface SessionAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "userId"
      * Column: user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $userId
      * @return void
      */
@@ -81,7 +81,7 @@ interface SessionAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "asUserId"
      * Column: as_user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getAsUserId(): mixed;
@@ -89,7 +89,7 @@ interface SessionAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "asUserId"
      * Column: as_user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $asUserId
      * @return void
      */

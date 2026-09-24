@@ -30,7 +30,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -38,7 +38,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -64,7 +64,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "auditId"
      * Column: audit_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getAuditId(): mixed;
@@ -72,7 +72,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "auditId"
      * Column: audit_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $auditId
      * @return void
      */
@@ -81,7 +81,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "column"
      * Column: column
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @return mixed
      */
     public function getColumn(): mixed;
@@ -89,7 +89,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "column"
      * Column: column
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @param mixed $column
      * @return void
      */
@@ -166,7 +166,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedBy(): mixed;
@@ -174,7 +174,7 @@ interface AuditDetailAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */

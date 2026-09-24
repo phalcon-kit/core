@@ -42,7 +42,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -56,14 +56,14 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
         
     /**
      * Column: parent_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $parentId = null;
         
     /**
      * Column: child_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $childId = null;
@@ -91,7 +91,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -99,7 +99,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -111,7 +111,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -149,7 +149,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Returns the value of the field "parentId"
      * Column: parent_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -161,7 +161,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Sets the value of the field "parentId"
      * Column: parent_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $parentId
      * @return void
      */
@@ -174,7 +174,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Returns the value of the field "childId"
      * Column: child_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -186,7 +186,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Sets the value of the field "childId"
      * Column: child_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $childId
      * @return void
      */
@@ -274,7 +274,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -286,7 +286,7 @@ abstract class RoleRoleAbstract extends AbstractModel implements RoleRoleAbstrac
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */

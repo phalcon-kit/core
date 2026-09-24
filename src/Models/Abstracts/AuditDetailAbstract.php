@@ -38,7 +38,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -52,14 +52,14 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
         
     /**
      * Column: audit_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $auditId = null;
         
     /**
      * Column: column
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @var mixed
      */
     public mixed $column = null;
@@ -94,7 +94,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -102,7 +102,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -114,7 +114,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -152,7 +152,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Returns the value of the field "auditId"
      * Column: audit_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -164,7 +164,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Sets the value of the field "auditId"
      * Column: audit_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $auditId
      * @return void
      */
@@ -177,7 +177,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Returns the value of the field "column"
      * Column: column
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @return mixed
      */
     #[\Override]
@@ -189,7 +189,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Sets the value of the field "column"
      * Column: column
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @param mixed $column
      * @return void
      */
@@ -302,7 +302,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -314,7 +314,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -349,7 +349,7 @@ abstract class AuditDetailAbstract extends AbstractModel implements AuditDetailA
         $this->addUnsignedIntValidation($validator, 'id', true);
         $this->addStringLengthValidation($validator, 'uuid', 0, 36, false);
         $this->addUnsignedIntValidation($validator, 'auditId', false);
-        $this->addStringLengthValidation($validator, 'column', 0, 60, false);
+        $this->addStringLengthValidation($validator, 'column', 0, 64, false);
         $this->addUnsignedIntValidation($validator, 'deleted', false);
         $this->addDateTimeValidation($validator, 'createdAt', false);
         $this->addUnsignedIntValidation($validator, 'createdBy', true);

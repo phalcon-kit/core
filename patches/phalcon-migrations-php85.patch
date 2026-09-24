@@ -1,0 +1,115 @@
+--- a/src/Console/Color.php
++++ b/src/Console/Color.php
+@@ -143,7 +143,7 @@
+      *
+      * @return string
+      */
+-    public static function colorize(string $string, int $fg = null, int $at = null, int $bg = null): string
++    public static function colorize(string $string, ?int $fg = null, ?int $at = null, ?int $bg = null): string
+     {
+         // Shell not supported, exit early
+         if (!static::isSupportedShell()) {
+--- a/src/Db/Adapter/Pdo/PdoPostgresql.php
++++ b/src/Db/Adapter/Pdo/PdoPostgresql.php
+@@ -33,7 +33,7 @@
+      *
+      * @return ReferenceInterface[]
+      */
+-    public function describeReferences(string $table, string $schema = null): array
++    public function describeReferences(string $table, ?string $schema = null): array
+     {
+         $references = [];
+ 
+@@ -91,7 +91,7 @@
+      *
+      * @return IndexInterface[]
+      */
+-    public function describeIndexes(string $table, string $schema = null): array
++    public function describeIndexes(string $table, ?string $schema = null): array
+     {
+         $indexes      = [];
+         $indexObjects = [];
+--- a/src/Db/Dialect/DialectPostgresql.php
++++ b/src/Db/Dialect/DialectPostgresql.php
+@@ -25,7 +25,7 @@
+      *
+      * @return string
+      */
+-    public function describeReferences(string $table, string $schema = null): string
++    public function describeReferences(string $table, ?string $schema = null): string
+     {
+         $sql = "
+             SELECT DISTINCT
+@@ -59,7 +59,7 @@
+         return $sql;
+     }
+ 
+-    public function describeIndexes(string $table, string $schema = null): string
++    public function describeIndexes(string $table, ?string $schema = null): string
+     {
+         return "
+             SELECT 
+--- a/src/Mvc/Model/Migration/TableAware/ListTablesDb.php
++++ b/src/Mvc/Model/Migration/TableAware/ListTablesDb.php
+@@ -33,7 +33,7 @@
+      * @return string
+      * @throws DbException
+      */
+-    public function listTablesForPrefix(string $tablePrefix, DirectoryIterator $iterator = null): string
++    public function listTablesForPrefix(string $tablePrefix, ?DirectoryIterator $iterator = null): string
+     {
+         if (empty($tablePrefix)) {
+             throw new InvalidArgumentException("Parameters weren't defined in " . __METHOD__);
+--- a/src/Mvc/Model/Migration/TableAware/ListTablesInterface.php
++++ b/src/Mvc/Model/Migration/TableAware/ListTablesInterface.php
+@@ -25,5 +25,5 @@
+      *
+      * @return string
+      */
+-    public function listTablesForPrefix(string $tablePrefix, DirectoryIterator $iterator = null): string;
++    public function listTablesForPrefix(string $tablePrefix, ?DirectoryIterator $iterator = null): string;
+ }
+--- a/src/Mvc/Model/Migration/TableAware/ListTablesIterator.php
++++ b/src/Mvc/Model/Migration/TableAware/ListTablesIterator.php
+@@ -32,7 +32,7 @@
+      *
+      * @return string
+      */
+-    public function listTablesForPrefix(string $tablePrefix, DirectoryIterator $iterator = null): string
++    public function listTablesForPrefix(string $tablePrefix, ?DirectoryIterator $iterator = null): string
+     {
+         if (empty($tablePrefix) || $iterator === null) {
+             throw new InvalidArgumentException("Parameters weren't defined in " . __METHOD__);
+--- a/src/Mvc/Model/Migration.php
++++ b/src/Mvc/Model/Migration.php
+@@ -205,7 +205,7 @@
+      */
+     public static function generateAll(
+         ItemInterface $version,
+-        string $exportData = null,
++        ?string $exportData = null,
+         array $exportTables = [],
+         bool $skipRefSchema = false
+     ): array {
+@@ -289,8 +289,8 @@
+      */
+     public static function migrate(
+         string $tableName,
+-        ItemInterface $fromVersion = null,
+-        ItemInterface $toVersion = null,
++        ?ItemInterface $fromVersion = null,
++        ?ItemInterface $toVersion = null,
+         bool $skipForeignChecks = false
+     ): void {
+         $fromVersion = $fromVersion ?: VersionCollection::createItem($fromVersion);
+--- a/src/Version/ItemCollection.php
++++ b/src/Version/ItemCollection.php
+@@ -61,7 +61,7 @@
+      *
+      * @return IncrementalItem|TimestampedItem
+      */
+-    public static function createItem(string $version = null)
++    public static function createItem(?string $version = null)
+     {
+         if (self::TYPE_INCREMENTAL === self::$type) {
+             $version = $version ?: '0.0.0';

@@ -22,7 +22,7 @@ abstract class DatabaseTestCase extends TestCase
             self::markTestSkipped('Set PHALCONKIT_TEST_DB_SOCKET or PHALCONKIT_TEST_DB_HOST to a disposable database server.');
         }
 
-        return new Mysql(($socket ? ['unix_socket' => $socket] : ['host' => $host]) + [
+        return new Mysql(($socket ? ['unix_socket' => $socket] : ['host' => $host, 'port' => (int) (getenv('PHALCONKIT_TEST_DB_PORT') ?: 3306)]) + [
             'username' => 'root',
             'password' => '',
         ]);

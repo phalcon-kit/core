@@ -54,8 +54,9 @@ composer require phalcon-kit/core:dev-master
 Read the [upgrade guide](guides/upgrading-4.0.md) first and review the resulting
 Composer changes. App and Core are preparing matching **4.0.0** releases; both
 commands select development previews. The latest released App 2.x targets
-unsupported Core 3.x. A validated schema path for persisted Core features is
-still required before the stable release; see [Getting Started](guides/getting-started.md).
+unsupported Core 3.x. Persisted Core features have an opt-in
+[fresh database baseline](guides/database-migrations.md); existing applications
+still need a schema and behavior acceptance review.
 
 The previous package, `zemit-cms/core`, is also unsupported. Existing applications
 need the [package-name migration](guides/migration-from-zemit.md) as well as the
@@ -198,6 +199,7 @@ IMAP, sockets, SimpleXML, and GD.
 - Run checks before release: [Quality And Maintenance](guides/quality-and-maintenance.md)
 - Upgrade the Phalcon extension: [Phalcon Runtime Upgrades](guides/phalcon-runtime-upgrades.md)
 - Use the bundled AI skills: [AI-Assisted Development](AI.md)
+- Install the Core baseline or write SQL-file migrations: [Database Migrations](guides/database-migrations.md)
 - Migrate from the old package name: [Migration From zemit-cms/core](guides/migration-from-zemit.md)
 - Migrate old RESTful resources: [Migrate RESTful 0.x Resources To 1.x](guides/migration-restful-0x-to-1x.md)
 

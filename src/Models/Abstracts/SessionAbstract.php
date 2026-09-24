@@ -37,7 +37,7 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -51,14 +51,14 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
         
     /**
      * Column: user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $userId = 0;
         
     /**
      * Column: as_user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $asUserId = 0;
@@ -101,7 +101,7 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -113,7 +113,7 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -151,7 +151,7 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
     /**
      * Returns the value of the field "userId"
      * Column: user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -163,7 +163,7 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
     /**
      * Sets the value of the field "userId"
      * Column: user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $userId
      * @return void
      */
@@ -176,7 +176,7 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
     /**
      * Returns the value of the field "asUserId"
      * Column: as_user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -188,7 +188,7 @@ abstract class SessionAbstract extends AbstractModel implements SessionAbstractI
     /**
      * Sets the value of the field "asUserId"
      * Column: as_user_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $asUserId
      * @return void
      */

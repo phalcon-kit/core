@@ -26,10 +26,31 @@ release notes.
   registry helpers. Application-owned models with the same short names are
   unaffected; see the exact inventory in [the upgrade guide](guides/upgrading-4.0.md).
 - Remove the built-in deployment table lists and seed records, including the
-  implicit development account. Historical migration files remain unchanged;
-  upgrading the package does not delete database tables or data.
+  implicit development account. Upgrading the package does not delete database
+  tables, application-owned migration history, or data.
+- Replace the packaged 47-table `1.0.0` migration with a fresh `4.0.0` baseline
+  containing only the 29 retained Core tables. Historical tags retain the old
+  baseline; existing applications keep their own migrations and schemas.
+
+### Added
+
+- Add reusable `PhalconKit\Migrations\SqlMigration` helpers for one statement
+  per SQL file and ordered batches. Validate all files before execution, preserve
+  driver errors, and retain the standard Phalcon version/history runner. Document
+  consumer migrations and adoption of the fresh Core baseline.
 
 ### Fixed
+
+- Keep baseline foreign keys in the selected database and enabled during creation.
+  Reject existing schemas/history, active transactions, disabled integrity checks,
+  and destructive rollback. Explicitly use InnoDB and `utf8mb4_unicode_ci`, with
+  ASCII UUID storage and case-sensitive credentials/session/OAuth identifiers.
+- Store OAuth access/refresh tokens as `TEXT` and allow 64-character table/column
+  identifiers in audit/file relations. Align model validators/contracts, replace
+  fixed-width job identifiers with `VARCHAR`, and remove integer display-width
+  metadata while preserving `TINYINT(1)` booleans.
+- Ship an explicit-nullable-type patch for `phalcon/migrations` 3.0.1 on PHP 8.5;
+  retain strict deprecation checks in the native migration tests.
 
 - Preserve native Phalcon values and types in model/controller `minimum()` and
   `maximum()` calls, including text, datetime, exact decimals, integers, grouped
@@ -43,6 +64,15 @@ release notes.
   comments, and scaffold header templates referencing the wrong license filename.
 
 ### Changed
+
+- Run maintainer migration scripts through the standalone `phalcon-migrations`
+  Composer binary using its direct action syntax, from the checkout root,
+  without an implicit force flag.
+  Generate connection-local references with `--skip-ref-schema`. Keep the runner
+  optional for consumers and include it in Core development dependencies.
+- Require native baseline schema/model checks in both dependency CI jobs,
+  including custom database names, InnoDB/collation/foreign-key inspection,
+  history preservation, long tokens, nested writes, and transaction rollback.
 
 - Make database maintenance instructions explicit through `config.deployment`
   or an application task's arrays. Configured keys replace task defaults;
@@ -62,8 +92,7 @@ release notes.
   `4.0.x-dev` through Composer's branch alias for explicit preview consumers,
   and document the stable constraint, lockfile, and installation release gates.
 - Document the aligned App 4.0 development skeleton and its explicit preview
-  installation path. Keep schema installation for persisted features as a
-  stable-release gate.
+  installation path and opt-in baseline for persisted features.
 - Regenerate the public API reference for the retained Core 4 surface and link
   native `PDOException` references to the PHP manual.
 - Retain the draft base-model service and initialization contracts; discard

@@ -342,13 +342,6 @@ jobs:
           dependency-versions: ${{ matrix.dependencies }}
           custom-cache-suffix: phalcon-kit-composer
 
-      - name: Install Phalcon DevTools
-        run: |
-          composer global config minimum-stability dev
-          composer global config prefer-stable true
-          composer global require phalcon/devtools:^5.0 --no-interaction --no-progress
-          echo "$(composer global config home)/vendor/bin" >> $GITHUB_PATH
-
       - name: Set permissions and environment
         run: |
           chmod +x ./bin/* ./vendor/bin/* ./phalcon-kit
@@ -368,7 +361,7 @@ jobs:
       - name: Native database regressions
         env:
           PHALCONKIT_TEST_DB_HOST: 127.0.0.1
-        run: composer phpunit -- tests/Unit/Identity/PasswordResetDatabaseTest.php tests/Unit/Mvc/Model/RelationshipAssignmentDatabaseTest.php tests/Unit/Mvc/Model/BooleanPersistenceDatabaseTest.php tests/Unit/Mvc/Model/AggregateDatabaseTest.php --display-skipped --display-errors --fail-on-skipped
+        run: composer phpunit -- tests/Unit/Identity/PasswordResetDatabaseTest.php tests/Unit/Mvc/Model/RelationshipAssignmentDatabaseTest.php tests/Unit/Mvc/Model/BooleanPersistenceDatabaseTest.php tests/Unit/Mvc/Model/AggregateDatabaseTest.php tests/Unit/Migrations/CoreBaselineDatabaseTest.php --display-skipped --display-errors --fail-on-skipped
 
       - name: PHP Unit
         env:

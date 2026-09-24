@@ -38,7 +38,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -46,7 +46,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -55,7 +55,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "parentId"
      * Column: parent_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getParentId(): mixed;
@@ -63,7 +63,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "parentId"
      * Column: parent_id
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $parentId
      * @return void
      */
@@ -106,7 +106,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "table"
      * Column: table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @return mixed
      */
     public function getTable(): mixed;
@@ -114,7 +114,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "table"
      * Column: table
-     * Attributes: NotNull | Size(60) | Type(2)
+     * Attributes: NotNull | Size(64) | Type(2)
      * @param mixed $table
      * @return void
      */
@@ -123,7 +123,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "primary"
      * Column: primary
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getPrimary(): mixed;
@@ -131,7 +131,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "primary"
      * Column: primary
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $primary
      * @return void
      */
@@ -208,7 +208,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedBy(): mixed;
@@ -216,7 +216,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -225,7 +225,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdAs"
      * Column: created_as
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedAs(): mixed;
@@ -233,7 +233,7 @@ interface AuditAbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdAs"
      * Column: created_as
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdAs
      * @return void
      */

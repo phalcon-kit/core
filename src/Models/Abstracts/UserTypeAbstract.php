@@ -50,7 +50,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -64,14 +64,14 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
         
     /**
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $userId = null;
         
     /**
      * Column: type_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $typeId = null;
@@ -99,7 +99,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -113,7 +113,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
         
     /**
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $updatedBy = null;
@@ -127,7 +127,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
         
     /**
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $deletedBy = null;
@@ -135,7 +135,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -147,7 +147,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -185,7 +185,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Returns the value of the field "userId"
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -197,7 +197,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Sets the value of the field "userId"
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $userId
      * @return void
      */
@@ -210,7 +210,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Returns the value of the field "typeId"
      * Column: type_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -222,7 +222,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Sets the value of the field "typeId"
      * Column: type_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $typeId
      * @return void
      */
@@ -310,7 +310,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -322,7 +322,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -360,7 +360,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -372,7 +372,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -410,7 +410,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -422,7 +422,7 @@ abstract class UserTypeAbstract extends AbstractModel implements UserTypeAbstrac
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */

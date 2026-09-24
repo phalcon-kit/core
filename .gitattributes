@@ -192,3 +192,6 @@ Procfile    text
 ## EXECUTABLES
 *.exe binary
 *.pyc binary
+
+# Patch context preserves upstream whitespace as data.
+*.patch -whitespace

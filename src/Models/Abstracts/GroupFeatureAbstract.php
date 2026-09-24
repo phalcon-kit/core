@@ -43,7 +43,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -57,14 +57,14 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
         
     /**
      * Column: group_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $groupId = null;
         
     /**
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $featureId = null;
@@ -92,7 +92,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -100,7 +100,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -112,7 +112,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -150,7 +150,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Returns the value of the field "groupId"
      * Column: group_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -162,7 +162,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Sets the value of the field "groupId"
      * Column: group_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $groupId
      * @return void
      */
@@ -175,7 +175,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Returns the value of the field "featureId"
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -187,7 +187,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Sets the value of the field "featureId"
      * Column: feature_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $featureId
      * @return void
      */
@@ -275,7 +275,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -287,7 +287,7 @@ abstract class GroupFeatureAbstract extends AbstractModel implements GroupFeatur
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */

@@ -80,7 +80,7 @@ layer and preserve concrete models unless the overwrite is intentional.
 
 ## Migration Helper Scripts
 
-Apps should use the maintained `phalcon/migrations` package through small
+Apps should use the standalone `phalcon/migrations` package through small
 `scripts/` wrappers so every developer uses the same config and directories.
 
 Generate:
@@ -95,10 +95,10 @@ List:
 ./scripts/migration-list.sh
 ```
 
-Rollback:
+Rollback an application-owned migration to its reviewed previous version:
 
 ```shell
-./scripts/migration-rollback.sh --version=1.0.0
+./scripts/migration-rollback.sh --version=<previous-app-version>
 ```
 
 Run:
@@ -106,6 +106,22 @@ Run:
 ```shell
 ./scripts/migration-run.sh
 ```
+
+Core 4 adds `PhalconKit\Migrations\SqlMigration`. Extend it and call
+`$this->executeSqlFile(__DIR__ . '/sql/create-products.sql')`, or pass an ordered
+list to `executeSqlFiles()`. Put one complete statement in each local SQL file;
+all files are checked before the batch starts. Phalcon keeps ownership of version
+history, and database exceptions stop execution.
+
+For a fresh database, copy the **entire** Core `resources/migrations/4.0.0/`
+directory into the application's empty migration tree, including its `sql/`
+resources. The baseline creates only retained tables, preserves foreign-key
+checks, and rejects existing schemas/history. It has no destructive rollback.
+Never add it to an existing application's pending migrations as an upgrade.
+
+See [Database Migrations](../../../../guides/database-migrations.md) for the
+consumer recipe, existing-data boundaries, and the PHP 8.5 tool compatibility
+patch. Once applied, keep migrations immutable and add subsequent app versions.
 
 Guidelines:
 

@@ -45,7 +45,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
 {
     /**
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @var mixed
      */
     public mixed $id = null;
@@ -59,7 +59,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
         
     /**
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $userId = null;
@@ -79,15 +79,17 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     public mixed $providerUuid = null;
         
     /**
+     * Opaque provider credential. Core 4 stores TEXT to accommodate long JWTs.
      * Column: access_token
-     * Attributes: NotNull | Size(255) | Type(2)
+     * Attributes: NotNull | Type(6)
      * @var mixed
      */
     public mixed $accessToken = null;
         
     /**
+     * Optional opaque refresh credential, with the same TEXT capacity as accessToken.
      * Column: refresh_token
-     * Attributes: Size(255) | Type(2)
+     * Attributes: Type(6)
      * @var mixed
      */
     public mixed $refreshToken = null;
@@ -122,7 +124,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
         
     /**
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $createdBy = null;
@@ -136,7 +138,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
         
     /**
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $updatedBy = null;
@@ -150,7 +152,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
         
     /**
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @var mixed
      */
     public mixed $deletedBy = null;
@@ -158,7 +160,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -170,7 +172,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -208,7 +210,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Returns the value of the field "userId"
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -220,7 +222,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Sets the value of the field "userId"
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $userId
      * @return void
      */
@@ -283,7 +285,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Returns the value of the field "accessToken"
      * Column: access_token
-     * Attributes: NotNull | Size(255) | Type(2)
+     * Attributes: NotNull | Type(6)
      * @return mixed
      */
     #[\Override]
@@ -295,7 +297,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Sets the value of the field "accessToken"
      * Column: access_token
-     * Attributes: NotNull | Size(255) | Type(2)
+     * Attributes: NotNull | Type(6)
      * @param mixed $accessToken
      * @return void
      */
@@ -308,7 +310,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Returns the value of the field "refreshToken"
      * Column: refresh_token
-     * Attributes: Size(255) | Type(2)
+     * Attributes: Type(6)
      * @return mixed
      */
     #[\Override]
@@ -320,7 +322,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Sets the value of the field "refreshToken"
      * Column: refresh_token
-     * Attributes: Size(255) | Type(2)
+     * Attributes: Type(6)
      * @param mixed $refreshToken
      * @return void
      */
@@ -433,7 +435,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -445,7 +447,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -483,7 +485,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -495,7 +497,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -533,7 +535,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     #[\Override]
@@ -545,7 +547,7 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */
@@ -587,8 +589,8 @@ abstract class Oauth2Abstract extends AbstractModel implements Oauth2AbstractInt
         $this->addUnsignedIntValidation($validator, 'userId', false);
         $this->addInclusionInValidation($validator, 'provider', ['google','microsoft'], false);
         $this->addStringLengthValidation($validator, 'providerUuid', 0, 120, false);
-        $this->addStringLengthValidation($validator, 'accessToken', 0, 255, false);
-        $this->addStringLengthValidation($validator, 'refreshToken', 0, 255, true);
+        $this->addStringLengthValidation($validator, 'accessToken', 0, 65535, false);
+        $this->addStringLengthValidation($validator, 'refreshToken', 0, 65535, true);
         $this->addStringLengthValidation($validator, 'email', 0, 320, true);
         $this->addUnsignedIntValidation($validator, 'deleted', false);
         $this->addDateTimeValidation($validator, 'createdAt', false);

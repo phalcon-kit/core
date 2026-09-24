@@ -95,8 +95,9 @@ Actions hygiene.
 
 ## Disposable Database Tests
 
-The four native database regressions opt in through `PHALCONKIT_TEST_DB_SOCKET`
-or `PHALCONKIT_TEST_DB_HOST` (the socket wins when both are set). Point either
+The native database regressions opt in through `PHALCONKIT_TEST_DB_SOCKET`
+or `PHALCONKIT_TEST_DB_HOST` (the socket wins when both are set). TCP connections
+accept `PHALCONKIT_TEST_DB_PORT`, defaulting to 3306. Point either
 variable at a dedicated disposable MySQL/MariaDB server with a passwordless
 `root` test account allowed to create and drop schemas. Each test creates a random
 schema and drops it in a `finally` block. These settings are separate from the
@@ -108,6 +109,7 @@ PHALCONKIT_TEST_DB_SOCKET=/path/to/disposable/mysql.sock composer phpunit -- \
   tests/Unit/Mvc/Model/RelationshipAssignmentDatabaseTest.php \
   tests/Unit/Mvc/Model/BooleanPersistenceDatabaseTest.php \
   tests/Unit/Mvc/Model/AggregateDatabaseTest.php \
+  tests/Unit/Migrations/CoreBaselineDatabaseTest.php \
   --fail-on-skipped --display-errors
 ```
 
@@ -115,6 +117,12 @@ CI supplies `PHALCONKIT_TEST_DB_HOST=127.0.0.1` for its MySQL service. Existing
 `PHALCONKIT_RESET_TEST_SOCKET`, `PHALCONKIT_RELATION_TEST_SOCKET`, and
 `PHALCONKIT_BOOLEAN_TEST_HOST` commands remain supported by their original tests.
 Without an opt-in setting, these tests skip in the lightweight local suite.
+
+The baseline tests use the development `phalcon/migrations` dependency and its
+PHP 8.5 nullable-type compatibility patch. They inspect all retained tables and
+foreign keys, save real Core models, exercise nested transaction rollback, and
+verify existing schema/history rejection. Core's migration scripts call the
+local `vendor/bin/phalcon-migrations` executable; global DevTools are unnecessary.
 
 ## Comment And Deprecation Maintenance
 

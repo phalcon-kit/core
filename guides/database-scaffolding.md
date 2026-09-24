@@ -43,6 +43,9 @@ Official Phalcon references:
 - Migrations: https://docs.phalcon.io/latest/db-migrations/
 - DevTools: https://docs.phalcon.io/latest/devtools/
 
+For fresh Core schemas and reusable SQL-file migrations, start with
+[Database Migrations](database-migrations.md).
+
 ## 1. Run Migrations
 
 The App skeleton uses the maintained `phalcon/migrations` package:

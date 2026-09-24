@@ -38,7 +38,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @return mixed
      */
     public function getId(): mixed;
@@ -46,7 +46,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "id"
      * Column: id
-     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Size(1) | Type(14)
+     * Attributes: First | Primary | NotNull | Numeric | Unsigned | AutoIncrement | Type(14)
      * @param mixed $id
      * @return void
      */
@@ -72,7 +72,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "userId"
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getUserId(): mixed;
@@ -80,7 +80,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "userId"
      * Column: user_id
-     * Attributes: NotNull | Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: NotNull | Numeric | Unsigned | Type(14)
      * @param mixed $userId
      * @return void
      */
@@ -123,7 +123,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "accessToken"
      * Column: access_token
-     * Attributes: NotNull | Size(255) | Type(2)
+     * Attributes: NotNull | Type(6)
      * @return mixed
      */
     public function getAccessToken(): mixed;
@@ -131,7 +131,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "accessToken"
      * Column: access_token
-     * Attributes: NotNull | Size(255) | Type(2)
+     * Attributes: NotNull | Type(6)
      * @param mixed $accessToken
      * @return void
      */
@@ -140,7 +140,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "refreshToken"
      * Column: refresh_token
-     * Attributes: Size(255) | Type(2)
+     * Attributes: Type(6)
      * @return mixed
      */
     public function getRefreshToken(): mixed;
@@ -148,7 +148,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "refreshToken"
      * Column: refresh_token
-     * Attributes: Size(255) | Type(2)
+     * Attributes: Type(6)
      * @param mixed $refreshToken
      * @return void
      */
@@ -225,7 +225,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getCreatedBy(): mixed;
@@ -233,7 +233,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "createdBy"
      * Column: created_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $createdBy
      * @return void
      */
@@ -259,7 +259,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getUpdatedBy(): mixed;
@@ -267,7 +267,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "updatedBy"
      * Column: updated_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $updatedBy
      * @return void
      */
@@ -293,7 +293,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Returns the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @return mixed
      */
     public function getDeletedBy(): mixed;
@@ -301,7 +301,7 @@ interface Oauth2AbstractInterface extends ModelInterface
     /**
      * Sets the value of the field "deletedBy"
      * Column: deleted_by
-     * Attributes: Numeric | Unsigned | Size(1) | Type(14)
+     * Attributes: Numeric | Unsigned | Type(14)
      * @param mixed $deletedBy
      * @return void
      */

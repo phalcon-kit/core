@@ -8,4 +8,16 @@
 # file that was distributed with this source code.
 #
 
-phalcon migration run --config=./devtools.php --directory=./ --migrations=./resources/migrations/ --no-auto-increment --force --verbose --log-in-db "$@"
+set -euo pipefail
+
+project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$project_root"
+
+exec ./vendor/bin/phalcon-migrations run \
+    --config=./devtools.php \
+    --directory=./ \
+    --migrations=./resources/migrations/ \
+    --no-auto-increment \
+    --verbose \
+    --log-in-db \
+    "$@"
