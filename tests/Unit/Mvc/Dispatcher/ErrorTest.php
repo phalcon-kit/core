@@ -15,17 +15,77 @@ namespace PhalconKit\Tests\Unit\Mvc\Dispatcher;
 
 use Phalcon\Dispatcher\Exception as DispatchException;
 use Phalcon\Events\Event;
+use Phalcon\Events\Manager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PhalconKit\Config\Config;
 use PhalconKit\Di\Di;
 use PhalconKit\Exception\HttpException;
 use PhalconKit\Http\Response;
+use PhalconKit\Mvc\Controller\Traits\Actions\ErrorActions;
+use PhalconKit\Mvc\Controller\Traits\StatusCode;
 use PhalconKit\Mvc\Dispatcher;
 use PhalconKit\Mvc\Dispatcher\Error;
 use PhalconKit\Tests\Unit\AbstractUnit;
 
 class ErrorTest extends AbstractUnit
 {
+    /** @return array<string, array{\Exception, string, string, int}> */
+    public static function dispatchExceptions(): array
+    {
+        return [
+            'HTTP exception' => [new HttpException('unavailable', 503), 'httpException', 'error', 503],
+            'unexpected exception' => [new \RuntimeException('failure'), 'fatal', 'fatal', 500],
+            'missing action' => [new DispatchException('missing', DispatchException::EXCEPTION_ACTION_NOT_FOUND), 'notFound', 'notFound', 404],
+        ];
+    }
+
+    #[DataProvider('dispatchExceptions')]
+    public function testErrorForwardCompletesRealDispatchWithDefaultNamespace(\Exception $exception, string $route, string $action, int $status): void
+    {
+        [$listener, $dispatcher, $response] = $this->createListener([
+            'router' => [$route => ['namespace' => '', 'action' => $action, 'params' => ['tenant' => 'acme']]],
+        ]);
+        $di = $listener->getDI();
+        $handler = new class extends \Phalcon\Mvc\Controller {
+            use ErrorActions;
+            use StatusCode;
+
+            public int $attempts = 0;
+            public \Exception $exception;
+
+            public function indexAction(): void
+            {
+                $this->attempts++;
+                throw $this->exception;
+            }
+        };
+        $handler->exception = $exception;
+        $handler->setDI($di);
+        $di->setShared('ErrorForwardTest\\IndexController', $handler);
+        $di->setShared('ErrorForwardTest\\ErrorController', $handler);
+        $dispatcher->setDI($di);
+        $dispatcher->setDefaultNamespace('ErrorForwardTest');
+        $dispatcher->setNamespaceName('ErrorForwardTest');
+        $dispatcher->setControllerName('index');
+        $dispatcher->setActionName('index');
+        $events = new Manager();
+        $events->attach('dispatch', $listener);
+        $completed = [];
+        $events->attach('dispatch:afterExecuteRoute', static function () use ($dispatcher, &$completed): void {
+            $completed[] = $dispatcher->getActionName();
+        });
+        $dispatcher->setEventsManager($events);
+
+        $dispatcher->dispatch();
+
+        $this->assertSame(1, $handler->attempts);
+        $this->assertSame([$action], $completed);
+        $this->assertSame($status, $response->getStatusCode());
+        $this->assertSame('ErrorForwardTest', $dispatcher->getNamespaceName());
+        $this->assertSame('acme', $dispatcher->getParameter('tenant'));
+        $this->assertSame($exception, $dispatcher->getParameter('exception'));
+    }
+
     #[DataProvider('validHttpStatusProvider')]
     public function testHttpExceptionPreservesValidStatus(int $status, string $reason): void
     {

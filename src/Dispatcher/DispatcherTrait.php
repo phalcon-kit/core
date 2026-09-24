@@ -100,7 +100,8 @@ trait DispatcherTrait
      *
      * Null forward parts are stripped before delegating to Phalcon. When
      * `$preventCycle` is true, forwarding only happens if at least one target
-     * part differs from the current dispatch state.
+     * part differs from the effective current dispatch state. Empty namespace,
+     * handler and action names resolve to Phalcon's configured defaults.
      *
      * @param array<string, mixed> $forward Forward target parts.
      * @param bool $preventCycle Whether identical forwards should be ignored.
@@ -121,16 +122,28 @@ trait DispatcherTrait
     }
     
     /**
-     * Determine whether a forward target differs from the current dispatch.
+     * Determine whether a forward changes the effective dispatch target.
+     *
+     * Empty namespace, handler and action names use Phalcon's defaults on
+     * both sides of the comparison. Null and omitted parts leave the current
+     * route unchanged; module and parameter values are compared strictly.
+     * Native forward() accepts controller and task keys in either mode, with
+     * controller taking precedence. This check does not mutate dispatch state
+     * or fire events, so listeners can safely decide whether to cancel a pass.
      *
      * @param array<array-key, mixed> $forward Forward target parts.
      */
     public function canForward(array $forward): bool
     {
+        foreach (['namespace' => $this->defaultNamespace, 'action' => $this->defaultAction] as $part => $default) {
+            if (isset($forward[$part]) && is_string($forward[$part]) && !$forward[$part]) {
+                $forward[$part] = $default;
+            }
+        }
         $parts = [
-            'namespace' => $this->getNamespaceName(),
+            'namespace' => $this->getNamespaceName() ?: $this->defaultNamespace,
             'module' => $this->getModuleName(),
-            'action' => $this->getActionName(),
+            'action' => $this->getActionName() ?: $this->defaultAction,
             'params' => $this->getParameters(),
         ];
         if (array_any($parts, fn(array|string|null $current, string $part): bool => isset($forward[$part]) && $current !== $forward[$part])) {
@@ -141,47 +154,20 @@ trait DispatcherTrait
     }
     
     /**
-     * Determine whether the dispatcher-specific handler target changes.
-     *
-     * MVC dispatchers compare controllers; CLI dispatchers compare tasks.
+     * Compare the effective handler using native forward() key precedence.
      *
      * @param array<string, mixed> $forward Forward target parts.
      */
     private function canForwardHandler(array $forward): bool
     {
-        if ($this->canForwardController($forward['controller'] ?? null)) {
-            return true;
+        $handler = $forward['controller'] ?? $forward['task'] ?? null;
+        if ($handler === null) {
+            return false;
         }
-        
-        if ($this->canForwardTask($forward['task'] ?? null)) {
-            return true;
+        if (is_string($handler) && !$handler) {
+            $handler = $this->defaultHandler;
         }
-        
-        return false;
-    }
-    
-    /**
-     * Determine whether an MVC forward points to a different controller.
-     */
-    private function canForwardController(?string $controller = null): bool
-    {
-        if ($this instanceof MvcDispatcher && isset($controller) && $this->getControllerName() !== $controller) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * Determine whether a CLI forward points to a different task.
-     */
-    private function canForwardTask(?string $task = null): bool
-    {
-        if ($this instanceof CliDispatcher && isset($task) && $this->getTaskName() !== $task) {
-            return true;
-        }
-        
-        return false;
+        return ($this->handlerName ?: $this->defaultHandler) !== $handler;
     }
     
     /**

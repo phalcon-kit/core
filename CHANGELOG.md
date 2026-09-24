@@ -15,6 +15,18 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 3.11.1 - 2026-09-24
+
+### Fixed
+
+- Make the shared `canForward()` guard compare effective routes using dispatcher
+  defaults without mutating dispatch state. Preserve null/omitted parts and
+  strict module/parameter comparisons, and match native controller/task key
+  precedence. Guarded forwards to empty default route names no longer loop.
+- Reuse the shared guard in the maintenance listener and stop events only when
+  rerouting. The maintenance action and later listeners now execute normally
+  while the original action stays blocked. Retain native-dispatcher compatibility.
+
 ## 3.11.0 - 2026-09-24
 
 ### Fixed

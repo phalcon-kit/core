@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace PhalconKit\Tests\Unit\Dispatcher;
 
 use Phalcon\Events\Event;
+use Phalcon\Events\Manager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PhalconKit\Acl\Acl;
 use PhalconKit\Bootstrap;
 use PhalconKit\Config\Config;
@@ -126,13 +128,173 @@ class DispatcherTest extends AbstractUnit
         $this->assertFalse($this->mvcDispatcher->canForward([]));
         $this->assertFalse($this->mvcDispatcher->canForward(['controller' => '']));
         $this->assertTrue($this->mvcDispatcher->canForward(['controller' => 'new']));
-        $this->assertFalse($this->mvcDispatcher->canForward(['task' => 'new']));
+        $this->assertTrue($this->mvcDispatcher->canForward(['task' => 'new']));
         
         // Test CLI Dispatcher
         $this->assertFalse($this->cliDispatcher->canForward([]));
         $this->assertFalse($this->cliDispatcher->canForward(['task' => '']));
         $this->assertTrue($this->cliDispatcher->canForward(['task' => 'new']));
-        $this->assertFalse($this->cliDispatcher->canForward(['controller' => 'new']));
+        $this->assertTrue($this->cliDispatcher->canForward(['controller' => 'new']));
+    }
+
+    /** @return array<string, array{class-string<MvcDispatcher|CliDispatcher>}> */
+    public static function coreDispatcherClasses(): array
+    {
+        return [
+            'MVC' => [MvcDispatcher::class],
+            'CLI' => [CliDispatcher::class],
+            'WebSocket' => [\PhalconKit\Ws\Dispatcher::class],
+        ];
+    }
+
+    #[DataProvider('coreDispatcherClasses')]
+    public function testCanForwardComparesResolvedDefaultsWithoutChangingState(string $class): void
+    {
+        $dispatcher = $this->createDefaultDispatcher($class);
+        $dispatcher->setNamespaceName('ForwardTest');
+        $dispatcher->setActionName('offline');
+        $this->setHandlerName($dispatcher, 'status');
+        $forward = ['namespace' => '', 'controller' => '', 'action' => '', 'module' => null, 'params' => null];
+
+        $this->assertFalse($dispatcher->canForward($forward));
+        $dispatcher->forward($forward, true);
+
+        $this->assertSame('ForwardTest', $dispatcher->getNamespaceName());
+        $this->assertSame('offline', $dispatcher->getActionName());
+        $this->assertSame('ForwardTest\\Status' . $dispatcher->getHandlerSuffix(), $dispatcher->getHandlerClass());
+        $this->assertFalse($dispatcher->wasForwarded());
+    }
+
+    #[DataProvider('coreDispatcherClasses')]
+    public function testCanForwardDoesNotMutateUnresolvedCurrentNames(string $class): void
+    {
+        $dispatcher = $this->createDefaultDispatcher($class);
+
+        $this->assertFalse($dispatcher->canForward([
+            'namespace' => 'ForwardTest', 'controller' => 'status', 'action' => 'offline',
+        ]));
+
+        $this->assertSame('', $dispatcher->getNamespaceName());
+        $this->assertSame('', $dispatcher->getActionName());
+        $this->assertSame('', $dispatcher instanceof MvcDispatcher ? $dispatcher->getControllerName() : $dispatcher->getTaskName());
+        $this->assertFalse($dispatcher->wasForwarded());
+    }
+
+    #[DataProvider('coreDispatcherClasses')]
+    public function testCanForwardPreservesRoutePartsAndNativeHandlerPrecedence(string $class): void
+    {
+        $dispatcher = $this->createDefaultDispatcher($class);
+        $dispatcher->setNamespaceName('ForwardTest');
+        $dispatcher->setModuleName('frontend');
+        $dispatcher->setActionName('offline');
+        $dispatcher->setParameters(['tenant' => 1]);
+        $this->setHandlerName($dispatcher, 'status');
+
+        $this->assertFalse($dispatcher->canForward([]));
+        $this->assertFalse($dispatcher->canForward([
+            'namespace' => null, 'module' => null, 'controller' => null, 'task' => null, 'action' => null, 'params' => null,
+        ]));
+        $this->assertFalse($dispatcher->canForward(['controller' => 'status', 'task' => 'ignored']));
+        $this->assertFalse($dispatcher->canForward(['controller' => null, 'task' => 'status']));
+        $this->assertFalse($dispatcher->canForward(['params' => ['tenant' => 1]]));
+        foreach ([
+            ['namespace' => 'Other'], ['module' => 'admin'], ['module' => ''],
+            ['controller' => 'other', 'task' => 'status'], ['task' => 'other'],
+            ['action' => 'other'], ['params' => []], ['params' => ['tenant' => '1']],
+        ] as $forward) {
+            $this->assertTrue($dispatcher->canForward($forward), json_encode($forward));
+        }
+
+        $dispatcher->setNamespaceName('Other');
+        $this->assertTrue($dispatcher->canForward(['namespace' => '']));
+    }
+
+    #[DataProvider('coreDispatcherClasses')]
+    public function testGuardedForwardCompletesRealDispatchUsingDefaultNames(string $class): void
+    {
+        $dispatcher = $this->createDefaultDispatcher($class);
+        $this->setHandlerName($dispatcher, 'original');
+        $dispatcher->setActionName('index');
+        $handler = new class {
+            public int $calls = 0;
+
+            public function offlineAction(): void
+            {
+                $this->calls++;
+            }
+        };
+        $di = new \Phalcon\Di\Di();
+        $di->setShared('response', new \PhalconKit\Http\Response());
+        $di->setShared('ForwardTest\\Status' . $dispatcher->getHandlerSuffix(), $handler);
+        $dispatcher->setDI($di);
+        $events = new Manager();
+        $iterations = 0;
+        $events->attach('dispatch:beforeDispatch', static function () use ($dispatcher, &$iterations): void {
+            $iterations++;
+            $dispatcher->forward(['namespace' => '', 'controller' => '', 'action' => ''], true);
+        });
+        $dispatcher->setEventsManager($events);
+
+        $dispatcher->dispatch();
+
+        $this->assertSame(1, $handler->calls);
+        $this->assertSame(2, $iterations);
+    }
+
+    #[DataProvider('coreDispatcherClasses')]
+    public function testIdenticalGuardedForwardPreservesHistoryAndUnguardedForwardStillRuns(string $class): void
+    {
+        $dispatcher = $this->createDefaultDispatcher($class);
+        $dispatcher->setNamespaceName('Original');
+        $dispatcher->setModuleName('frontend');
+        $dispatcher->setActionName('index');
+        $dispatcher->setParameters(['tenant' => 'acme']);
+        $this->setHandlerName($dispatcher, 'original');
+        $dispatcher->forward(['namespace' => 'ForwardTest', 'controller' => 'status', 'action' => 'offline'], true);
+        $previous = [
+            $dispatcher->getPreviousNamespaceName(),
+            $dispatcher->getPreviousActionName(),
+        ];
+        $this->assertSame(['Original', 'index'], $previous);
+
+        $route = ['namespace' => '', 'controller' => '', 'action' => '', 'module' => null, 'params' => null];
+        $dispatcher->forward($route, true);
+
+        $this->assertSame($previous, [$dispatcher->getPreviousNamespaceName(), $dispatcher->getPreviousActionName()]);
+        $this->assertSame('ForwardTest', $dispatcher->getNamespaceName());
+        $this->assertSame('offline', $dispatcher->getActionName());
+
+        $dispatcher->forward($route);
+
+        $this->assertSame(['ForwardTest', 'offline'], [$dispatcher->getPreviousNamespaceName(), $dispatcher->getPreviousActionName()]);
+        $this->assertSame('', $dispatcher->getNamespaceName());
+        $this->assertSame('', $dispatcher->getActionName());
+        $this->assertSame('frontend', $dispatcher->getModuleName());
+        $this->assertSame(['tenant' => 'acme'], $dispatcher->getParameters());
+        $this->assertSame('ForwardTest\\Status' . $dispatcher->getHandlerSuffix(), $dispatcher->getHandlerClass());
+    }
+
+    /** @param class-string<MvcDispatcher|CliDispatcher> $class */
+    private function createDefaultDispatcher(string $class): MvcDispatcher|CliDispatcher
+    {
+        $dispatcher = new $class();
+        $dispatcher->setDefaultNamespace('ForwardTest');
+        $dispatcher->setDefaultAction('offline');
+        if ($dispatcher instanceof MvcDispatcher) {
+            $dispatcher->setDefaultController('status');
+        } else {
+            $dispatcher->setDefaultTask('status');
+        }
+        return $dispatcher;
+    }
+
+    private function setHandlerName(MvcDispatcher|CliDispatcher $dispatcher, string $name): void
+    {
+        if ($dispatcher instanceof MvcDispatcher) {
+            $dispatcher->setControllerName($name);
+        } else {
+            $dispatcher->setTaskName($name);
+        }
     }
     
     public function testUnsetForwardNullParts(): void

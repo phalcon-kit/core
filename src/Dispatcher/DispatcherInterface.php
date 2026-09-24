@@ -26,9 +26,12 @@ namespace PhalconKit\Dispatcher;
 interface DispatcherInterface extends \Phalcon\Contracts\Dispatcher\Dispatcher
 {
     /**
-     * Determine whether a forward target differs from the current dispatch.
+     * Determine whether a forward target differs from the effective dispatch.
      *
-     * Implementations should compare only the route parts they understand.
+     * Resolve empty namespace/handler/action names to dispatcher defaults and
+     * preserve null/omitted parts without changing the live dispatch state.
+     * Module and parameter values remain part of the comparison. Controller
+     * takes precedence over task, matching native forward() in either mode.
      * This is used by listeners that forward to error, maintenance, or
      * unauthorized routes and need to avoid forwarding back to themselves.
      *
