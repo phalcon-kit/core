@@ -45,13 +45,14 @@ trait Json
      * @param string $json The JSON string to be decoded.
      * @param bool|null $associative [Optional] When `true`, returned objects will be converted into associative arrays.
      *                                         When `false`, objects will be returned as generic objects. If `null`, objects
-     *                                         will be returned based on the JSON_NUMERIC_CHECK flag.
+     *                                         will be returned based on the JSON_OBJECT_AS_ARRAY flag.
      * @param int $depth [Optional] The maximum depth of recursion when decoding nested objects.
      *                              Defaults to 512.
      * @param int $flags [Optional] Bitmask of JSON decode options.
      *                              Defaults to 0.
      *
-     * @return mixed The decoded value on success, or the original JSON string on failure.
+     * @return mixed The decoded value, or null for invalid JSON without JSON_THROW_ON_ERROR.
+     * @throws \JsonException If decoding fails with JSON_THROW_ON_ERROR enabled.
      */
     public function jsonDecode(string $json, ?bool $associative = null, int $depth = 512, int $flags = 0): mixed
     {

@@ -15,7 +15,7 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 4.0.0 - Unreleased
+## 4.0.0 - 2026-09-24
 
 ### Removed
 
@@ -85,21 +85,24 @@ release notes.
   or an application task's arrays. Configured keys replace task defaults;
   omitted keys preserve them. Keep `drop`, `truncate`, `fix-engine`, `insert`,
   `optimize`, `analyze`, and `reset`. Unconfigured operations issue no queries.
-- Prepare Core 4.0 with alpha version metadata, an upgrade/retirement inventory,
-  and release gates for schema ownership and consumer acceptance. Remove resolved
+- Publish stable 4.0.0 metadata with an upgrade/retirement inventory and explicit
+  schema ownership and application acceptance requirements. Remove resolved
   legacy-runtime design questions.
 - Consolidate development on `master` and preserve published releases through
   tags. Retire version and merged work branches; fold the untagged 3.11.2
   maintenance work into this release. `dev-master` now follows breaking 4.0 work.
 - Maintain only Core 4.x. End support for all earlier versions, including
   `zemit-cms/core`, with no bug fixes, security fixes, or backports. Preserve
-  historical tags and clarify that no supported stable release is available
-  while Core 4.0 is unreleased. Align installation and release guidance.
-- Align the upcoming Core and App releases at 4.0.0. Expose `master` as
-  `4.0.x-dev` through Composer's branch alias for explicit preview consumers,
-  and document the stable constraint, lockfile, and installation release gates.
-- Document the aligned App 4.0 development skeleton and its explicit preview
-  installation path and opt-in baseline for persisted features.
+  historical tags and align installation and support guidance with stable 4.x.
+- Align Core and App at 4.0.0. App uses Core `^4.0` and a tested stable lockfile;
+  `master` remains available as `4.0.x-dev` for deliberate development testing.
+- Document the App 4.0 skeleton's stable installation path and opt-in baseline
+  for persisted features. Record isolated consumer/schema acceptance and keep
+  production-data, external delivery, and SSO checks in application rollouts.
+- Keep the roadmap focused on upcoming relationship and scaffold contracts;
+  move release outcomes and durable adoption checks to their relevant guides.
+- Correct JSON decoding PHPDoc to describe object flags, invalid input, and
+  exceptions accurately; link native JSON exceptions to the PHP manual.
 - Regenerate the public API reference for the retained Core 4 surface and link
   native `PDOException` references to the PHP manual.
 - Retain the draft base-model service and initialization contracts; discard

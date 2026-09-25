@@ -7,11 +7,10 @@ Use the right channel so issues stay actionable.
 Only Core **4.x** is maintained and supported. All earlier versions are end of
 life, with no support, bug fixes, security fixes, or backports.
 
-`master` carries unreleased Core 4.0 development, so there is currently no
-supported stable release. Published versions remain available through their
-tags for historical use and reproducible installs; there are no standing version
-branches. Keep existing application lockfiles while preparing an isolated
-migration. See the [branch policy](guides/release.md#branch-policy) and
+Use tagged **4.x** releases for supported installations. `master` carries ongoing
+development; published versions remain available through their tags, and there
+are no standing version branches. Keep existing application lockfiles while
+preparing an isolated migration. See the [branch policy](guides/release.md#branch-policy) and
 [Core 4.0 upgrade guide](guides/upgrading-4.0.md) before following `dev-master`.
 
 ## Questions

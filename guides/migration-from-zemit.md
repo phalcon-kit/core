@@ -8,8 +8,8 @@ old package name.
 
 This is a historical package-name migration guide. Its 1.x examples and all
 other releases before Core 4.x are unmaintained and unsupported. Only 4.x is
-maintained, and Core 4.0 is still unreleased. Renaming the dependency alone
-does not complete the [Core 4.0 upgrade](upgrading-4.0.md).
+maintained. Renaming the dependency alone does not complete the
+[Core 4.0 upgrade](upgrading-4.0.md).
 
 ## What Changed
 
@@ -109,7 +109,6 @@ and revert if a legacy app exposes an unexpected compatibility issue.
 
 ## New Project Rule
 
-Use the maintained `phalcon-kit/core` 4.x line. While Core 4.0 is unreleased,
-follow [Getting Started](getting-started.md) for App 4.0 evaluation instructions
-and the remaining schema-installation limitations. The latest released App 2.x
-skeleton targets unsupported Core 3.x.
+Use the maintained `phalcon-kit/core` 4.x line and the matching App 4.x skeleton.
+Follow [Getting Started](getting-started.md) for installation and the opt-in
+fresh database baseline. Earlier App 2.x releases target unsupported Core 3.x.

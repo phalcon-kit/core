@@ -1,13 +1,12 @@
 # Getting Started
 
-Only Core 4.x is maintained. Core and the App skeleton are preparing matching
-**4.0.0** releases. Their development previews include an opt-in
-[fresh database baseline](database-migrations.md#fresh-core-installation). There is currently no
-supported stable release; see the [support policy](../SUPPORT.md) and
-[Core 4.0 release gates](upgrading-4.0.md#stable-release-gates).
+Only Core 4.x is maintained. Core and the App skeleton start the 4.x line at
+**4.0.0**, with an opt-in
+[fresh database baseline](database-migrations.md#fresh-core-installation).
+See the [support policy](../SUPPORT.md) and
+[Core 4.0 upgrade checks](upgrading-4.0.md#application-upgrade-checks).
 
-The sections below describe application setup and workflows to validate during
-Core 4.0 evaluation:
+The sections below describe application setup and the first workflows to verify:
 
 - dependencies installed against the current package requirements;
 - environment-backed application configuration;
@@ -32,35 +31,32 @@ composer --version
 
 ## 1. Create Or Install
 
-Evaluate the App 4.0 development skeleton in an isolated directory:
+Create an application from the App 4.0 skeleton:
 
 ```shell
-composer create-project phalcon-kit/app:dev-master my-api
+composer create-project phalcon-kit/app:^4.0 my-api
 cd my-api
 cp .env.example .env
 composer qa
 ```
 
-The preview uses Core `^4.0@dev` with a committed lockfile. The stable App 4.0.0
-release will use Core `^4.0` and lock the tested stable release. App deliberately
-skips 3.x to match Core's major version.
+App 4.0.0 requires Core `^4.0` and commits the tested stable dependency lockfile.
+App deliberately skips 3.x to match Core's major version. Older App 2.x releases
+target unsupported Core 3.x.
 
-The latest released App 2.x skeleton installs unsupported Core 3.x. Until 4.0 is
-released, an unconstrained `composer require phalcon-kit/core` also selects an
-older stable release under Composer's default stability policy.
-
-For Core 4.0 evaluation in an isolated checkout of an existing application,
-read the [upgrade guide](upgrading-4.0.md), then require the development branch:
+For an existing application, prepare an isolated upgrade checkout and read the
+[upgrade guide](upgrading-4.0.md), then require the stable line:
 
 ```shell
-composer require phalcon-kit/core:dev-master
+composer require phalcon-kit/core:^4.0
 ```
 
 Review dependency and lockfile changes and test the application's own flows.
-`dev-master` follows breaking development work. All earlier Core versions and
-the old `zemit-cms/core` package are unmaintained and unsupported.
+Use tagged releases and keep the lockfile; `dev-master` follows ongoing
+development. All earlier Core versions and the old `zemit-cms/core` package
+are unmaintained and unsupported.
 
-The preview can run its basic routes and CLI without a database. Features such
+The skeleton can run its basic routes and CLI without a database. Features such
 as identity, audit, and templates require their tables; the validated Core 4.0
 schema is available through the [fresh-install migration guide](database-migrations.md).
 Existing applications keep their migration history and need their own upgrade review.

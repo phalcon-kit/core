@@ -1,8 +1,8 @@
 # Runtime Compatibility
 
-Phalcon Kit documentation follows the maintained Core 4.x line, currently
-unreleased on `master`. Earlier package releases are unsupported; references
-to them below describe compatibility history. The package’s `composer.json`,
+Phalcon Kit documentation follows the maintained Core 4.x line. Earlier
+package releases are unsupported; references to them below describe
+compatibility history. The package’s `composer.json`,
 CI workflow, and release notes are the authorities for exact PHP, Phalcon
 extension, and development-tool versions.
 
@@ -11,8 +11,9 @@ requirements without duplicating version numbers in application documentation.
 
 ## Phalcon 5.22.0 Upgrade Notes
 
-Core 3.11.1 requires Phalcon `^5.22.0` and matching `phalcon/ide-stubs`
-`^5.22.0`. CI installs the checksum-verified official 5.22.0 release built
+Core 4.0 retains the runtime baseline introduced in 3.11.1: Phalcon `^5.22.0`
+and matching `phalcon/ide-stubs` `^5.22.0`. CI installs the checksum-verified
+official 5.22.0 release built
 with Zephir 1.5.0. Update CLI, PHP-FPM, and long-lived workers together before
 refreshing Composer dependencies.
 
@@ -107,18 +108,15 @@ php --ri phalcon
 
 ## Install Or Update An Application
 
-Core 4.0 is still unreleased, so there is currently no supported stable release.
-An unconstrained install can select an unsupported older release. For isolated
-Core 4.0 evaluation, follow the [upgrade guide](upgrading-4.0.md) and explicitly
-select the development branch:
+Follow the [upgrade guide](upgrading-4.0.md) in an isolated application checkout
+and select the supported stable line:
 
 ```bash
-composer require phalcon-kit/core:dev-master
+composer require phalcon-kit/core:^4.0
 ```
 
 Review the dependency and lockfile changes against the application's PHP and
-platform extensions. Once a stable Core 4.x release is published, use a suitable
-tagged 4.x constraint and commit the application's lockfile.
+platform extensions. Commit the application's tested lockfile before rollout.
 
 For a focused update:
 

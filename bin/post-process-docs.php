@@ -29,6 +29,7 @@ $nativeClasses = [
     'DateMalformedStringException',
     'Exception',
     'InvalidArgumentException',
+    'JsonException',
     'LogicException',
     'PDOException',
     'ReflectionException',

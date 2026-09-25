@@ -1,52 +1,31 @@
 # Roadmap
 
-This is the active release roadmap for **Core 4.0 on `master`**.
-Implemented changes belong in [CHANGELOG.md](CHANGELOG.md); consumer guidance
-and the removal inventory live in [Upgrading To Core 4.0](guides/upgrading-4.0.md).
-Published releases remain available through tags. The repository keeps a single
-long-lived branch; see the [release policy](guides/release.md#branch-policy).
+This is the active roadmap for the maintained **Core 4.x** line on `master`.
+Shipped outcomes belong in [CHANGELOG.md](CHANGELOG.md); application adoption
+requirements belong in [Upgrading To Core 4.0](guides/upgrading-4.0.md).
+Published releases are preserved by signed tags under the [release policy](guides/release.md).
 
-## Existing Application Schema Acceptance
+## Relationship And Resource Contracts
 
-Status: Required before a stable 4.0 release.
+Status: Next documentation and regression batch.
 
-- Exercise application-owned upgrade migrations against isolated existing schemas.
-  The new fresh baseline deliberately refuses existing tables and history.
-- Review actual consumer engine/collation/index differences and data compatibility
-  before converting them. Preserve application migration history and retained data.
+- Document accepted one-to-many and many-to-many payloads, ownership checks,
+  transaction boundaries, and eager-loading behavior through small consumer examples.
+- Cross-check public/protected PHPDoc against those examples and cover any missing
+  behavioral edge cases before changing runtime code.
+- Retain deprecated REST aliases until wrapper/SDK consumers have an explicit
+  migration and equivalent response-contract tests.
 
-The fresh baseline and reusable SQL migration pattern are documented in
-[Database Migrations](guides/database-migrations.md). Its shipped validation
-belongs in the changelog; existing application acceptance remains separate.
+## Scaffold Output And TypeScript Contracts
 
-## Retained Feature Contracts
+Status: Follow-up batch after relationship contracts.
 
-Status: Next — focused batches with consumer fixtures.
+- Verify scaffold output ownership, regeneration safety, and generated-interface
+  expectations against application-owned models.
+- Review TypeScript generation examples and consumer expectations without adding
+  a new abstraction or hand-editing generated output.
 
-- Validate [retained feature contracts](guides/feature-contracts.md) through
-  consumer fixtures, including generated-interface and relationship compatibility.
-- Document relationship payloads, ownership checks, transactions, and eager
-  loading, then scaffold output ownership and TypeScript generation.
-- Review the remaining prepared models only after service/relationship closure
-  and consumer need are understood. Do not expand the removal list by name alone.
-
-## Consumer And Distribution Acceptance
-
-Status: Required before tagging 4.0.
-
-- Exercise isolated application upgrades: login/registration/reset/session
-  behavior, permission and tenant filters, REST response contracts, nested
-  writes/eager loading, file/audit behavior, and CLI/WebSocket extension points.
-- Preserve REST aliases until SDK and wrapper callers have an explicit migration.
-- Pass lowest/highest dependency CI, required native database regressions,
-  Swoole callback coverage, and a fresh Composer installation with stub patches.
-- Coordinate Core and App **4.0.0** tags. After Core is published, replace App's
-  temporary `^4.0@dev` constraint with `^4.0`, lock the stable Core tag, pass
-  App CI, and verify a fresh public project install before tagging App.
-- Regenerate API docs from the settled public surface and verify guide examples.
-- Publish the upgrade guide with the 4.x-only support policy in `SECURITY.md`.
-  Migrate existing `dev-master` consumers deliberately; that constraint now
-  follows 4.0 development, while their existing lockfiles retain the old commit.
-
-Broader integration packaging, framework upgrades, mass renaming, and
-license-header cleanup remain separate from the 4.0 scope.
+Open design questions and possible removals remain in
+[To Be Discussed](guides/to-be-discussed.md) until behavior, compatibility risk,
+and validation are concrete. Further model retirement, framework upgrades,
+optional integration packaging, and license-header cleanup are separate work.

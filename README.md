@@ -1,12 +1,12 @@
 # Phalcon Kit Core
 
-`master` carries **unreleased Core 4.0 development**. Core 4.0 removes the legacy
-catalog/CMS runtime and makes database maintenance data application-owned.
-Read the [upgrade guide](guides/upgrading-4.0.md) before testing this branch.
+**Core 4.0.0** removes the legacy catalog/CMS runtime and makes database
+maintenance data application-owned.
+Read the [upgrade guide](guides/upgrading-4.0.md) before upgrading an application.
 **Only 4.x is maintained.** All earlier versions are end of life, with no bug
 fixes, security fixes, or backports; their tags remain available for historical
-use. There is currently no supported stable release. `master` is the only
-long-lived branch, and Composer's `dev-master` tracks its breaking 4.0 work.
+use. `master` is the only long-lived branch. Use tagged 4.x releases and keep
+application lockfiles; Composer's `dev-master` follows ongoing development.
 See the [security policy](SECURITY.md) for the support boundary.
 
 [![CI](https://github.com/phalcon-kit/core/actions/workflows/main.yml/badge.svg)](https://github.com/phalcon-kit/core/actions/workflows/main.yml)
@@ -39,22 +39,21 @@ describe compatibility with the upstream framework.
 
 ## Quick Start
 
-Evaluate the App 4.0 skeleton in an isolated directory:
+Create an application with the matching App 4.0 skeleton:
 
 ```shell
-composer create-project phalcon-kit/app:dev-master my-api
+composer create-project phalcon-kit/app:^4.0 my-api
 ```
 
 For an isolated checkout of an existing application:
 
 ```shell
-composer require phalcon-kit/core:dev-master
+composer require phalcon-kit/core:^4.0
 ```
 
 Read the [upgrade guide](guides/upgrading-4.0.md) first and review the resulting
-Composer changes. App and Core are preparing matching **4.0.0** releases; both
-commands select development previews. The latest released App 2.x targets
-unsupported Core 3.x. Persisted Core features have an opt-in
+Composer changes. App and Core start the 4.x line together at **4.0.0**.
+Persisted Core features have an opt-in
 [fresh database baseline](guides/database-migrations.md); existing applications
 still need a schema and behavior acceptance review.
 

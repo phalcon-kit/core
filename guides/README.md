@@ -2,16 +2,15 @@
 
 Build a complete Phalcon Kit application one workflow at a time. These guides
 document the current branch of `phalcon-kit/core`; Composer metadata is the
-authority for runtime and dependency requirements. `master` now carries
-unreleased Core 4.0 development, the only maintained line. All earlier releases
-are unsupported; their matching tags preserve historical documentation. See
-[Upgrading To Core 4.0](upgrading-4.0.md) for breaking changes and remaining
-release gates. There is currently no supported stable release.
+authority for runtime and dependency requirements. Core 4.x is the only
+maintained line. All earlier releases are unsupported; their matching tags
+preserve historical documentation. See [Upgrading To Core 4.0](upgrading-4.0.md)
+for breaking changes and application acceptance checks.
 
 !!! tip "New to Phalcon Kit?"
 
-    Start with **Getting Started** for the Core 4.0 evaluation instructions and
-    current skeleton limitations, then follow the **First API** track.
+    Start with **Getting Started** to install the matching App 4.x skeleton,
+    then follow the **First API** track.
 
 ## Choose A Learning Track
 
@@ -108,9 +107,9 @@ Use these guides as the durable reference while building:
 
 This documentation is intentionally rolling:
 
-- it follows the maintained Core 4.x line, currently unreleased on `master`;
+- it follows the maintained Core 4.x line and ongoing work on `master`;
 - it does not maintain parallel versioned sites;
-- installation examples distinguish development previews from stable releases;
+- installation examples use tagged stable releases;
 - exact versions belong in Composer metadata, release notes, and compatibility
   investigations where the number itself matters.
 

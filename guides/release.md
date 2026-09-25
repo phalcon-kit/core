@@ -7,21 +7,20 @@ Use this checklist when preparing a public release.
 Phalcon Kit follows SemVer for tagged public releases. Keep unreleased work
 under the current `Unreleased` heading in `CHANGELOG.md` until the tag is cut.
 
-Core and the App skeleton will start the 4.x line together at **4.0.0**. App
+Core and the App skeleton start the 4.x line together at **4.0.0**. App
 intentionally skips 3.x to align its major version with Core. App 4.0.0 must
 require Core `^4.0` and lock the tested stable Core release. Publish Docs from
 the same Core source and synchronized guides.
 
-During preparation, Core's Composer branch alias maps `dev-master` to
-`4.0.x-dev`. App may require `^4.0@dev` for explicit preview testing while
-keeping stable dependency selection for other packages. Before tagging App
-4.0.0, replace that preview constraint with `^4.0`, refresh its lockfile from
-the published Core 4.0.0 tag, and rerun App CI and a fresh project install.
+Core's Composer branch alias maps `dev-master` to `4.0.x-dev` for deliberate
+development testing. Stable applications use `^4.0` and their committed lockfile.
+When coordinating releases, publish Core first, then update App's stable lockfile
+from the public distribution and verify App CI and a fresh project install.
 
 ## Branch Policy
 
-`master` is the sole long-lived branch and currently contains unreleased Core
-4.0 development. Version branches are not kept as release archives; existing
+`master` is the sole long-lived branch and carries ongoing Core 4.x
+development. Version branches are not kept as release archives; existing
 tags preserve published releases. Short-lived contribution branches may
 be removed once their work is merged or otherwise preserved.
 
@@ -32,7 +31,6 @@ development and can introduce breaking changes during a major-version transition
 Only Core 4.x is maintained, as defined in [SECURITY.md](../SECURITY.md).
 All earlier versions are end of life: do not prepare maintenance releases or
 security backports for them. Preserve their existing tags as historical records.
-Core 4.0 is still unreleased, so there is currently no supported stable release.
 
 ## Before Release
 

@@ -152,7 +152,7 @@ parameters implicitly. Core ships a type-only compatibility patch at
 installation. It adds explicit `?` types without changing migration behavior.
 Deprecation reporting remains enabled in Core's tests.
 
-The matching App preview already configures Composer Patches, keeps reviewed
+The matching App 4.x skeleton configures Composer Patches, keeps reviewed
 patch copies in its own `patches/` directory, and commits `patches.lock.json`.
 Fresh development installs apply them automatically.
 

@@ -1,12 +1,11 @@
 # Upgrading To Core 4.0
 
-Status: unreleased development work on `master`. This guide describes implemented
-changes and the checks still required before a stable release. PHP 8.5 and
-Phalcon 5.22 remain the runtime baseline.
+This guide covers the breaking changes in **Core 4.0.0** and the checks required
+when adopting it in an application. PHP 8.5 and Phalcon 5.22 remain the runtime
+baseline.
 
 Only Core 4.x is maintained. All earlier versions, including `zemit-cms/core`,
 are end of life and receive no support, bug fixes, security fixes, or backports.
-There is currently no supported stable release while Core 4.0 is in development.
 Older tags remain available for reproducible installs during migration; see
 the [security policy](../SECURITY.md).
 
@@ -151,7 +150,7 @@ contains no accounts, roles, or other seed records.
 
 1. Keep the application's existing lockfile and a suitable tagged-version
    constraint while preparing an isolated upgrade checkout. `dev-master` now
-   follows breaking 4.0 development; a dependency update can select it. The old
+   follows ongoing development; use `^4.0` for the supported stable line. The old
    `0.4.x`, `1.0.x`, and temporary `4.x` branches have been retired. Applications
    using branch constraints must select an appropriate tagged release or opt
    into testing `dev-master` deliberately.
@@ -169,26 +168,25 @@ contains no accounts, roles, or other seed records.
    WebSocket tasks the application uses. Class-loading smoke tests do not prove
    those flows work.
 
-## Stable Release Gates
+## Release Validation And Application Adoption
 
-The first implementation removes the closed legacy runtime group and implicit
-maintenance data. It does not claim a completed application migration.
+Core 4.0 validation includes the lowest/highest dependency CI matrix, native
+MySQL baseline and transaction tests, public Composer installs, regenerated API
+reference, and isolated application acceptance suites. Consumer fixtures cover
+model substitution and persistence, tenant/permission rules, API compatibility,
+identity/reset/session behavior, notifications, and application migrations.
 
-Before 4.0 is tagged:
+These fixtures use disposable schemas and synthetic data. They do not certify
+an application's production data conversion, browser/mobile SSO, or external
+provider delivery. Verify those workflows in the application's rollout process,
+with its own migration review and recovery plan. The fresh Core baseline must
+never run over an existing application schema.
 
-- Validate actual consumer schema upgrades with application-owned migrations,
-  without rewriting historical migrations or running the fresh baseline over data.
-- Document each retained feature's required models,
-  tables, services, and supported substitution contract.
-- Exercise real consumer acceptance suites in isolated checkouts, including
-  custom identity/session overrides, reset delivery, REST compatibility routes,
-  and WebSocket tasks.
-- Review the remaining direct concrete-model lookups and generated-interface
-  coupling before promising full model substitution across every feature.
-- Pass the release CI matrix, mandatory native database regressions, and a fresh
-  Composer install; regenerate API documentation deliberately from the final
-  retained public surface.
-- Publish the upgrade notes with the 4.x-only support policy in `SECURITY.md`.
-  `master` is the sole long-lived branch; signed tags identify
-  releases. Complete branch-consumer migration checks before recommending 4.0
-  for existing applications.
+Model substitution follows the boundaries in [Retained Feature Contracts](feature-contracts.md):
+configured resolvers do not rewrite direct class references or generated
+relationships. Preserve application overrides and public REST aliases until
+their callers have been migrated and tested.
+
+Only Core 4.x is maintained. `master` is the sole long-lived branch; signed tags
+identify releases. See the [release process](release.md) for distribution checks
+and the [security policy](../SECURITY.md) for the support boundary.
