@@ -73,6 +73,20 @@ composer phpunit
 
 The wrapper scripts under `bin/` keep local and CI analyzer behavior aligned.
 
+### Native Phalcon Properties In Psalm
+
+`stubs/phalcon-validation.php` supplies only the protected `$template` property
+of the native `Phalcon\Filter\Validation\AbstractValidator`. Psalm 6.19.0 and
+6.19.1 read native properties' visibility but leave their write visibility at
+the public default. This incorrectly rejects the protected overrides in Core's
+`Color` and `Json` validators. Other native methods and properties continue to
+come from reflection; the stub is never loaded by the application.
+
+Keep the stub aligned with native Phalcon and its published IDE declarations.
+Remove it once an upstream Psalm release passes uncached analysis without it.
+Reproduce CI issues with the version printed in the `Run Psalm` step, since CI
+installs the latest stable analyzer independently of the project's dependencies.
+
 ## CI Expectations
 
 The default CI workflow runs on the declared PHP baseline. Composer and PHPUnit

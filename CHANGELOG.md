@@ -15,6 +15,16 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.0.1 - Unreleased
+
+### Fixed
+
+- Supply Psalm with the native Phalcon validator template property's protected
+  visibility. This avoids the false `OverriddenPropertyAccess` errors introduced
+  by Psalm 6.19 while preserving runtime behavior and property-access checks.
+- Log the installed Psalm version in CI and point the final failure step to the
+  analyzer diagnostics.
+
 ## 4.0.0 - 2026-09-24
 
 ### Removed

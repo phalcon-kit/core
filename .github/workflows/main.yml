@@ -248,6 +248,7 @@ jobs:
         id: psalm
         continue-on-error: true
         run: |
+          psalm --version
           PSALM_THREADS=4 PSALM_SCAN_THREADS=4 composer psalm -- --output-format=github --report=results.sarif --report-show-info=false --no-progress --no-cache
 
       - name: Upload Psalm report to GitHub Code Scanning
@@ -259,7 +260,9 @@ jobs:
 
       - name: Fail on Psalm errors
         if: ${{ steps.psalm.outcome == 'failure' }}
-        run: exit 1
+        run: |
+          echo "::error::Psalm failed. See the Run Psalm step above for diagnostics."
+          exit 1
 
       - name: Run Psalm taint analysis
         run: |
