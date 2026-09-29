@@ -1,126 +1,72 @@
-# Developer Guides
+# PhalconKit User Guide
 
-Build a complete Phalcon Kit application one workflow at a time. These guides
-document the current branch of `phalcon-kit/core`; Composer metadata is the
-authority for runtime and dependency requirements. Core 4.x is the only
-maintained line. All earlier releases are unsupported; their matching tags
-preserve historical documentation. See [Upgrading To Core 4.0](upgrading-4.0.md)
-for breaking changes and application acceptance checks.
+Use PhalconKit as the application layer between Phalcon and your project.
+These guides describe the current API and use the App skeleton's paths unless
+an example explicitly says otherwise.
 
-!!! tip "New to Phalcon Kit?"
+## Build Your First Application
 
-    Start with **Getting Started** to install the matching App 4.x skeleton,
-    then follow the **First API** track.
+1. [Get started](getting-started.md): install, configure, and run the skeleton.
+2. [Build your first resource](first-rest-resource.md): create a table, generate
+   its model, expose a controlled API, and verify requests and responses.
+3. [Add authentication](authentication.md) and [permissions](identity-and-permissions.md).
+4. [Run your application](web-server-and-websocket.md) behind a web server.
 
-## Choose A Learning Track
+Already have a project? Start with [Application Integration](application-integration.md).
 
-<div class="grid cards" markdown>
+## REST API Handbook
 
--   :material-rocket-launch:{ .lg .middle } **First API**
-
-    ---
-
-    Install the application, learn its structure, and build a complete resource.
-
-    1. [Getting Started](getting-started.md)
-    2. [Resource Walkthrough](resource-walkthrough.md)
-    3. [Build Your First REST Resource](first-rest-resource.md)
-
--   :material-database-cog:{ .lg .middle } **Database-First Development**
-
-    ---
-
-    Turn migrations into typed models, relationships, validation, and API data.
-
-    1. [Database Migrations](database-migrations.md)
-    2. [Database And Scaffolding](database-scaffolding.md)
-    3. [Models And Eager Loading](models-and-eager-loading.md)
-    4. [REST APIs](rest-api.md)
-
--   :material-shield-account:{ .lg .middle } **Secure APIs**
-
-    ---
-
-    Configure identity, roles, feature permissions, and row-level conditions.
-
-    1. [Identity And Permissions](identity-and-permissions.md)
-    2. [Configuration](configuration.md)
-    3. [Developer Cookbook](cookbook.md)
-
--   :material-server-network:{ .lg .middle } **Run And Operate**
-
-    ---
-
-    Serve HTTP, run CLI and WebSocket processes, and validate runtime alignment.
-
-    1. [Web Server And WebSocket](web-server-and-websocket.md)
-    2. [Runtime Compatibility](phalcon-runtime-upgrades.md)
-    3. [Troubleshooting](troubleshooting.md)
-
--   :material-swap-horizontal:{ .lg .middle } **Migrate**
-
-    ---
-
-    Move a legacy package or REST resource onto current namespaces and contracts.
-
-    1. [From zemit-cms/core](migration-from-zemit.md)
-    2. [RESTful 0.x To 1.x](migration-restful-0x-to-1x.md)
-    3. [Upgrading To Core 4.0](upgrading-4.0.md)
-
--   :material-hammer-wrench:{ .lg .middle } **Contribute**
-
-    ---
-
-    Run the project gates, understand test layers, and prepare releases.
-
-    1. [Quality And Maintenance](quality-and-maintenance.md)
-    2. [Testing Strategy](testing-roadmap.md)
-    3. [Release Process](release.md)
-
-</div>
-
-## Core Concepts
-
-Use these guides as the durable reference while building:
-
-| Topic | What it answers |
+| Guide | What you will find |
 | --- | --- |
-| [Architecture](architecture.md) | Where should bootstrap, config, generated code, models, controllers, and tasks live? |
-| [Configuration](configuration.md) | How do modules, providers, aliases, events, identity, and permissions fit together? |
-| [Retained Feature Contracts](feature-contracts.md) | Which tables, services, model interfaces, and application workflows does each Core feature require? |
-| [Database And Scaffolding](database-scaffolding.md) | Which files are generated, which files are app-owned, and how do schema changes flow into code? |
-| [Models And Eager Loading](models-and-eager-loading.md) | How do relationships, nested saves, eager loading, behaviors, snapshots, and cache invalidation work? |
-| [REST APIs](rest-api.md) | How are fields, filters, joins, counts, transformers, and response envelopes configured? |
-| [Identity And Permissions](identity-and-permissions.md) | How are feature access, roles, attributes, behaviors, and row-level policy enforced? |
+| [REST Controllers](rest-api.md) | Every built-in action, controller setup, field policies, and extension points |
+| [Requests And Responses](rest-requests-and-responses.md) | URLs, HTTP methods, JSON/form/query inputs, response envelopes, errors, and client examples |
+| [Filtering And Pagination](rest-filtering.md) | Filter objects, all operator families, nested AND/OR groups, search, sorting, limits, and offsets |
+| [Writes And Batches](rest-writes.md) | Create/update/save intent, validation, partial batch success, delete, restore, and reorder |
+| [Relationships](rest-relationships.md) | Eager loading, client-selected graphs, related filters, nested writes, and safe exposure |
+| [Counts, Aggregates, And Exports](rest-aggregates.md) | List totals, grouped counts, distinct facets, calculations, and CSV downloads |
+| [API Scenario Checklist](rest-scenarios.md) | Request/result cases to verify for your own resource |
 
-## Examples And Answers
+Examples distinguish the complete HTTP envelope from a `view` fragment. Each
+resource controls its exposed fields, enabled actions, and row access, so copy
+the accompanying controller configuration as well as the request.
 
-- [Developer Cookbook](cookbook.md) contains focused copy-and-adapt recipes for
-  common application tasks.
-- [Troubleshooting](troubleshooting.md) starts from symptoms such as boot
-  failures, missing services, routing errors, migration drift, and unexpected
-  REST output.
-- [API Reference](https://phalcon-kit.github.io/docs/api/) is generated from the
-  current source and is useful when you know the class or method name.
+## Application Development
 
-## Latest-Version Policy
+| Task | Guide |
+| --- | --- |
+| Decide where application code belongs | [Architecture](architecture.md) |
+| Configure environments, modules, and services | [Configuration](configuration.md) |
+| Connect Core to your own bootstrap | [Application Integration](application-integration.md) |
+| Manage application tables | [Database Migrations](database-migrations.md) |
+| Generate and regenerate models | [Database And Scaffolding](database-scaffolding.md) |
+| Work with model relationships and behaviors | [Models And Eager Loading](models-and-eager-loading.md) |
+| Choose the tables and services a feature needs | [Feature Setup](feature-contracts.md) |
+| Sign in, refresh tokens, and sign out | [Authentication](authentication.md) |
+| Grant actions and restrict rows | [Identity And Permissions](identity-and-permissions.md) |
+| Configure keys, CORS, and sensitive fields | [Application Security](security-hardening.md) |
+| Write a command | [CLI Tasks](cli-tasks.md) |
+| Serve HTTP and WebSockets | [Web Servers And WebSockets](web-server-and-websocket.md) |
+| Check PHP and Phalcon in each runtime | [Runtime Requirements](phalcon-runtime-upgrades.md) |
+| Test your application's behavior | [Application Testing](application-testing.md) |
+| Find a focused implementation example | [Application Cookbook](cookbook.md) |
+| Resolve a failure | [Troubleshooting](troubleshooting.md) |
 
-This documentation is intentionally rolling:
+## Existing Applications
 
-- it follows the maintained Core 4.x line and ongoing work on `master`;
-- it does not maintain parallel versioned sites;
-- installation examples use tagged stable releases;
-- exact versions belong in Composer metadata, release notes, and compatibility
-  investigations where the number itself matters.
+Use the [migration index](migrations/README.md) for package/namespace changes,
+older REST resources, Core 4, and App layout/dependency changes. These guides
+share a consistent preparation, change, verification, and rollback structure.
 
-Phalcon Kit extends Phalcon instead of replacing it. Use the
-[latest Phalcon documentation](https://docs.phalcon.io/latest/){:target="_blank"}
-for native framework behavior. Phalcon Kit is independently maintained and is
-not affiliated with or endorsed by the official Phalcon project.
+## Reference And Help
 
-## AI-Assisted Development
+- [Class reference](https://phalcon-kit.github.io/docs/api/Home/): exact classes,
+  methods, and signatures.
+- [Phalcon documentation](https://docs.phalcon.io/latest/): the underlying PHP
+  framework's APIs.
+- [Discussions](https://github.com/orgs/phalcon-kit/discussions): application
+  questions and examples.
+- [Issue tracker](https://github.com/phalcon-kit/core/issues): reproducible bugs
+  and documentation corrections.
 
-Read [AI-Assisted Development](https://github.com/phalcon-kit/core/blob/master/AI.md) for bundled skill paths, safe usage,
-and coverage notes. Human-facing guides explain the concepts; agent references
-under `resources/skills/` add stricter operational instructions. Both surfaces
-should describe the same public conventions.
+For changes to PhalconKit itself, use the [contribution guide](../CONTRIBUTING.md).
+Project maintenance and release procedures are separate from application setup.

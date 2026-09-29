@@ -1,13 +1,12 @@
-# Retained Feature Contracts
+# Feature Setup
 
 Core supplies Phalcon extensions and reusable application components. This guide
-describes the storage and extension contracts behind the retained features, so an
+describes the storage and extension contracts behind the available features, so an
 application can decide which pieces to adopt and which workflows to implement.
 
-The [fresh database baseline](database-migrations.md) installs all 29 retained
+The [fresh database baseline](database-migrations.md) installs all 29 Core
 tables together, including their foreign-key dependencies. The table groups below
-describe feature use; they are not independent migration bundles. Existing
-applications own their schemas, migrations, model classes, and data.
+describe feature use; they are not independent migration bundles. Your application owns its schema, migrations, model classes, and data.
 
 ## Common Model And Service Contract
 
@@ -154,4 +153,4 @@ For consumer acceptance, exercise mapped models through real feature calls,
 not only `get*Class()` assertions: login/reset and session renewal, OAuth
 lookup/create/failure, permission filters, nested writes/eager loading, audit,
 and the application's file/email workflow. Use disposable schemas and synthetic
-credentials; preserve existing migration history.
+credentials.

@@ -15,9 +15,26 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 4.0.1 - Unreleased
+## 4.0.1 - 2026-09-29
+
+### Documentation
+
+- Rebuild the application guides around installation, complete REST requests and
+  responses, filters, relationships, writes, authentication, CLI commands, and
+  WebSocket application patterns. Organize package, REST, Core, and App upgrade
+  instructions under a separate, standardized migration-guide directory.
+- Document verified expose-field defaults, controller/model grants, session
+  cookies, JWT key requirements, and scaffold generation/regeneration workflows.
+- Define consumer-focused documentation and cross-repository synchronization rules.
 
 ### Fixed
+
+- Hash plaintext passwords before saving the standard Core User model, preserving
+  existing Phalcon password hashes (including configured crypt formats) and
+  custom mapped models' own save hooks.
+- Resolve the CLI user task's actual membership alias and grant its role lookup.
+  Add `--password-stdin` for targeted create/password commands, keeping secrets
+  out of process arguments and preventing an accidental all-user stdin reset.
 
 - Supply Psalm with the native Phalcon validator template property's protected
   visibility. This avoids the false `OverriddenPropertyAccess` errors introduced
@@ -34,7 +51,7 @@ release notes.
   schema enums, `Mvc\Model\Dynamic`, the `dbd` provider/configuration, and the
   catalog-specific faker task/script. Remove their model mappings and typed
   registry helpers. Application-owned models with the same short names are
-  unaffected; see the exact inventory in [the upgrade guide](guides/upgrading-4.0.md).
+  unaffected; see the exact inventory in [the Core 4 migration guide](guides/migrations/core-4.md).
 - Remove the built-in deployment table lists and seed records, including the
   implicit development account. Upgrading the package does not delete database
   tables, application-owned migration history, or data.

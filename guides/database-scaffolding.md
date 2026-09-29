@@ -72,7 +72,10 @@ Regenerate generated layers without overwriting concrete models:
 ./scripts/regenerate-models.sh
 ```
 
-Use full `--force` only when overwriting concrete model shells is intentional.
+The App generation wrapper rejects `--force`; the regeneration wrapper supplies
+`--force --no-models` so concrete model business logic is preserved. Both wrappers
+have PowerShell `.ps1` equivalents and accept `--table=project,task` for a focused
+pass. Run generation before regeneration when adding new tables.
 
 ## 3. Add Business Logic To Concrete Models
 
@@ -147,17 +150,17 @@ for explicit flag selections. No column-type migration is required.
 
 ```shell
 phalcon-kit cli scaffold run --table=project --no-models --force \
-  --boolean-columns=project.pilot,project.quality_control,project.ai_use_allowed
+  --boolean-columns=project.enabled,project.quality_control,project.ai_use_allowed
 ```
 
 The generated `addDefaultValidations()` method contains direct rules:
 
 ```php
-$this->normalizeBooleanAttribute('pilot', false);
-$this->addBooleanValidation($validator, 'pilot', false);
-$this->normalizeBooleanAttribute('qualityControl', false);
-$this->addBooleanValidation($validator, 'qualityControl', false);
-$this->addUnsignedIntValidation($validator, 'pilotCompletionPercentage', false);
+$this->normalizeBooleanAttribute('enabled', false);
+$this->addBooleanValidation($validator, 'enabled', false);
+$this->normalizeBooleanAttribute('approved', false);
+$this->addBooleanValidation($validator, 'approved', false);
+$this->addUnsignedIntValidation($validator, 'completionPercentage', false);
 ```
 
 Both calls use column nullability. For integer-backed flags, the generated
@@ -180,11 +183,8 @@ other numbers, floats, arrays and objects remain unchanged and fail validation.
 Custom setters must preserve invalid input for validation instead of casting
 it indiscriminately. Assignment alone does not normalize values.
 
-Phalcon 5.20.3 moved Numericality's empty-value check before its string cast.
-Previously, `false` could become `''` and skip numeric validation. Boolean rules
-avoid that accidental bypass while ordinary numeric fields retain their rules.
-Regenerate existing flag validations when adopting this change and test both
-boolean values, nullable flags, and database save/reload behavior.
+Test both boolean values, nullable flags, invalid values, and database save/reload
+behavior after generation. Assignment alone is not a persistence test.
 
 ## 5. Review Connected API Code
 

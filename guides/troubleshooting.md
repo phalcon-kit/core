@@ -36,12 +36,12 @@ Check in this order:
 1. The namespace matches the file path and Composer PSR-4 mapping.
 2. `composer dump-autoload` completes.
 3. The app loader registers the application namespace before bootstrap.
-4. A renamed Zemit class is not still referenced.
+4. The selected module uses the expected controller/task namespace.
 5. The failing process uses the current deployed vendor directory.
 
 ```bash
 composer dump-autoload -o
-rg 'Zemit\\|zemit-cms' app config public cli websocket
+rg 'namespace|namespaceName' src composer.json
 ```
 
 ### A provider fails during bootstrap
@@ -121,7 +121,7 @@ the diff:
 ```bash
 ./scripts/migration-list.sh
 ./scripts/migration-run.sh
-./bin/phalcon-kit cli scaffold run --src-dir=src/ --namespace=App
+./scripts/regenerate-models.sh --table=project
 git diff -- src/Models
 ```
 
@@ -164,6 +164,24 @@ these values differ. Distinguish:
 
 Read [REST APIs](rest-api.md) before changing count SQL in an application
 controller.
+
+## Common API And Account Symptoms
+
+| Symptom | Check and correction |
+| --- | --- |
+| HTTP 200 but an empty list despite database rows | Grant the concrete model `find`, then inspect row conditions, deleted state, and filters. A controller grant alone is insufficient. |
+| Counts or sums return zero despite visible rows | Grant model `count`, `sum`, or `average` in addition to the controller action. Cancelled model aggregates can return zero. |
+| Unexpected fields appear in JSON | Start the expose list with `false`: `[false, 'id', 'label']`. Apply a closed list to nested relations too. |
+| A filter is ignored or rejected | Use `filters[0][field]`, `filters[0][operator]`, `filters[0][value]`, or the equivalent JSON node list. Check the filter-field policy. |
+| A write returns 404 for an existing ID | The update lookup uses model permissions and row scope. Check authorization before treating it as missing data. |
+| JWT creation throws `WeakPassphraseException` | Use a private signing key with the required character classes; follow [key generation](authentication.md#configure-a-signing-key). Length alone does not satisfy the native check. |
+| Login succeeds but the next request is anonymous | Send the same session cookie and bearer token. With loopback HTTP only, set `SESSION_COOKIE_SECURE=0`; use HTTPS and secure cookies in deployment. |
+| CLI cannot resolve `user` or `scaffold` | Confirm the App task bridge exists under `src/Modules/Cli/Tasks/` and has CLI component permissions. Run its `help` action. |
+| Account command exits normally but no change occurred | Inspect the returned `save`, `matched`, and `errors` fields. Confirm the target email/role exists. |
+| MariaDB rejects a collation or connection variable | Use the [independent MariaDB driver](configuration.md#mysql-and-mariadb), which omits MySQL-only initialization options. |
+
+See the [REST scenario checklist](rest-scenarios.md) for expected success,
+validation, permission, and relationship results.
 
 ## Permission Problems
 
@@ -226,5 +244,5 @@ Security vulnerabilities belong in the private process described by
 `SECURITY.md`, not a public issue.
 
 Continue with [Runtime Compatibility](phalcon-runtime-upgrades.md) for platform
-alignment or [Quality And Maintenance](quality-and-maintenance.md) for the full
+alignment or [Application Tests](application-testing.md) for the full
 project validation gate.

@@ -1,483 +1,235 @@
 # Build Your First REST Resource
 
-This tutorial shows the main reason to use PhalconKit: go from a database
-schema to a model-backed REST resource without rebuilding the same API plumbing
-for every table.
+Build a public catalogue of projects with a generated model and an explicitly
+configured REST controller. The read-only API below needs only the `project`
+table. Add authenticated writes after the read path works.
 
-The example uses two tables:
+Complete [Getting Started](getting-started.md), configure a development database,
+and run the commands from your application's root.
 
-- `project`: the main API resource.
-- `project_user`: users assigned to the project.
+## 1. Create The Table
 
-By the end, you have schema-backed models, a REST controller, nested relation
-writes, eager loading, permission config, and example request/response payloads.
-
-!!! info "Before starting"
-
-    Complete [Getting Started](getting-started.md), configure a disposable
-    development database, and confirm migrations run against that database.
-    The scaffolder reads the live schema.
-
-## 1. Create Or Migrate The Schema
-
-Example MySQL schema:
+Execute this SQL in your development database. In an application you deploy,
+keep the same schema in an [application migration](database-migrations.md).
 
 ```sql
 CREATE TABLE project (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     label VARCHAR(120) NOT NULL,
     status ENUM('draft', 'active', 'archived') NOT NULL DEFAULT 'draft',
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NULL DEFAULT NULL,
+    budget INT UNSIGNED NOT NULL DEFAULT 0,
     deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-    UNIQUE KEY uniq_project_label (label)
-);
-
-CREATE TABLE project_user (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    project_id INT UNSIGNED NOT NULL,
-    user_id INT UNSIGNED NOT NULL,
-    type ENUM('leader', 'member', 'observer') NOT NULL DEFAULT 'member',
-    deleted TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NULL DEFAULT NULL,
-    UNIQUE KEY uniq_project_user (project_id, user_id, type),
-    KEY idx_project_user_project (project_id),
-    KEY idx_project_user_user (user_id)
-);
+    PRIMARY KEY (id),
+    UNIQUE KEY project_label (label)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT INTO project (label,status,budget) VALUES ('Community garden','active',1200),('Library renovation','draft',3000),('River cleanup','active',800);
 ```
 
-Use migrations in real applications. The database is the source of truth, and
-the scaffolder reads that database to generate model structure.
+The examples below use these three rows. `deleted` supports Core's default
+soft-delete condition. `budget` is an integer amount in this example; choose an
+explicit currency/unit convention for your own application.
 
-## 2. Generate The Model Layer
-
-Regenerate generated layers without overwriting concrete model files:
+## 2. Generate The Model
 
 ```shell
-./scripts/regenerate-models.sh
+./scripts/generate-models.sh --table=project
 ```
 
-For this schema, review the generated diff for:
+PowerShell:
 
-- `ProjectAbstract` and `ProjectUserAbstract` accessors and column maps.
-- uniqueness validation for `project.label`;
-- uniqueness validation for `project_user(project_id, user_id, type)`;
-- relationship aliases inferred from `project_id` and `user_id`;
-- enum classes for `status` and `type` when enum generation is enabled.
+```powershell
+./scripts/generate-models.ps1 --table=project
+```
 
-If a generated alias is not the one you want to expose in your API, add the
-app-specific relationship in the concrete model.
+This creates `Project.php`, `Abstracts/ProjectAbstract.php`, their interfaces,
+and `Enums/ProjectStatus.php` under `src/Models/`. The generated abstract contains
+column mappings, getters/setters, and schema-derived validation. Put your own
+rules in the concrete `Project` class.
 
-## 3. Add Business Logic To The Concrete Model
+After changing the table, refresh generated files with:
 
-Generated abstracts mirror the schema. Concrete models hold domain behavior:
+```shell
+./scripts/regenerate-models.sh --table=project
+```
+
+The regeneration wrapper uses `--no-models` to preserve concrete model code.
+Run `generate-models` first when adding a new table. See
+[Scaffolding](database-scaffolding.md) for relationships and boolean columns.
+
+## 3. Add The Controller
+
+Create `src/Modules/Api/Controllers/ProjectController.php`:
 
 ```php
 <?php
 
-namespace App\Models;
-
-final class Project extends Abstracts\ProjectAbstract
-{
-    public function canBeArchived(): bool
-    {
-        return !$this->isDeleted() && $this->getStatus() === 'active';
-    }
-
-    public function archive(): void
-    {
-        if (!$this->canBeArchived()) {
-            $this->appendMessage(new \Phalcon\Messages\Message(
-                'Project cannot be archived from its current state',
-                ['status'],
-                'InvalidStatus'
-            ));
-            return;
-        }
-
-        $this->setStatus('archived');
-    }
-}
-```
-
-Put state transitions, normalization, calculated properties, custom
-relationships, and extra validation in concrete models.
-
-## 4. Add The REST Controller
-
-The controller declares API policy. It tells Phalcon Kit what the client can
-write, filter, search, load, and access.
-
-```php
-<?php
+declare(strict_types=1);
 
 namespace App\Modules\Api\Controllers;
 
-use App\Models\ProjectUser;
-
-final class ProjectController extends AbstractController
+/** Public project catalogue; write permissions are configured separately. */
+class ProjectController extends AbstractController
 {
-    public function initializeSaveFields(): void
-    {
-        $this->setSaveFields([
-            'label',
-            'status',
-            'usernode' => [
-                'userId',
-                'type',
-                'deleted',
-            ],
-        ]);
-    }
+    protected ?string $modelName = \App\Models\Project::class;
 
-    public function initializeSearchFields(): void
+    public function initializeExposeFields(): void
     {
-        $this->setSearchFields([
-            'id',
-            'label',
-            'status',
-        ]);
+        $this->setExposeFields([false, 'id', 'label', 'status', 'budget']);
     }
 
     public function initializeFilterFields(): void
     {
-        $this->setFilterFields([
-            'id',
-            'label',
-            'status',
-            'deleted',
-            'UserNode.userId',
-            'UserNode.type',
-        ]);
+        $this->setFilterFields(['id', 'label', 'status', 'budget']);
     }
 
-    public function initializeWith(): void
+    public function initializeSaveFields(): void
     {
-        $this->setWith([
-            'UserNode.UserEntity',
-        ]);
+        $this->setSaveFields(['label', 'status', 'budget']);
     }
 
-    public function initializeJoins(): void
+    public function initializeOrderFields(): void
     {
-        $this->setJoins([
-            'UserNode' => [
-                ProjectUser::class,
-                '[' . $this->getModelName() . '].[id] = [UserNode].[projectId]',
-                'UserNode',
-                'left',
-            ],
-        ]);
+        $this->setOrderFields(['id', 'label', 'status', 'budget']);
     }
 
-    public function initializePermissionConditions(): void
+    public function initializeSearchFields(): void
     {
-        parent::initializePermissionConditions();
+        $this->setSearchFields(['label']);
+    }
 
-        if (!$this->identity->hasRole($this->getSuperRoles())) {
-            $this->getPermissionConditions()->set(
-                'projectId',
-                $this->getProjectIdPermissionCondition('id')
-            );
-        }
+    public function initializeDistinctActionFields(): void
+    {
+        $this->setDistinctActionFields(['status']);
+    }
+
+    /** This catalogue is public; it has no per-user owner column. */
+    public function getCreatedByColumns(): array
+    {
+        return [];
     }
 }
 ```
 
-This controller allows nested `project_user` writes through `usernode`, filters
-by assigned users, eager-loads users for detail responses, and scopes non-super
-users to allowed projects.
+The first `false` in `setExposeFields()` hides unspecified fields. A plain list
+without it **does not hide the other model fields**. This example deliberately
+omits `deleted` from JSON while retaining it for query conditions.
 
-## 5. Configure Role Policy
+`getCreatedByColumns()` returns an empty list because this resource is a public
+catalogue. For private or tenant-owned records, define an ownership/tenant
+condition instead; see [Permissions](identity-and-permissions.md#restrict-rows).
+The default expects a `createdBy` model attribute, which this table does not have.
 
-Feature permissions live in config:
+## 4. Grant Read Access
+
+Merge these entries into `permissions.roles.everyone.components` in
+`src/Config.php`, keeping the skeleton's existing entries:
 
 ```php
-'permissions' => [
-    'features' => [
-        'manageProject' => [
-            'components' => [
-                \App\Modules\Api\Controllers\ProjectController::class => ['*'],
-                \App\Models\Project::class => ['*'],
-                \App\Models\ProjectUser::class => ['*'],
-            ],
-        ],
-        'viewProject' => [
-            'components' => [
-                \App\Modules\Api\Controllers\ProjectController::class => [
-                    'find',
-                    'find-with',
-                    'find-first',
-                    'find-first-with',
-                ],
-                \App\Models\Project::class => ['find'],
-                \App\Models\ProjectUser::class => ['find'],
-            ],
-        ],
-    ],
-    'roles' => [
-        'admin' => [
-            'features' => ['manageProject'],
-        ],
-        'researcher' => [
-            'features' => ['viewProject'],
-        ],
-    ],
+\App\Modules\Api\Controllers\ProjectController::class => [
+    'find', 'find-first', 'count', 'distinct',
 ],
+\App\Models\Project::class => ['find', 'count'],
 ```
 
-The config says which components a role can use. The controller's permission
-conditions decide which rows that role can access.
+Both entries matter: the controller permission permits the action, and the model
+permission permits the database operation. No wildcard grant is needed.
 
-The same controller actions can also be declared with attributes while keeping
-role assignment in config:
+## 5. List And Filter
 
-```php
-use PhalconKit\Mvc\Controller\Attributes\PermissionFeature;
-
-#[PermissionFeature('manageProject', actions: '*')]
-#[PermissionFeature('viewProject', actions: [
-    'find',
-    'find-with',
-    'find-first',
-    'find-first-with',
-])]
-final class ProjectController extends AbstractController
-{
-}
+```shell
+curl --get http://127.0.0.1:8080/api/project/find \
+  --data-urlencode 'filters[0][field]=status' \
+  --data-urlencode 'filters[0][operator]==' \
+  --data-urlencode 'filters[0][value]=active' \
+  --data-urlencode 'order=id asc' \
+  --data-urlencode 'limit=20' \
+  --data-urlencode 'count=1'
 ```
 
-With that style, the config only needs to assign features to roles and keep
-model-level permissions:
-
-```php
-'permissions' => [
-    'features' => [
-        'manageProject' => [
-            'components' => [
-                \App\Models\Project::class => ['*'],
-                \App\Models\ProjectUser::class => ['*'],
-            ],
-        ],
-        'viewProject' => [
-            'components' => [
-                \App\Models\Project::class => ['find'],
-                \App\Models\ProjectUser::class => ['find'],
-            ],
-        ],
-    ],
-    'roles' => [
-        'admin' => [
-            'features' => ['manageProject'],
-        ],
-        'researcher' => [
-            'features' => ['viewProject'],
-        ],
-    ],
-],
-```
-
-## 6. Call The Resource
-
-Exact URLs depend on your route config. With the default module route shape,
-these actions are available:
-
-```text
-/api/project/find
-/api/project/find-with
-/api/project/find-first
-/api/project/find-first-with
-/api/project/save
-/api/project/create
-/api/project/update
-/api/project/delete
-```
-
-Create a project:
-
-```http
-POST /api/project/create
-Content-Type: application/json
-
-{
-  "label": "Systematic Review 2026",
-  "status": "active",
-  "usernode": [
-    {
-      "userId": 10,
-      "type": "leader"
-    },
-    {
-      "userId": 11,
-      "type": "member"
-    }
-  ]
-}
-```
-
-Example success response shape:
+HTTP 200:
 
 ```json
 {
-  "success": true,
-  "data": {
-    "id": 42,
-    "label": "Systematic Review 2026",
-    "status": "active",
-    "deleted": false
-  },
+  "timestamp": "2026-09-29T10:00:00-04:00",
+  "status": "OK",
+  "code": 200,
+  "response": true,
+  "view": {
+    "data": [
+      {"id": 1, "label": "Community garden", "status": "active", "budget": 1200},
+      {"id": 3, "label": "River cleanup", "status": "active", "budget": 800}
+    ],
+    "count": 2
+  }
+}
+```
+
+`count` describes all matching rows before pagination. Omit it when the client
+only needs the current page. See [Filtering](rest-filtering.md) for ranges,
+search, nested groups, sorting, and offsets.
+
+## 6. Read One Record
+
+```shell
+curl 'http://127.0.0.1:8080/api/project/find-first?id=1'
+```
+
+The response has `view.data` as one object, not a list:
+
+```json
+{"id": 1, "label": "Community garden", "status": "active", "budget": 1200}
+```
+
+An unknown ID returns HTTP 404, `response: null`, and `view: []`. An empty list
+query returns HTTP 200 with `view.data: []`. These cases mean different things
+to clients.
+
+## 7. Add Protected Writes
+
+Follow [Authentication](authentication.md) to configure the identity tables,
+signing keys, auth controller, and a user with an application role. For a role
+named `project-editor`, add these component grants:
+
+```php
+'project-editor' => [
+    'components' => [
+        \App\Modules\Api\Controllers\ProjectController::class => [
+            'create', 'update', 'delete',
+        ],
+        \App\Models\Project::class => ['find', 'create', 'update', 'delete'],
+    ],
+],
+```
+
+Use the access token returned by login (replace the placeholder locally):
+
+```shell
+API_TOKEN='your-access-token'
+curl http://127.0.0.1:8080/api/project/create \
+  -b cookies.txt -c cookies.txt \
+  -H "X-Authorization: Bearer $API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{"label":"Playground","status":"draft","budget":500}'
+```
+
+HTTP 201, with this `view`:
+
+```json
+{
+  "saved": true,
+  "mode": "create",
+  "data": {"id": 4, "label": "Playground", "status": "draft", "budget": 500},
   "messages": []
 }
 ```
 
-Example validation response shape:
+Repeating that label fails the generated uniqueness validator with HTTP 422.
+See [Writes And Batches](rest-writes.md) for the exact error shape, updates,
+partial batches, deletes, and restores. Grant only actions you intend clients
+to use, and [enforce HTTP methods](rest-api.md#enforce-http-methods) for writes.
 
-```json
-{
-  "success": false,
-  "data": null,
-  "messages": [
-    {
-      "field": "label",
-      "type": "PresenceOf",
-      "message": "required"
-    }
-  ]
-}
-```
+## Next Steps
 
-Fetch projects with loaded users:
-
-```http
-GET /api/project/find-with?filter[status]=active&order[id]=desc&limit=20
-```
-
-Example response shape:
-
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 42,
-      "label": "Systematic Review 2026",
-      "status": "active",
-      "usernode": [
-        {
-          "id": 100,
-          "userId": 10,
-          "type": "leader"
-        }
-      ]
-    }
-  ]
-}
-```
-
-The exact envelope can be customized by the app, but the important parts are:
-the controller policy defines allowed input/query fields, and eager loading
-keeps relation data out of lazy-loading loops.
-
-## 7. Use Transformers For Stable Output
-
-Use exposers for simple CRUD surfaces. Use transformers when public clients need
-a stable response contract.
-
-```php
-<?php
-
-namespace App\Modules\Api\Transformers;
-
-use App\Models\Project;
-use League\Fractal\Resource\Collection;
-
-final class ProjectTransformer extends AbstractModelTransformer
-{
-    public array $defaultIncludes = [
-        'usernode',
-    ];
-
-    public function transform(?Project $project): array
-    {
-        if (!$project) {
-            return [];
-        }
-
-        return [
-            'id' => $project->getId(),
-            'label' => $project->getLabel(),
-            'status' => $project->getStatus(),
-            'deleted' => $project->isDeleted(),
-            'createdAt' => $project->getCreatedAt(),
-            'updatedAt' => $project->getUpdatedAt(),
-        ];
-    }
-
-    public function includeUserNode(Project $project): Collection
-    {
-        return $this->includeCollectionIfLoaded(
-            $project,
-            'usernode',
-            new ProjectUserTransformer()
-        );
-    }
-}
-```
-
-The include only emits loaded relations. Pair transformers with `findWith()` or
-controller `initializeWith()` so API responses stay predictable and efficient.
-
-## What You Got
-
-With this setup, the resource has:
-
-- generated model accessors, validation, and relationships;
-- concrete model methods for business rules;
-- REST list/detail/save behavior;
-- nested relation writes through `usernode`;
-- eager-loaded user information for `find-with` responses;
-- transformer-ready output for stable API contracts;
-- role policy in config;
-- row-level project scoping in the controller.
-
-## Verify The Resource
-
-Exercise one success and one failure for each public capability:
-
-```shell
-curl --include 'http://127.0.0.1:8000/api/project/find?filter[status]=active'
-curl --include 'http://127.0.0.1:8000/api/project/find-with?with=UserList'
-curl --include \
-  --header 'Content-Type: application/json' \
-  --data '{"label":"Docs portal","status":"draft"}' \
-  http://127.0.0.1:8000/api/project/create
-```
-
-Adapt routes and authentication headers to the application. Also verify:
-
-- unsupported fields cannot be saved or exposed;
-- invalid enum and uniqueness values return useful validation messages;
-- non-super users only see allowed projects;
-- a requested relationship is loaded in batches rather than once per row;
-- delete and restore follow the intended soft-delete policy.
-
-Automate those checks as integration tests after the first manual proof.
-
-## After Each Schema Change
-
-Review all connected pieces:
-
-- migration
-- generated abstract model diff
-- concrete model behavior
-- REST save/filter/search/expose policies
-- eager-loading relation graph
-- transformer includes
-- permission config
-- row-level permission conditions
-- focused tests
-
-Use [Developer Cookbook](cookbook.md) for workflow-action and testing recipes,
-and [Troubleshooting](troubleshooting.md) when a request does not reach the
-expected layer.
+- Add a `task` relationship using [Relationships](rest-relationships.md).
+- Download data and build facets using [Counts And Exports](rest-aggregates.md).
+- Exercise the [API scenario checklist](rest-scenarios.md) against your resource.

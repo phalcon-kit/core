@@ -20,7 +20,7 @@ or SQL supplied by an HTTP request.
 
 ## Fresh Core Installation
 
-Core 4 ships a baseline for the retained models. It is opt-in; installing or
+Core ships a baseline for its built-in models. It is opt-in; installing or
 updating the Composer package does not run migrations. For a new App project
 with an empty migration tree and a fresh database:
 
@@ -43,8 +43,7 @@ wrapper represents one coordinated schema installation, not a table named
 `core`. The runner records `4.0.0` only after the migration completes.
 
 The baseline creates 29 Core tables plus the runner's `phalcon_migrations`
-bookkeeping table with `--log-in-db`. It excludes the retired catalog/CMS tables
-and creates no accounts or seed data. All tables use InnoDB, foreign keys stay
+bookkeeping table with `--log-in-db`. It creates no accounts or seed data. All tables use InnoDB, foreign keys stay
 in the selected database, and checks remain enabled throughout installation.
 
 Text defaults to `utf8mb4_unicode_ci`, which offers more accurate Unicode
@@ -130,19 +129,12 @@ undo earlier statements, or change migration history. Use the normal Phalcon
 `up()`/`down()` hooks for data transformations or explicitly reviewed reversals.
 Applied migration versions and their SQL files are immutable application history.
 
-## Existing Applications
+## Maintain Your Application Schema
 
-Keep existing migration files and data. Do not copy the fresh baseline into an
-existing pending migration tree or rename recorded history from `1.0.0` to
-`4.0.0`. The migration version sequence belongs to the application and need not
-match package releases.
-
-Review your current schema against the new definitions, then create explicit
-application migrations for changes actually needed. In particular, review OAuth
-token widths, 64-character audit/file relation identifiers, storage engines, and
-credential comparisons. Changing text collations can change uniqueness rules;
-check existing values before altering indexes. Retired tables are only removed
-by an application-owned migration after its data/dependency review.
+Applied migration files and version records are immutable application history.
+Add a new migration for each schema change, review its data impact, and test it
+against a representative disposable database. Do not run a fresh-install baseline
+on a populated application schema. A package update does not alter your tables.
 
 ## PHP 8.5 Tool Compatibility
 

@@ -1,79 +1,66 @@
-# Developer Cookbook
+# Application Cookbook
 
-These focused recipes are designed to be copied, renamed, and adapted. Each
-recipe identifies the ownership boundary so the example remains maintainable as
-the application grows.
+Use these recipes alongside the complete [Project tutorial](first-rest-resource.md).
+Each example states the application code or configuration it requires.
 
-!!! note
+## A JSON Health Endpoint
 
-    Namespace and route conventions can differ between application skeletons.
-    Keep the Phalcon Kit API usage, but adapt `App\...` namespaces and URLs to
-    the project’s module layout.
-
-## Return A JSON Health Response
-
-Use the non-model-backed `Rest` controller for health checks, webhooks, and
-workflow endpoints that do not represent CRUD over one model.
+Create `src/Modules/Api/Controllers/HealthController.php`. A non-model endpoint
+can extend `Rest` directly:
 
 ```php
 <?php
-
 namespace App\Modules\Api\Controllers;
 
-use Phalcon\Http\ResponseInterface;
-use PhalconKit\Mvc\Controller\Rest;
-
-final class HealthController extends Rest
+class HealthController extends \PhalconKit\Mvc\Controller\Rest
 {
-    public function indexAction(): ResponseInterface
+    public function indexAction(): \Phalcon\Http\ResponseInterface
     {
-        return $this->setRestResponse([
-            'ok' => true,
-            'time' => new \DateTimeImmutable()->format(DATE_ATOM),
-        ]);
+        $this->setRestViewVar('healthy', true);
+        return $this->setRestResponse(true);
     }
 }
 ```
 
-Try it:
+Grant `HealthController::class => ['index']` under the intended role, then call:
 
-```bash
-curl --include http://127.0.0.1:8000/api/health
+```shell
+curl http://127.0.0.1:8080/api/health
 ```
 
-Use the model-backed application base controller only for resources that need
-the REST query/save policy surface.
+Expected HTTP 200 with `response: true` and `view.healthy: true`. This proves
+application dispatch. Add separate private readiness checks for dependencies;
+do not expose database details, secrets, or full runtime configuration publicly.
 
-## Register An Application Service
+## A Shared Application Service
 
-Services shared by controllers, tasks, or other services belong in a provider.
+For a service you implement at `src/Service/ReportExporter.php`, register its
+constructor dependencies in `src/Provider/Report/ServiceProvider.php`:
 
 ```php
 <?php
-
 namespace App\Provider\Report;
 
 use App\Service\ReportExporter;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Provider\AbstractServiceProvider;
 
-final class ServiceProvider extends AbstractServiceProvider
+class ServiceProvider extends AbstractServiceProvider
 {
     protected string $serviceName = 'reportExporter';
 
     public function register(DiInterface $di): void
     {
-        $di->setShared($this->getName(), static function () use ($di) {
-            return new ReportExporter(
-                $di->getTyped('db', \Phalcon\Contracts\Db\Adapter\Adapter::class),
-                $di->getTyped('logger', \Phalcon\Contracts\Logger\Logger::class)
-            );
-        });
+        $di->setShared($this->getName(), static fn () => new ReportExporter(
+            $di->getTyped('db', \Phalcon\Contracts\Db\Adapter\Adapter::class)
+        ));
     }
 }
 ```
 
-Register it in app config:
+The example assumes your `ReportExporter` constructor accepts that database
+contract; it is an application class, not shipped by Core. Register the provider
+in `src/Config.php`:
 
 ```php
 'providers' => [
@@ -82,224 +69,94 @@ Register it in app config:
 ],
 ```
 
-Resolve by the stable service name from an injectable controller or task:
+Resolve it with `$this->di->getShared('reportExporter')` in a controller/task.
+Use ordinary constructor injection inside services.
+
+## A Project State Transition
+
+Add this business method to the tutorial's concrete `App\Models\Project`:
 
 ```php
-$file = $this->reportExporter->exportProject($projectId);
-```
-
-Constructor injection remains preferable inside plain domain services. The DI
-provider is the composition boundary, not a reason to make every class
-container-aware.
-
-## Load A Relationship Graph Efficiently
-
-Use `findWith()` or `findFirstWith()` when the graph is known by server code:
-
-```php
-$projects = Project::findWith(
-    ['OwnerEntity', 'TaskList.AssigneeEntity'],
-    [
-        'conditions' => 'status = :status:',
-        'bind' => ['status' => 'active'],
-        'order' => 'createdAt DESC',
-        'limit' => 25,
-    ]
-);
-```
-
-For one record:
-
-```php
-$project = Project::findFirstWith(
-    ['OwnerEntity', 'TaskList'],
-    [
-        'conditions' => 'id = :id:',
-        'bind' => ['id' => $projectId],
-    ]
-);
-```
-
-Use aliases generated from the actual relationships. Do not guess an alias from
-the table name—inspect the generated abstract model after scaffolding.
-
-## Add A Workflow Action
-
-Business transitions are clearer as named actions than as unrestricted field
-updates.
-
-```php
-<?php
-
-namespace App\Modules\Api\Controllers;
-
-use Phalcon\Http\ResponseInterface;
-use PhalconKit\Mvc\Controller\Attributes\PermissionFeature;
-
-final class ProjectController extends AbstractController
+/** Activate a draft project once its budget has been assigned. */
+public function activate(): void
 {
-    #[PermissionFeature('project.manage')]
-    public function archiveProjectAction(): ResponseInterface
-    {
-        $project = $this->findFirst();
-
-        if (!$project) {
-            return $this->setRestErrorResponse(404, response: false);
-        }
-
-        $project->archive();
-
-        if (!$project->save()) {
-            return $this->setRestErrorResponse(
-                $this->getRestActionFailureStatusCode($project->getMessages()),
-                response: $project->getMessages()
-            );
-        }
-
-        return $this->setRestResponse(true);
+    if ($this->getStatus() !== 'draft' || (int)$this->getBudget() <= 0) {
+        throw new \DomainException('Only a funded draft project can be activated.');
     }
+    $this->setStatus('active');
 }
 ```
 
-Keep the state-transition rule in `Project::archive()`. The controller owns
-request lookup, authorization, response mapping, and HTTP status.
-
-## Expose A Safe Distinct-Value Endpoint
-
-Distinct values are useful for filters and autocomplete controls, but the
-endpoint is closed until a controller explicitly approves fields.
+Call it from a controller action after resolving the record through the
+controller's authorized query:
 
 ```php
-public function initializeDistinctActionFields(): void
+public function activateAction(): \Phalcon\Http\ResponseInterface
 {
-    $this->setDistinctActionFields([
-        'status',
-        'type',
-        'ownerEmail' => 'Owner.email',
-    ]);
-}
-```
-
-Clients can then request:
-
-```http
-GET /api/project/distinct?field=status
-GET /api/project/distinct?field=ownerEmail&search=example.com
-```
-
-The endpoint reuses normal query filters, joins, identity conditions, and
-permission policy. Do not expose sensitive or high-cardinality fields simply
-because they are filterable.
-
-## Return A Stable Public Representation
-
-Use a transformer when API output should not mirror the model’s internal field
-names or relationship layout.
-
-```php
-<?php
-
-namespace App\Transformers;
-
-use App\Models\Project;
-use League\Fractal\TransformerAbstract;
-
-final class ProjectTransformer extends TransformerAbstract
-{
-    public function transform(Project $project): array
-    {
-        return [
-            'id' => $project->getId(),
-            'name' => $project->getName(),
-            'status' => $project->getStatus(),
-            'links' => [
-                'self' => '/api/project/' . $project->getId(),
-            ],
-        ];
+    $project = $this->findFirst();
+    if (!$project instanceof \App\Models\Project) {
+        return $this->setRestErrorResponse(404);
     }
-}
-```
-
-Transformers are especially useful for long-lived clients. The model can evolve
-without forcing its database naming and helper methods into the public contract.
-
-## Add A CLI Task
-
-CLI tasks use the same configured services as the HTTP application:
-
-```php
-<?php
-
-namespace App\Modules\Cli\Tasks;
-
-use PhalconKit\Cli\Task;
-
-final class ProjectTask extends Task
-{
-    public function archiveInactiveAction(int $days = 90): void
-    {
-        $count = $this->projectArchiver->archiveInactive($days);
-        $this->logger->info('Archived inactive projects', [
-            'days' => $days,
-            'count' => $count,
-        ]);
-
-        echo "Archived {$count} projects", PHP_EOL;
+    try {
+        $project->activate();
+    } catch (\DomainException $exception) {
+        $this->setRestViewVar('messages', [$exception->getMessage()]);
+        return $this->setRestErrorResponse(422, response: false);
     }
+    if (!$project->save()) {
+        $this->setRestViewVar('messages', $project->getMessages());
+        return $this->setRestErrorResponse(422, response: false);
+    }
+    $this->setRestViewVar('data', $this->expose($project));
+    return $this->setRestResponse(true);
 }
 ```
 
-Route syntax depends on the application CLI entrypoint. A common invocation is:
+Grant `activate`, allow POST in the controller's method map, and grant model
+`find`/`update` for the write role. Request:
 
-```bash
-php cli project archive-inactive 90
+```shell
+curl http://127.0.0.1:8080/api/project/activate \
+  -b cookies.txt -c cookies.txt \
+  -H "X-Authorization: Bearer $API_TOKEN" \
+  -H 'Content-Type: application/json' --data '{"id":2}'
 ```
 
-Keep orchestration in the task and reusable business behavior in a service so
-HTTP actions, scheduled jobs, and tests can share it.
+On the original fixture, project 2 changes from draft to active and returns
+HTTP 200 with its exposed data. Repeating the transition returns 422. A missing
+or hidden record returns 404. For concurrent transitions, add locking or an
+application version check inside a service transaction.
 
-## Add A Focused Model Test
+## A Stable Custom Representation
 
-Test domain behavior in the concrete model without asserting generated getters
-one by one:
+For an application-defined transformer, call it explicitly in the action:
 
 ```php
-public function testDraftProjectCanBeActivated(): void
-{
-    $project = new Project();
-    $project->setStatus('draft');
-
-    $project->activate();
-
-    self::assertSame('active', $project->getStatus());
-}
-
-public function testArchivedProjectCannotBeActivated(): void
-{
-    $project = new Project();
-    $project->setStatus('archived');
-
-    $this->expectException(\DomainException::class);
-    $project->activate();
-}
+$data = [
+    'id' => $project->getId(),
+    'label' => $project->getLabel(),
+    'status' => $project->getStatus(),
+    'links' => ['self' => '/api/project/find-first?id=' . $project->getId()],
+];
+$this->setRestViewVar('data', $data);
+return $this->setRestResponse(true);
 ```
 
-Add database-backed tests when the behavior depends on relationships,
-transactions, indexes, generated defaults, or adapter-specific SQL.
+A transformer class is not automatically discovered just because it exists.
+Use controller exposure for simple field selection; use an explicit transformer
+when a client contract needs derived fields or a different structure.
 
-## Recipe Selection Guide
+## Common Application Workflows
 
-| Need | Put it here |
+| Build | Recipe |
 | --- | --- |
-| One model’s invariant | Concrete model |
-| Several models or an external API | Domain/application service |
-| Shared dependency construction | Service provider |
-| HTTP input, query policy, and response | Controller |
-| Stable client-facing shape | Transformer |
-| Record visibility | Permission/query condition |
-| Operational orchestration | CLI or WebSocket task |
+| Paginated search screen | [Filters, search, stable order, totals](rest-filtering.md) |
+| Detail screen with child rows | [Controlled eager graph](rest-relationships.md#load-a-controlled-graph) |
+| Parent/child edit form | [Nested writes and ownership](rest-relationships.md#write-children) |
+| Facet menu and dashboard totals | [Distinct and aggregates](rest-aggregates.md) |
+| CSV download | [Export format, columns, and limits](rest-aggregates.md#csv-xml-and-excel) |
+| Account provisioning | [Existing CLI user commands](authentication.md#create-an-account-with-the-cli) |
+| Scheduled notification job | [CLI task calling a service](cli-tasks.md#scheduled-work) |
+| Live project notifications | [WebSocket application protocol](web-server-and-websocket.md#application-subscriptions) |
 
-For the complete concepts behind these recipes, continue with
-[Architecture](architecture.md), [Configuration](configuration.md),
-[REST APIs](rest-api.md), and
-[Models And Eager Loading](models-and-eager-loading.md).
+Test the final application behavior with [Application Testing](application-testing.md).

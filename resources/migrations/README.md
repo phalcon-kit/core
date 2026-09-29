@@ -1,11 +1,9 @@
-# Core 4 Database Baseline
+# Core Database Baseline
 
-`4.0.0/` installs the 29 tables required by the retained Core models. The old
-`1.0.0/` package baseline, including its 18 retired catalog/CMS tables, has been
-removed. Historical release tags retain it for reference.
+`4.0.0/` installs the 29 tables used by Core's built-in models.
 
 Use this baseline **only for a fresh MySQL/MariaDB database**. It creates no
-accounts, roles, seed records, or retired tables. The application database name
+accounts, roles, or seed records. The application database name
 is unrestricted: foreign keys refer to tables in the selected database.
 
 `core.php` is one Phalcon migration extending the reusable
@@ -37,7 +35,5 @@ do not copy it into an existing application's pending migrations. Once applied,
 leave that copy immutable and make subsequent changes in new versions.
 
 See [Database Migrations](../../guides/database-migrations.md) for installation,
-reusable SQL examples, and compatibility requirements, and
-[Upgrading To Core 4.0](../../guides/upgrading-4.0.md#existing-data-and-migration-history)
-for existing applications. Core's `bin/migration-*.sh` helpers are maintainer
+reusable SQL examples, and tooling requirements. Core's `bin/migration-*.sh` helpers are maintainer
 commands targeting this checkout's configured database.

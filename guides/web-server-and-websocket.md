@@ -1,4 +1,4 @@
-# Web Server And WebSocket
+# Web Servers And WebSockets
 
 Phalcon Kit applications can run behind any web server that can serve the
 `public/` directory and forward PHP requests to PHP-FPM. Apache is not required;
@@ -15,7 +15,7 @@ Official Phalcon references:
 Use PHP's built-in server only for local development and controlled demos:
 
 ```shell
-php -S 127.0.0.1:8000 -t public public/index.php
+php -S 127.0.0.1:8080 -t public public/index.php
 ```
 
 It is single-process and not suitable for production.
@@ -111,6 +111,107 @@ For local container testing, the worker can run with host networking or a
 published port. For production, use a process supervisor rather than manually
 running the command in a shell.
 
+## Try The Starter Protocol
+
+With `./bin/websocket` running on the default loopback port 8081, run this in a
+local browser console on an HTTP page (or use your WebSocket client):
+
+```javascript
+const socket = new WebSocket('ws://127.0.0.1:8081');
+socket.addEventListener('open', () => socket.send(JSON.stringify({type: 'ping'})));
+socket.addEventListener('message', event => console.log(JSON.parse(event.data)));
+```
+
+Expected message: `{"type":"pong"}`. An HTTPS page needs a secure `wss://`
+endpoint through your TLS proxy.
+
+| Sent frame | Starter response |
+| --- | --- |
+| `{"type":"ping"}` | `{"type":"pong"}` |
+| Malformed JSON | `{"type":"error","message":"Invalid JSON"}` |
+| `{}` or a non-string type | `{"type":"error","message":"A string message type is required"}` |
+| `{"type":"subscribe"}` or another unknown type | `{"type":"error","message":"Unsupported message type"}` |
+
+The starter implements this small protocol only. HTTP authentication does not
+automatically authenticate a WebSocket connection, and the `ws` ACL role only
+permits the worker task to run.
+
+## Application Subscriptions
+
+For a live project dashboard, implement the following protocol in your
+application's `MainTask` and services. **These message types are an application
+design example, not additional built-in starter actions.**
+
+1. Authenticate the connection with a short-lived, single-use ticket obtained
+   from an authenticated HTTPS endpoint, or an appropriate secure session
+   handshake. Bind the verified identity to this connection. Browser WebSocket
+   constructors cannot set an arbitrary bearer header.
+2. Accept a subscribe request only after checking that identity may view the
+   requested project. Derive its tenant and channel server-side.
+3. Return an acknowledgement and an authorized snapshot with a version/cursor.
+4. Publish changes from trusted application code after its database transaction
+   commits; clients cannot broadcast arbitrary messages to other subscribers.
+5. Remove subscriptions/identity when the connection closes or authentication
+   expires. Re-check authorization when membership changes.
+
+Example exchange after authentication:
+
+```json
+{"type":"subscribe","requestId":"req-1","resource":"project","id":42}
+```
+
+Application acknowledgement:
+
+```json
+{"type":"subscribed","requestId":"req-1","resource":"project","id":42,"cursor":108}
+```
+
+Application snapshot:
+
+```json
+{"type":"snapshot","resource":"project","id":42,"cursor":108,"data":{"label":"Community garden","status":"active"}}
+```
+
+A trusted server-side change later produces:
+
+```json
+{"type":"changed","resource":"project","id":42,"cursor":109,"data":{"status":"archived"}}
+```
+
+Denied subscription:
+
+```json
+{"type":"error","requestId":"req-1","code":"forbidden","message":"Subscription is not available."}
+```
+
+An unsubscribe request should be acknowledged and stop future delivery for that
+connection. Bound message sizes, subscription counts, idle times, and queued
+outbound data. Reject malformed IDs and unknown types before loading resources.
+Do not echo credentials or private exception diagnostics to clients.
+
+### Reconnect And Synchronize
+
+A disconnected browser should reconnect with bounded exponential backoff and
+jitter, obtain fresh authentication when needed, then subscribe again. Fetch a
+new snapshot unless your application implements a durable replay log and verifies
+the supplied cursor. Deduplicate events by resource/cursor and discard updates
+older than the applied snapshot. A TCP/WebSocket reconnection alone does not
+recover missed changes.
+
+### Multiple Workers
+
+PHP arrays in one Swoole worker are not a shared subscription registry. Track
+connections locally, and use a trusted shared broker/event stream plus worker
+fan-out for updates that must reach other workers or hosts. Redis Pub/Sub is one
+possible live distribution mechanism; it does not provide durable replay by
+itself. Keep replay/snapshot recovery an explicit application decision.
+
+The application must implement ticket validation, permission lookup, subscription
+storage, publication, and replay/snapshot services. Reuse Core's bootstrap,
+models, and authorization rules inside those services, while clearing identity
+and model authorization caches between logical messages. Test two users in
+different projects and delivery across workers before deployment.
+
 ## WebSocket Proxying
 
 Proxy WebSocket traffic to the Swoole worker. For Nginx:
@@ -172,8 +273,8 @@ After deploying or changing the proxy:
 7. Check that HTTP, CLI, and WebSocket processes load the same intended config.
 
 ```shell
-curl --include https://app.example/api/health
-curl --include https://app.example/assets/app.css
+curl --include https://app.example.test/api
+curl --include https://app.example.test/assets/app.css
 ```
 
 Use [Troubleshooting](troubleshooting.md) when only one runtime mode fails, and

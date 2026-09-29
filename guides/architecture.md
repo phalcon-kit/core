@@ -4,37 +4,22 @@ Phalcon Kit gives a Phalcon application a repeatable shape. It does not hide
 Phalcon; it makes recurring ownership decisions explicit so projects can focus
 on models, APIs, workflows, and permissions.
 
-## The Mental Model
+## How The Parts Fit Together
 
-<div class="grid cards" markdown>
-
--   :material-cog-outline:{ .lg .middle } **Bootstrap composes**
-
-    It loads app config, creates the DI container, registers providers, and
-    starts the selected runtime.
-
--   :material-database-outline:{ .lg .middle } **The schema describes data**
-
-    Migrations and the live database drive generated model structure.
-
--   :material-domain:{ .lg .middle } **Application code owns behavior**
-
-    Concrete models and services hold invariants, workflows, and integrations.
-
--   :material-api:{ .lg .middle } **Controllers define HTTP policy**
-
-    Controllers choose fields, filters, relationships, permissions, and response
-    behavior.
-
-</div>
+| Part | Responsibility |
+| --- | --- |
+| Bootstrap | Load config, register DI providers, start HTTP/CLI/WebSocket mode |
+| Database schema | Describe columns and relationships used by generated models |
+| Concrete models and services | Validate state and implement application workflows |
+| Controllers | Define fields, queries, permissions, and public responses |
 
 Official Phalcon references:
 
-- [MVC](https://docs.phalcon.io/latest/mvc/){:target="_blank"}
-- [Dependency injection](https://docs.phalcon.io/latest/di/){:target="_blank"}
-- [Loader and autoloading](https://docs.phalcon.io/latest/autoload/){:target="_blank"}
-- [Routing](https://docs.phalcon.io/latest/routing/){:target="_blank"}
-- [Models](https://docs.phalcon.io/latest/db-models/){:target="_blank"}
+- [MVC](https://docs.phalcon.io/latest/mvc/)
+- [Dependency injection](https://docs.phalcon.io/latest/di/)
+- [Loader and autoloading](https://docs.phalcon.io/latest/autoload/)
+- [Routing](https://docs.phalcon.io/latest/routing/)
+- [Models](https://docs.phalcon.io/latest/db-models/)
 
 ## HTTP Request Flow
 

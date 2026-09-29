@@ -50,6 +50,34 @@ reproduction.
 - Update documentation or skills when changing public behavior, generated
   output, or maintainer workflow.
 
+## Writing Application Documentation
+
+Core's `guides/` directory is the canonical source for narrative guides. Write
+for developers building their own applications with PhalconKit:
+
+- Lead READMEs with what users can build, installation, a first request, and task links.
+- Describe current behavior. Keep release history in the changelog/tagged history
+  and support policy in its dedicated file; do not lead setup guides with it.
+- Keep migration instructions under `guides/migrations/`. Use its shared scope,
+  preparation, changes, verification, rollback, and related-guide structure; link
+  current recipes instead of maintaining separate versions of their examples.
+- Give prerequisites, exact file locations, required permission/configuration,
+  copyable commands, and expected responses or persisted results.
+- Distinguish complete examples from snippets and application-owned services
+  from Core capabilities. Verify examples through the actual runtime when their
+  behavior depends on routing, serialization, ORM, or authentication.
+- Use neutral synthetic schemas and data. Never copy private project names,
+  customer identifiers, domains, credentials, or proprietary business rules.
+- Keep Markdown readable on GitHub and the documentation site. Link related
+  topics instead of maintaining conflicting copies of a tutorial.
+- Synchronize narrative guides into `phalcon-kit/docs`, update its navigation,
+  check local links/anchors, and build the site. Keep the App README aligned.
+- Keep generated class/function reference files separate from narrative edits.
+  Run `composer docs` only when intentionally regenerating that reference.
+
+For prose-only changes, `git diff --check` and targeted link/example checks are
+normally sufficient; runtime changes still need the relevant Composer checks.
+
 ## Requesting Features
 
 If you have a change or new feature in mind, open a feature request on GitHub.

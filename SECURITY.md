@@ -11,9 +11,8 @@ historical releases published as `zemit-cms/core`.
 | 4.x | Yes | Supported stable line; use the latest tagged 4.x release. |
 | 0.x, 1.x, 2.x, 3.x | No | End of life; no fixes or backports. |
 
-Older tags remain available for historical use and reproducible
-installs. See the [Core 4.0 upgrade guide](guides/upgrading-4.0.md) for migration
-requirements and application acceptance checks.
+For application configuration, see [Application Security](guides/security-hardening.md)
+and [Authentication](guides/authentication.md).
 
 ## Reporting a Vulnerability
 

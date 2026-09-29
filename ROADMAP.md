@@ -1,16 +1,14 @@
 # Roadmap
 
 This is the active roadmap for the maintained **Core 4.x** line on `master`.
-Shipped outcomes belong in [CHANGELOG.md](CHANGELOG.md); application adoption
-requirements belong in [Upgrading To Core 4.0](guides/upgrading-4.0.md).
+Shipped outcomes belong in [CHANGELOG.md](CHANGELOG.md); application usage
+belongs in the [user guide](guides/README.md).
 Published releases are preserved by signed tags under the [release policy](guides/release.md).
 
 ## Relationship And Resource Contracts
 
-Status: Next documentation and regression batch.
+Status: Follow-up regression coverage.
 
-- Document accepted one-to-many and many-to-many payloads, ownership checks,
-  transaction boundaries, and eager-loading behavior through small consumer examples.
 - Cross-check public/protected PHPDoc against those examples and cover any missing
   behavioral edge cases before changing runtime code.
 - Retain deprecated REST aliases until wrapper/SDK consumers have an explicit

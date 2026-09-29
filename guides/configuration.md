@@ -45,6 +45,61 @@ Keep secrets and machine-specific paths in environment files. Keep module
 registration, providers, aliases, and policy in config classes so they can be
 reviewed and versioned.
 
+## MySQL And MariaDB
+
+The default `mysql` driver uses MySQL connection settings, including a MySQL
+collation and `block_encryption_mode`. MariaDB needs its own compatible options.
+Add this independent driver inside your App config's defaults (before the parent
+constructor), using `PhalconKit\Support\Env`:
+
+```php
+'database' => [
+    'default' => 'mariadb',
+    'drivers' => [
+        'mariadb' => [
+            'adapter' => \PhalconKit\Db\Adapter\Pdo\Mysql::class,
+            'dialectClass' => \PhalconKit\Db\Dialect\Mysql::class,
+            'host' => Env::get('DATABASE_HOST', '127.0.0.1'),
+            'port' => (int)Env::get('DATABASE_PORT', 3306),
+            'dbname' => Env::get('DATABASE_DBNAME', ''),
+            'username' => Env::get('DATABASE_USERNAME', ''),
+            'password' => Env::get('DATABASE_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'options' => [
+                \PDO\Mysql::ATTR_INIT_COMMAND =>
+                    "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci, sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
+                \PDO::ATTR_EMULATE_PREPARES => false,
+                \PDO::ATTR_STRINGIFY_FETCHES => false,
+            ],
+        ],
+    ],
+],
+```
+
+Use a new driver name so MySQL-only options are not inherited or appended during
+config merging. `devtools.php` uses the same selected driver for migrations.
+For a local Unix socket, provide `unix_socket` in the driver descriptor instead
+of host/port. Configure TLS options for remote database connections according to
+your database deployment.
+
+## Common Environment Settings
+
+| Setting | Use |
+| --- | --- |
+| `APP_ENV` / `APP_DEBUG` | Environment label and debug output; keep debug false in shared environments |
+| `APP_CACHE` | Application cache toggle; select appropriate backing services separately |
+| `APP_TIMEZONE` | Application timestamps/timezone |
+| `DATABASE_*` | Connection credentials and database name |
+| `SECURITY_JWT_PASSPHRASE` | Private JWT signing key |
+| `IDENTITY_AUTHORIZATION_HEADER` | Bearer header; defaults to `X-Authorization` |
+| `IDENTITY_STATELESS` | Explicit choice of stateless identity semantics |
+| `SESSION_COOKIE_SECURE` | HTTPS cookie flag; disable only for local HTTP testing |
+| `RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN` | Exact allowed frontend origins |
+| `SWOOLE_HOST` / `SWOOLE_PORT` | Optional worker listener; loopback behind a reverse proxy |
+
+See [Authentication](authentication.md) for token/cookie examples and
+[Application Security](security-hardening.md) for deployment settings.
+
 ## App Config
 
 ```php
@@ -148,7 +203,7 @@ Use app providers when a service needs app configuration, app credentials, or a
 different implementation. Avoid replacing a core provider just to change one
 runtime option when config already supports it.
 
-Phalcon 5.20.3 and newer let storage-backed cache adapters restrict PHP object
+Storage-backed cache adapters can restrict PHP object
 deserialization with `cache.default.allowedClasses`. PhalconKit defaults this
 to `true` for compatibility with model and application object caches. Set
 `CACHE_ALLOWED_CLASSES=false` when the cache stores only scalars and arrays, or

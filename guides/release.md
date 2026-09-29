@@ -7,10 +7,10 @@ Use this checklist when preparing a public release.
 Phalcon Kit follows SemVer for tagged public releases. Keep unreleased work
 under the current `Unreleased` heading in `CHANGELOG.md` until the tag is cut.
 
-Core and the App skeleton start the 4.x line together at **4.0.0**. App
-intentionally skips 3.x to align its major version with Core. App 4.0.0 must
-require Core `^4.0` and lock the tested stable Core release. Publish Docs from
-the same Core source and synchronized guides.
+Keep Core, the App skeleton, and Docs aligned around the behavior users can
+install. When App commands or examples require a Core fix, raise App's minimum
+Core constraint to the first release containing it and lock that public stable
+release. Publish Docs from the same Core source and synchronized guides.
 
 Core's Composer branch alias maps `dev-master` to `4.0.x-dev` for deliberate
 development testing. Stable applications use `^4.0` and their committed lockfile.
@@ -99,9 +99,9 @@ correct previous-tag comparison link.
 1. Verify the GitHub Actions workflow passed on the tag and that the GitHub
    Release targets the expected commit SHA.
 2. Verify Packagist updated `phalcon-kit/core` and resolves the exact tag SHA.
-3. For the coordinated 4.0.0 launch, finish the App constraint/lockfile update,
-   pass its exact-commit CI, publish its signed 4.0.0 tag, and verify a fresh
-   public `composer create-project phalcon-kit/app:4.0.0` installation.
+3. Finish the App constraint/lockfile update from public Core distribution, pass
+   App's exact-commit CI, publish its signed release tag, and verify a fresh public
+   `composer create-project` installation of that App version.
 4. Publish the synchronized Docs commit and verify its GitHub Pages workflow.
 5. Check GitHub Code Scanning for fresh Psalm results.
 6. Confirm the old `zemit-cms/core` page still points users toward this

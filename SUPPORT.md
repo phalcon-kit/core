@@ -7,11 +7,8 @@ Use the right channel so issues stay actionable.
 Only Core **4.x** is maintained and supported. All earlier versions are end of
 life, with no support, bug fixes, security fixes, or backports.
 
-Use tagged **4.x** releases for supported installations. `master` carries ongoing
-development; published versions remain available through their tags, and there
-are no standing version branches. Keep existing application lockfiles while
-preparing an isolated migration. See the [branch policy](guides/release.md#branch-policy) and
-[Core 4.0 upgrade guide](guides/upgrading-4.0.md) before following `dev-master`.
+Use the latest tagged release and keep your application's Composer lockfile.
+For setup and usage, start with the [user guide](guides/README.md).
 
 ## Questions
 
@@ -40,11 +37,3 @@ Do not open public issues for vulnerabilities. Use GitHub private vulnerability
 reporting from the repository Security tab.
 
 See [SECURITY.md](SECURITY.md).
-
-## Legacy Package
-
-The previous Packagist package,
-[`zemit-cms/core`](https://packagist.org/packages/zemit-cms/core), is unmaintained
-and unsupported. Its releases remain available for historical use. Migration to
-the maintained line requires both the [package-name migration](guides/migration-from-zemit.md)
-and the Core 4.0 upgrade checks; renaming the dependency alone is insufficient.

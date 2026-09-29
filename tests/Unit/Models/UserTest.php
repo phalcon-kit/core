@@ -63,6 +63,84 @@ class UserTest extends \PhalconKit\Tests\Unit\AbstractUnit
     {
         $this->assertIsBool($this->user->validation());
     }
+
+    public function testSavePreparationHashesPasswordsAndPreservesExistingHashes(): void
+    {
+        $user = new User();
+        $user->setPassword('A private example password!');
+        $this->assertTrue($user->beforeSave());
+        $hash = $user->getPassword();
+        $this->assertIsString($hash);
+        $this->assertNotSame('A private example password!', $hash);
+        $this->assertTrue($user->checkHash($hash, 'A private example password!'));
+        $this->assertFalse($user->checkHash($hash, 'Wrong password!'));
+
+        $user->setEmail('updated@example.test');
+        $user->beforeSave();
+        $this->assertSame($hash, $user->getPassword());
+
+        $user->setPassword('A replacement example password!');
+        $user->beforeSave();
+        $this->assertTrue($user->checkHash($user->getPassword(), 'A replacement example password!'));
+        $this->assertFalse($user->checkHash($user->getPassword(), 'A private example password!'));
+    }
+
+    public function testSavePreparationPreservesDisabledPasswordLogin(): void
+    {
+        $user = new User();
+        foreach ([null, ''] as $password) {
+            $user->setPassword($password);
+            $user->beforeSave();
+            $this->assertSame($password, $user->getPassword());
+        }
+    }
+
+    public function testSavePreparationPreservesConfiguredLegacyHashes(): void
+    {
+        $security = $this->di->getShared('security');
+        $originalAlgorithm = $security->getDefaultHash();
+        $algorithms = [
+            \Phalcon\Encryption\Security::CRYPT_BLOWFISH_A,
+            \Phalcon\Encryption\Security::CRYPT_BLOWFISH_X,
+            \Phalcon\Encryption\Security::CRYPT_MD5,
+            \Phalcon\Encryption\Security::CRYPT_SHA256,
+            \Phalcon\Encryption\Security::CRYPT_SHA512,
+        ];
+
+        try {
+            foreach ($algorithms as $algorithm) {
+                $security->setDefaultHash($algorithm);
+                $user = new User();
+                $user->setPassword('A private legacy algorithm password!');
+                $user->beforeSave();
+                $hash = $user->getPassword();
+                $this->assertTrue($user->checkHash($hash, 'A private legacy algorithm password!'));
+
+                $user->setEmail('updated@example.test');
+                $user->beforeSave();
+                $this->assertSame($hash, $user->getPassword());
+                $this->assertTrue($user->checkHash($user->getPassword(), 'A private legacy algorithm password!'));
+
+                $importedUser = new User();
+                $importedUser->setPassword($hash);
+                $importedUser->beforeSave();
+                $this->assertSame($hash, $importedUser->getPassword());
+            }
+        } finally {
+            $security->setDefaultHash($originalAlgorithm);
+        }
+    }
+
+    public function testSavePreparationHashesPlaintextWithLegacyHashPrefixes(): void
+    {
+        foreach (['$2a$not-a-hash', '$2x$not-a-hash', '$1$not-a-hash', '$5$not-a-hash', '$6$not-a-hash'] as $password) {
+            $user = new User();
+            $user->setPassword($password);
+            $user->beforeSave();
+            $this->assertNotSame($password, $user->getPassword());
+            $this->assertTrue($user->checkHash($user->getPassword(), $password));
+        }
+    }
     
     public function testGetId(): void
     {

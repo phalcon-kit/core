@@ -42,6 +42,21 @@ unless the task explicitly asks for regenerated docs.
 - Keep public package behavior stable unless the task explicitly asks for a
   breaking change.
 
+## User Documentation
+
+- Write README and guides for application developers using PhalconKit. Lead with
+  runnable setup, concrete tasks, requests, and expected results.
+- Describe current behavior; keep release/upgrade history out of the main user
+  journey. Keep upgrade instructions in `guides/migrations/`, using the shared
+  Applies To / Before You Start / Changes To Apply / Verify / Rollback / Related
+  Guides structure. Support boundaries belong in support/security policies.
+- Verify actual parameter names, response envelopes, field policies, permissions,
+  and database effects before presenting an example as runnable.
+- Use only neutral synthetic examples. Never copy private project identifiers,
+  organization names, domains, credentials, schemas, or proprietary workflows.
+- Treat `guides/` as canonical narrative content and synchronize it into the
+  Docs repository with working links/navigation; align the App README.
+
 ## Validation
 
 Use the smallest relevant checks for the change:

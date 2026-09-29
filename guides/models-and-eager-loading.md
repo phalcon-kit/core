@@ -1,450 +1,242 @@
 # Models And Eager Loading
 
-Phalcon Kit models build on `Phalcon\Mvc\Model` and add generated model layers,
-relationship-aware assignment, model behaviors, and batch eager loading.
-
-Official Phalcon references:
-
-- Models: https://docs.phalcon.io/latest/db-models/
-- Relationships: https://docs.phalcon.io/latest/db-models-relationships/
-- Behaviors: https://docs.phalcon.io/latest/db-models-behaviors/
-- Model validation: https://docs.phalcon.io/latest/db-models-validation/
-
-Choose the loading strategy from intent:
-
-| Need | Use |
-| --- | --- |
-| One relation on one already-loaded model | Normal relation access |
-| A known graph for a list or detail operation | `findWith()` / `findFirstWith()` |
-| Native Phalcon criteria composition | Native eager-loading parameters |
-| A stable public nested representation | Eager loading plus a transformer |
-
-Avoid loading relationships inside a loop. Decide the graph before executing
-the root query.
+PhalconKit models extend Phalcon's ORM with schema scaffolding, relationship
+assignment, eager loading, behaviors, and shared application services. Use
+[Your First REST Resource](first-rest-resource.md) for a complete table/model/API.
 
 ## Generated And Concrete Layers
 
-Generated abstract models carry schema knowledge:
+| File | Responsibility |
+| --- | --- |
+| `Models/Abstracts/ProjectAbstract.php` | Generated attributes, accessors, column map, validation, relationships |
+| `Models/Abstracts/Interfaces/ProjectAbstractInterface.php` | Generated accessor contract |
+| `Models/Interfaces/ProjectInterface.php` | Model interface; review generated changes |
+| `Models/Enums/ProjectStatus.php` | Database enum cases |
+| `Models/Project.php` | Application methods and business rules |
 
-- properties and comments
-- getters and setters
-- column maps
-- default relationships
-- default validations
-- generated interfaces
-- enum classes where supported by the database
-
-Concrete models carry application behavior:
+For the tutorial's schema:
 
 ```php
-<?php
-
 namespace App\Models;
 
-final class Project extends Abstracts\ProjectAbstract
+class Project extends Abstracts\ProjectAbstract
 {
-    public function isOpen(): bool
+    public function isActive(): bool
     {
-        return !$this->isDeleted() && $this->getStatus() === 'open';
+        return !$this->isDeleted() && $this->getStatus() === 'active';
     }
 }
 ```
 
-When the schema changes, regenerate the abstract layer and review concrete
-models for new domain rules.
+Run `generate-models` for missing models, then `regenerate-models` after schema
+changes. The regeneration wrapper preserves concrete model classes. Keep custom
+behavior out of generated abstracts.
 
 ## Base Model Services And Initialization
 
-`PhalconKit\Mvc\Model` requires Phalcon's model manager, metadata, and connection
-services, plus Core's config/helper services. Default initialization also
-resolves `models`, `modelsCache`, and `security` for cache invalidation and UUID
-behavior. Use the Core bootstrap or provide the same service contracts when
-building an application container manually.
+Use the application bootstrap to register the ORM manager/metadata, connection,
+config, helper, models resolver, modelsCache, security, and identity services.
+Manually constructed containers must provide the same contracts.
 
-Subclasses that need Core's behaviors should call `parent::initialize()` before
-customizing the model events manager or behaviors. ORM setup options also affect
-the current PHP process; model mappings and metadata services must remain
-consistent for that service lifetime.
+Call `parent::initialize()` in a concrete model before adding behaviors or custom
+relationships. Core models initialize common services and schema-aware behavior;
+using a bare Phalcon container with no Core providers can fail before a query.
 
-## Minimum And Maximum Results
+Model aliases are resolved by the `models` service. They do not rewrite direct
+static class calls or generated relationship definitions. See
+[Feature Setup](feature-contracts.md) before replacing an identity/audit model.
 
-`minimum()` and `maximum()` preserve the installed Phalcon/database driver's
-value and type. This also applies to the REST controller query helpers.
-Text and datetime columns can return strings; numeric columns can return an
-integer, float, or decimal string. An ungrouped aggregate with no value returns
-`null`, grouped queries return a resultset, and a cancelled Core before-event
-returns `false`.
+## Load A Relationship Graph
+
+Using the [Project/Task schema](rest-relationships.md):
 
 ```php
-$firstLabel = Project::minimum(['column' => 'label']);
-$lastUpdated = Project::maximum(['column' => 'updatedAt']);
-$byStatus = Project::maximum(['column' => 'updatedAt', 'group' => 'status']);
-```
+use App\Models\Project;
 
-Core 3.11.1 and earlier coerced string results to floats and could throw a `TypeError`
-for empty results. Code that intentionally needs a float should explicitly
-convert a known numeric result after handling `null` and `false`. Avoid casting
-text, timestamps, or exact decimal values as a general aggregate policy.
+$projects = Project::findWith(['TaskList'], [
+    'conditions' => 'status = :status: AND deleted = 0',
+    'bind' => ['status' => 'active'],
+    'order' => 'id ASC',
+    'limit' => 20,
+]);
 
-## Relationship Payloads
-
-Generated relationship aliases are used by REST save payloads and eager loading.
-Typical alias shapes are:
-
-- `UserEntity` for a single related model.
-- `UserList` for a one-to-many or many-to-many list.
-- `UserNode` for join/node-table records.
-
-Controllers can allow relation writes through nested `initializeSaveFields()`
-configuration:
-
-```php
-$this->setSaveFields([
-    'label',
-    'usernode' => [
-        'userId',
-        'type',
-        'deleted',
-    ],
+$project = Project::findFirstWith(['TaskList'], [
+    'conditions' => 'id = :id: AND deleted = 0',
+    'bind' => ['id' => 1],
 ]);
 ```
 
-Keep relation payloads explicit. Do not expose every nested field just because a
-relationship exists.
+Core's list helper returns an array; its first helper returns a model or null.
+These model-level calls do not acquire a REST controller's tenant/owner
+conditions. Include your application's authorized scope explicitly in services.
 
-## Strict Relationship Assignment
+Use callbacks for related-row constraints:
 
-Relationship assignment is permissive by default for backward compatibility.
-`assignRelated()` receives the full model payload before Phalcon assigns scalar
-columns, so unknown scalar keys must still pass through native model assignment.
+```php
+$projects = Project::findWith([
+    'TaskList' => static function (
+        \PhalconKit\Mvc\Model\EagerLoading\QueryBuilder $query
+    ): void {
+        $query->andWhere('deleted = 0');
+        $query->orderBy('id ASC');
+    },
+], ['limit' => 20, 'order' => 'id ASC']);
+```
 
-Enable strict relationship assignment on models or resource flows where the
-payload has already been normalized and relation aliases are expected to be
-exact:
+Add tenant/user constraints when related data is private. Batch eager-loading
+limits can apply across the related query; do not assume a simple relation limit
+means “N per parent” without testing it.
+
+Native Phalcon also accepts `eager` on find/findFirst for supported graphs. Core
+mirrors native loaded relations into its relation cache so `getRelated()`,
+`relatedToArray()`, and `isRelationshipLoaded()` agree. Choose one loading API per
+query instead of sending the same graph through both surfaces.
+
+## Expose A Stable Representation
+
+```php
+$data = $project?->expose([
+    false, 'id', 'label', 'status',
+    'tasklist' => [false, 'id', 'label', 'status'],
+]);
+```
+
+The leading false hides unspecified fields. Loading a relationship does not
+make it safe to expose every child column. Use controller expose policies or an
+application transformer for public representations.
+
+## Assign Related Records
+
+Core model `assign()` accepts nested relation data and a nested whitelist:
 
 ```php
 $project->setStrictRelatedAssignment(true);
 $project->assign([
-    'label' => 'Portal',
-    'UserNode' => [
-        ['userId' => 10, 'type' => 'owner'],
+    'label' => 'Community garden',
+    'TaskList' => [
+        ['id' => 2, 'status' => 'done'],
+        ['label' => 'Water plants', 'status' => 'todo'],
     ],
 ], [
     'label',
-    'UserNode' => ['userId', 'type'],
+    'TaskList' => ['id', 'label', 'status'],
 ]);
-```
 
-When strict mode is enabled, Phalcon Kit throws a scoped exception for
-relationship-specific mistakes:
-
-- a real relation alias is blocked by the assignment whitelist
-- an unknown complex payload looks like a relation but is not a mapped model
-  column
-- a known relation receives an unsupported value or list item
-
-Strict mode also follows nested relation assignment. If a parent relation
-payload creates or updates a related Phalcon Kit model, that child receives the
-same strict setting before its own nested `assign()` call runs.
-
-Strict relationship assignment does not replace column validation, model
-validation, or REST save-field policies. It is a guard for nested relation
-payloads, not a general "reject every unknown scalar field" mode.
-
-## Relationship Save Options
-
-Direct `hasOne` and `hasMany` saves keep legacy behavior by default: submitted
-children can be created or updated, missing children can still be deleted when
-`keepMissingRelated` is false, and soft-deleted direct children are not restored
-automatically.
-
-Applications that need stricter direct-child ownership can set relationship
-defaults in bootstrap config under `model.relationship`:
-
-```php
-'model' => [
-    'relationship' => [
-        'enforceDirectOwnership' => true,
-        'allowUnownedDirectRelationAdoption' => false,
-        'autoRestoreDirectRelations' => false,
-    ],
-],
-```
-
-The same defaults can be controlled with environment variables:
-
-- `MODEL_RELATIONSHIP_ENFORCE_DIRECT_OWNERSHIP`
-- `MODEL_RELATIONSHIP_ALLOW_UNOWNED_DIRECT_RELATION_ADOPTION`
-- `MODEL_RELATIONSHIP_AUTO_RESTORE_DIRECT_RELATIONS`
-
-`enforceDirectOwnership` rejects direct child records that already point to a
-different parent. Both primary-key and relationship-key lookup results are
-checked before incoming values are assigned, so a payload cannot conceal stored
-ownership by overwriting foreign keys. Rejection uses the framework's existing
-`InvalidArgumentException` with code 400. The save path also checks direct model
-instances before rewriting their foreign keys. When the guard is enabled,
-`allowUnownedDirectRelationAdoption` controls whether existing children with
-empty relationship keys may be attached to the current parent.
-
-Composite lookup values follow their named columns regardless of request key
-order. Lookup helpers require non-empty key definitions; missing keys cannot
-select an arbitrary existing row. These checks do not authorize the parent or
-shared belongs-to/many-to-many targets. Retain controller permission conditions,
-explicit nested save fields, and application policies for those records.
-
-`autoRestoreDirectRelations` only restores soft-deleted direct children that
-already belong to the current parent. Many-to-many through relations keep their
-existing intermediate-node restore behavior.
-
-## Eager Loading
-
-Use eager loading when a response or workflow needs related data. This avoids
-lazy-loading loops and keeps relation graphs visible at the query boundary.
-
-Avoid this pattern in list endpoints:
-
-```php
-$projects = Project::find(['limit' => 25]);
-
-foreach ($projects as $project) {
-    foreach ($project->getUserNode() as $userNode) {
-        $user = $userNode->getUserEntity();
-    }
+if (!$project->save()) {
+    $messages = $project->getMessages();
 }
 ```
 
-Each relation access can trigger more database work. Load the graph once:
+Use an already authorized parent. Grant child model operations and enforce child
+ownership. `assign()` alone does not persist or prove validation succeeded.
 
-Phalcon 5.18 provides native eager loading for standard relationship graphs:
+Strict related assignment rejects blocked relation aliases, unknown complex
+relation-like payloads, and unsupported relation values/items. It propagates to
+nested Core models. It is not a general “reject all unknown scalar fields” mode.
 
-```php
-$projects = Project::find([
-    'conditions' => 'deleted <> 1',
-    'eager' => [
-        'UserNode.UserEntity',
-        'CategoryList',
-    ],
-]);
-```
+## Child Ownership And Omitted Records
 
-Native eager loading stores relations through `Model::setRelated()`.
-Phalcon Kit mirrors that native cache into its read-only loaded-relation cache,
-so property access, `getRelated()`, `relatedToArray()`, and
-`isRelationshipLoaded()` see the same values.
-
-Use Phalcon Kit's eager-loading API when relation-level closures, its controller
-`initializeWith()` convention, or its established array return shape is
-required:
-
-Model-level examples:
+Configure direct-child behavior on the concrete parent model:
 
 ```php
-$projects = Project::findWith([
-    'UserNode.UserEntity',
-    'CategoryList',
-], [
-    'conditions' => 'deleted <> 1',
-]);
-
-$project = Project::findFirstWith([
-    'UserNode.UserEntity',
-], [
-    'conditions' => 'id = :id:',
-    'bind' => ['id' => $id],
-]);
-```
-
-Controller-level examples:
-
-```php
-public function initializeWith(): void
+/** Configure the relationship policy for every instance of this model. */
+public function initializeOptions(): void
 {
-    $this->setWith([
-        'UserNode.UserEntity',
-        'CategoryList',
+    parent::initializeOptions();
+    $this->setRelationshipOptions([
+        'enforceDirectOwnership' => true,
+        'allowUnownedDirectRelationAdoption' => true,
+        'autoRestoreDirectRelations' => false,
     ]);
 }
 ```
 
-Use relation-level query builders when a relation needs extra constraints,
-ordering, or limits. Keep expensive relation graphs out of list requests unless
-the UI really needs them. Choose one eager-loading surface per query; do not
-send the same graph through both native `eager` parameters and `findWith()`.
+These options can also be set globally under `model.relationship` in app config,
+but that affects all models, including user-role membership. Unowned adoption
+includes newly created children: setting it to false blocks new child creation
+as well as attachment of persisted orphan records. Keep it enabled for the
+non-null-foreign-key tutorial schema; authorize orphan adoption separately if
+your schema supports it. Per-alias overrides belong under `aliases` in the
+relationship options array.
 
-## List vs Detail Graphs
+The corresponding global environment variables are
+`MODEL_RELATIONSHIP_ENFORCE_DIRECT_OWNERSHIP`,
+`MODEL_RELATIONSHIP_ALLOW_UNOWNED_DIRECT_RELATION_ADOPTION`, and
+`MODEL_RELATIONSHIP_AUTO_RESTORE_DIRECT_RELATIONS`.
 
-Use smaller graphs for list screens and richer graphs for detail screens:
+The ownership guard checks stored direct-child foreign keys before assignment
+so a submitted foreign key cannot hide another parent's ownership. It also
+checks direct model instances. It does not authorize the parent, shared
+belongs-to targets, or many-to-many targets.
+
+Unsubmitted children are kept by default. To implement an intentional complete
+replacement list, configure it explicitly on the model instance:
 
 ```php
-final class ProjectReadService
-{
-    public function listOpenProjects(): array
-    {
-        return Project::findWith([
-            'UserNode.UserEntity',
-        ], [
-            'conditions' => 'status = :status: AND deleted <> 1',
-            'bind' => ['status' => 'active'],
-            'limit' => 50,
-            'order' => 'id DESC',
-        ]);
-    }
+$project->setKeepMissingRelatedAlias('TaskList', false);
+```
 
-    public function getProjectDetail(int $id): ?Project
-    {
-        return Project::findFirstWith([
-            'UserNode.UserEntity',
-            'CategoryList',
-            'ExclusionReasonList',
-        ], [
-            'conditions' => 'id = :id: AND deleted <> 1',
-            'bind' => ['id' => $id],
-        ]);
-    }
+Then an omitted existing child in a submitted replacement list can be removed.
+Do not use this policy for partial edit forms. Direct soft-deleted children are
+not automatically restored unless configured; automatic restoration only applies
+to children already owned by the parent. Through-table relationships have their
+own intermediate-node restoration behavior.
+
+Nested relation saves are distinct from the REST batch contract. Define and
+test transaction boundaries for your complete application workflow; a REST batch
+is not automatically all-or-nothing.
+
+## Custom Aliases
+
+Add a business alias after the generated initialization:
+
+```php
+public function initialize(): void
+{
+    parent::initialize();
+    $this->hasMany('id', \App\Models\Task::class, 'projectId', [
+        'alias' => 'ProjectTasks',
+    ]);
 }
 ```
 
-The important part is not the service class; it is the explicit relation graph
-at the query boundary.
-
-## Custom Relationship Override
-
-If the scaffolder cannot infer the business alias you want, add it in the
-concrete model after the generated default relationships:
-
-```php
-<?php
-
-namespace App\Models;
-
-final class Project extends Abstracts\ProjectAbstract
-{
-    public function initialize(): void
-    {
-        parent::initialize();
-
-        $this->hasMany(
-            'id',
-            ProjectUser::class,
-            'projectId',
-            ['alias' => 'ActiveUserNode']
-        );
-    }
-}
-```
-
-Keep the generated relationship intact when existing controllers or
-transformers depend on it. Add the new alias for the new use case.
+Aliases are application API vocabulary. Inspect the generated definitions when
+tables have several foreign keys to the same model. Keep aliases required by
+Core identity (`RoleList`, `GroupList`, `TypeList`) when mapping a User model.
 
 ## Model Behaviors
 
-Phalcon Kit model traits and behaviors cover common persistence rules:
+Core supports UUIDs, soft delete/restore, blameable fields, positions, slugs,
+snapshots, security checks, caching, and replication helpers. Match each behavior
+to real schema columns and indexes. The tutorial includes `deleted`; adding a
+REST restore/reorder grant alone does not add missing storage or behavior.
 
-- UUIDs and UUIDv7 identifiers.
-- Soft delete and restore fields.
-- Created, updated, deleted, and restored blameable fields.
-- Slug generation.
-- Position/order helpers.
-- Snapshot and cache support.
-- Security checks against identity roles.
-- Replication helpers.
+The standard Core User hashes plaintext passwords in its save hook and preserves
+recognized password hashes. A separately mapped application User owns its own
+password workflow. Keep password attributes out of generic public APIs.
 
-Use generated defaults for schema-derived behavior and concrete models for
-business-specific behavior.
+## Aggregate Values
 
-## Snapshot Changed Fields
+Minimum/maximum preserve native driver values: text/datetime strings, numbers,
+decimal strings, or null when no value exists. Grouped queries return resultsets;
+a cancelled Core before-event can return false. Handle these cases before
+converting values. See [REST aggregates](rest-aggregates.md).
 
-Use `getSnapshotChangedFields()` when audit logs, domain comparisons,
-replication decisions, or API response metadata need to know which persisted
-snapshot values differ from the model's current raw attributes.
+## Snapshots And Caches
 
-The helper complements Phalcon's native `getChangedFields()` instead of
-replacing it. Native dirty tracking still controls persistence behavior.
-`getSnapshotChangedFields()` returns mapped model field names, accepts snapshots
-keyed by either database columns or mapped fields, reads current values through
-`readAttribute()` rather than domain getters, and falls back to native
-`getChangedFields()` only when no snapshot data exists.
+`getSnapshotChangedFields()` compares persisted snapshots with raw mapped
+attributes. It accepts column or mapped-field names in its ignore list:
 
 ```php
-$changedFields = $record->getSnapshotChangedFields([
-    'updatedAt',
-    'updatedBy',
-    'updatedAs',
-]);
+$changed = $record->getSnapshotChangedFields(['updatedAt', 'updatedBy']);
 ```
 
-The ignore list accepts either mapped model fields such as `updatedAt` or
-database columns such as `updated_at`. Use it for lifecycle and bookkeeping
-fields that should not appear in business-facing diffs. Nullable fields follow
-Phalcon Kit's existing SQL `"NULL"` string convention, so nullable `"NULL"`
-snapshot values compare as `null` without mutating the snapshot.
+It complements native dirty tracking, which still controls persistence. Without
+a snapshot it falls back to native changed fields. Do not use a snapshot diff as
+the sole authorization context for password or privileged account changes.
 
-Do not use snapshot changed fields as the sole authorization context for
-sensitive flows such as password reset or privileged account changes. Those
-flows should pass explicit intent and authorization context through the service
-or controller layer.
-
-## Model Cache Invalidation
-
-The model cache behavior currently uses a coarse invalidation strategy. Create,
-delete, restore, and reorder events clear the shared `modelsCache` service
-because they change record visibility or ordering. Save and update events clear
-the shared cache when either condition is true:
-
-- the model has no snapshot data, which covers new records and other writes
-  where Phalcon cannot compare an old row snapshot
-- the model has snapshot data and Phalcon reports changed or updated fields
-
-Unchanged snapshot-aware saves and updates do not clear the cache. Session and
-audit models are excluded from the default flush behavior during model
-initialization so high-volume infrastructure writes do not repeatedly clear
-application model query caches.
-
-Do not depend on targeted model cache keys yet. A future granular invalidation
-contract still needs explicit cache-key naming, model whitelist rules, relation
-invalidation rules, and optional pre-warming semantics before the framework can
-replace the shared-cache clear safely.
-
-### Future Granular Cache Policy
-
-Any future targeted invalidation should be opt-in and policy-driven. The
-minimum safe contract should define:
-
-- cache-key ownership: whether keys are owned by the model class, repository,
-  controller query, or application service
-- key format: a stable namespace, model class/source identity, query signature,
-  identity/permission scope, locale/workspace scope, pagination scope, and a
-  version segment so old keys can be abandoned safely
-- whitelist rules: only explicitly opted-in model classes or cache groups can
-  use targeted deletion; all other model writes keep using the coarse shared
-  cache clear
-- reverse indexes: cached query keys must be discoverable by model class,
-  relation alias, and affected primary keys before the framework can delete
-  only selected entries
-- relation invalidation: parent and child relation caches need explicit rules
-  for belongs-to, has-one, has-many, and through relations
-- mutation events: create, update, delete, restore, reorder, and lifecycle
-  tasks must map to the same invalidation contract
-- pre-warming: any automatic cache refill must be an application callback or
-  queue job, not an implicit model-event side effect
-
-The migration path should add observation and key registration first, then
-allow specific models to opt into targeted invalidation. The framework should
-keep the coarse clear as the fallback whenever a policy is missing, ambiguous,
-or unable to find the affected cache keys.
-
-## Practical Rules
-
-- Treat the database schema as the source of truth for generated model shape.
-- Keep custom relationships in concrete models when the scaffolder cannot infer
-  them safely.
-- Prefer `findWith()` and `findFirstWith()` for known relation graphs.
-- Expect through relations to attach each target model once per parent, even
-  when repeated intermediate rows point to the same target key.
-- Use transformers for heavy nested API resources.
-- Keep model methods focused on domain behavior, not controller formatting.
-
-Continue with [REST APIs](rest-api.md) to expose relationship graphs safely,
-[Developer Cookbook](cookbook.md) for focused eager-loading examples, and
-[Database And Scaffolding](database-scaffolding.md) when aliases or generated
-metadata do not match the schema.
+Default model cache invalidation clears the shared `modelsCache` on visibility/
+ordering changes, and on saves/updates with changes or no usable snapshot.
+Unchanged snapshot-aware saves do not clear it. Session/audit models are excluded
+from default flush behavior. Do not assume per-model targeted cache eviction;
+use application-owned cache keys/invalidation for specialized caches.

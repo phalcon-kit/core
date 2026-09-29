@@ -60,6 +60,7 @@ trait UserTrait
      */
     public function createAction(string $email, ?string $password = null): array
     {
+        $password = $this->resolvePasswordInput($password);
         $response = [
             'errors' => [],
             'save' => 0
@@ -84,11 +85,11 @@ trait UserTrait
             'bindTypes' => ['role' => Column::BIND_PARAM_STR],
         ]);
         
-        if ($roleEntity) {
-            $assign['rolenode'] = [['roleId' => $roleEntity->getId()]];
-        }
-        
         $userEntity = $this->newUserEntity();
+        if ($roleEntity) {
+            $assign[$this->getUserRoleAssignmentAlias($userEntity)] = [['roleId' => $roleEntity->getId()]];
+        }
+
         $userEntity->assign($assign);
         
         if (!$userEntity->save()) {
@@ -126,7 +127,7 @@ trait UserTrait
         
         if ($userEntity && $roleEntity) {
             $userEntity->assign([
-                'rolenode' => [['roleId' => $roleEntity->getId()]],
+                $this->getUserRoleAssignmentAlias($userEntity) => [['roleId' => $roleEntity->getId()]],
             ]);
             if (!$userEntity->save()) {
                 $response['errors'] = $this->normalizeCliMessages($userEntity->getMessages(), 'User role save failed.');
@@ -140,6 +141,10 @@ trait UserTrait
     
     public function passwordAction(?string $username = null, ?string $password = null): array
     {
+        if ($this->dispatcher->getParameter('passwordStdin') && empty($username)) {
+            throw new \PhalconKit\Exception\InvalidArgumentException('A target email is required with --password-stdin.');
+        }
+        $password = $this->resolvePasswordInput($password);
         $response = [];
         
         $class = $this->models->getUserClass();
@@ -166,7 +171,7 @@ trait UserTrait
             foreach ($fields as $field => $value) {
                 $assign[$field] = is_callable($value) ? $value($entity) : $value;
             }
-            if (!empty($password)) {
+            if ($password !== null && $password !== '') {
                 $assign['password'] = $password;
                 $assign['passwordConfirm'] = $password;
             }
@@ -211,6 +216,62 @@ trait UserTrait
 
         return new $userClass();
     }
+
+    /**
+     * Resolve an explicitly requested stdin password without exposing it in argv.
+     *
+     * Existing positional/custom-model assignment remains supported. Stdin mode
+     * rejects empty input and conflicting password arguments before any writes.
+     *
+     * @throws \PhalconKit\Exception\InvalidArgumentException When input is empty or ambiguous.
+     */
+    protected function resolvePasswordInput(?string $password): ?string
+    {
+        if (!$this->dispatcher->getParameter('passwordStdin')) {
+            return $password;
+        }
+        if ($password !== null) {
+            throw new \PhalconKit\Exception\InvalidArgumentException('Use either --password-stdin or a password argument.');
+        }
+
+        $password = rtrim($this->readPasswordFromStdin(), "\r\n");
+        if ($password === '') {
+            throw new \PhalconKit\Exception\InvalidArgumentException('Password input must not be empty.');
+        }
+
+        return $password;
+    }
+
+    /** Read CLI secret input; override only for an application input adapter. */
+    protected function readPasswordFromStdin(): string
+    {
+        $password = stream_get_contents(STDIN);
+        if ($password === false) {
+            throw new \PhalconKit\Exception\InvalidArgumentException('Unable to read password input.');
+        }
+        return $password;
+    }
+
+    /**
+     * Resolve the application's direct user-role membership relationship.
+     *
+     * Core's generated User defines UserRoleList. Application models may retain
+     * RoleNode; prefer that alias when present to preserve their save hooks.
+     * A missing relationship is a configuration error, never a successful role
+     * assignment. The model manager must have initialized the resolved user.
+     *
+     * @throws \PhalconKit\Exception\LogicException When neither membership alias exists.
+     */
+    protected function getUserRoleAssignmentAlias(UserInterface $user): string
+    {
+        foreach (['RoleNode', 'UserRoleList'] as $alias) {
+            if ($this->modelsManager->getRelationByAlias($user::class, $alias)) {
+                return $alias;
+            }
+        }
+
+        throw new \PhalconKit\Exception\LogicException('The user model needs a RoleNode or UserRoleList relationship.');
+    }
     
     public function addModelsPermissions(?array $tables = null): void
     {
@@ -219,6 +280,7 @@ trait UserTrait
         foreach ($tables as $model => $entity) {
             $permissions[$model] = ['*'];
         }
+        $permissions[$this->models->getRoleClass()] = ['find'];
         $this->config->merge([
             'permissions' => [
                 'roles' => [
