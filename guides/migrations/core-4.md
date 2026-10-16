@@ -5,6 +5,7 @@
 | Starting point | Target | Scope |
 | --- | --- | --- |
 | An application on Core before 4.0 | Core 4.x | Removed catalog/CMS dependencies, explicit maintenance configuration, and application-owned schema history |
+| A Core 4.x application using optional reCAPTCHA 1.x | Core 4.x with reCAPTCHA 2.1+ | Custom verification transports, typed inputs, and test fixtures |
 
 Generic REST, scaffolding, models, identity, permissions, providers, and
 HTTP/CLI/WebSocket infrastructure remain available. This guide identifies the
@@ -142,6 +143,34 @@ Inspect the resulting dependency changes. Applications that need removed
 features must provide their own equivalent before switching runtime versions;
 there is no drop-in compatibility package for the catalog/CMS runtime.
 
+### 6. Update Optional reCAPTCHA Integrations
+
+Core's optional `google/recaptcha` dependency now targets `^2.1`. Applications
+using this service should update their own Composer constraint and lockfile.
+The standard Core provider retains its `reCaptcha` configuration and shared
+service name. Keep the secret as a non-empty string, including when its value
+is `"0"`.
+
+For custom integrations, apply the [upstream 2.x migration changes](https://github.com/google/recaptcha/releases/tag/2.0.0):
+
+- Custom `ReCaptcha\RequestMethod` implementations must declare
+  `public function submit(ReCaptcha\RequestParameters $params): string`.
+- `verify()` requires a string token. For an already validated nullable string,
+  use `$verifier->verify($token ?? '', $remoteIp)`; continue rejecting arrays or
+  other invalid request shapes before calling the verifier.
+- `ReCaptcha\Response` and `ReCaptcha\RequestParameters` are readonly value
+  objects. Create real response objects in tests, or mock `RequestMethod`,
+  instead of subclassing them with mutable properties.
+- The `ReCaptcha\RequestMethod\Curl` and `Socket` wrappers were removed. Pass an
+  optional verification URL directly to `new CurlPost($url)` or
+  `new SocketPost($url)` in the `ReCaptcha\RequestMethod` namespace.
+
+For request-specific expectations on a shared verifier, use a cloned instance:
+`$requestVerifier = $verifier->withExpectedAction('submit')`. The `with*()`
+methods preserve the shared service's configured policy. A configured score
+threshold rejects responses without a score, including when the threshold is
+`0.0`; verify that this matches the reCAPTCHA product your application uses.
+
 ## Verify
 
 - Run the application's checks, then initialize each retained/mapped model and
@@ -154,6 +183,9 @@ there is no drop-in compatibility package for the catalog/CMS runtime.
   schedules and worker commands resolve the intended task classes.
 - Confirm existing migration history is unchanged and the fresh baseline was not
   added to pending application upgrades.
+- For reCAPTCHA, verify accepted tokens and hostname, action, and score
+  rejection through an injected test transport; confirm the real configured
+  endpoint works in the application's deployment environment.
 
 Class loading or package installation alone does not validate these workflows.
 

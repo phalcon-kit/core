@@ -30,6 +30,12 @@ class ServiceProvider extends AbstractServiceProvider
     
     /**
      * Register the shared `reCaptcha` service.
+     *
+     * `reCaptcha.secret` must be a non-empty string; the string `"0"` is valid.
+     * A custom `reCaptcha.requestMethod` must implement ReCaptcha's typed
+     * RequestMethod interface. Resolving the service validates its options.
+     *
+     * @throws \RuntimeException When the service is resolved without a secret.
      */
     #[\Override]
     public function register(DiInterface $di): void
@@ -43,7 +49,7 @@ class ServiceProvider extends AbstractServiceProvider
             $secret = $options['secret'] ?? null;
             $requestMethod = $options['requestMethod'] ?? null;
             
-            $reCaptcha = new \ReCaptcha\ReCaptcha($secret ?: '', $requestMethod);
+            $reCaptcha = new \ReCaptcha\ReCaptcha($secret ?? '', $requestMethod);
             $reCaptcha->setExpectedHostname($options['expectedHostname'] ?? '');
             $reCaptcha->setExpectedApkPackageName($options['expectedApkPackageName'] ?? '');
             $reCaptcha->setExpectedAction($options['expectedAction'] ?? '');

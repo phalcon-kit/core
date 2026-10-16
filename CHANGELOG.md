@@ -15,10 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 4.0.2 - Unreleased
+## 4.0.2 - 2026-10-16
 
 ### Changed
 
+- Refresh supported Composer dependencies, including reCAPTCHA 2.1, AWS SDK
+  3.401.2, Flysystem 3.36.0 and its local adapter 3.35.3, Dotenv 5.7.0, and
+  Lorem Ipsum 3.0.1. Keep suggestions and development requirements aligned.
+- Update the pinned CodeQL SARIF action to 4.39.0.
 - Require Phalcon `^5.23.0` with matching IDE stubs. Pin CI to the
   checksum-verified 5.23.0 release and align runtime requirements, setup guides,
   and the application development environment example.
@@ -34,6 +38,9 @@ release notes.
 
 ### Fixed
 
+- Preserve the non-empty reCAPTCHA secret `"0"` when constructing the configured
+  verifier. Document the reCAPTCHA 2.x custom-transport migration and verify
+  configured validation through a typed transport.
 - Invoke application relationship setters when assigning `null` through Core's
   model wrapper, matching Phalcon 5.23.0 while preserving Core's dirty tracking
   and keeping cleared relationship caches consistent. Skip cleared belongs-to references
@@ -45,7 +52,7 @@ release notes.
 
 ### Security
 
-- Require `league/flysystem ^3.35.3` to reject malformed UTF-8 paths and resolve
+- Require `league/flysystem ^3.36.0` to reject malformed UTF-8 paths and resolve
   CVE-2026-102601.
 
 ## 4.0.1 - 2026-09-29
