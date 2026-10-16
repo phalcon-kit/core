@@ -15,6 +15,32 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.0.2 - Unreleased
+
+### Changed
+
+- Require Phalcon `^5.23.0` with matching IDE stubs. Pin CI to the
+  checksum-verified 5.23.0 release and align runtime requirements, setup guides,
+  and the application development environment example.
+- Cover routing, HTTP/events, DI and filters, model/SQL/metadata behavior, and
+  view/Volt integration with native Phalcon 5.22.1/5.23.0 compatibility
+  regressions in CI.
+- Document the events-manager workaround for Phalcon 5.23.0's overlapping
+  static/regex route callback issue on manually constructed routers and the
+  Volt inheritance-cache limitation with source checks disabled. Standard Core
+  providers retain the supported event-aware routing and Volt source checks.
+
+### Fixed
+
+- Invoke application relationship setters when assigning `null` through Core's
+  model wrapper, matching Phalcon 5.23.0 while preserving Core's dirty tracking
+  and keeping cleared relationship caches consistent. Skip cleared belongs-to references
+  during related-record saves so setter-updated foreign keys can persist.
+- Use Phalcon's native absolute-view-path detection so Core's slug fallback
+  respects Windows drive paths with either slash style.
+- Default the configured Volt compiler prefix to an empty string. The previous
+  `null` default was rejected when rendering through the shared Volt service.
+
 ## 4.0.1 - 2026-09-29
 
 ### Documentation

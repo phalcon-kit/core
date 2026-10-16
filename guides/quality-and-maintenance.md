@@ -4,7 +4,7 @@ Use these commands before opening pull requests or cutting releases.
 
 ## Local Tool Setup
 
-Use PHP 8.5+, Phalcon 5.22.x, Composer 2.10+, and the extensions declared in
+Use PHP 8.5+, Phalcon 5.23.x, Composer 2.10+, and the extensions declared in
 `composer.json`. The QA wrappers call executables on `PATH`; installing this
 package's development dependencies does not install every analyzer or PHPUnit.
 

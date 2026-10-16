@@ -13,7 +13,7 @@ removed application-domain runtime and the changes needed by consumers.
 ## Before You Start
 
 Complete the [shared preparation](README.md#shared-preparation). Use PHP 8.5+
-and the Phalcon extension satisfying `^5.22.0`, consistent across CLI, PHP-FPM,
+and the Phalcon extension satisfying `^5.23.0`, consistent across CLI, PHP-FPM,
 and workers. Review [Feature Setup](../feature-contracts.md) for the tables,
 services, and model contracts your application actually uses.
 

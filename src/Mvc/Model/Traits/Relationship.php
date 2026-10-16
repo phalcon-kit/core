@@ -838,8 +838,13 @@ trait Relationship
      *  - combined keys on relationship definition
      *  - relationship context within the model messages based on the alias definition
      *
+     * A null belongs-to entry has no related model to persist. Its application
+     * setter may already have cleared the foreign-key attributes; otherwise
+     * those attributes stay unchanged. Keep the entry in Core's dirty cache
+     * while allowing the master record's normal save and transaction lifecycle.
+     *
      * @param AdapterInterface $connection
-     * @param ModelInterface[] $related
+     * @param array<string, mixed> $related Related values indexed by alias; belongs-to values may be models or null.
      * @param CollectionInterface $visited
      * @return bool
      * @throws InvalidArgumentException
@@ -861,6 +866,9 @@ trait Relationship
                 
                 // Only belongsTo are stored before save the master record
                 if ($type === Relation::BELONGS_TO) {
+                    if ($record === null) {
+                        continue;
+                    }
                     // Belongs-to relation: We only support model interface
                     if (!($record instanceof ModelInterface)) {
                         $connection->rollback($nesting);

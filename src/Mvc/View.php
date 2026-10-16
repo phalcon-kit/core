@@ -102,14 +102,13 @@ class View extends \Phalcon\Mvc\View
 
     /**
      * Return whether a view path is absolute using Phalcon's platform rules.
+     *
+     * Delegate to the native view so forward-slash and backslash Windows drive
+     * paths bypass slug fallback consistently with the loaded Phalcon runtime.
      */
     private function isAbsoluteViewPath(string $path): bool
     {
-        if (PHP_OS === 'WINNT') {
-            return strlen($path) >= 3 && substr($path, 1, 2) === ':\\';
-        }
-
-        return str_starts_with($path, '/');
+        return $this->isAbsolutePath($path);
     }
     
     /**

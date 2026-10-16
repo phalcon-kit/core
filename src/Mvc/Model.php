@@ -84,6 +84,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
     use Model\Traits\Uuid;
     use Model\Traits\Validate;
 
+    /** @var array<string, true> Active null setters, keyed by normalized relationship alias. */
+    private array $relationSettersInProgress = [];
+
     /**
      * Insert or update this model using native Phalcon persistence and lifecycle events.
      *
@@ -210,6 +213,17 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
 
     /**
      * Handles dynamic model writes before Phalcon sees them.
+     *
+     * Localized properties retain their locale mapping. Relationship aliases
+     * remain in Core's dirty-relation cache, including explicit null values.
+     * Clearing a relation also clears its read caches and invokes its application
+     * setter, when available, so it can clear foreign keys consistently with
+     * Phalcon 5.23. Reassigning a cleared alias discards its cached null without
+     * adding a non-null model to Phalcon's implicit related-save cache.
+     *
+     * @param string $property Attribute or registered relationship alias.
+     * @param mixed $value Value to assign; null may clear a relation and its foreign key.
+     * @throws \Throwable When an application setter fails, subject to Phalcon's setter handling.
      */
     #[\Override]
     public function __set(string $property, mixed $value): void
@@ -219,7 +233,22 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
         }
 
         if ($this->isModelRelationAlias($property)) {
+            $alias = $this->normalizeRelationAlias($property);
+            if ($value !== null && $this->hasLoadedRelatedAlias($alias) && $this->loadedRelated[$alias] === null) {
+                unset($this->loadedRelated[$alias], $this->related[$alias]);
+            }
             $this->setDirtyRelatedAlias($property, $value);
+            if ($value === null) {
+                $this->setRelated($property, null);
+                if (!isset($this->relationSettersInProgress[$alias])) {
+                    $this->relationSettersInProgress[$alias] = true;
+                    try {
+                        $this->possibleSetter($property, null);
+                    } finally {
+                        unset($this->relationSettersInProgress[$alias]);
+                    }
+                }
+            }
             return;
         }
 

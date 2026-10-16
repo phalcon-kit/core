@@ -24,7 +24,7 @@ resource conversion.
 
 ### 1. Align Runtime And Dependencies
 
-Use PHP 8.5+, native Phalcon satisfying `^5.22.0`, matching development stubs,
+Use PHP 8.5+, native Phalcon satisfying `^5.23.0`, matching development stubs,
 and Core `^4.0.1`. Update and inspect the application lockfile. Verify all runtime
 processes, including CLI, PHP-FPM, and long-running workers.
 

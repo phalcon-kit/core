@@ -2,7 +2,7 @@
 
 Run the application with a PHP/Phalcon combination satisfying its Composer
 requirements. The current package requires PHP 8.5 or later and Phalcon
-`^5.22.0`. Composer's platform checks are the authoritative installation check.
+`^5.23.0`. Composer's platform checks are the authoritative installation check.
 
 ## Check The CLI Runtime
 

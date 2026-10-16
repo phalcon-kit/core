@@ -29,7 +29,7 @@ and events.
 
 ## Start An Application
 
-Install PHP 8.5+, the Phalcon extension satisfying `^5.22.0`, and Composer 2, then run:
+Install PHP 8.5+, the Phalcon extension satisfying `^5.23.0`, and Composer 2, then run:
 
 ```shell
 composer create-project phalcon-kit/app my-api

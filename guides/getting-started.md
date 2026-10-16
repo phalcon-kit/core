@@ -5,7 +5,7 @@ database when you are ready to build a resource.
 
 ## Requirements
 
-- PHP 8.5 or later, with the native Phalcon extension satisfying `^5.22.0`.
+- PHP 8.5 or later, with the native Phalcon extension satisfying `^5.23.0`.
 - Composer 2 and the PHP extensions required by the package.
 - MySQL or MariaDB for database-backed features.
 - Swoole only if you run the optional WebSocket server.

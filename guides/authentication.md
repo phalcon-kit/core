@@ -24,7 +24,7 @@ php -r 'echo "Aa1!" . bin2hex(random_bytes(64)), PHP_EOL;'
 Put the result in `.env` as `SECURITY_JWT_PASSPHRASE="your-generated-value"`.
 The random portion provides 64 bytes of entropy; the prefix satisfies Phalcon's
 mixed-case/digit/symbol format check. A hex-only key fails that check even when
-it is long. See the [Phalcon JWT builder reference](https://docs.phalcon.io/5.22/api/phalcon_encryption/).
+it is long. See the [Phalcon JWT builder reference](https://docs.phalcon.io/5.23/api/phalcon_encryption/).
 
 Keep the key stable across requests/restarts and share it only between instances
 of the same environment. A signing-key change invalidates issued tokens.

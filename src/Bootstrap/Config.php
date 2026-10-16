@@ -830,7 +830,7 @@ class Config extends \PhalconKit\Config\Config
                 'extension' => Env::get('VOLT_EXTENSION', '.php'),
                 'separator' => Env::get('VOLT_SEPARATOR', '%%'),
                 'path' => Env::get('VOLT_PATH', './'),
-                'prefix' => Env::get('VOLT_PREFIX', null),
+                'prefix' => Env::get('VOLT_PREFIX', ''),
                 'stat' => Env::get('VOLT_STAT', true), // Whether Phalcon must check if there are differences between the template file and its compiled path
             ],
             

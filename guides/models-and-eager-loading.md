@@ -107,6 +107,13 @@ application transformer for public representations.
 
 ## Assign Related Records
 
+Direct assignment of `null` to a registered relationship alias invokes its
+application setter when present. A nullable belongs-to setter should clear the
+corresponding foreign-key attributes; `save()` then persists those changes.
+Core retains the cleared alias in its dirty-relation cache. Without a setter,
+the foreign-key attributes remain unchanged. Nested `assignRelated()` payloads
+still follow their existing array/model validation rules.
+
 Core model `assign()` accepts nested relation data and a nested whitelist:
 
 ```php

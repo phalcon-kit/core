@@ -101,6 +101,44 @@ curl --include http://127.0.0.1:8000/api/project
 Inspect the status, response envelope, and debug output in a development
 environment. Do not enable detailed exception output in production.
 
+### A manually constructed router skips a route callback
+
+On Phalcon 5.23.0, a router without an events manager can skip the latest static
+route's `beforeMatch` callback when a regex route was registered between two
+copies of that static path. This affects both native and Core MVC routers.
+
+The standard Core router provider already attaches the shared events manager
+and preserves the expected route order. When constructing a router manually,
+attach the same manager before handling requests:
+
+```php
+$router = new \PhalconKit\Mvc\Router(false, $di->getConfig());
+$router->setDI($di);
+$router->setEventsManager($di->getShared('eventsManager'));
+```
+
+Register application routes after creating the router. Verify both an allowed
+and a vetoed callback when overlapping static and regex routes are intentional.
+
+## Volt Outputs Serialized Block Data
+
+When `stat` is disabled, the native Volt compiler can output serialized parent
+block metadata while compiling a new child template whose parent is already
+cached. This behavior is reproducible on Phalcon 5.23.0. Keep source checks
+enabled while compiling templates that use `{% extends %}`.
+
+For Core's configured `volt` service, retain the default `VOLT_STAT=true`. A view
+engine registered directly as `Phalcon\Mvc\View\Engine\Volt` uses its own engine
+options; apply `stat => true` there instead. The Core `volt` configuration applies
+when the view's `.volt` engine is registered with the service name `volt`.
+
+If affected compiled files already exist, rebuild the affected template cache
+with `stat => true` and `always => true`, then restore `always => false`. Merely
+enabling `stat` may keep an existing compiled file if its source has not changed.
+Disable `stat` only after compiling every required child, parent, and included
+template, and repeat that preparation whenever templates or deployment paths
+change. Verify the rendered output of each inheritance branch before serving it.
+
 ## Database Or Migration Failures
 
 ### The app connects to the wrong database
