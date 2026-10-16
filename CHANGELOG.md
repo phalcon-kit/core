@@ -41,6 +41,11 @@ release notes.
 - Default the configured Volt compiler prefix to an empty string. The previous
   `null` default was rejected when rendering through the shared Volt service.
 
+### Security
+
+- Require `league/flysystem ^3.35.3` to reject malformed UTF-8 paths and resolve
+  CVE-2026-102601.
+
 ## 4.0.1 - 2026-09-29
 
 ### Documentation

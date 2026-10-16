@@ -78,7 +78,7 @@
     "ext-phalcon": "^5.23.0",
     "ext-sodium": "*",
     "docopt/docopt": "^1.0.6",
-    "league/flysystem": "^3.35.2",
+    "league/flysystem": "^3.35.3",
     "league/flysystem-local": "^3.31.0",
     "league/fractal": "^0.21",
     "league/mime-type-detection": "^1.17.0",
