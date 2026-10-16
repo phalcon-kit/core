@@ -68,8 +68,7 @@ class Filter extends \Phalcon\Filter\Filter
      * top so the DI `filter` service and standalone `FilterFactory` instances
      * expose the same custom sanitizers.
      *
-     * @param array<string, class-string|callable> $mapper Existing Phalcon filter
-     *     definitions, including callable arrays registered by applications.
+     * @param array<string, class-string|callable> $mapper Filter definitions, including callable arrays.
      *
      * @return void
      */
