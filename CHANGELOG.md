@@ -25,6 +25,8 @@ release notes.
 - Cover routing, HTTP/events, DI and filters, model/SQL/metadata behavior, and
   view/Volt integration with native Phalcon 5.22.1/5.23.0 compatibility
   regressions in CI.
+- Update the PHPUnit configuration schema and dependency-order setting for
+  PHPUnit 13.4 while retaining PHPUnit 12.5 compatibility and strict failure checks.
 - Document the events-manager workaround for Phalcon 5.23.0's overlapping
   static/regex route callback issue on manually constructed routers and the
   Volt inheritance-cache limitation with source checks disabled. Standard Core
