@@ -112,6 +112,7 @@ controller, access policy, and commands needed to run this example. The
 | Build counters, facets, and exports | [REST Counts And Aggregates](guides/rest-aggregates.md) |
 | Sign in users and restrict access | [Authentication](guides/authentication.md) and [Permissions](guides/identity-and-permissions.md) |
 | Configure services and modules | [Configuration](guides/configuration.md) |
+| Configure OpenAI transports and capture usage | [OpenAI](guides/openai.md) |
 | Create tables and generate models | [Migrations](guides/database-migrations.md) and [Scaffolding](guides/database-scaffolding.md) |
 | Write commands or serve WebSockets | [CLI Tasks](guides/cli-tasks.md) and [Web Servers And WebSockets](guides/web-server-and-websocket.md) |
 | Diagnose an unexpected result | [Troubleshooting](guides/troubleshooting.md) |

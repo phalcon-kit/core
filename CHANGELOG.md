@@ -15,6 +15,20 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.0.3 - 2026-10-23
+
+### Added
+
+- Allow applications to inject shared `openAiHttpClient` and
+  `openAiStreamHandler` DI services while retaining the default Guzzle transport.
+- Add optional, bounded Responses usage capture for JSON and streamed requests,
+  including cache-write counters omitted by the SDK's typed usage objects.
+  Preserve SDK response contracts and leave pricing and model policy to the
+  application.
+- Document OpenAI configuration, transport replacement, usage capture, failure
+  behavior, and offline integration testing in the application guide and skill
+  reference.
+
 ## 4.0.2 - 2026-10-16
 
 ### Changed

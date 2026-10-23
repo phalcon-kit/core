@@ -36,6 +36,7 @@ the accompanying controller configuration as well as the request.
 | --- | --- |
 | Decide where application code belongs | [Architecture](architecture.md) |
 | Configure environments, modules, and services | [Configuration](configuration.md) |
+| Call OpenAI with injectable transports and usage capture | [OpenAI](openai.md) |
 | Connect Core to your own bootstrap | [Application Integration](application-integration.md) |
 | Manage application tables | [Database Migrations](database-migrations.md) |
 | Generate and regenerate models | [Database And Scaffolding](database-scaffolding.md) |
