@@ -14,9 +14,14 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Model\Behavior\Traits;
 
 /**
- * Allow to enable or disable trait
- * on the current model instance ($enabled)
- * or globally for every model instance ($staticEnabled)
+ * Allow to enable or disable a behavior on this behavior instance ($enabled)
+ * or globally for every behavior using the trait ($staticEnabled).
+ *
+ * Model behaviors are registered once per model class in the models manager,
+ * so "this behavior instance" is shared by every record of that model class:
+ * `disable()` on `$model->get...Behavior()` affects all records of the class,
+ * not only `$model`. Behaviors that need a per-record switch expose a
+ * dedicated API, for example `Blameable::disableAuditFor()`.
  */
 trait SkippableTrait
 {

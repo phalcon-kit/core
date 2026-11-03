@@ -42,7 +42,19 @@ use PhalconKit\Support\Helper;
  * Control layers (in order of precedence):
  * 1. SkippableTrait                → disable the behavior entirely
  * 2. Audit toggle                  → enable/disable parent audit rows
- * 3. Audit detail toggle           → enable/disable per-column audit details
+ * 3. Per-record audit opt-out      → skip audit for one model instance
+ * 4. Audit detail toggle           → enable/disable per-column audit details
+ *
+ * Scope: Phalcon registers model behaviors once per model class, so the
+ * instance returned by `$model->getBlameableBehavior()` is shared by every
+ * record of that class. `enable()`/`disable()`, `enableAudit()`/
+ * `disableAudit()`, and the audit-detail toggles therefore apply to the whole
+ * model class for the rest of the request/process. Use
+ * `disableAuditFor($model)` to skip auditing for one record only.
+ *
+ * Update audits are written only when at least one audited column changed;
+ * an update without a snapshot is always written because changes cannot be
+ * ruled out.
  *
  * This design guarantees:
  * - Zero overhead when fully disabled
@@ -60,16 +72,23 @@ class Blameable extends Behavior
     protected static ?int $parentId = null;
 
     /**
-     * Snapshot of model data before update.
-     * Populated during beforeUpdate.
+     * Pre-update state captured in `beforeUpdate`, keyed by model instance.
+     *
+     * The behavior is shared by every record of a model class, so this state
+     * must never live in a scalar property: it would leak one record's
+     * snapshot into another record's audit. Entries are consumed by the next
+     * audit of the same instance and disappear with the model.
+     *
+     * @var \WeakMap<ModelInterface, array{snapshot: array<array-key, mixed>, changedFields: array<array-key, mixed>}>|null
      */
-    protected ?array $snapshot = null;
+    protected ?\WeakMap $pendingUpdates = null;
 
     /**
-     * List of changed fields detected by Phalcon.
-     * Used to filter unchanged columns on update.
+     * Records excluded from auditing with `disableAuditFor()`.
+     *
+     * @var \WeakMap<ModelInterface, true>|null
      */
-    protected ?array $changedFields = null;
+    protected ?\WeakMap $auditDisabledModels = null;
 
     /**
      * Fully-qualified audit model class.
@@ -87,8 +106,11 @@ class Blameable extends Behavior
     protected string $userClass = User::class;
 
     /**
-     * Instance-level audit toggle (parent audit row).
-     * Subclasses can redeclare this property to change the default.
+     * Behavior-level audit toggle (parent audit row).
+     *
+     * The behavior is shared by every record of the model class, so this
+     * toggle is class-wide. Subclasses can redeclare this property to change
+     * the default.
      */
     protected bool $auditEnabled = false;
 
@@ -98,8 +120,9 @@ class Blameable extends Behavior
     protected static bool $auditStaticEnabled = true;
 
     /**
-     * Instance-level audit detail toggle (per-column rows).
-     * Subclasses can redeclare this property to change the default.
+     * Behavior-level audit detail toggle (per-column rows), class-wide like
+     * `$auditEnabled`. Subclasses can redeclare this property to change the
+     * default.
      */
     protected bool $auditDetailEnabled = true;
 
@@ -146,11 +169,14 @@ class Blameable extends Behavior
     #[\Override]
     public function notify(string $type, ModelInterface $model): ?bool
     {
-        // Hard stop: behavior disabled or audit disabled
+        // Hard stop: behavior disabled, audit disabled, or this record opted out
         if (
             !$this->isEnabled() ||
-            !$this->isAuditEnabled()
+            !$this->isAuditEnabledFor($model)
         ) {
+            if ($type === 'afterCreate' || $type === 'afterUpdate') {
+                $this->takePendingUpdate($model);
+            }
             return null;
         }
 
@@ -171,9 +197,14 @@ class Blameable extends Behavior
     /**
      * Creates a parent audit entry and optional audit detail entries.
      *
-     * - Always creates a single audit row when enabled
+     * - Creates a single audit row when enabled
      * - Conditionally creates per-column audit details
-     * - Uses snapshot + changed fields to minimize noise
+     * - Uses the snapshot + changed fields captured for this same model
+     *   instance in `beforeUpdate`; create audits never carry a "before"
+     * - Skips update audits whose snapshot shows no audited column changed,
+     *   returning true without writing a row
+     *
+     * @return bool True when the audit was saved or intentionally skipped.
      *
      * @throws LogicException When configured audit classes do not implement the
      *     required audit contracts.
@@ -192,8 +223,37 @@ class Blameable extends Behavior
         $columnMap = $metaData->getColumnMap($model);
         $columnTypes = $metaData->getDataTypes($model);
 
-        $changed = $this->changedFields;
-        $snapshot = $this->snapshot;
+        // Consume the state captured for this record; never reuse another's.
+        $pending = $this->takePendingUpdate($model);
+        $snapshot = $event === 'update' ? ($pending['snapshot'] ?? null) : null;
+        $changed = $event === 'update' ? ($pending['changedFields'] ?? null) : null;
+
+        // Per-column diff, shared by the "unchanged update" check and details.
+        $diff = [];
+        foreach ($columns as $column) {
+            $map = $columnMap[$column] ?? $column;
+            $columnType = $columnTypes[$column] ?? null;
+
+            $before = $this->normalizeValue($snapshot[$map] ?? null, $columnType);
+            $after = $this->normalizeValue($model->readAttribute($map), $columnType);
+
+            // Skip unchanged fields on update
+            if (
+                $snapshot !== null &&
+                $changed !== null &&
+                ($before === $after || !in_array($map, $changed, true))
+            ) {
+                continue;
+            }
+
+            $diff[$column] = ['map' => $map, 'before' => $before, 'after' => $after];
+        }
+
+        // An update proven unchanged by its snapshot is not worth an audit row.
+        if ($event === 'update' && $snapshot !== null && $changed !== null && $diff === []) {
+            self::$parentId = null;
+            return true;
+        }
 
         $auditClass = $this->auditClass;
         $audit = new $auditClass();
@@ -228,23 +288,7 @@ class Blameable extends Behavior
             $details = [];
             $detailClass = $this->auditDetailClass;
 
-            foreach ($columns as $column) {
-                $map = $columnMap[$column] ?? $column;
-                $type = $columnTypes[$column] ?? null;
-
-                $before = $this->normalizeValue($snapshot[$map] ?? null, $type);
-                $after  = $this->normalizeValue($model->readAttribute($map), $type);
-
-                // Skip unchanged fields on update
-                if (
-                    $event === 'update' &&
-                    $changed !== null &&
-                    $snapshot !== null &&
-                    ($before === $after || !in_array($map, $changed, true))
-                ) {
-                    continue;
-                }
-
+            foreach ($diff as $column => ['map' => $map, 'before' => $before, 'after' => $after]) {
                 $detail = $this->requireAuditDetailRecord(new $detailClass());
 
                 $detail->setColumn($column);
@@ -385,20 +429,70 @@ class Blameable extends Behavior
     /**
      * Collects snapshot and changed field data prior to update.
      *
-     * This method is intentionally lightweight and only runs
-     * when snapshots are available.
+     * The data is stored for this model instance only and consumed by its
+     * next audit. Returns true when a snapshot was captured and null
+     * otherwise; it never returns false because a false result from a
+     * `beforeUpdate` behavior cancels the save in Phalcon.
      */
-    protected function collectData(Model $model): bool
+    protected function collectData(Model $model): ?bool
     {
+        $this->takePendingUpdate($model);
+
         if ($model->hasSnapshotData()) {
-            $this->snapshot = $model->getSnapshotData();
-            $this->changedFields = $model->getChangedFields();
+            $this->pendingUpdates()[$model] = [
+                'snapshot' => $model->getSnapshotData(),
+                'changedFields' => $model->getChangedFields(),
+            ];
             return true;
         }
 
-        $this->snapshot = null;
-        $this->changedFields = null;
-        return false;
+        return null;
+    }
+
+    /**
+     * Remove and return the pre-update state captured for one model instance.
+     *
+     * @return array{snapshot: array<array-key, mixed>, changedFields: array<array-key, mixed>}|null
+     */
+    protected function takePendingUpdate(ModelInterface $model): ?array
+    {
+        $pendingUpdates = $this->pendingUpdates();
+        $pending = $pendingUpdates[$model] ?? null;
+        unset($pendingUpdates[$model]);
+
+        return $pending;
+    }
+
+    /**
+     * Lazily create the per-instance pre-update state map.
+     *
+     * @return \WeakMap<ModelInterface, array{snapshot: array<array-key, mixed>, changedFields: array<array-key, mixed>}>
+     */
+    protected function pendingUpdates(): \WeakMap
+    {
+        if ($this->pendingUpdates === null) {
+            /** @var \WeakMap<ModelInterface, array{snapshot: array<array-key, mixed>, changedFields: array<array-key, mixed>}> $map */
+            $map = new \WeakMap();
+            $this->pendingUpdates = $map;
+        }
+
+        return $this->pendingUpdates;
+    }
+
+    /**
+     * Lazily create the per-record audit opt-out map.
+     *
+     * @return \WeakMap<ModelInterface, true>
+     */
+    protected function auditDisabledModels(): \WeakMap
+    {
+        if ($this->auditDisabledModels === null) {
+            /** @var \WeakMap<ModelInterface, true> $map */
+            $map = new \WeakMap();
+            $this->auditDisabledModels = $map;
+        }
+
+        return $this->auditDisabledModels;
     }
 
     /**
@@ -577,7 +671,10 @@ class Blameable extends Behavior
      */
 
     /**
-     * Returns true if audit rows are enabled for this instance and globally.
+     * Returns true if audit rows are enabled for this behavior and globally.
+     *
+     * The behavior is shared by every record of the model class; use
+     * `isAuditEnabledFor()` to also honor a per-record opt-out.
      */
     public function isAuditEnabled(): bool
     {
@@ -585,7 +682,7 @@ class Blameable extends Behavior
     }
 
     /**
-     * Enable audit rows for this instance.
+     * Enable audit rows for every record of the model class using this behavior.
      */
     public function enableAudit(): void
     {
@@ -593,11 +690,46 @@ class Blameable extends Behavior
     }
 
     /**
-     * Disable audit rows for this instance.
+     * Disable audit rows for every record of the model class using this behavior.
+     *
+     * This is class-wide, not per record. Use `disableAuditFor($model)` to
+     * skip auditing for a single record.
      */
     public function disableAudit(): void
     {
         $this->auditEnabled = false;
+    }
+
+    /**
+     * Returns true if audit rows are enabled for this specific record.
+     *
+     * Requires the class-wide and global toggles to be enabled and the record
+     * not to be opted out through `disableAuditFor()`.
+     */
+    public function isAuditEnabledFor(ModelInterface $model): bool
+    {
+        return $this->isAuditEnabled() && !isset($this->auditDisabledModels()[$model]);
+    }
+
+    /**
+     * Skip audit rows for one record only, until `enableAuditFor()` is called.
+     *
+     * Other records of the same model class keep their audit trail. The
+     * opt-out is held weakly and ends when the model instance is released.
+     */
+    public function disableAuditFor(ModelInterface $model): void
+    {
+        $this->auditDisabledModels()[$model] = true;
+    }
+
+    /**
+     * Remove a per-record opt-out set by `disableAuditFor()`.
+     *
+     * This does not override the class-wide or global toggles.
+     */
+    public function enableAuditFor(ModelInterface $model): void
+    {
+        unset($this->auditDisabledModels()[$model]);
     }
 
     /**
@@ -622,7 +754,7 @@ class Blameable extends Behavior
      */
 
     /**
-     * Returns true if audit detail rows are enabled for this instance and globally.
+     * Returns true if audit detail rows are enabled for this behavior (class-wide) and globally.
      */
     public function isAuditDetailEnabled(): bool
     {
@@ -630,7 +762,7 @@ class Blameable extends Behavior
     }
 
     /**
-     * Enable audit detail rows for this instance.
+     * Enable audit detail rows for every record of the model class.
      */
     public function enableAuditDetail(): void
     {
@@ -638,7 +770,7 @@ class Blameable extends Behavior
     }
 
     /**
-     * Disable audit detail rows for this instance.
+     * Disable audit detail rows for every record of the model class.
      */
     public function disableAuditDetail(): void
     {

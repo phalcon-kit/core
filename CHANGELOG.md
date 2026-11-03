@@ -15,6 +15,27 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.0.4 - Unreleased
+
+### Fixed
+
+- Stop audit `create` rows from carrying another record's values as `before`.
+  Blameable now keeps pre-update snapshots per model instance instead of in
+  state shared by the whole model class, and create audits never have a
+  `before`.
+- Skip update audit rows when the record's snapshot shows no audited column
+  changed, including when audit detail rows are disabled. Updates without a
+  snapshot are still audited.
+- Stop Blameable from cancelling updates of audited models that have no
+  snapshot: `beforeUpdate` returned `false`, which Phalcon treats as a cancel.
+
+### Added
+
+- Add `Blameable::disableAuditFor()`, `enableAuditFor()`, and
+  `isAuditEnabledFor()` to skip auditing for one record. Document that
+  `enableAudit()`/`disableAudit()`, `enable()`/`disable()`, and the detail
+  toggles apply to every record of the model class.
+
 ## 4.0.3 - 2026-10-23
 
 ### Added

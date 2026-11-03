@@ -634,7 +634,8 @@ class BehaviorAndTraitsTest extends AbstractUnit
 
         FakeAudit::reset();
         $noSnapshot = new ModelBehaviorDouble();
-        $this->assertFalse($behavior->notify('beforeUpdate', $noSnapshot));
+        // false would cancel the native save; a missing snapshot must not.
+        $this->assertNull($behavior->notify('beforeUpdate', $noSnapshot));
 
         $this->assertNull($behavior->notify('afterCreate', new FakeAudit()));
 
@@ -653,6 +654,119 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $behavior->enableAudit();
         $behavior->disable();
         $this->assertNull($behavior->notify('afterCreate', $model));
+    }
+
+    public function testBlameableCreateNeverReusesAnotherRecordsSnapshot(): void
+    {
+        FakeAudit::reset();
+        $behavior = $this->newAuditingBlameable();
+
+        $updated = $this->newAuditedModel(10, 'After');
+        $updated->snapshotData = ['id' => 10, 'name' => 'Before', 'deleted' => 0];
+        $updated->changedFields = ['name'];
+        $updated->hasSnapshotData = true;
+        $this->assertTrue($behavior->notify('beforeUpdate', $updated));
+        $this->assertTrue($behavior->notify('afterUpdate', $updated));
+        $this->assertSame(['id' => 10, 'name' => 'Before', 'deleted' => 0], json_decode((string)FakeAudit::$last->getBefore(), true));
+
+        // Another record of the same class saved after an aborted update.
+        $this->assertTrue($behavior->notify('beforeUpdate', $updated));
+        $created = $this->newAuditedModel(11, 'New');
+        $this->assertTrue($behavior->notify('afterCreate', $created));
+        $this->assertSame('create', FakeAudit::$last->getEvent());
+        $this->assertNull(FakeAudit::$last->getBefore());
+        foreach (FakeAudit::$last->assigned[1]['AuditDetailList'] as $detail) {
+            $this->assertNull($detail->getBefore());
+        }
+
+        // A create of the same instance also ignores its stale update snapshot.
+        $this->assertTrue($behavior->notify('afterCreate', $updated));
+        $this->assertNull(FakeAudit::$last->getBefore());
+    }
+
+    public function testBlameableSkipsUnchangedUpdatesWithSnapshots(): void
+    {
+        foreach ([true, false] as $detailEnabled) {
+            FakeAudit::reset();
+            $behavior = $this->newAuditingBlameable(['auditDetailEnabled' => $detailEnabled]);
+
+            $model = $this->newAuditedModel(10, 'Same');
+            $model->snapshotData = ['id' => 10, 'name' => 'Same', 'deleted' => 0];
+            $model->changedFields = [];
+            $model->hasSnapshotData = true;
+
+            $this->assertTrue($behavior->notify('beforeUpdate', $model));
+            $this->assertTrue($behavior->notify('afterUpdate', $model));
+            $this->assertNull(FakeAudit::$last, 'Unchanged update must not write an audit row.');
+
+            // Changed-field noise whose normalized value is identical is still unchanged.
+            $model->changedFields = ['deleted'];
+            $model->deleted = '0';
+            $this->assertTrue($behavior->notify('beforeUpdate', $model));
+            $this->assertTrue($behavior->notify('afterUpdate', $model));
+            $this->assertNull(FakeAudit::$last);
+
+            // Without a snapshot, changes cannot be ruled out: keep writing.
+            $this->assertTrue($behavior->notify('afterUpdate', $model));
+            $this->assertInstanceOf(FakeAudit::class, FakeAudit::$last);
+        }
+    }
+
+    public function testBlameablePerRecordOptOutLeavesOtherRecordsAudited(): void
+    {
+        FakeAudit::reset();
+        $behavior = $this->newAuditingBlameable();
+        $skipped = $this->newAuditedModel(10, 'Skipped');
+        $audited = $this->newAuditedModel(11, 'Audited');
+
+        $behavior->disableAuditFor($skipped);
+        $this->assertFalse($behavior->isAuditEnabledFor($skipped));
+        $this->assertTrue($behavior->isAuditEnabledFor($audited));
+        $this->assertTrue($behavior->isAuditEnabled());
+
+        $this->assertNull($behavior->notify('afterCreate', $skipped));
+        $this->assertNull(FakeAudit::$last);
+        $this->assertTrue($behavior->notify('afterCreate', $audited));
+        $this->assertSame(11, FakeAudit::$last->getPrimary());
+
+        $behavior->enableAuditFor($skipped);
+        $this->assertTrue($behavior->notify('afterCreate', $skipped));
+        $this->assertSame(10, FakeAudit::$last->getPrimary());
+
+        // The class-wide toggle still wins over a per-record enable.
+        $behavior->disableAudit();
+        $behavior->enableAuditFor($audited);
+        $this->assertFalse($behavior->isAuditEnabledFor($audited));
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function newAuditingBlameable(array $options = []): Blameable
+    {
+        return new Blameable($options + [
+            'auditEnabled' => true,
+            'auditClass' => FakeAudit::class,
+            'auditDetailClass' => FakeAuditDetail::class,
+        ]);
+    }
+
+    private function newAuditedModel(int $id, string $name): ModelBehaviorDouble
+    {
+        $model = new ModelBehaviorDouble();
+        $model->id = $id;
+        $model->name = $name;
+        $model->deleted = 0;
+        $model->fakeModelsMetaData = new FakeMetaData();
+        $model->fakeModelsMetaData->attributes = ['id', 'name', 'deleted'];
+        $model->fakeModelsMetaData->fakeColumnMap = ['id' => 'id', 'name' => 'name', 'deleted' => 'deleted'];
+        $model->fakeModelsMetaData->dataTypes = [
+            'id' => Column::TYPE_INTEGER,
+            'name' => Column::TYPE_VARCHAR,
+            'deleted' => Column::TYPE_BOOLEAN,
+        ];
+
+        return $model;
     }
 
     public function testModelBehaviorTraitAccessors(): void
@@ -884,6 +998,33 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $date = $model->getDateCallback('Y-m-d', 1);
         $this->assertSame(date('Y-m-d', 1), $date());
         $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}$/', $model->getDateCallback('Y-m-d')());
+    }
+
+    public function testBlameableAuditCanBeEnabledPerModelThroughInitializeOptions(): void
+    {
+        // Mirrors the opt-in snippet documented in the Core 4 guides.
+        $model = new class extends ModelBehaviorDouble {
+            public function initializeOptions(): void
+            {
+                parent::initializeOptions();
+                $this->getOptionsManager()->set('blameable', [
+                    'auditEnabled' => true,
+                ]);
+            }
+        };
+        $model->fakeModelsManager = new FakeModelsManager();
+
+        $model->initializeOptions();
+        $model->initializeBlameable();
+
+        $this->assertTrue($model->getBlameableBehavior()->isAuditEnabled());
+        $this->assertTrue($model->getBlameableBehavior()->isAuditDetailEnabled());
+
+        $default = new ModelBehaviorDouble();
+        $default->fakeModelsManager = new FakeModelsManager();
+        $default->initializeOptions();
+        $default->initializeBlameable();
+        $this->assertFalse($default->getBlameableBehavior()->isAuditEnabled());
     }
 
     public function testBlameableTransformCallbacksWriteCurrentUsers(): void

@@ -210,17 +210,23 @@ an app maps these core models, make sure the app models implement the matching
 core interfaces.
 
 Runtime toggles can disable parent audit rows or detail rows for imports,
-migrations, or hot paths. Keep such toggles local to the operation.
+migrations, or hot paths. Keep such toggles local to the operation. The
+behavior is shared by every record of the model class, so `disableAudit()`,
+`disable()`, and the detail toggles are class-wide; use
+`$behavior->disableAuditFor($record)` / `enableAuditFor($record)` to skip one
+record. Updates whose snapshot shows no audited column changed write no row.
 
-Audit is disabled by default. Applications that want audit rows should opt in,
-usually through the model `blameable` options:
+Audit is disabled by default. Applications that want audit rows should opt in
+per model through the `blameable` options, set in `initializeOptions()`:
 
 ```php
-[
-    'blameable' => [
+public function initializeOptions(): void
+{
+    parent::initializeOptions();
+    $this->getOptionsManager()->set('blameable', [
         'auditEnabled' => true,
-    ],
-]
+    ]);
+}
 ```
 
 Applications that do not install audit tables can omit this option. If audit is
