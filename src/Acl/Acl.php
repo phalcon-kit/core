@@ -45,6 +45,11 @@ class Acl extends AbstractInjectionAware implements AclInterface
      * access. A component named `*` is ignored because Phalcon's native ACL
      * still needs concrete component registrations.
      *
+     * Role inheritance is read from `roles.<role>.<inherit>` (a role name or a
+     * list of role names), the same key the identity service resolves. Parent
+     * roles that are not configured under `roles`, and a role naming itself,
+     * are ignored.
+     *
      * @param array<int, string> $componentsName Permission sections to inspect.
      * @param array<string, mixed>|null $permissions Permission tree to compile.
      * @param string $inherit Role-inheritance key inside the permission tree.
@@ -101,13 +106,20 @@ class Acl extends AbstractInjectionAware implements AclInterface
         }
         
         /**
-         * Add inheritance (role extends)
+         * Add inheritance (role extends), read from `roles.<role>.<inherit>`.
+         * Unknown parents and self-references are skipped so the ACL fails
+         * closed instead of granting or erroring on a misconfigured role.
          */
-        foreach ($aclRoleList as $role => $aclRole) {
-            $inheritList = $permissions[$role][$inherit] ?? [];
+        foreach ($roleList as $role => $rolePermission) {
+            $role = $role === '*' ? 'everyone' : $role;
+            $inheritList = is_array($rolePermission) ? ($rolePermission[$inherit] ?? []) : [];
             $inheritList = is_array($inheritList) ? $inheritList : [$inheritList];
             foreach ($inheritList as $inheritRole) {
-                $acl->addInherit((string)$aclRole, $aclRoleList[$inheritRole]);
+                $inheritRole = $inheritRole === '*' ? 'everyone' : (string)$inheritRole;
+                if ($inheritRole === $role || !isset($aclRoleList[$inheritRole])) {
+                    continue;
+                }
+                $acl->addInherit($role, $aclRoleList[$inheritRole]);
             }
         }
         

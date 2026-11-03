@@ -33,9 +33,17 @@ release notes.
   now reads the module, task, action, and positional tokens from the
   dispatcher instead of the raw process argv, so global options no longer make
   any Core or application task print its usage and exit.
+- Read ACL role inheritance from `permissions.roles.<role>.inherit`, the key
+  the identity service and configuration use. Previously the ACL builder read
+  a top-level `permissions.<role>.inherit` key, so configured inheritance was
+  never applied to the native ACL. Unknown parent roles and self-references
+  are skipped.
 
 ### Changed
 
+- **Security:** The native ACL now grants inherited permissions for roles that
+  configure `inherit`. Review role inheritance before upgrading if code checks
+  the ACL directly with a single role.
 - Reject invalid REST `limit` and `offset` request values with HTTP 400
   instead of coercing them with `absint`: negative values (including `-1`),
   non-numeric text, decimals, booleans, and arrays. Empty values still use the

@@ -50,13 +50,11 @@ class AclTest extends AbstractUnit
                         ],
                     ],
                     'admin' => [
+                        'inherit' => ['user'],
                         'components' => [
                             'AdminController' => ['index'],
                         ],
                     ],
-                ],
-                'admin' => [
-                    'inherit' => ['user'],
                 ],
             ],
         ]);
@@ -83,18 +81,46 @@ class AclTest extends AbstractUnit
                     ],
                 ],
                 'child' => [
+                    'extends' => 'base',
                     'components' => [
                         'ChildController' => ['index'],
                     ],
                 ],
             ],
-            'child' => [
-                'extends' => 'base',
-            ],
         ], inherit: 'extends');
 
         $this->assertTrue($memory->isAllowed('child', 'BaseController', 'index'));
         $this->assertTrue($memory->isAllowed('child', 'ChildController', 'index'));
+    }
+
+    public function testGetIgnoresTopLevelInheritanceKeys(): void
+    {
+        $memory = (new Acl())->get(permissions: [
+            'roles' => [
+                'user' => ['components' => ['UserController' => ['index']]],
+                'admin' => ['components' => ['AdminController' => ['index']]],
+            ],
+            'admin' => ['inherit' => ['user']],
+        ]);
+
+        $this->assertFalse($memory->isAllowed('admin', 'UserController', 'index'));
+    }
+
+    public function testGetSkipsUnknownAndSelfInheritanceAndMapsWildcardParent(): void
+    {
+        $memory = (new Acl())->get(permissions: [
+            'roles' => [
+                '*' => ['components' => ['PublicController' => ['index']]],
+                'user' => [
+                    'inherit' => ['*', 'user', 'missing'],
+                    'components' => ['UserController' => ['index']],
+                ],
+            ],
+        ]);
+
+        $this->assertTrue($memory->isAllowed('user', 'PublicController', 'index'));
+        $this->assertTrue($memory->isAllowed('user', 'UserController', 'index'));
+        $this->assertFalse($memory->isRole('missing'));
     }
 
     public function testGetRegistersDashCaseAliasesForCamelCaseActions(): void
