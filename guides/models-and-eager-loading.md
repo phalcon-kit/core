@@ -218,6 +218,47 @@ snapshots, security checks, caching, and replication helpers. Match each behavio
 to real schema columns and indexes. The tutorial includes `deleted`; adding a
 REST restore/reorder grant alone does not add missing storage or behavior.
 
+### Audit Trail (Opt-In)
+
+Audit recording is off by default in Core 4. Models write no `audit` or
+`audit_detail` rows until you enable audit on each model that needs a trail.
+Install the audit tables first, then enable it in the concrete model:
+
+```php
+/** Record audit rows for every instance of this model. */
+public function initializeOptions(): void
+{
+    parent::initializeOptions();
+    $this->getOptionsManager()->set('blameable', [
+        'auditEnabled' => true,
+        // 'auditDetailEnabled' => false, // parent rows only, no per-column rows
+    ]);
+}
+```
+
+Use `initializeOptions()` here, not `initialize()`: Core reads the `blameable`
+options during model initialization. Each create or update writes one `audit`
+row and, unless disabled, one `audit_detail` row per column (per changed column
+on update). An update whose snapshot shows no audited column changed writes no
+row.
+
+The behavior is shared by every record of the model class. Runtime toggles
+such as `$record->getBlameableBehavior()->disableAudit()` or `->disable()` stop
+auditing for the whole class until re-enabled. To skip one record, for example
+during an import, opt that instance out:
+
+```php
+$behavior = $record->getBlameableBehavior();
+$behavior->disableAuditFor($record);
+try {
+    $record->save();
+} finally {
+    $behavior->enableAuditFor($record);
+}
+```
+
+### Passwords
+
 The standard Core User hashes plaintext passwords in its save hook and preserves
 recognized password hashes. A separately mapped application User owns its own
 password workflow. Keep password attributes out of generic public APIs.

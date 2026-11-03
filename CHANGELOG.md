@@ -57,6 +57,8 @@ release notes.
   `isAuditEnabledFor()` to skip auditing for one record. Document that
   `enableAudit()`/`disableAudit()`, `enable()`/`disable()`, and the detail
   toggles apply to every record of the model class.
+- Document in the Core 4 guides that audit is opt-in, with the per-model
+  `initializeOptions()` snippet that enables it.
 
 ## 4.0.3 - 2026-10-23
 

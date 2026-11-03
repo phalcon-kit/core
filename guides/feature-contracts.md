@@ -138,7 +138,9 @@ generic controllers publicly; see [REST APIs](rest-api.md).
 
 ## Audit, Nested Writes, And Ownership
 
-Audit recording is opt-in through the model's `blameable.auditEnabled` option.
+Audit recording is opt-in through the model's `blameable.auditEnabled` option;
+see [Audit Trail (Opt-In)](models-and-eager-loading.md#audit-trail-opt-in) for
+the per-model snippet and per-record opt-out.
 The default blameable initialization resolves mapped user, audit, and audit-detail
 classes; explicit behavior class options take precedence. Detail recording can
 be disabled independently. Install the corresponding tables before enabling it.

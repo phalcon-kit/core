@@ -171,12 +171,36 @@ methods preserve the shared service's configured policy. A configured score
 threshold rejects responses without a score, including when the threshold is
 `0.0`; verify that this matches the reCAPTCHA product your application uses.
 
+### 7. Opt In To Audit Recording
+
+Core 4 records no audit trail by default (opt-in since Core 3.3). The
+`Blameable` behavior is installed on every Core model, but it writes
+`audit`/`audit_detail` rows only for models that set `blameable.auditEnabled`.
+If your application expects audit rows, for example because it upgrades from a
+release before 3.3, enable audit on each model that needs a trail:
+
+```php
+public function initializeOptions(): void
+{
+    parent::initializeOptions();
+    $this->getOptionsManager()->set('blameable', [
+        'auditEnabled' => true,
+    ]);
+}
+```
+
+Install the audit tables before enabling it. See
+[Audit Trail (Opt-In)](../models-and-eager-loading.md#audit-trail-opt-in) for
+detail rows, class-wide toggles, and per-record opt-out.
+
 ## Verify
 
 - Run the application's checks, then initialize each retained/mapped model and
   exercise its real persistence and relationship paths.
 - Verify authentication, reset delivery, sessions, role and row access, REST
   response shapes, nested writes, eager loading, and optional file/audit features.
+  For each audited model, save a create and a changed update and confirm one
+  `audit` row each; save an unchanged update and confirm no new row.
 - Prove unconfigured maintenance performs no writes. Test configured maintenance
   only against disposable application data and verify exactly which rows change.
 - Run HTTP, CLI, and WebSocket entrypoints used by the application. Confirm
