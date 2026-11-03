@@ -260,6 +260,80 @@ class QueryStateTest extends AbstractUnit
         $controller->setLimit(-2);
     }
 
+    public function testLimitAndOffsetRequestParamsParseCanonicalIntegers(): void
+    {
+        $controller = $this->newQueryController(['limit' => '25', 'offset' => '40']);
+        $controller->initializeLimit();
+        $controller->initializeOffset();
+        $this->assertSame(25, $controller->getLimit());
+        $this->assertSame(40, $controller->getOffset());
+
+        $controller = $this->newQueryController(['limit' => 0, 'offset' => 0]);
+        $controller->initializeLimit();
+        $controller->initializeOffset();
+        $this->assertSame(0, $controller->getLimit());
+        $this->assertSame(0, $controller->getOffset());
+
+        $controller = $this->newQueryController(['limit' => '', 'offset' => '']);
+        $controller->initializeLimit();
+        $controller->initializeOffset();
+        $this->assertSame(10, $controller->getLimit());
+        $this->assertSame(0, $controller->getOffset());
+    }
+
+    public function testServerSideUnlimitedLimitStillAppliesWhenRequestOmitsLimit(): void
+    {
+        $controller = $this->newQueryController();
+        $controller->setMaxLimit(-1);
+        $controller->setLimit(-1);
+
+        $controller->initializeLimit();
+
+        $this->assertNull($controller->getLimit());
+    }
+
+    /**
+     * @return iterable<string, array{mixed}>
+     */
+    public static function invalidPaginationValues(): iterable
+    {
+        yield 'unlimited sentinel' => ['-1'];
+        yield 'negative int' => [-5];
+        yield 'word' => ['all'];
+        yield 'decimal' => ['10.5'];
+        yield 'float' => [10.0];
+        yield 'bool' => [true];
+        yield 'array' => [['10']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidPaginationValues')]
+    public function testLimitRequestParamRejectsNonIntegerValuesWith400(mixed $value): void
+    {
+        $controller = $this->newQueryController(['limit' => $value]);
+
+        try {
+            $controller->initializeLimit();
+            $this->fail('Expected an HttpException for an invalid limit.');
+        } catch (HttpException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertStringContainsString('limit and offset', $exception->getMessage());
+        }
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidPaginationValues')]
+    public function testOffsetRequestParamRejectsNonIntegerValuesWith400(mixed $value): void
+    {
+        $controller = $this->newQueryController(['offset' => $value]);
+
+        try {
+            $controller->initializeOffset();
+            $this->fail('Expected an HttpException for an invalid offset.');
+        } catch (HttpException $exception) {
+            $this->assertSame(400, $exception->getCode());
+            $this->assertStringContainsString('non-negative integer', $exception->getMessage());
+        }
+    }
+
     public function testLimitRejectsValuesAboveTheConfiguredMaximum(): void
     {
         $controller = $this->newQueryController();

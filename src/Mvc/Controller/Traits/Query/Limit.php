@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
 use Phalcon\Filter\Exception as FilterException;
-use Phalcon\Filter\Filter;
 use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractLimit;
@@ -32,19 +31,41 @@ trait Limit
     protected ?int $maxLimit = 100;
     
     /**
-     * Initializes the limit for the current instance.
+     * Initializes the limit from the request, or from `defaultLimit()`.
      *
-     * It sets the limit value to the result of calling the `getParam` method, passing
-     * the 'limit' parameter as the first argument, an array of filters as the second argument,
-     * and the result of calling the `defaultLimit` method as the third argument.
+     * A missing, null, or empty-string `limit` parameter uses `defaultLimit()`.
+     * A provided value must be a non-negative integer (an int or a decimal
+     * digit string such as `"25"`); anything else, including `-1`, is rejected
+     * with HTTP 400 instead of being coerced. The `-1` "no limit" sentinel is
+     * reserved for server code through `setLimit(-1)` or `defaultLimit()`;
+     * clients must page through results with `limit` and `offset`.
      *
      * @return void
-     * @throws FilterException When Phalcon rejects the configured limit filter.
-     * @throws HttpException When the resulting limit violates controller policy.
+     * @throws FilterException When Phalcon rejects parameter filtering.
+     * @throws HttpException When the requested limit is not a non-negative
+     *     integer or exceeds the maximum limit.
      */
     public function initializeLimit(): void
     {
-        $this->setLimit($this->getParam('limit', [Filter::FILTER_ABSINT], $this->defaultLimit()));
+        $limit = $this->getParam('limit');
+
+        if ($limit === null || $limit === '') {
+            $this->setLimit($this->defaultLimit());
+            return;
+        }
+
+        $parsed = is_int($limit) || is_string($limit)
+            ? filter_var($limit, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]])
+            : false;
+
+        if (!is_int($parsed)) {
+            throw new HttpException(
+                'Requested limit must be a non-negative integer; request results in pages using limit and offset',
+                400
+            );
+        }
+
+        $this->setLimit($parsed);
     }
     
     /**
@@ -67,7 +88,7 @@ trait Limit
         
         if (isset($this->maxLimit) && $this->maxLimit !== -1) {
             if ($limit > $this->maxLimit) {
-                throw new HttpException("Requested limit ({$limit}) must be lower than the maximum limit ({$this->maxLimit})", 400);
+                throw new HttpException("Requested limit ({$limit}) must be lower than the maximum limit ({$this->maxLimit}); request results in pages using limit and offset", 400);
             }
         }
         

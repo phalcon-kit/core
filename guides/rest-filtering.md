@@ -153,8 +153,15 @@ curl --get http://127.0.0.1:8080/api/project/find \
 
 The first page contains IDs 1 and 2, with `view.count: 3`. `offset=2` returns ID 3.
 Defaults are limit 10 and offset 0; the default maximum limit is 100. Exceeding
-it returns HTTP 400. Inputs use absolute-integer filtering: negative values are
-not a supported “unlimited” convention.
+it returns HTTP 400. `limit` and `offset` must be non-negative integers, sent as
+JSON integers or integer strings such as `"20"`. Other values return HTTP 400 and
+are not coerced: `-1`, `all`, `10.5`, booleans, and arrays. There is no
+client-side "unlimited" value; request further pages with `offset`. An empty
+value uses the default, and `limit=0` returns an empty page.
+
+Server code can still lift the limit for a trusted resource with
+`$this->setMaxLimit(-1)` and `$this->setLimit(-1)`, for example in `initialize()`.
+`-1` means "no limit" only when set on the server.
 
 Set a resource's limits on the server, for example:
 

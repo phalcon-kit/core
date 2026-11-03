@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc\Controller\Traits\Query;
 
 use Phalcon\Filter\Exception as FilterException;
-use Phalcon\Filter\Filter;
 use PhalconKit\Exception\HttpException;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\AbstractParams;
 use PhalconKit\Mvc\Controller\Traits\Abstracts\Query\AbstractOffset;
@@ -31,19 +30,36 @@ trait Offset
     protected ?int $offset = 0;
     
     /**
-     * Initializes the offset value.
+     * Initializes the offset from the request, or from `defaultOffset()`.
      *
-     * Sets the offset value using the provided parameter's value, after filtering it
-     * through the specified filter, or sets it to the default offset value if no
-     * offset parameter is provided.
+     * A missing, null, or empty-string `offset` parameter uses
+     * `defaultOffset()`. A provided value must be a non-negative integer (an
+     * int or a decimal digit string such as `"20"`); anything else is rejected
+     * with HTTP 400 instead of being coerced.
      *
      * @return void
-     * @throws FilterException When Phalcon rejects the configured offset filter.
-     * @throws HttpException When the resulting offset violates controller policy.
+     * @throws FilterException When Phalcon rejects parameter filtering.
+     * @throws HttpException When the requested offset is not a non-negative
+     *     integer.
      */
     public function initializeOffset(): void
     {
-        $this->setOffset($this->getParam('offset', [Filter::FILTER_ABSINT], $this->defaultOffset()));
+        $offset = $this->getParam('offset');
+
+        if ($offset === null || $offset === '') {
+            $this->setOffset($this->defaultOffset());
+            return;
+        }
+
+        $parsed = is_int($offset) || is_string($offset)
+            ? filter_var($offset, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]])
+            : false;
+
+        if (!is_int($parsed)) {
+            throw new HttpException('Requested offset must be a non-negative integer', 400);
+        }
+
+        $this->setOffset($parsed);
     }
     
     /**

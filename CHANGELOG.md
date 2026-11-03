@@ -34,6 +34,15 @@ release notes.
   dispatcher instead of the raw process argv, so global options no longer make
   any Core or application task print its usage and exit.
 
+### Changed
+
+- Reject invalid REST `limit` and `offset` request values with HTTP 400
+  instead of coercing them with `absint`: negative values (including `-1`),
+  non-numeric text, decimals, booleans, and arrays. Empty values still use the
+  defaults. The `-1` "no limit" sentinel remains available to server code
+  through `setLimit(-1)`/`setMaxLimit(-1)` and `defaultLimit()`. Limit and
+  maximum-limit errors now ask clients to paginate with `limit` and `offset`.
+
 ### Added
 
 - Add `Blameable::disableAuditFor()`, `enableAuditFor()`, and
