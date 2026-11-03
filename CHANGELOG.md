@@ -28,6 +28,11 @@ release notes.
   snapshot are still audited.
 - Stop Blameable from cancelling updates of audited models that have no
   snapshot: `beforeUpdate` returned `false`, which Phalcon treats as a cancel.
+- Accept `--password-stdin` and other task options alongside the global CLI
+  options (`--format`, `--quiet`, `--verbose`, `--debug`). Task-level parsing
+  now reads the module, task, action, and positional tokens from the
+  dispatcher instead of the raw process argv, so global options no longer make
+  any Core or application task print its usage and exit.
 
 ### Added
 

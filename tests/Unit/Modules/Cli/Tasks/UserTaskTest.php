@@ -212,17 +212,58 @@ class UserTaskTest extends AbstractUnit
     public function testTaskOptionsAreRemovedFromPositionalActionArguments(): void
     {
         $task = $this->createUserTask();
+        $this->routeUserTask($task, 'create', ['editor@example.test', '--password-stdin']);
+
+        $task->beforeExecuteRoute();
+        $params = $task->dispatcher->getParameters();
+        $this->assertSame(['editor@example.test'], array_filter($params, 'is_int', ARRAY_FILTER_USE_KEY));
+        $this->assertTrue($task->dispatcher->getParameter('passwordStdin'));
+    }
+
+    public function testStdinFlagIsAcceptedAlongsideBootstrapGlobalOptions(): void
+    {
+        $task = $this->createUserTask();
         $argv = $_SERVER['argv'];
-        $_SERVER['argv'] = ['phalcon-kit', 'cli', 'user', 'create', 'editor@example.test', '--password-stdin'];
-        $task->dispatcher->setParameters(['editor@example.test', '--password-stdin']);
+        // Raw process argv still carries the global options Bootstrap consumed.
+        $_SERVER['argv'] = [
+            'phalcon-kit', '--quiet', '--format=json', '--debug',
+            'cli', 'user', 'password', 'editor@example.test', '--password-stdin',
+        ];
+        $this->routeUserTask($task, 'password', ['editor@example.test', '--password-stdin'], [
+            'help' => false,
+            'quiet' => true,
+            'verbose' => false,
+            'debug' => true,
+            'format' => 'json',
+        ]);
+
         try {
             $task->beforeExecuteRoute();
-            $params = $task->dispatcher->getParameters();
-            $this->assertSame(['editor@example.test'], array_filter($params, 'is_int', ARRAY_FILTER_USE_KEY));
-            $this->assertTrue($task->dispatcher->getParameter('passwordStdin'));
         } finally {
             $_SERVER['argv'] = $argv;
         }
+
+        $params = $task->dispatcher->getParameters();
+        $this->assertSame(['editor@example.test'], array_filter($params, 'is_int', ARRAY_FILTER_USE_KEY));
+        $this->assertTrue($task->dispatcher->getParameter('passwordStdin'));
+        $this->assertSame('json', $task->dispatcher->getParameter('format'));
+        $this->assertTrue($task->dispatcher->getParameter('quiet'));
+        $this->assertTrue($task->dispatcher->getParameter('debug'));
+    }
+
+    /**
+     * Mirror the dispatcher state produced by Bootstrap::getArgs() and the CLI router.
+     *
+     * @param list<string> $positional Raw tokens after the action.
+     * @param array<string, mixed> $globals Global options parsed by Bootstrap.
+     */
+    private function routeUserTask(UserTask $task, string $action, array $positional, array $globals = []): void
+    {
+        $this->di?->setShared('dispatcher', new \PhalconKit\Cli\Dispatcher());
+        $task->dispatcher->setModuleName('cli');
+        $task->dispatcher->setTaskName('user');
+        $task->dispatcher->setActionName($action);
+        $task->dispatcher->setParameters(array_merge($positional, $globals));
     }
 
     public function testStdinPasswordRejectsConflictingArgumentsBeforeSaving(): void

@@ -71,6 +71,13 @@ This snippet belongs in a `ReportTask`, with a `run` grant. Run
 `./bin/phalcon-kit cli report run --limit=25`; expected JSON is `{"limit":25}`.
 Validate values before using them for file paths, SQL, or external actions.
 
+Global options (`--format`, `--quiet`, `--verbose`, `--debug`) go before the
+module, for example
+`./bin/phalcon-kit --format=json cli report run --limit=25`. The bootstrap
+consumes them, so the task usage string only declares task options. Options
+placed after the action are parsed by the task usage string; an option it does
+not declare prints the task usage and exits with status 1.
+
 The task formatter serializes returned arrays, booleans, and model messages.
 Do not assume every JSON failure automatically sets a nonzero process exit code;
 explicitly define the exit-status contract for commands used by automation and

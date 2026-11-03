@@ -31,10 +31,22 @@ Options:
 
 DOC;
     
+    /**
+     * Parse task-specific arguments and options with this task's `cliDoc`.
+     *
+     * Bootstrap already parsed the global options (`--format`, `--quiet`,
+     * `--debug`, ...) and stored them as named dispatcher parameters. The task
+     * parser therefore receives only the module, task, action, and positional
+     * tokens, so global options never reach a task usage string that does not
+     * declare them. Parsed task values are stored as camelCase dispatcher
+     * parameters, for example `--password-stdin` becomes `passwordStdin`.
+     *
+     * Invalid task arguments make Docopt print the task usage and exit with a
+     * non-zero status.
+     */
     public function beforeExecuteRoute(): void
     {
-        $argv = array_slice($_SERVER['argv'] ?? [], 1);
-        $payload = (new \Docopt())->handle($this->cliDoc, ['argv' => $argv, 'optionsFirst' => false]);
+        $payload = (new \Docopt())->handle($this->cliDoc, ['argv' => $this->getTaskArgv(), 'optionsFirst' => false]);
         foreach ($payload as $key => $value) {
             if (!is_null($value) && preg_match('/(<(.*?)>|\-\-(.*))/', $key, $matches)) {
                 $match = array_pop($matches);
@@ -46,6 +58,30 @@ DOC;
         }
     }
     
+    /**
+     * Build the argument vector parsed by the task-level Docopt usage.
+     *
+     * The vector is rebuilt from the dispatcher instead of `$_SERVER['argv']`:
+     * `[module, task, action, ...positional tokens]`. Positional tokens are the
+     * integer-keyed dispatcher parameters that Bootstrap left after consuming
+     * its global options; named parameters such as `format` or `quiet` are
+     * excluded.
+     *
+     * @return list<string>
+     */
+    protected function getTaskArgv(): array
+    {
+        $positional = array_filter($this->dispatcher->getParameters(), 'is_int', ARRAY_FILTER_USE_KEY);
+        ksort($positional);
+
+        return array_map('strval', [
+            $this->dispatcher->getModuleName(),
+            $this->dispatcher->getTaskName(),
+            $this->dispatcher->getActionName(),
+            ...array_values($positional),
+        ]);
+    }
+
     public function helpAction(): void
     {
         echo $this->cliDoc;
