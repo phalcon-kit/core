@@ -15,7 +15,7 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 4.0.4 - Unreleased
+## 4.0.4 - 2026-11-03
 
 ### Fixed
 
