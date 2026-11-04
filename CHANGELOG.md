@@ -37,6 +37,14 @@ release notes.
   `data-life-cycle`, `ts-scaffold`, and `user` usages list their real actions
   instead of placeholder `task:`/`action:` lines.
 
+### Documentation
+
+- Generate reference guides for every environment variable Core reads (with
+  its config path and default), the DI services and their providers, and the
+  built-in CLI commands, from `src/Bootstrap/Config.php` and the task usage
+  text. Run `composer reference` after changing either; a unit test fails when
+  the committed pages are stale.
+
 ## 4.1.2 - 2026-11-04
 
 ### Changed

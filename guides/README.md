@@ -60,6 +60,11 @@ share a consistent preparation, change, verification, and rollback structure.
 
 ## Reference And Help
 
+- [Environment variables](reference/environment.md): every variable Core reads,
+  its config path, and its default.
+- [Services](reference/services.md): the DI services Core registers, their
+  providers, and how to replace them.
+- [CLI commands](reference/cli.md): built-in tasks, their actions, and options.
 - [Class reference](https://phalcon-kit.github.io/docs/api/Home/): exact classes,
   methods, and signatures.
 - [Phalcon documentation](https://docs.phalcon.io/latest/): the underlying PHP
