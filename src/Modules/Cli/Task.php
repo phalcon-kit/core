@@ -41,13 +41,20 @@ DOC;
      * declare them. Parsed task values are stored as camelCase dispatcher
      * parameters, for example `--password-stdin` becomes `passwordStdin`.
      *
+     * Long options that Docopt parsed (`--force`, `--table=<table>`,
+     * `--table <table>`) are then removed from the positional action
+     * arguments, so `cli scaffold models --force` calls the action without a
+     * `"--force"` argument. Other positional tokens, including named Docopt
+     * arguments such as `<key>`, are kept in order.
+     *
      * Invalid task arguments make Docopt print the task usage and exit with a
      * non-zero status.
      */
     public function beforeExecuteRoute(): void
     {
         $payload = (new \Docopt())->handle($this->cliDoc, ['argv' => $this->getTaskArgv(), 'optionsFirst' => false]);
-        foreach ($payload as $key => $value) {
+        $parsed = $payload->args;
+        foreach ($parsed as $key => $value) {
             if (!is_null($value) && preg_match('/(<(.*?)>|\-\-(.*))/', $key, $matches)) {
                 $match = array_pop($matches);
                 if (!empty($match)) {
@@ -56,6 +63,81 @@ DOC;
                 }
             }
         }
+
+        $named = array_filter($this->dispatcher->getParameters(), 'is_string', ARRAY_FILTER_USE_KEY);
+        $this->dispatcher->setParameters(array_merge(
+            $this->removeParsedOptionTokens($this->getPositionalParameters(), $parsed),
+            $named
+        ));
+    }
+
+    /**
+     * Remove long-option tokens that Docopt accepted from positional arguments.
+     *
+     * A token is removed when it is `--name` or `--name=value` and `--name`
+     * is a key of the Docopt result. For `--name value`, the following token is
+     * removed too when Docopt returned a string value for that option. A bare
+     * `--` ends option processing: it and every later token are kept, matching
+     * Docopt's `<params>` list. Short options and unknown tokens are kept
+     * unchanged.
+     *
+     * @param list<mixed> $tokens Positional tokens after the action.
+     * @param array<array-key, mixed> $parsed Docopt result keyed by usage name.
+     *
+     * @return list<mixed>
+     */
+    protected function removeParsedOptionTokens(array $tokens, array $parsed): array
+    {
+        $kept = [];
+        $count = count($tokens);
+        for ($i = 0; $i < $count; $i++) {
+            $token = $tokens[$i];
+            if (!is_string($token) || !str_starts_with($token, '--')) {
+                $kept[] = $token;
+                continue;
+            }
+
+            if ($token === '--') {
+                return array_merge($kept, array_slice($tokens, $i));
+            }
+
+            [$name] = explode('=', $token, 2);
+            $name = $this->resolveParsedOptionName($name, $parsed);
+            if ($name === null) {
+                $kept[] = $token;
+                continue;
+            }
+
+            $value = $parsed[$name];
+            if (!str_contains($token, '=') && (is_string($value) || is_array($value)) && $i + 1 < $count) {
+                $i++;
+            }
+        }
+
+        return $kept;
+    }
+
+    /**
+     * Resolve a long-option token name to its key in the Docopt result.
+     *
+     * Docopt accepts unambiguous prefixes of long options (`--pass` for
+     * `--password-stdin`) and rejects ambiguous ones before this runs, so a
+     * single prefix match identifies the parsed option.
+     *
+     * @param array<array-key, mixed> $parsed Docopt result keyed by usage name.
+     */
+    private function resolveParsedOptionName(string $name, array $parsed): ?string
+    {
+        if (array_key_exists($name, $parsed)) {
+            return $name;
+        }
+
+        $matches = array_values(array_filter(
+            array_map('strval', array_keys($parsed)),
+            static fn (string $key): bool => str_starts_with($key, '--') && str_starts_with($key, $name)
+        ));
+
+        return count($matches) === 1 ? $matches[0] : null;
     }
     
     /**
@@ -71,15 +153,28 @@ DOC;
      */
     protected function getTaskArgv(): array
     {
-        $positional = array_filter($this->dispatcher->getParameters(), 'is_int', ARRAY_FILTER_USE_KEY);
-        ksort($positional);
-
         return array_map('strval', [
             $this->dispatcher->getModuleName(),
             $this->dispatcher->getTaskName(),
             $this->dispatcher->getActionName(),
-            ...array_values($positional),
+            ...$this->getPositionalParameters(),
         ]);
+    }
+
+    /**
+     * Return the integer-keyed dispatcher parameters in argument order.
+     *
+     * These are the tokens after the action that Bootstrap did not consume as
+     * global options.
+     *
+     * @return list<mixed>
+     */
+    protected function getPositionalParameters(): array
+    {
+        $positional = array_filter($this->dispatcher->getParameters(), 'is_int', ARRAY_FILTER_USE_KEY);
+        ksort($positional);
+
+        return array_values($positional);
     }
 
     public function helpAction(): void

@@ -73,10 +73,15 @@ Register CLI tasks in root config permissions under the `cli` role:
 ],
 ```
 
-CLI tasks inherit Docopt parsing from `PhalconKit\Modules\Cli\Task`. Returned
-values are rendered by `afterExecuteRoute()` using the requested output format,
-defaulting to pretty JSON. Keep task actions focused and return arrays, strings,
-or scalar status payloads instead of echoing everywhere.
+CLI tasks inherit Docopt parsing from `PhalconKit\Modules\Cli\Task`. Global
+options (`--format`, `--quiet`, `--verbose`, `--debug`) go before the module and
+are consumed by the bootstrap; long options declared by the task usage are
+parsed into camelCase dispatcher parameters and removed from the positional
+action arguments. Returned values are rendered by `afterExecuteRoute()` using
+the requested output format, defaulting to pretty JSON. Keep task actions
+focused and return arrays, strings, or scalar status payloads instead of
+echoing everywhere. Throw on failure: uncaught exceptions exit with status 1,
+returned payloads exit with 0.
 
 CLI entrypoints should reuse the root Composer bootstrap and run the
 application bootstrap in CLI mode:

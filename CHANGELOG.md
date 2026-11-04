@@ -49,6 +49,10 @@ release notes.
   format is unknown, instead of 0. Custom CLI entrypoints should end with
   `exit($bootstrap->getExitCode());`. A failed console run also closes its
   output buffer and still returns output written before the exception.
+- Remove long task options parsed by Docopt (`--force`, `--table=<table>`,
+  `--table <table>`) from positional action arguments in every CLI task, not
+  only `user`. Named positionals such as `cache has <key>` are unchanged, and
+  `--` plus every later token is still passed through.
 - Reset Blameable's parent-audit link between requests so a worker never links
   a new audit row to a parent audit from an earlier request.
 
