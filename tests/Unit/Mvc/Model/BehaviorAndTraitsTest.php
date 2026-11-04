@@ -1991,6 +1991,44 @@ class BehaviorAndTraitsTest extends AbstractUnit
         }
     }
 
+    public function testEmptyListAndOmittedRelationDifferOnlyWhenMissingChildrenAreRemoved(): void
+    {
+        $build = static function (): ModelBehaviorDouble {
+            $model = new ModelBehaviorDouble();
+            $model->id = 9;
+            $model->fakeModelsManager = new FakeModelsManager();
+            $model->fakeModelsMetaData = new FakeMetaData();
+            $model->fakeModelsManager->setRelationByAlias(
+                ModelBehaviorDouble::class,
+                'children',
+                new Relation(Relation::HAS_MANY, ModelBehaviorDouble::class, 'id', 'parentId', ['alias' => 'children'])
+            );
+            return $model;
+        };
+
+        // By default missing children are kept, so an empty list changes nothing.
+        $model = $build();
+        $model->assignRelated(['children' => []]);
+        $this->assertFalse($model->hasDirtyRelatedAlias('children'));
+        $model->assignRelated(['label' => 'omitted']);
+        $this->assertFalse($model->hasDirtyRelatedAlias('children'));
+
+        // When missing children are removed, an empty list removes them all and
+        // an omitted relation still leaves them untouched.
+        $model = $build();
+        $model->setKeepMissingRelatedAlias('children', false);
+        $model->assignRelated(['label' => 'omitted']);
+        $this->assertFalse($model->hasDirtyRelatedAlias('children'));
+        $model->assignRelated(['children' => []]);
+        $this->assertSame([], $model->getDirtyRelatedAlias('children'));
+
+        // A legacy `false` item in the payload switches removal on for the alias.
+        $model = $build();
+        $model->assignRelated(['children' => [false]]);
+        $this->assertFalse($model->getKeepMissingRelatedAlias('children'));
+        $this->assertSame([], $model->getDirtyRelatedAlias('children'));
+    }
+
     public function testRelationshipStrictAssignmentRejectsRelationPayloadMistakes(): void
     {
         $model = new ModelBehaviorDouble();

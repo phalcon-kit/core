@@ -206,7 +206,16 @@ trait Relationship
     }
 
     /**
-     * Set the missing related configuration list
+     * Set whether related records missing from a submitted list are kept.
+     *
+     * Keys are relationship aliases (normalized case-insensitively); values are
+     * true to keep missing records (the default for every alias) or false to
+     * treat a submitted list as the complete set: missing has-many children are
+     * deleted and missing many-to-many links are removed when the parent is
+     * saved. Deletion goes through the related model, so its `delete`
+     * permission still applies. Replaces the whole map for this instance.
+     *
+     * @param array<string, bool> $keepMissingRelated Alias => keep missing.
      */
     public function setKeepMissingRelated(array $keepMissingRelated): void
     {
@@ -214,9 +223,11 @@ trait Relationship
     }
     
     /**
-     * Return the missing related configuration list
+     * Return the aliases with an explicit keep-missing setting.
      *
-     * @return array<string, bool>
+     * Aliases absent from the map keep missing related records.
+     *
+     * @return array<string, bool> Normalized alias => keep missing.
      */
     public function getKeepMissingRelated(): array
     {
@@ -224,7 +235,10 @@ trait Relationship
     }
     
     /**
-     * Return the keepMissing configuration for a specific relationship alias
+     * Whether related records missing from a submitted list are kept for an alias.
+     *
+     * Returns true unless the alias was set to false, either in code or by a
+     * legacy `false` sentinel item in an assigned relation list.
      */
     public function getKeepMissingRelatedAlias(string $alias): bool
     {
@@ -232,7 +246,9 @@ trait Relationship
     }
     
     /**
-     * Set the keepMissing configuration for a specific relationship alias
+     * Set whether related records missing from a submitted list are kept for one alias.
+     *
+     * See `setKeepMissingRelated()` for what false removes on save.
      */
     public function setKeepMissingRelatedAlias(string $alias, bool $keepMissing): void
     {
@@ -429,22 +445,38 @@ trait Relationship
     }
     
     /**
-     * Assign related
+     * Assign relation payloads in `$data` to their relationship aliases.
      *
-     * Single
-     * [alias => new Alias()] // create new alias
+     * Each key that names a defined relation and passes `$whiteList` becomes
+     * dirty related data that Phalcon saves with the parent:
      *
-     * Many
-     * [alias => [new Alias()]] // create new alias
-     * [alias => [1, 2, 3, 4]] // append / merge 1, 2, 3, 4
-     * [alias => [false, 1, 2, 4]]; // delete 3
+     * - a model instance of the referenced class is used as is;
+     * - an array of fields resolves an existing record by primary key, then by
+     *   relation key (see `getEntityFromData()`), and assigns the fields to it,
+     *   or builds a new record;
+     * - a scalar is used as the value of the relation's referenced field;
+     * - a list applies these rules to each item.
      *
-     * @param array $data
-     * @param array|null $whiteList
-     * @param array|null $dataColumnMap
+     * Related records missing from a submitted list are kept by default, so an
+     * empty list changes nothing and is equivalent to omitting the alias. When
+     * `getKeepMissingRelatedAlias()` is false, the list is the complete set: an
+     * empty list removes every related record and missing ones are removed on
+     * save. A boolean or `'true'`/`'false'` item in a list is a legacy sentinel
+     * that sets that keep-missing flag for the alias; prefer configuring it in
+     * code.
      *
-     * @return ModelInterface
-     * @throws InvalidArgumentException
+     * Direct-child ownership, adoption, and restore follow
+     * `getRelationshipOptions()`. With `setStrictRelatedAssignment(true)`,
+     * unsupported payload shapes are rejected instead of ignored.
+     *
+     * @param array<array-key, mixed> $data Relation aliases => payloads; other keys are ignored.
+     * @param array|null $whiteList Allowed aliases, optionally mapping an alias to its nested field list.
+     * @param array|null $dataColumnMap Column map applied to nested records.
+     *
+     * @return ModelInterface This model.
+     * @throws InvalidArgumentException With code 400 when an item is an instance
+     *     of the wrong model, an existing direct child belongs to another parent,
+     *     or strict assignment rejects the payload shape.
      */
     public function assignRelated(array $data, ?array $whiteList = null, ?array $dataColumnMap = null): ModelInterface
     {

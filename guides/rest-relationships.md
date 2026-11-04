@@ -261,9 +261,19 @@ curl -X PATCH http://127.0.0.1:8080/api/project/update \
 
 On success, `view.saved` is true. With the graph/exposure policies above,
 `view.data.tasklist` includes the current children and their generated IDs.
-Unsubmitted children remain by default. A configured `keepMissingRelated: false`
-policy changes omission into removal; do not use it for a partial edit form.
-A submitted empty list and an omitted relation are different inputs.
+Unsubmitted children remain by default, so a submitted empty list changes
+nothing, just like omitting `tasklist`. With `keepMissingRelated` set to false
+for the relation (see [Models And Eager Loading](models-and-eager-loading.md)),
+the submitted list replaces the children: existing children missing from it
+are deleted, and an empty list deletes them all. Omitting the relation from the
+payload still leaves the children untouched. Do not use that policy for a
+partial edit form.
+
+A `false` item in a submitted list, such as `"tasklist":[false]`, is a legacy
+sentinel that switches that replacement on for the request; `true` switches it
+off. Removal deletes child records through the child model, so it requires the
+Task model's `delete` permission. Do not grant `delete` on the child model to a
+role that should only add or edit children through the parent.
 
 Never accept a client-supplied parent/tenant foreign key merely because it exists
 in the schema. Direct-child ownership guards do not authorize unrelated parents,

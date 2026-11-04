@@ -47,6 +47,12 @@ release notes.
 - Add a "How A Request Runs" guide that follows the bootstrap, providers,
   modules, and dispatch listeners, and group the guide index into getting
   started, how PhalconKit works, REST, building, operating, and reference.
+- Correct the relationship guide: with the default keep-missing policy a
+  submitted empty list changes nothing, like an omitted relation; only with
+  `keepMissingRelated` false does it delete every child. Document the legacy
+  `false`/`true` list sentinel and that removal requires the child model's
+  `delete` permission. Rewrite the `assignRelated()` and keep-missing
+  docblocks to match, with a test for each case.
 
 ## 4.1.2 - 2026-11-04
 
