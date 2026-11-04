@@ -317,6 +317,35 @@ Validation:
 - A worker test proving each reset static is cleared and each configuration
   static survives.
 
+## Denied Requests Choose 401 Or 403 By Role Count
+
+Status: Design; decide the status contract before changing the listener.
+
+Why:
+
+- The dispatcher `Security` listener forwards a denied request to
+  `router.unauthorized` when the identity has more than one ACL role and to
+  `router.forbidden` otherwise. Every HTTP identity has at least two roles
+  (`everyone` plus `guest` or the user's roles), so a denied HTTP request
+  always gets 401, even when a valid user lacks the permission. Only a
+  single-role identity reaches 403.
+- Clients usually read 401 as "sign in again" and 403 as "signed in, not
+  allowed", so a signed-in user who lacks one permission is prompted to
+  authenticate.
+
+Scope:
+
+- Decide whether the split should follow authentication (no identity: 401;
+  identity without the permission: 403) instead of the role count.
+- Document the result in Identity And Permissions and Requests And Responses,
+  which currently say permission forwarding "can produce 401, 403, or 404".
+
+Validation:
+
+- Dispatcher tests for a guest, a signed-in user without the permission, and a
+  CLI identity, each asserting the forwarded route.
+- A compatibility note for clients that treat every denial as 401.
+
 ## Ideas Requiring A Concrete Consumer Need
 
 ### JetBrains Attributes
