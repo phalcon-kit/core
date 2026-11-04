@@ -15,6 +15,16 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.1.4 - Unreleased
+
+### Documentation
+
+- Document many-to-many writes: submitted IDs link existing records without
+  duplicating links, submitted fields update the shared target (allow only its
+  key to link without editing), and a replacement list removes links but never
+  the targets. Document that a nested save commits or rolls back the parent
+  and its related records together. Database tests cover each case.
+
 ## 4.1.3 - 2026-11-04
 
 ### Fixed

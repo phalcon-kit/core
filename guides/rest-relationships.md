@@ -284,3 +284,43 @@ For stricter relation-shape validation and per-relation options, see
 Submitting task ID 3 under project 1 is rejected with HTTP 400 by the adapter
 above; task 3 remains attached to project 3. Check that invariant in tests as
 well as checking the response status.
+
+## Link Shared Records
+
+A many-to-many relation (`hasManyToMany` through a link table) connects the
+parent to shared records. Suppose Project has a `TagList` alias through a
+`project_tag` link table. Each submitted item names a tag:
+
+```shell
+curl -X PATCH http://127.0.0.1:8080/api/project/update \
+  -b cookies.txt -c cookies.txt \
+  -H "X-Authorization: Bearer $API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{"id":1,"taglist":[2,3]}'
+```
+
+- A number is the tag's key, so `[2, 3]` links existing tags 2 and 3. A link
+  that already exists is kept, not duplicated, and no tag record is created.
+- An object such as `{"id":1,"name":"garden"}` also saves the tag's fields.
+  Tags are shared, so the change is visible to every project linked to them.
+  To let a caller link tags without editing them, allow only the key in the
+  save fields: `'taglist' => ['id']`.
+- Links missing from the list are kept by default. With `keepMissingRelated`
+  false for the alias, the list is the complete set: other links are removed
+  (soft-deleted when the link model has a `deleted` column), the tag records
+  are never deleted, and submitting a tag again restores its link.
+
+Grant the permissions both models need: linking finds, creates, and removes
+link rows, and saves each submitted tag.
+
+## What A Nested Save Commits
+
+Saving a parent with related records runs in one database transaction: the
+parent, its children, and its links commit together. When a related record
+fails to save, for example a child that fails validation, the save returns the
+validation messages and rolls back the parent change and any children already
+saved in that request.
+
+The transaction covers one parent graph. Records in a REST batch are saved one
+by one, so a failure in one record does not undo the others; see
+[Writes And Batches](rest-writes.md).

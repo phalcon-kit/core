@@ -380,6 +380,7 @@ jobs:
           composer phpunit --
           tests/Unit/Identity/PasswordResetDatabaseTest.php
           tests/Unit/Mvc/Model/RelationshipAssignmentDatabaseTest.php
+          tests/Unit/Mvc/Model/RelationshipPersistenceDatabaseTest.php
           tests/Unit/Mvc/Model/BooleanPersistenceDatabaseTest.php
           tests/Unit/Mvc/Model/AggregateDatabaseTest.php
           tests/Unit/Migrations/CoreBaselineDatabaseTest.php

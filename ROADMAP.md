@@ -9,8 +9,10 @@ Published releases are preserved by signed tags under the [release policy](guide
 
 Status: Follow-up regression coverage.
 
-- Cross-check public/protected PHPDoc against those examples and cover any missing
-  behavioral edge cases before changing runtime code.
+- Cross-check the remaining public/protected relationship PHPDoc (eager loading,
+  `getEntityFromData()`, the post-save helpers) against the guide examples.
+  Keep-missing assignment, many-to-many link payloads, and nested-save rollback
+  are documented and covered by unit and database tests.
 - Retain deprecated REST aliases until wrapper/SDK consumers have an explicit
   migration and equivalent response-contract tests.
 
