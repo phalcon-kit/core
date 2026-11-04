@@ -26,6 +26,7 @@ $docsRoot = $projectRoot . '/docs';
 $nativeClasses = [
     'ArrayAccess',
     'AssertionError',
+    'BadMethodCallException',
     'DateMalformedStringException',
     'Exception',
     'InvalidArgumentException',

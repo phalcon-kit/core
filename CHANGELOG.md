@@ -36,6 +36,7 @@ release notes.
 
 - Show how an application lists its tasks in `cli help`, and which CLI errors
   print a stack trace.
+- Link `BadMethodCallException` to the PHP manual in generated API docs.
 
 ## 4.1.1 - 2026-11-04
 
