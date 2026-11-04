@@ -24,6 +24,7 @@ release notes.
   signed in. The choice depended on the number of ACL roles, and every HTTP
   request has at least two, so every denial returned 401 and clients prompted
   signed-in users to authenticate again. See the Core 4.2 migration guide.
+- Move the `dev-master` branch alias to `4.2.x-dev`.
 
 ### Added
 

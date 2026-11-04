@@ -12,7 +12,7 @@ install. When App commands or examples require a Core fix, raise App's minimum
 Core constraint to the first release containing it and lock that public stable
 release. Publish Docs from the same Core source and synchronized guides.
 
-Core's Composer branch alias maps `dev-master` to `4.1.x-dev` for deliberate
+Core's Composer branch alias maps `dev-master` to `4.2.x-dev` for deliberate
 development testing. Stable applications use `^4.0` and their committed lockfile.
 When coordinating releases, publish Core first, then update App's stable lockfile
 from the public distribution and verify App CI and a fresh project install.
