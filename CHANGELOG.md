@@ -22,6 +22,11 @@ release notes.
 - Run PHPStan with a 2G memory limit in CI; the `highest` dependency job
   intermittently crashed at 1G.
 
+### Fixed
+
+- Fall back to a local `HelperFactory` in the `Helper` facade when the default
+  DI has no `helper` service, as documented, instead of throwing.
+
 ### Documentation
 
 - Update the App 4 migration guide for Core `^4.1`, the `bin/phalcon-kit`

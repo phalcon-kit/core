@@ -101,12 +101,19 @@ class Helper
      * Return the helper factory used by static helper calls.
      *
      * The default DI `helper` service is preferred so applications can override
-     * or extend helper registration globally. When no DI service is available,
-     * the facade falls back to a local `HelperFactory`.
+     * or extend helper registration globally. When there is no default DI, or
+     * it has no `helper` service, the facade falls back to a local
+     * `HelperFactory`.
      */
     public static function getHelperFactory(): HelperFactory
     {
-        return self::$helperFactory ??= Di::getDefault()?->get('helper') ?? new HelperFactory();
+        if (self::$helperFactory === null) {
+            $di = Di::getDefault();
+            $helper = $di?->has('helper') ? $di->get('helper') : null;
+            self::$helperFactory = $helper instanceof HelperFactory ? $helper : new HelperFactory();
+        }
+
+        return self::$helperFactory;
     }
     
     /**

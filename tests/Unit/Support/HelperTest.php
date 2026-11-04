@@ -126,4 +126,24 @@ class HelperTest extends AbstractUnit
         $this->assertEquals($expected, $this->helper->flattenKeys($nestedArray, ':', false));
         $this->assertEquals($expected, Helper::flattenKeys($nestedArray, ':', false));
     }
+
+    public function testFacadeFallsBackWhenDefaultDiHasNoHelperService(): void
+    {
+        $previousDi = \Phalcon\Di\Di::getDefault();
+        $previousFactory = Helper::$helperFactory;
+        try {
+            \Phalcon\Di\Di::setDefault(new \Phalcon\Di\Di());
+            Helper::$helperFactory = null;
+
+            $this->assertInstanceOf(HelperFactory::class, Helper::getHelperFactory());
+            $this->assertSame('a-b', Helper::slugify('A B'));
+        } finally {
+            Helper::$helperFactory = $previousFactory;
+            if ($previousDi !== null) {
+                \Phalcon\Di\Di::setDefault($previousDi);
+            } else {
+                \Phalcon\Di\Di::reset();
+            }
+        }
+    }
 }
