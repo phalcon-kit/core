@@ -286,36 +286,114 @@ Validation:
 
 ## Request Isolation In Long-Running Workers
 
-Status: Design; decide the supported worker model before widening the reset.
+Status: Design proposal for review (2026-11-04). No runtime change until the
+supported worker model below is approved.
+
+### What Swoole Does By Default
+
+From the Swoole documentation (`server/setting.md`, `other/config.md`):
+
+- `swoole.enable_coroutine` defaults to On, so each server callback
+  (`onOpen`, `onMessage`, `onRequest`, `onPipeMessage`, `onClose`, timers)
+  runs in its own coroutine.
+- `hook_flags` defaults to "no hook", so blocking calls such as PDO queries
+  and `sleep()` block the worker instead of yielding.
+
+So with Core's defaults, callbacks in one worker run one after another, and
+the reset each Core callback wrapper performs on entry
+(`src/Modules/Ws/Tasks/AbstractTask.php`, `RequestState::reset()`) is enough.
+Callbacks interleave only when something yields mid-callback: hooks enabled
+through `hook_flags` or `Swoole\Runtime::enableCoroutine()`, a
+`Swoole\Coroutine\*` client, `Co::sleep()`, a channel, or `go()`.
+
+### Why Isolating Identity Alone Is Not Enough
+
+Everything below is one instance per worker, shared by every callback:
+
+- Shared services: `db`/`dbr` (one PDO connection; under hooks a second
+  coroutine using it fails, or worse, interleaves statements), `dispatcher`
+  (route, parameters, forward state), `request`/`response`, `identity`
+  (decoded claim, user, roles), `session`.
+- Statics: `Security::$roles`, `Blameable::$parentId`, the
+  `SkippableTrait::$staticEnabled` and Blameable audit switches, `ProgressTrait`
+  in-progress flags, `Tag` statics, and `AbstractTask::$subscriptions`.
+- Services cached as properties by `Injectable` on long-lived objects.
+
+If two callbacks interleave, the second one's reset clears or replaces the
+first one's identity and roles while the first is still authorizing queries,
+and both drive the same dispatcher and connection. Moving only identity into
+coroutine context would leave the connection and dispatcher shared, so it does
+not make interleaving safe.
+
+### Options
+
+- **A. One callback at a time per worker, enforced (recommended now).** The
+  Core callback wrappers count callbacks in flight in the worker. A callback
+  that starts while another is still running fails closed before touching
+  shared state: it logs an error and refuses the work (HTTP 503 for
+  `onRequest`, closing or rejecting the frame for `onMessage`) instead of
+  resetting the other callback's identity. At `onWorkerStart`, a non-zero
+  `Swoole\Runtime::getHookFlags()` or `hook_flags` setting logs a warning
+  that names the risk. Applications scale with `worker_num`, and keep using
+  `go()` or coroutine clients only for work that does not touch Core
+  services. A `swoole.allowInterleavedCallbacks` config flag (default false)
+  turns the guard off for applications that accept the risk.
+- **B. A request scope per callback (future major).** Each callback gets a
+  child DI whose request-scoped services (`identity`, `dispatcher`,
+  `request`, `response`, `session`) are rebuilt per scope and stored in
+  `Swoole\Coroutine::getContext()`, statics move behind a context accessor,
+  and `db` comes from a connection pool. This is the only option that makes
+  interleaving safe, and it touches every `Injectable` and static holder.
+  It needs a spike before it can be scheduled.
+- **C. Coroutine-local identity only.** Rejected: see above.
+
+Recommendation: A in a minor release, with the supported model stated in
+[Web Servers And WebSockets](web-server-and-websocket.md); B only if an
+application needs concurrent callbacks in one worker.
+
+### Compatibility Of Option A
+
+- No change for applications that never yield inside a callback, which is
+  Swoole's default.
+- An application that yields inside callbacks while another callback arrives
+  now gets a logged refusal instead of silent identity bleed. It can set
+  `swoole.allowInterleavedCallbacks` to restore today's behavior and risk.
+- The guard costs one counter increment and decrement per callback.
+
+### Validation
+
+- A probe at worker start that records `Swoole\Coroutine::getCid()` and
+  `Swoole\Runtime::getHookFlags()`, confirming the documented defaults on
+  the CI Swoole build.
+- A child-process integration test in the CI job that has the Swoole
+  extension: start a server, send two messages whose handlers yield
+  (`Co::sleep()`), and assert that the second is refused and the first keeps
+  its identity; with the opt-in flag, assert today's behavior. Skipped
+  locally without Swoole, like the database tests.
+- Unit tests for the in-flight counter, including a callback that throws
+  (the counter must still decrement).
+
+## WebSocket Channel Subscriptions Are Per Worker
+
+Status: Behavior to document or change; separate from request isolation.
 
 Why:
 
-- `RequestState::reset()` makes sequential requests in a reused bootstrap or
-  a Swoole worker safe for identity, ACL roles, and audit linkage. Swoole
-  coroutines that interleave inside one worker still share the identity
-  manager and static behavior caches, so one coroutine can observe or clear
-  another's identity.
-- Other process-wide state is kept on purpose or not yet covered:
-  `SkippableTrait::$staticEnabled` and Blameable's static audit switch (often
-  set once at boot), `Tag` meta/link/attribute statics, and services that
-  `Injectable` cached as properties (for example a swapped `request`).
+- `AbstractTask::$subscriptions` (`src/Modules/Ws/Tasks/AbstractTask.php`)
+  is a static array, so each Swoole worker process keeps its own list. With
+  `worker_num` above 1, a broadcast reaches only the clients connected to the
+  worker that sends it.
 
 Scope:
 
-- State whether coroutine concurrency within one worker is supported; if so,
-  move request state into coroutine context instead of statics and shared
-  services.
-- Classify each static as configuration (kept) or request state (reset), and
-  let each holder register its own reset instead of listing them in
-  `RequestState`.
-- Consider collecting `RequestScopedInterface` instances when they are
-  resolved, so the reset does not scan the container on every frame.
+- Either document that channel broadcasts are per worker, or share
+  subscriptions across workers (a `Swoole\Table`, Redis, or relaying
+  broadcasts through `sendMessage()` to every worker).
 
 Validation:
 
-- Concurrent coroutine tests with two identities interleaving across I/O.
-- A worker test proving each reset static is cleared and each configuration
-  static survives.
+- A multi-worker test where clients on two workers subscribe to one channel
+  and both receive a broadcast.
 
 ## Deprecated REST Read Aliases
 
