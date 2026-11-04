@@ -88,7 +88,9 @@ use App\Bootstrap;
 
 require_once dirname(__DIR__) . '/bootstrap.php';
 
-echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
+$bootstrap = new Bootstrap(Bootstrap::MODE_CLI);
+echo $bootstrap->run();
+exit($bootstrap->getExitCode());
 ```
 
 ## WebSocket Task Wrappers

@@ -41,9 +41,14 @@ release notes.
   each request; the identity manager implements it through
   `resetRequestState()`. Add `Bootstrap::resetRequestState()`,
   `Ws\Task::resetRequestState()`, and `Blameable::resetParentId()`.
+- Add `Bootstrap::getExitCode()`.
 
 ### Fixed
 
+- Exit the `phalcon-kit` CLI with status 1 when a command throws or the output
+  format is unknown, instead of 0. Custom CLI entrypoints should end with
+  `exit($bootstrap->getExitCode());`. A failed console run also closes its
+  output buffer and still returns output written before the exception.
 - Reset Blameable's parent-audit link between requests so a worker never links
   a new audit row to a parent audit from an earlier request.
 

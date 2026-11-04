@@ -12,4 +12,6 @@
 use PhalconKit\Bootstrap;
 
 $loader = require 'loader.php';
-echo new Bootstrap('cli')->run();
+$bootstrap = new Bootstrap('cli');
+echo $bootstrap->run();
+exit($bootstrap->getExitCode());

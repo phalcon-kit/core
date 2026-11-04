@@ -491,10 +491,41 @@ class BootstrapTest extends AbstractUnit
             $_SERVER['argv'] = ['./phalcon-kit', 'api', 'task'];
 
             $this->assertNull($bootstrap->handleConsole($console));
+            $this->assertSame(1, $bootstrap->getExitCode());
+            $this->assertSame($bufferLevel, ob_get_level(), 'A failed console run must close its output buffer.');
+
+            $console->throw = false;
+            $this->assertSame('console-content', $bootstrap->handleConsole($console));
+            $this->assertSame(0, $bootstrap->getExitCode());
         } finally {
             while (ob_get_level() > $bufferLevel) {
                 ob_end_clean();
             }
+            $_SERVER = $server;
+        }
+    }
+
+    public function testHandleConsoleKeepsOutputWrittenBeforeAnException(): void
+    {
+        $server = $_SERVER;
+        $di = new Di();
+        $console = new class ($di) extends BootstrapConsoleDouble {
+            #[\Override]
+            public function handle(?array $arguments = [])
+            {
+                echo 'partial';
+                throw new \PhalconKit\Tests\Unit\Bootstrap\Fixtures\QuietConsoleException('');
+            }
+        };
+        $bootstrap = new LightweightBootstrap(Bootstrap::MODE_CLI, $di);
+        $di->set('helper', new HelperFactory());
+
+        try {
+            $_SERVER['argv'] = ['./phalcon-kit', 'api', 'task'];
+
+            $this->assertSame('partial', $bootstrap->handleConsole($console));
+            $this->assertSame(1, $bootstrap->getExitCode());
+        } finally {
             $_SERVER = $server;
         }
     }

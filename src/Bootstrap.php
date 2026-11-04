@@ -111,6 +111,11 @@ class Bootstrap
     protected bool $configuredEventListenersAttached = false;
 
     /**
+     * Exit code of the last CLI run, read through `getExitCode()`.
+     */
+    protected int $exitCode = 0;
+
+    /**
      * Whether `run()` has already dispatched once with this bootstrap.
      *
      * The first run keeps request state set before it (for example
@@ -550,21 +555,48 @@ DOC;
      * Handles a CLI console request and returns captured output.
      *
      * Console exceptions are rendered through the CLI exception handler so CLI
-     * users receive formatted output instead of raw PHP exception text.
+     * users receive formatted output instead of raw PHP exception text, and
+     * the exit code becomes 1 (see `getExitCode()`). Output produced before
+     * the exception is still returned.
      */
     public function handleConsole(Console $console): ?string
     {
-        $response = null;
+        $this->exitCode = 0;
+        $level = ob_get_level();
+        ob_start();
         try {
-            ob_start();
             $console->handle($this->getArgs());
-            $response = ob_get_clean() ?: null;
         }
         catch (\Throwable $e) {
+            $this->exitCode = 1;
             new Cli\ExceptionHandler($e)->write();
         }
-        
-        return $response;
+        finally {
+            $response = '';
+            while (ob_get_level() > $level) {
+                $current = ob_get_level();
+                $response = (string)ob_get_clean() . $response;
+                if (ob_get_level() >= $current) {
+                    // A non-removable buffer cannot be closed; stop instead of looping.
+                    break;
+                }
+            }
+        }
+
+        return $response !== '' ? $response : null;
+    }
+
+    /**
+     * Return the process exit code for the last CLI run.
+     *
+     * `handleConsole()` sets 1 when the console throws and 0 otherwise. The
+     * framework never calls `exit()` itself so it can run in-process (tests,
+     * workers); CLI entrypoints should end with
+     * `exit($bootstrap->getExitCode());` after echoing the output.
+     */
+    public function getExitCode(): int
+    {
+        return $this->exitCode;
     }
 
     /**

@@ -79,9 +79,19 @@ placed after the action are parsed by the task usage string; an option it does
 not declare prints the task usage and exits with status 1.
 
 The task formatter serializes returned arrays, booleans, and model messages.
-Do not assume every JSON failure automatically sets a nonzero process exit code;
-explicitly define the exit-status contract for commands used by automation and
-test both success and failure.
+An uncaught exception prints the error to stderr and exits with status 1, as
+does an unknown `--format`. A returned payload exits with status 0 even when it
+contains an `errors` list; with `--quiet`, an empty payload exits with 1. For
+commands used by automation, throw when the command fails, or define and test
+the exit-status contract for both success and failure.
+
+A custom entrypoint must pass the status on:
+
+```php
+$bootstrap = new \PhalconKit\Bootstrap('cli');
+echo $bootstrap->run();
+exit($bootstrap->getExitCode());
+```
 
 ## Reuse A Core Task
 
