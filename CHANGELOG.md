@@ -44,6 +44,9 @@ release notes.
   built-in CLI commands, from `src/Bootstrap/Config.php` and the task usage
   text. Run `composer reference` after changing either; a unit test fails when
   the committed pages are stale.
+- Add a "How A Request Runs" guide that follows the bootstrap, providers,
+  modules, and dispatch listeners, and group the guide index into getting
+  started, how PhalconKit works, REST, building, operating, and reference.
 
 ## 4.1.2 - 2026-11-04
 

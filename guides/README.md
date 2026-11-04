@@ -14,6 +14,15 @@ an example explicitly says otherwise.
 
 Already have a project? Start with [Application Integration](application-integration.md).
 
+## How PhalconKit Works
+
+| Guide | What you will find |
+| --- | --- |
+| [Application Structure](architecture.md) | The parts of an application, who owns each directory, and where new code belongs |
+| [How A Request Runs](request-lifecycle.md) | Bootstrap, providers, modules, dispatch listeners, and where to extend each step |
+| [Configuration](configuration.md) | Environment, app config, modules, provider overrides, listeners, and permissions |
+| [Feature Setup](feature-contracts.md) | The tables, models, and services each built-in feature needs |
+
 ## REST API Handbook
 
 | Guide | What you will find |
@@ -25,31 +34,33 @@ Already have a project? Start with [Application Integration](application-integra
 | [Relationships](rest-relationships.md) | Eager loading, client-selected graphs, related filters, nested writes, and safe exposure |
 | [Counts, Aggregates, And Exports](rest-aggregates.md) | List totals, grouped counts, distinct facets, calculations, and CSV downloads |
 | [API Scenario Checklist](rest-scenarios.md) | Request/result cases to verify for your own resource |
+| [Grow A Resource](resource-walkthrough.md) | Which layer to change as a resource gains fields, children, and rules |
 
 Examples distinguish the complete HTTP envelope from a `view` fragment. Each
 resource controls its exposed fields, enabled actions, and row access, so copy
 the accompanying controller configuration as well as the request.
 
-## Application Development
+## Build Your Application
 
 | Task | Guide |
 | --- | --- |
-| Decide where application code belongs | [Architecture](architecture.md) |
-| Configure environments, modules, and services | [Configuration](configuration.md) |
-| Call OpenAI with injectable transports and usage capture | [OpenAI](openai.md) |
-| Connect Core to your own bootstrap | [Application Integration](application-integration.md) |
 | Manage application tables | [Database Migrations](database-migrations.md) |
 | Generate and regenerate models | [Database And Scaffolding](database-scaffolding.md) |
 | Work with model relationships and behaviors | [Models And Eager Loading](models-and-eager-loading.md) |
-| Choose the tables and services a feature needs | [Feature Setup](feature-contracts.md) |
 | Sign in, refresh tokens, and sign out | [Authentication](authentication.md) |
 | Grant actions and restrict rows | [Identity And Permissions](identity-and-permissions.md) |
 | Configure keys, CORS, and sensitive fields | [Application Security](security-hardening.md) |
 | Write a command | [CLI Tasks](cli-tasks.md) |
-| Serve HTTP and WebSockets | [Web Servers And WebSockets](web-server-and-websocket.md) |
+| Call OpenAI with injectable transports and usage capture | [OpenAI](openai.md) |
+| Find a focused implementation example | [Application Cookbook](cookbook.md) |
+
+## Run And Operate
+
+| Task | Guide |
+| --- | --- |
+| Serve HTTP and WebSockets, and run long-lived workers | [Web Servers And WebSockets](web-server-and-websocket.md) |
 | Check PHP and Phalcon in each runtime | [Runtime Requirements](phalcon-runtime-upgrades.md) |
 | Test your application's behavior | [Application Testing](application-testing.md) |
-| Find a focused implementation example | [Application Cookbook](cookbook.md) |
 | Resolve a failure | [Troubleshooting](troubleshooting.md) |
 
 ## Existing Applications

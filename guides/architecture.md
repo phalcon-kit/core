@@ -166,10 +166,12 @@ those components. Native Phalcon documentation remains relevant.
 
 ## Continue Building
 
+- [How A Request Runs](request-lifecycle.md) follows one request through the
+  bootstrap, providers, modules, and dispatch listeners.
 - [Configuration](configuration.md) turns the composition model into concrete
   app config and providers.
 - [Database And Scaffolding](database-scaffolding.md) explains the generated
   model boundary.
-- [Resource Walkthrough](resource-walkthrough.md) follows one resource across
+- [Grow A Resource](resource-walkthrough.md) follows one resource across
   every layer.
-- [Developer Cookbook](cookbook.md) provides copy-and-adapt recipes.
+- [Application Cookbook](cookbook.md) provides copy-and-adapt recipes.
