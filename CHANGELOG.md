@@ -43,6 +43,14 @@ release notes.
   `Ws\Task::resetRequestState()`, and `Blameable::resetParentId()`.
 - Add `Bootstrap::getExitCode()`.
 
+### Changed
+
+- Release these changes as a minor version: they add public API and change
+  observable behavior (CLI exit status, request-state reset in reused
+  bootstraps, and positional task arguments). Applications on `^4.0` receive
+  them through a normal `composer update`. The `dev-master` branch alias is now
+  `4.1.x-dev`.
+
 ### Fixed
 
 - Exit the `phalcon-kit` CLI with status 1 when a command throws or the output
