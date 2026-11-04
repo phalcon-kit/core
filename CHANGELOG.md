@@ -24,6 +24,19 @@ release notes.
   without the file, line, and stack trace. Other exceptions still print in
   full.
 
+### Fixed
+
+- Forward `cli help <task>` to `<task> help` for any task in the module
+  namespace, including application tasks `HelpTask` does not declare, instead
+  of failing usage parsing with status 1. A task with no handler class reports
+  `Error: 404 - Not Found`. Applications can extend `HelpTask` and replace
+  only `$cliDoc` to list their tasks.
+
+### Documentation
+
+- Show how an application lists its tasks in `cli help`, and which CLI errors
+  print a stack trace.
+
 ## 4.1.1 - 2026-11-04
 
 ### Changed

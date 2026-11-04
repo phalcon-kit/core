@@ -81,9 +81,13 @@ action arguments. Returned values are rendered by `afterExecuteRoute()` using
 the requested output format, defaulting to pretty JSON. Keep task actions
 focused and return arrays, strings, or scalar status payloads instead of
 echoing everywhere. Throw on failure: uncaught exceptions exit with status 1,
-returned payloads exit with 0. `cli <task> help` and `cli help <task>` print the
-task usage with status 0 without a `help` usage line; grant `help` to the `cli`
-role, because a command the role may not run reports `Error: <code>` and exits 1.
+returned payloads exit with 0. Throw `CliException` for expected command errors:
+it prints only its message, other exceptions also print a stack trace.
+`cli <task> help` and `cli help <task>` print the task usage with status 0
+without a `help` usage line; grant `help` to the `cli` role, because a command
+the role may not run reports `Error: <code>` and exits 1. `cli help <task>`
+forwards to any task in the module namespace; an application `HelpTask` that
+extends Core's only replaces `$cliDoc` and needs `['*']` in the `cli` role.
 
 CLI entrypoints should reuse the root Composer bootstrap and run the
 application bootstrap in CLI mode:

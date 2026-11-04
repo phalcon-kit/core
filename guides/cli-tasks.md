@@ -86,9 +86,38 @@ usage should be readable. A command the `cli` role may not run reports an
 `Error: <code>` message on stderr and exits with status 1, for example
 `Error: 404 - Not Found` for a task that is missing or granted to no role.
 
+`cli help <task>` forwards to `<task> help` for any task in the module's
+namespace, so `cli help` needs no change when you add a task. To list your own
+tasks in `./bin/phalcon-kit cli help`, extend Core's help task in your CLI
+module and replace its usage string, then grant it to the `cli` role:
+
+```php
+namespace App\Modules\Cli\Tasks;
+
+class HelpTask extends \PhalconKit\Modules\Cli\Tasks\HelpTask
+{
+    public string $cliDoc = <<<DOC
+Usage:
+  phalcon-kit cli help report
+  phalcon-kit cli help user
+
+DOC;
+}
+```
+
+```php
+'cli' => [
+    'components' => [
+        \App\Modules\Cli\Tasks\HelpTask::class => ['*'],
+        \App\Modules\Cli\Tasks\ReportTask::class => ['run', 'help'],
+    ],
+],
+```
+
 The task formatter serializes returned arrays, booleans, and model messages.
 An uncaught exception prints the error to stderr and exits with status 1, as
-does an unknown `--format`. A returned payload exits with status 0 even when it
+does an unknown `--format`. A `PhalconKit\Exception\CliException` prints only
+its message; any other exception also prints its file, line, and stack trace. A returned payload exits with status 0 even when it
 contains an `errors` list; with `--quiet`, an empty payload exits with 1. For
 commands used by automation, throw when the command fails, or define and test
 the exit-status contract for both success and failure.
