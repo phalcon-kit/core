@@ -16,6 +16,7 @@ namespace PhalconKit\Identity;
 use Phalcon\Encryption\Security\Exception as SecurityException;
 use Phalcon\Encryption\Security\JWT\Exceptions\ValidatorException;
 use PhalconKit\Di\Injectable;
+use PhalconKit\Di\RequestScopedInterface;
 use PhalconKit\Exception\LogicException;
 use PhalconKit\Filter\Validation;
 use PhalconKit\Identity\Traits\Acl;
@@ -53,7 +54,7 @@ use Phalcon\Messages\Message;
  * failed, so downstream code should preserve that behavior when overriding the
  * manager.
  */
-class Manager extends Injectable implements ManagerInterface, OptionsInterface
+class Manager extends Injectable implements ManagerInterface, OptionsInterface, RequestScopedInterface
 {
     use Options;
     
@@ -65,6 +66,23 @@ class Manager extends Injectable implements ManagerInterface, OptionsInterface
     use Session;
     use User;
     
+    /**
+     * Discard the identity cached for the previous request.
+     *
+     * The manager caches the decoded JWT claim, the effective user, and the
+     * impersonating user for the life of the shared service. Long-running
+     * runtimes reuse that service between requests, so the bootstrap and the
+     * base WebSocket task call this before each request or callback; the next
+     * lookup then reads the current request's credentials. Persistent session
+     * or token storage is not changed.
+     */
+    #[\Override]
+    public function resetRequestState(): void
+    {
+        $this->claim = [];
+        $this->clearIdentityCache();
+    }
+
     /**
      * Return the current identity payload.
      *

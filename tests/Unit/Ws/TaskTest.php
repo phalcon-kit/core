@@ -77,6 +77,31 @@ class TaskTest extends AbstractUnit
         $this->assertSame(1, $manager->resetCalls);
     }
 
+    public function testResetRequestStateResetsConnectionsAndRequestScopedServices(): void
+    {
+        $di = new Di();
+        $manager = new class extends Manager {
+            public int $resetCalls = 0;
+
+            #[\Override]
+            public function resetConnectionState(): void
+            {
+                $this->resetCalls++;
+                parent::resetConnectionState();
+            }
+        };
+        $di->set('modelsManager', $manager);
+        $identity = new \PhalconKit\Tests\Unit\Di\Fixtures\RequestScopedProbe();
+        $di->setShared('identity', $identity);
+        $task = new Task();
+        $task->setDI($di);
+
+        $task->resetRequestState();
+
+        $this->assertSame(1, $manager->resetCalls);
+        $this->assertSame(1, $identity->resets);
+    }
+
     public function testResetConnectionStateAllowsMissingModelsManager(): void
     {
         $task = new Task();

@@ -257,6 +257,66 @@ Validation:
 - Full QA before release because scaffolding changes can affect package
   consumers even when runtime code is untouched.
 
+## Blameable Parent-Audit Link Within A Request
+
+Status: Design; decide the grouping contract before changing audit linkage.
+
+Why:
+
+- `Blameable::$parentId` is static so a parent save can link the audits of its
+  cascaded related saves. It is reset between requests, but inside one request
+  it stays set after an audited parent with dirty related records is saved.
+- If those related records are not audited (audit disabled, unchanged, or a
+  different model class), the next unrelated audited save in the same request
+  is linked to that parent audit.
+
+Scope:
+
+- Decide whether grouping should follow Phalcon's related-save lifecycle
+  (set before related saves, cleared after) or an explicit application scope.
+- Define what links a child audit when its parent update writes no audit row
+  because nothing changed.
+- Keep the stored `parent_id` column meaning unchanged for existing data.
+
+Validation:
+
+- Unit tests with nested saves, unaudited children, and a following unrelated
+  save in the same request.
+- A database-backed check that grouped audits read back as expected.
+
+## Request Isolation In Long-Running Workers
+
+Status: Design; decide the supported worker model before widening the reset.
+
+Why:
+
+- `RequestState::reset()` makes sequential requests in a reused bootstrap or
+  a Swoole worker safe for identity, ACL roles, and audit linkage. Swoole
+  coroutines that interleave inside one worker still share the identity
+  manager and static behavior caches, so one coroutine can observe or clear
+  another's identity.
+- Other process-wide state is kept on purpose or not yet covered:
+  `SkippableTrait::$staticEnabled` and Blameable's static audit switch (often
+  set once at boot), `Tag` meta/link/attribute statics, and services that
+  `Injectable` cached as properties (for example a swapped `request`).
+
+Scope:
+
+- State whether coroutine concurrency within one worker is supported; if so,
+  move request state into coroutine context instead of statics and shared
+  services.
+- Classify each static as configuration (kept) or request state (reset), and
+  let each holder register its own reset instead of listing them in
+  `RequestState`.
+- Consider collecting `RequestScopedInterface` instances when they are
+  resolved, so the reset does not scan the container on every frame.
+
+Validation:
+
+- Concurrent coroutine tests with two identities interleaving across I/O.
+- A worker test proving each reset static is cleared and each configuration
+  static survives.
+
 ## Ideas Requiring A Concrete Consumer Need
 
 ### JetBrains Attributes

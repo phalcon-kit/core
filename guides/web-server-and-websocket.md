@@ -297,4 +297,25 @@ Applications overriding that hook keep the same signature.
 The static subscription map is local to each worker process. Application hooks
 must remove closed client subscriptions and coordinate cross-worker delivery
 when needed. Request, frame, open, close, and pipe-message callbacks reset Core's
-model connection state before calling the application hook.
+request state before calling the application hook: model connection pinning,
+the identity manager's cached claim and users, and the model ACL role cache.
+One worker serves many clients, so authenticate each frame or request inside
+the hook; never rely on identity left over from an earlier callback. Custom
+callbacks should call `$this->resetRequestState()` first.
+
+A runtime that reuses the bootstrap between HTTP requests (for example a
+RoadRunner-style worker) gets the same reset from `Bootstrap::run()` on every
+run after the first; the first run keeps state the entrypoint set before it. A
+custom loop that dispatches without `run()` must call
+`$bootstrap->resetRequestState()` at the start of every request. Application
+services that cache per-request data can implement
+`PhalconKit\Di\RequestScopedInterface` to be reset at the same point; a custom
+identity service that does not extend `PhalconKit\Identity\Manager` must
+implement it. In a reused bootstrap, set per-request identity in a `beforeRun`
+listener, not before calling `run()`. PHP-FPM builds a fresh container per
+request and needs no extra step.
+
+The reset covers sequential requests. It does not isolate Swoole coroutines
+that interleave inside one worker, and it keeps process-wide switches such as
+`setStaticEnabled(false)` on model behaviors; restore those in a `finally`
+block.

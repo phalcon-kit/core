@@ -24,6 +24,7 @@ use PhalconKit\Cli\Console;
 use PhalconKit\Di\DiInterface;
 use PhalconKit\Di\FactoryDefault;
 use PhalconKit\Di\FactoryDefault\Cli as FactoryDefaultCli;
+use PhalconKit\Di\RequestState;
 use PhalconKit\Events\ConfiguredEventListeners;
 use PhalconKit\Events\EventsAwareTrait;
 use PhalconKit\Exception\ConfigurationException;
@@ -108,6 +109,15 @@ class Bootstrap
      * while keeping the default bootstrap sequence deterministic.
      */
     protected bool $configuredEventListenersAttached = false;
+
+    /**
+     * Whether `run()` has already dispatched once with this bootstrap.
+     *
+     * The first run keeps request state set before it (for example
+     * `Security::setRoles()` in a CLI entrypoint); later runs on a reused
+     * bootstrap reset it first.
+     */
+    protected bool $hasRun = false;
     
     /**
      * Docopt command specification used by the default CLI argument parser.
@@ -454,7 +464,11 @@ DOC;
      * Dispatches the selected runtime and returns the produced content.
      *
      * The `beforeRun` event is fired before dispatch and `afterRun` is fired
-     * with the produced content afterward. MVC mode returns response content,
+     * with the produced content afterward. Model connection pinning is reset
+     * before every run. When the bootstrap is reused (a long-running worker),
+     * every run after the first also calls `resetRequestState()`, so a request
+     * never inherits the previous request's identity; the first run keeps any
+     * state the entrypoint set before it. MVC mode returns response content,
      * CLI mode returns captured command output, and WebSocket mode returns
      * `null` after handing control to the server runtime.
      *
@@ -462,7 +476,13 @@ DOC;
      */
     public function run(): ?string
     {
-        $this->resetConnectionState();
+        if ($this->hasRun) {
+            $this->resetRequestState();
+        }
+        else {
+            $this->resetConnectionState();
+        }
+        $this->hasRun = true;
         $this->fire('beforeRun');
 
         $content = match ($this->getMode()) {
@@ -483,13 +503,34 @@ DOC;
     }
 
     /**
+     * Clear all request-scoped state before dispatch.
+     *
+     * Traditional PHP runtimes (PHP-FPM) build a new container per request, so
+     * this is a no-op there. RoadRunner-style runtimes may reuse the bootstrap
+     * and its shared services between requests; without this reset a request
+     * could reuse the previous request's write-connection pinning, its
+     * authenticated identity, or its cached model ACL roles.
+     *
+     * The method calls `resetConnectionState()` and then
+     * `PhalconKit\Di\RequestState::reset()`, which resets already-built
+     * services implementing `RequestScopedInterface` (such as the identity
+     * manager) and the model behavior caches. `run()` calls it before
+     * `beforeRun` on every run after the first; custom runtimes that dispatch
+     * without `run()` must call it at the start of every logical request.
+     */
+    public function resetRequestState(): void
+    {
+        $this->resetConnectionState();
+        RequestState::reset($this->di);
+    }
+
+    /**
      * Clear request-scoped model connection state before dispatch.
      *
      * Native Phalcon sticky read/write tracking belongs to one logical request.
-     * Traditional PHP runtimes build a new container per request, while
-     * RoadRunner-style runtimes may reuse the bootstrap and its shared model
-     * manager. This reset prevents a write in one request from pinning an
-     * unrelated later request to the write connection.
+     * This reset prevents a write in one request from pinning an unrelated
+     * later request to the write connection. It is part of
+     * `resetRequestState()`, which long-running runtimes should call instead.
      *
      * Swoole WebSocket handlers should also reset at the start of every logical
      * message or HTTP request; PhalconKit's base WebSocket task does this for

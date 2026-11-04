@@ -15,6 +15,38 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.1.0 - Unreleased
+
+### Security
+
+- Stop long-running runtimes from serving one request with the previous
+  request's identity. The shared identity manager cached the decoded JWT claim
+  and the user, and the model security behavior cached the ACL roles, for the
+  life of the process; a reused bootstrap (RoadRunner-style worker) or a Swoole
+  WebSocket worker could authorize a later request as an earlier user.
+  Every built-in WebSocket callback now resets that state first, and
+  `Bootstrap::run()` resets it on every run after the first when a bootstrap is
+  reused. The first run keeps state an entrypoint sets before it (such as
+  `Security::setRoles()` in a CLI script), so PHP-FPM and one-shot CLI
+  behavior is unchanged. Custom loops that dispatch without `run()` must call
+  `$bootstrap->resetRequestState()` at the start of each request. Custom
+  identity services that implement `ManagerInterface` without extending
+  `Identity\Manager` must also implement `RequestScopedInterface` to be
+  reset.
+
+### Added
+
+- Add `PhalconKit\Di\RequestScopedInterface` and `RequestState::reset()`.
+  Already-built services implementing the interface are reset before
+  each request; the identity manager implements it through
+  `resetRequestState()`. Add `Bootstrap::resetRequestState()`,
+  `Ws\Task::resetRequestState()`, and `Blameable::resetParentId()`.
+
+### Fixed
+
+- Reset Blameable's parent-audit link between requests so a worker never links
+  a new audit row to a parent audit from an earlier request.
+
 ## 4.0.4 - 2026-11-03
 
 ### Fixed

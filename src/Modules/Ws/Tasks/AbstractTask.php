@@ -24,7 +24,8 @@ use PhalconKit\Modules\Ws\Task;
  *
  * Requires the shared `swoole` DI service to provide a WebSocket server using
  * positional event arguments (`event_object` disabled). Request/message callbacks
- * reset model connection state before invoking application hooks. Subscriptions
+ * reset request state (connections, identity, model ACL roles) before invoking
+ * application hooks. Subscriptions
  * belong to the current worker process; applications coordinate other workers.
  */
 abstract class AbstractTask extends Task
@@ -90,34 +91,34 @@ abstract class AbstractTask extends Task
     // --- Initialization methods ---
     
     /**
-     * Install the open callback, resetting model connection state before the hook.
+     * Install the open callback, resetting request state before the hook.
      */
     public function initializeOpen(): void
     {
         $this->onOpen = function (Server $server, Request $request): void {
-            $this->resetConnectionState();
+            $this->resetRequestState();
             $this->onOpen($server, $request);
         };
     }
     
     /**
-     * Install the message callback, resetting model connection state before the hook.
+     * Install the message callback, resetting request state before the hook.
      */
     public function initializeMessage(): void
     {
         $this->onMessage = function (Server $server, Frame $frame): void {
-            $this->resetConnectionState();
+            $this->resetRequestState();
             $this->onMessage($server, $frame);
         };
     }
     
     /**
-     * Install the close callback, resetting model connection state before the hook.
+     * Install the close callback, resetting request state before the hook.
      */
     public function initializeClose(): void
     {
         $this->onClose = function (Server $server, int $fd): void {
-            $this->resetConnectionState();
+            $this->resetRequestState();
             $this->onClose($server, $fd);
         };
     }
@@ -160,23 +161,23 @@ abstract class AbstractTask extends Task
     }
     
     /**
-     * Install the HTTP callback, resetting model connection state before the hook.
+     * Install the HTTP callback, resetting request state before the hook.
      */
     public function initializeRequest(): void
     {
         $this->onRequest = function (Request $request, Response $response): void {
-            $this->resetConnectionState();
+            $this->resetRequestState();
             $this->onRequest($request, $response);
         };
     }
     
     /**
-     * Install the inter-worker message callback, resetting model connection state first.
+     * Install the inter-worker message callback, resetting request state first.
      */
     public function initializePipeMessage(): void
     {
         $this->onPipeMessage = function (Server $server, int $srcWorkerId, mixed $data): void {
-            $this->resetConnectionState();
+            $this->resetRequestState();
             $this->onPipeMessage($server, $srcWorkerId, $data);
         };
     }

@@ -264,6 +264,27 @@ final class SecurityTransitionsTest extends TestCase
         self::assertFalse($behavior->notify('beforeUpdate', $model));
     }
 
+    public function testReusedIdentityServiceDoesNotLeakUserOrRolesAcrossRequests(): void
+    {
+        $identity = $this->manager(true);
+
+        // Request 1: an admin token.
+        $_REQUEST['jwt'] = $this->token(['key' => 'audit-key', 'userId' => 7]);
+        self::assertSame(7, $identity->getUserId());
+        self::assertArrayHasKey('admin', ModelSecurity::getRoles());
+
+        // Request 2 in the same worker: a member token. Within one request the
+        // identity is cached on purpose, so nothing changes until the reset.
+        $_REQUEST['jwt'] = $this->token(['key' => 'audit-key', 'userId' => 42]);
+        self::assertSame(7, $identity->getUserId());
+
+        $identity->resetRequestState();
+
+        self::assertSame(42, $identity->getUserId());
+        self::assertArrayNotHasKey('admin', ModelSecurity::getRoles());
+        self::assertArrayHasKey('member', ModelSecurity::getRoles());
+    }
+
     private function user(int $id, string $role, bool $deleted = false): void
     {
         $user = $this->createStub(UserInterface::class);

@@ -93,7 +93,11 @@ echo (new Bootstrap(Bootstrap::MODE_CLI))->run();
 
 ## WebSocket Task Wrappers
 
-WebSocket modules follow the same wrapper pattern.
+WebSocket modules follow the same wrapper pattern. The base task calls
+`resetRequestState()` before each open, message, close, request, and
+pipe-message callback, clearing connection pinning, the cached identity, and
+model ACL roles; authenticate inside each hook instead of relying on earlier
+callbacks.
 
 ```php
 namespace App\Modules\Ws\Tasks;

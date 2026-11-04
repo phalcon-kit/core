@@ -665,6 +665,19 @@ class Blameable extends Behavior
         return array_key_exists($key, $columnTypes) ? $key : null;
     }
 
+    /**
+     * Clear the parent-audit link used to group cascaded related saves.
+     *
+     * The link is static so nested saves inside one request share it.
+     * `PhalconKit\Di\RequestState::reset()` calls this before every request so
+     * a long-running worker never links a new audit row to a parent audit from
+     * an earlier request.
+     */
+    public static function resetParentId(): void
+    {
+        self::$parentId = null;
+    }
+
     /* ============================================================
      * Audit (parent row) toggles
      * ============================================================

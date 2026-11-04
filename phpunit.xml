@@ -28,6 +28,7 @@
       <exclude>tests/Fixtures</exclude>
       <exclude>tests/Unit/Bootstrap/Fixtures</exclude>
       <exclude>tests/Unit/Db/Fixtures</exclude>
+      <exclude>tests/Unit/Di/Fixtures</exclude>
       <exclude>tests/Unit/Events/Fixtures</exclude>
       <exclude>tests/Unit/Identity/Fixtures</exclude>
       <exclude>tests/Unit/Modules/Cli/Tasks/Fixtures</exclude>

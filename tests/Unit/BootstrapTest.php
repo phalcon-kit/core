@@ -389,6 +389,35 @@ class BootstrapTest extends AbstractUnit
         $bootstrap->registerModules();
     }
 
+    public function testRunResetsRequestScopedServicesBeforeEachReusedRequest(): void
+    {
+        $server = $_SERVER;
+        try {
+            $_SERVER['REQUEST_URI'] = '/unit';
+            $di = new Di();
+            $di->set('application', new BootstrapApplicationDouble($di));
+            $identity = new \PhalconKit\Tests\Unit\Di\Fixtures\RequestScopedProbe();
+            $di->setShared('identity', $identity);
+            $bootstrap = new LightweightBootstrap(Bootstrap::MODE_MVC, $di);
+
+            $roles = new \ReflectionProperty(\PhalconKit\Mvc\Model\Behavior\Security::class, 'roles');
+            \PhalconKit\Mvc\Model\Behavior\Security::setRoles(['cli']);
+            $bootstrap->run();
+
+            $this->assertSame(0, $identity->resets, 'The first run keeps state set by the entrypoint.');
+            $this->assertSame(['cli'], $roles->getValue());
+
+            $bootstrap->run();
+            $bootstrap->run();
+
+            $this->assertSame(2, $identity->resets, 'Every reused run resets request state.');
+            $this->assertNull($roles->getValue());
+        } finally {
+            $_SERVER = $server;
+            \PhalconKit\Mvc\Model\Behavior\Security::setRoles(null);
+        }
+    }
+
     public function testRunHandlesMvcCliAndWebSocketModes(): void
     {
         $server = $_SERVER;
