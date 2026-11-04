@@ -15,6 +15,13 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.1.1 - Unreleased
+
+### Documentation
+
+- Update the App 4 migration guide for Core `^4.1`, the `bin/phalcon-kit`
+  exit-status line, and a failing-command check.
+
 ## 4.1.0 - 2026-11-03
 
 ### Security

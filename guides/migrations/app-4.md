@@ -25,7 +25,7 @@ resource conversion.
 ### 1. Align Runtime And Dependencies
 
 Use PHP 8.5+, native Phalcon satisfying `^5.23.0`, matching development stubs,
-and Core `^4.0.4`. Update and inspect the application lockfile. Verify all runtime
+and Core `^4.1`. Update and inspect the application lockfile. Verify all runtime
 processes, including CLI, PHP-FPM, and long-running workers.
 
 Use the current App Composer configuration as a reference for migration-tool
@@ -42,6 +42,7 @@ runtime packages and migration tooling may be installed in separate artifacts.
 | Migration generation | No automatic overwrite flag; database references are connection-local |
 | Script locations | Root-relative helpers under `scripts/`, Unix and PowerShell variants |
 | Core CLI tasks | Application namespace bridges and explicit CLI permissions |
+| CLI entrypoint | `bin/phalcon-kit` ends with `exit($bootstrap->getExitCode());` so a failed command exits with status 1 |
 
 Follow [Database Migrations](../database-migrations.md),
 [Scaffolding](../database-scaffolding.md), and [CLI Tasks](../cli-tasks.md) for
@@ -67,7 +68,8 @@ with an explicit private password and application role grants.
 ## Verify
 
 Run `composer qa`, HTTP resource and authentication checks, CLI commands from
-another working directory, and applicable WebSocket tests. With disposable data,
+another working directory (an unknown task must exit with status 1), and
+applicable WebSocket tests. With disposable data,
 verify model save/reload, nested writes, permission denials, migration listing,
 and application-owned maintenance instructions. Exercise browser/mobile cookie,
 CORS, and refresh behavior in the deployment configuration.
