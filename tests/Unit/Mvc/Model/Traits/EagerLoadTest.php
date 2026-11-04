@@ -230,6 +230,100 @@ class EagerLoadTest extends AbstractUnit
         );
     }
 
+    /**
+     * The parser as it was before every array argument was read; kept here to
+     * prove the single-list path every caller uses did not change.
+     *
+     * @param array<array-key, mixed> $arguments
+     * @return array<string, callable|null>
+     */
+    private static function legacyParseArguments(array $arguments): array
+    {
+        $relations = [];
+        if (count($arguments) === 1 && isset($arguments[0]) && is_array($arguments[0])) {
+            foreach ($arguments[0] as $relationAlias => $queryConstraints) {
+                if (is_string($relationAlias)) {
+                    $relations[$relationAlias] = is_callable($queryConstraints) ? $queryConstraints : null;
+                }
+                elseif (is_string($queryConstraints)) {
+                    $relations[$queryConstraints] = null;
+                }
+            }
+        }
+        else {
+            foreach ($arguments as $relationAlias) {
+                if (is_string($relationAlias)) {
+                    $relations[$relationAlias] = null;
+                }
+            }
+        }
+        return $relations;
+    }
+
+    /**
+     * @return iterable<string, array{array<array-key, mixed>}>
+     */
+    public static function singleRelationLists(): iterable
+    {
+        $constraint = static function (): void {
+        };
+        yield 'empty list' => [[]];
+        yield 'one path' => [['Robots']];
+        yield 'nested paths' => [['Robots', 'Robots.Parts', 'Manufacturer']];
+        yield 'path with constraint' => [['Robots' => $constraint]];
+        yield 'mixed list and map' => [['Robots', 'Parts' => $constraint, 'Owner']];
+        yield 'non-callable map value' => [['Robots' => 'not-a-callable', 'Parts' => null, 'Owner' => 42]];
+        yield 'ignored non-string items' => [[1, null, true, ['Nested'], 'Robots']];
+        yield 'duplicate path keeps the last' => [['Robots' => $constraint, 'Robots']];
+        yield 'controller-style with list' => [['RoleList', 'GroupList', 'TypeList']];
+    }
+
+    /**
+     * @param array<array-key, mixed> $relations
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('singleRelationLists')]
+    public function testSingleRelationListParsesExactlyAsBefore(array $relations): void
+    {
+        $loader = new Loader(new RelatedDeleteModelDouble(), $relations);
+        $property = new \ReflectionProperty(Loader::class, 'eagerLoads');
+
+        $this->assertSame(self::legacyParseArguments([$relations]), $property->getValue($loader));
+    }
+
+    public function testRelationPathsMustBePassedAsArrays(): void
+    {
+        // The removed string branch was unreachable: the constructor only accepts arrays.
+        $this->expectException(\TypeError::class);
+        new Loader(new RelatedDeleteModelDouble(), 'Robots');
+    }
+
+    public function testSeveralListsNowLoadWhatTheOldParserSilentlyDropped(): void
+    {
+        $model = new RelatedDeleteModelDouble();
+        $property = new \ReflectionProperty(Loader::class, 'eagerLoads');
+
+        $this->assertSame([], self::legacyParseArguments([['Robots'], ['Parts']]));
+        $this->assertSame(
+            ['Robots' => null, 'Parts' => null],
+            $property->getValue(new Loader($model, ['Robots'], ['Parts']))
+        );
+
+        // A later list overrides an earlier constraint for the same path.
+        $first = static function (): void {
+        };
+        $second = static function (): void {
+        };
+        $this->assertSame(
+            ['Robots' => $second],
+            $property->getValue(new Loader($model, ['Robots' => $first], ['Robots' => $second]))
+        );
+        $this->assertSame(['Robots' => null], $property->getValue(new Loader($model, ['Robots' => $first], ['Robots'])));
+
+        // No relations at all keeps the loader empty.
+        $this->assertSame([], $property->getValue(new Loader($model)));
+        $this->assertSame([], $property->getValue(new Loader($model, [], [])));
+    }
+
     public function testFindWithTreatsOnlyTheLastOfSeveralArgumentsAsFinderParameters(): void
     {
         $arguments = [['Robots'], ['Parts'], ['limit' => 10]];

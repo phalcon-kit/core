@@ -92,6 +92,119 @@ final class RelationshipPersistenceDatabaseTest extends DatabaseTestCase
         return $project;
     }
 
+    /**
+     * Seed two tasks, then remove every related row behind the ORM's back so
+     * only relations already eager-loaded can still return data.
+     *
+     * @return callable(): void Deletes the related rows.
+     */
+    private function seedRelatedRowsForEagerLoading(): callable
+    {
+        $this->connection->execute("INSERT INTO graph_tasks (projectId, label) VALUES (1, 'Water plants'), (1, 'Prune')");
+
+        return function (): void {
+            $this->connection->execute('DELETE FROM graph_tasks');
+            $this->connection->execute('DELETE FROM graph_project_tags');
+        };
+    }
+
+    /**
+     * Normalize an eager-loaded relation (array or resultset) to a list.
+     *
+     * @return list<mixed>
+     */
+    private static function relatedList(mixed $related): array
+    {
+        if (is_array($related)) {
+            return array_values($related);
+        }
+        return is_iterable($related) ? array_values(iterator_to_array($related)) : [];
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function labels(iterable $tasks): array
+    {
+        $labels = [];
+        foreach ($tasks as $task) {
+            $labels[] = (string)$task->label;
+        }
+        sort($labels);
+        return $labels;
+    }
+
+    /**
+     * @return iterable<string, array{list<array<array-key, mixed>>}>
+     */
+    public static function findWithArgumentShapes(): iterable
+    {
+        $parameters = ['conditions' => 'id = :id:', 'bind' => ['id' => 1]];
+        // The shape the REST controller and Identity use: one list, then parameters.
+        yield 'one list then parameters' => [[['tasks', 'tags'], $parameters]];
+        // Several lists before the parameters; these used to load nothing.
+        yield 'two lists then parameters' => [[['tasks'], ['tags'], $parameters]];
+        // Positional condition, as Identity passes it.
+        yield 'positional condition' => [[['tasks', 'tags'], ['id = :id:', 'bind' => ['id' => 1]]]];
+    }
+
+    /**
+     * @param list<array<array-key, mixed>> $arguments
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('findWithArgumentShapes')]
+    public function testFindWithEagerLoadsEveryRequestedRelation(array $arguments): void
+    {
+        $deleteRelated = $this->seedRelatedRowsForEagerLoading();
+
+        $projects = RelationshipGraphProject::findWith(...$arguments);
+        $first = RelationshipGraphProject::findFirstWith(...$arguments);
+        $deleteRelated();
+
+        self::assertCount(1, $projects);
+        foreach ([$projects[0], $first] as $project) {
+            self::assertInstanceOf(RelationshipGraphProject::class, $project);
+            self::assertTrue($project->hasLoadedRelatedAlias('tasks'));
+            self::assertTrue($project->hasLoadedRelatedAlias('tags'));
+            self::assertSame(['Prune', 'Water plants'], self::labels($project->tasks));
+            self::assertSame(['outdoor'], array_map(static fn ($tag): string => (string)$tag->name, self::relatedList($project->tags)));
+        }
+    }
+
+    public function testFindWithWithoutRelationsOrWithOneListBehavesAsBefore(): void
+    {
+        $deleteRelated = $this->seedRelatedRowsForEagerLoading();
+
+        // One argument is the relation list; there are no find parameters.
+        $all = RelationshipGraphProject::findWith(['tasks']);
+        // An empty relation list with parameters finds without eager loading.
+        $plain = RelationshipGraphProject::findWith([], ['conditions' => 'id = 1']);
+        $deleteRelated();
+
+        self::assertCount(1, $all);
+        self::assertTrue($all[0]->hasLoadedRelatedAlias('tasks'));
+        self::assertFalse($all[0]->hasLoadedRelatedAlias('tags'));
+        self::assertSame(['Prune', 'Water plants'], self::labels($all[0]->tasks));
+
+        self::assertCount(1, $plain);
+        self::assertFalse($plain[0]->hasLoadedRelatedAlias('tasks'));
+        self::assertSame([], self::labels($plain[0]->tasks), 'A relation that was not eager-loaded is read lazily.');
+
+        self::assertSame([], RelationshipGraphProject::findWith(['tasks'], ['conditions' => 'id = 99']));
+        self::assertNull(RelationshipGraphProject::findFirstWith(['tasks'], ['conditions' => 'id = 99']));
+    }
+
+    public function testLoadEagerLoadsEveryListOntoAFoundRecord(): void
+    {
+        $deleteRelated = $this->seedRelatedRowsForEagerLoading();
+
+        $project = $this->project();
+        self::assertSame($project, $project->load(['tasks'], ['tags']));
+        $deleteRelated();
+
+        self::assertSame(['Prune', 'Water plants'], self::labels($project->tasks));
+        self::assertCount(1, self::relatedList($project->tags));
+    }
+
     public function testManyToManyIdsAddLinksAndKeepUnsubmittedOnesByDefault(): void
     {
         $project = $this->project();
