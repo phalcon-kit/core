@@ -25,8 +25,10 @@ resource conversion.
 ### 1. Align Runtime And Dependencies
 
 Use PHP 8.5+, native Phalcon satisfying `^5.23.0`, matching development stubs,
-and Core `^4.1`. Update and inspect the application lockfile. Verify all runtime
-processes, including CLI, PHP-FPM, and long-running workers.
+and Core `^4.2`. Update and inspect the application lockfile. Verify all runtime
+processes, including CLI, PHP-FPM, and long-running workers. Core 4.2 returns
+403 for permissions denied to a signed-in user; see the
+[Core 4.2 migration](core-4-2.md).
 
 Use the current App Composer configuration as a reference for migration-tool
 development dependencies, reviewed patches, and patch lockfile. Keep the tools

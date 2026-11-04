@@ -15,7 +15,7 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 4.2.0 - Unreleased
+## 4.2.0 - 2026-11-04
 
 ### Changed
 
@@ -53,6 +53,7 @@ release notes.
   `--force`) and which are app-owned (created once).
 - Add a Core 4.2 migration guide covering the 403 status, scaffold
   regeneration, and `ts-scaffold` options.
+- Point the App 4 migration guide at Core `^4.2`.
 
 ## 4.1.4 - 2026-11-04
 

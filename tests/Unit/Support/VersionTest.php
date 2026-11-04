@@ -40,7 +40,7 @@ class VersionTest extends AbstractUnit
         $this->assertEquals($this->bootstrap->config->path('phalcon.version'), $phalconVersion->get());
         
         // Test version->get()
-        $this->assertSame('4.1.4', $version->get());
+        $this->assertSame('4.2.0', $version->get());
         $this->assertNotEmpty($version->get());
         $this->assertIsString($version->get());
         
