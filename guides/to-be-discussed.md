@@ -317,6 +317,29 @@ Validation:
 - A worker test proving each reset static is cleared and each configuration
   static survives.
 
+## Deprecated REST Read Aliases
+
+Status: Kept; remove only in a future major release.
+
+Why:
+
+- `get`, `get-with`, `get-all`, and `get-all-with` (`getAction()`,
+  `getWithAction()`, `getAllAction()`, `getAllWithAction()`) have been
+  deprecated aliases of the `find*` actions since PhalconKit 1.0. Wrapper and
+  SDK clients may still call them, and permission rules may still name them.
+
+Scope:
+
+- Keep the aliases until wrapper/SDK consumers have an explicit migration and
+  tests proving the `find*` responses match the alias responses.
+- Remove them in a major release with a migration-guide entry for client calls
+  and permission rules.
+
+Validation:
+
+- Response-contract tests comparing each alias with its `find*` action.
+- A search of the SDK for alias calls before removal.
+
 ## Denied Requests Choose 401 Or 403 By Role Count
 
 Status: Design; decide the status contract before changing the listener.
