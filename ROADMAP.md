@@ -5,14 +5,9 @@ Shipped outcomes belong in [CHANGELOG.md](CHANGELOG.md); application usage
 belongs in the [user guide](guides/README.md).
 Published releases are preserved by signed tags under the [release policy](guides/release.md).
 
-## Scaffold Output And TypeScript Contracts
-
-Status: Next batch.
-
-- Verify scaffold output ownership, regeneration safety, and generated-interface
-  expectations against application-owned models.
-- Review TypeScript generation examples and consumer expectations without adding
-  a new abstraction or hand-editing generated output.
+No release block is scheduled. The relationship, scaffold, and TypeScript
+contract batches shipped in Core 4.1.4 and 4.2.0; see the
+[changelog](CHANGELOG.md).
 
 Open design questions and possible removals remain in
 [To Be Discussed](guides/to-be-discussed.md) until behavior, compatibility risk,
