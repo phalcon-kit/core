@@ -58,6 +58,14 @@ Wildcard origins emit `*` without credential grants. Explicit origins add
 `Vary: Origin`. Test allowed and denied origins and preflight OPTIONS through the
 actual reverse proxy, including custom response headers supplied by the app.
 
+Browsers send preflight `OPTIONS` requests without credentials, so Core answers
+them with 204 and the CORS headers before any action runs, on public,
+protected, and unknown routes alike; permissions are checked on the real
+request that follows. That request's 401, 403, or 404 response also carries
+`Access-Control-Allow-Origin`, so the frontend can read the status. An origin
+that is not allowed gets the 204 without `Access-Control-Allow-Origin`, and the
+browser blocks the real request.
+
 ## API Boundaries
 
 Use closed expose lists (`[false, ...]`), explicit save/filter/order lists, limited
