@@ -27,6 +27,11 @@ class TsScaffoldTask extends Task
 Usage:
   phalcon-kit cli ts-scaffold <action> [<params>...] [--force] [--table=<table>] [--directory=<directory>]
 
+Actions:
+  run                           Generate TypeScript models, interfaces, and services
+  generate-exports              Generate the index export files
+  get-definitions <name>        Return the TypeScript definitions for one model
+
 Options:
   --force                       Overwrite existing files
   --directory=<directory>       Directory path to generate new files

@@ -25,8 +25,7 @@ class Task extends \PhalconKit\Cli\Task
 Usage:
   phalcon-kit cli <task> <action> [<params> ...]
 
-Options:
-  task: build,cache,cron,errors,help,scaffold
+Run `phalcon-kit cli help` to list the available tasks.
 
 
 DOC;

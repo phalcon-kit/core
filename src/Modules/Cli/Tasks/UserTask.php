@@ -24,9 +24,10 @@ class UserTask extends Task
 Usage:
   phalcon-kit cli user <action> [--password-stdin] [<params> ...]
 
+Actions:
+  create, password, role
+
 Options:
-  task: user
-  action: create, password, role
   --password-stdin  Read the create/password secret from stdin instead of an argument.
 
 

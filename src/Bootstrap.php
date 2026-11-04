@@ -146,16 +146,19 @@ Options:
   -q --quiet              suppress output
   -V --verbose            increase verbosity
   -d --debug              enable debug mode
-  --format=<format>       change output returned value format (json, xml, serialized, raw, dump)
+  --format=<format>       change output returned value format (json, serialize, dump, raw)
 
 Tasks:
-  cache                  Wipe the cache
+  cache                  Clear, check, or delete cache entries
   cron                   Run the scheduled task
-  database               Create, optimize, truncate or drop tables within the database
+  database               Optimize, truncate, drop, or seed configured tables
   data-life-cycle        Delete old data based on the data life cycle definitions
-  scaffold               Generating files and folders structure
-  test                   Return the memory usage to see if the CLI works
-  user                   Manage the users and passwords
+  help                   Print the usage of a task
+  scaffold               Generate models, interfaces, enums, and controllers from the schema
+  ts-scaffold            Generate TypeScript definitions from the models
+  user                   Create users and manage passwords and roles
+
+Run `phalcon-kit cli help <task>` for the actions and options of a task.
 
 DOC;
     

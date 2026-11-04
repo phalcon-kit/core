@@ -21,9 +21,8 @@ class CronTask extends Task
 Usage:
   phalcon-kit cli cron <action> [<params> ...]
 
-Options:
-  task: cron
-  action: main,hourly,daily,weekly,monthly
+Actions:
+  main, hourly, daily, weekly, monthly  Empty by default; override them in your application task
 
 
 DOC;

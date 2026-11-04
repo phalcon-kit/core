@@ -31,6 +31,11 @@ release notes.
 - Default `module.dir.cache` to `Private/cache/` (read from `MODULE_DIR_CACHE`)
   and `module.dir.logs` to `Private/logs/`; both defaulted to
   `Private/migrations/`. Core does not read these paths.
+- Correct the CLI usage text: `--format` accepts `json`, `serialize`, `dump`,
+  and `raw` (not `xml` or `serialized`); the task list names `help` and
+  `ts-scaffold` instead of a nonexistent `test` task; and the `cron`,
+  `data-life-cycle`, `ts-scaffold`, and `user` usages list their real actions
+  instead of placeholder `task:`/`action:` lines.
 
 ## 4.1.2 - 2026-11-04
 

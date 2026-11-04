@@ -25,9 +25,9 @@ class DataLifeCycleTask extends Task
 Usage:
   phalcon-kit cli data-life-cycle <action> [<params> ...]
 
-Options:
-  task: cache
-  action: clear
+Actions:
+  main [<tables> ...]    Apply the configured retention policies; table names limit the run
+  models [<tables> ...]  Same as main, returning the per-table results without the `models` key
 
 
 DOC;
