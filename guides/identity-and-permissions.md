@@ -137,7 +137,8 @@ become another connection's authority.
 | Symptom | Check |
 | --- | --- |
 | 404 for an implemented action | Concrete component/action registered in permissions; correct module namespace |
-| 401 with a token | Header name, signing configuration, expiration, cookie persistence for stateful mode |
+| 401 with a token | Header name, signing configuration, expiration, cookie persistence for stateful mode; a denied action returns 401 only when no user was resolved |
+| 403 for a signed-in user | The user's roles do not grant the controller action |
 | 403 on one selector | Filter/order/with/count policy and actual selector spelling |
 | Empty list despite table rows | Model `find` grant, owner/tenant condition, soft-delete condition, bound input |
 | Read works but save fails | Model create/update grant, field policy, validation messages, related model grants |

@@ -13,6 +13,7 @@ For SQL schema changes within your application, use [Database Migrations](../dat
 | Uses Core before 4.0 | [Core 4 migration](core-4.md) | Removed runtime dependencies handled; application data/history preserved |
 | Uses the App 1.x `app/` layout | [App layout migration](app-2.md) | `src/`, `public/`, `bin/`, and application-owned modules |
 | Uses App 2.x or an older Core dependency in its copied skeleton | [App 4 migration](app-4.md) | Current runtime, Core dependency, and application helpers |
+| Uses Core 4.0 or 4.1 | [Core 4.2 migration](core-4-2.md) | 403 for signed-in denials, scaffold regeneration that keeps model interfaces |
 
 Several guides may apply. Inventory the application first, update its package
 and bootstrap wiring, preserve its model/business code, then migrate resources

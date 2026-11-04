@@ -50,9 +50,10 @@ class Security extends Injectable
     /**
      * Determine whether the current identity may execute the active handler.
      *
-     * Unauthorized users with more than one ACL role are forwarded to
-     * `router.unauthorized`; users with only one role are forwarded to
-     * `router.forbidden`. Missing ACL components forward to `router.notFound`.
+     * A denied request from a signed-in identity is forwarded to
+     * `router.forbidden` (403 by default); a denied request without one is
+     * forwarded to `router.unauthorized` (401), telling the client to
+     * authenticate. Missing ACL components forward to `router.notFound`.
      *
      * @param Event $event Dispatch event emitted by Phalcon.
      * @param AbstractDispatcher|null $dispatcher Dispatcher to inspect. When
@@ -125,20 +126,15 @@ class Security extends Injectable
         }
         
         if (!$allowed) {
-            if (count($roles) > 1) {
-                $unauthorizedRoute = $this->config->pathToArray('router.unauthorized') ?? [];
-                if ($this->isCurrentRoute($unauthorizedRoute, $namespace, $module, $handlerRouteKey, $handler, $action)) {
-                    return true;
-                }
-                $dispatcher->forward($unauthorizedRoute);
+            // A signed-in identity lacks the permission (403); anyone else must
+            // authenticate first (401).
+            $deniedRoute = $this->isAuthenticated()
+                ? $this->config->pathToArray('router.forbidden') ?? []
+                : $this->config->pathToArray('router.unauthorized') ?? [];
+            if ($this->isCurrentRoute($deniedRoute, $namespace, $module, $handlerRouteKey, $handler, $action)) {
+                return true;
             }
-            else {
-                $forbiddenRoute = $this->config->pathToArray('router.forbidden') ?? [];
-                if ($this->isCurrentRoute($forbiddenRoute, $namespace, $module, $handlerRouteKey, $handler, $action)) {
-                    return true;
-                }
-                $dispatcher->forward($forbiddenRoute);
-            }
+            $dispatcher->forward($deniedRoute);
             return false;
         }
         
@@ -208,5 +204,20 @@ class Security extends Injectable
     private function usesControllerAttributes(): bool
     {
         return (bool)($this->config->path('acl.attributes', true) ?? true);
+    }
+    
+    /**
+     * Whether the current identity has a signed-in user.
+     *
+     * Identity services without `isLoggedIn()` are treated as anonymous, so a
+     * denial is reported as 401 Unauthorized.
+     */
+    private function isAuthenticated(): bool
+    {
+        // Any identity service may be configured; only its isLoggedIn() is required here.
+        /** @var mixed $identity */
+        $identity = $this->getDI()->get('identity');
+
+        return is_object($identity) && method_exists($identity, 'isLoggedIn') && (bool) $identity->isLoggedIn();
     }
 }

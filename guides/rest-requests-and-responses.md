@@ -138,16 +138,18 @@ of assuming every entry is an object.
 | 207 | Batch contains both saved and failed rows; `response` is false |
 | 304 | Conditional cached response, when enabled and validator matches; no body |
 | 400 | Missing update identity, invalid input, excessive limit, invalid distinct field |
-| 401 | Rejected authentication token or failed login |
-| 403 | Disallowed filter/order/relationship/count option, or denied permission |
+| 401 | Rejected authentication token, failed login, or a permission denied with no signed-in user |
+| 403 | Disallowed filter/order/relationship/count option, or a permission denied to a signed-in user |
 | 404 | Missing/hidden row, unknown route/component, or unavailable update target |
 | 405 | Your application's method guard rejects the HTTP verb |
 | 422 | Validation failure or a batch in which every row failed |
 | 500 | Application/configuration/database failure or unsupported model behavior |
 
-Permission forwarding can produce 401, 403, or 404 depending on component
-registration, roles, and configured error routes. Inspect the status and message;
-do not promise that all permission failures share one status.
+A denied permission returns 401 when no user is signed in (authenticate, then
+retry) and 403 when the signed-in user lacks it (keep the session; the user is
+not allowed). An action no permission names returns 404. These are the default
+`router.unauthorized`, `router.forbidden`, and `router.notFound` routes; an
+application that overrides them may return other statuses.
 
 ## JavaScript Client
 

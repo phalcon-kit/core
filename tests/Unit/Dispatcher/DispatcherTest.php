@@ -394,6 +394,28 @@ class DispatcherTest extends AbstractUnit
         $this->assertSame('forbidden', $dispatcher->getActionName());
     }
 
+    public function testDeniedSignedInUserIsForbiddenRegardlessOfRoleCount(): void
+    {
+        foreach ([['everyone', 'user'], ['user']] as $roles) {
+            [$security, $event, $dispatcher] = $this->createDeniedMvcSecurityFixture('index', true, $roles);
+            $this->assertFalse($security->checkAcl($event, $dispatcher));
+            $this->assertSame('forbidden', $dispatcher->getActionName(), implode(',', $roles));
+        }
+    }
+
+    public function testDeniedAnonymousRequestIsUnauthorizedRegardlessOfRoleCount(): void
+    {
+        foreach ([['everyone', 'guest'], ['guest']] as $roles) {
+            [$security, $event, $dispatcher] = $this->createDeniedMvcSecurityFixture('index', false, $roles);
+            $this->assertFalse($security->checkAcl($event, $dispatcher));
+            $this->assertSame('unauthorized', $dispatcher->getActionName(), implode(',', $roles));
+        }
+
+        // Already on the unauthorized route: let it run instead of forwarding again.
+        [$security, $event, $dispatcher] = $this->createDeniedMvcSecurityFixture('unauthorized', false, ['everyone', 'guest']);
+        $this->assertTrue($security->checkAcl($event, $dispatcher));
+    }
+
     public function testMvcSecurityAllowsDashCasePermissionForCamelCaseDispatcherAction(): void
     {
         [$security, $event, $dispatcher] = $this->createAllowedMvcSecurityFixture([
@@ -493,7 +515,7 @@ class DispatcherTest extends AbstractUnit
      *     2: \PhalconKit\Mvc\Dispatcher
      * }
      */
-    private function createDeniedMvcSecurityFixture(string $action): array
+    private function createDeniedMvcSecurityFixture(string $action, bool $loggedIn = true, array $roles = ['everyone', 'user']): array
     {
         $dispatcher = new \PhalconKit\Mvc\Dispatcher();
         $dispatcher->setNamespaceName('App\\Controllers');
@@ -512,6 +534,9 @@ class DispatcherTest extends AbstractUnit
                 'forbidden' => [
                     'action' => 'forbidden',
                 ],
+                'unauthorized' => [
+                    'action' => 'unauthorized',
+                ],
             ],
         ]));
         $di->set('acl', new class {
@@ -520,16 +545,27 @@ class DispatcherTest extends AbstractUnit
                 ?array $permissions = null
             ): \Phalcon\Acl\Adapter\Memory {
                 $acl = new \Phalcon\Acl\Adapter\Memory();
-                $acl->addRole(new \Phalcon\Acl\Role('guest'));
-                $acl->addComponent(new \Phalcon\Acl\Component('App\\Controllers\\UnitController'), ['index', 'forbidden']);
+                foreach (['guest', 'everyone', 'user'] as $role) {
+                    $acl->addRole(new \Phalcon\Acl\Role($role));
+                }
+                $acl->addComponent(new \Phalcon\Acl\Component('App\\Controllers\\UnitController'), ['index', 'forbidden', 'unauthorized']);
 
                 return $acl;
             }
         });
-        $di->set('identity', new class {
+        $di->set('identity', new class ($loggedIn, $roles) {
+            public function __construct(private readonly bool $loggedIn, private readonly array $roles)
+            {
+            }
+
             public function getAclRoles(): array
             {
-                return ['guest'];
+                return $this->roles;
+            }
+
+            public function isLoggedIn(): bool
+            {
+                return $this->loggedIn;
             }
         });
 

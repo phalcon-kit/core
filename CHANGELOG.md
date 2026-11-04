@@ -17,6 +17,14 @@ release notes.
 
 ## 4.2.0 - Unreleased
 
+### Changed
+
+- Return 403 (`router.forbidden`) for a request the permissions deny when a
+  user is signed in, and 401 (`router.unauthorized`) only when no user is
+  signed in. The choice depended on the number of ACL roles, and every HTTP
+  request has at least two, so every denial returned 401 and clients prompted
+  signed-in users to authenticate again. See the Core 4.2 migration guide.
+
 ### Added
 
 - Add `scaffold run --no-model-interfaces` to skip only the concrete model
@@ -42,6 +50,8 @@ release notes.
 
 - Document which scaffold outputs are generated (always rewritten by
   `--force`) and which are app-owned (created once).
+- Add a Core 4.2 migration guide covering the 403 status, scaffold
+  regeneration, and `ts-scaffold` options.
 
 ## 4.1.4 - 2026-11-04
 
