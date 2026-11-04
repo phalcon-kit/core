@@ -207,6 +207,41 @@ class EagerLoadTest extends AbstractUnit
         $this->assertSame([], Loader::fromArray([]));
     }
 
+    public function testLoaderReadsRelationsFromEveryArrayArgument(): void
+    {
+        $model = new RelatedDeleteModelDouble();
+        $constraint = static function (): void {
+        };
+        $eagerLoads = static function (Loader $loader): array {
+            $property = new \ReflectionProperty(Loader::class, 'eagerLoads');
+            return $property->getValue($loader);
+        };
+
+        $this->assertSame(
+            ['Robots' => null, 'Robots.Parts' => null],
+            $eagerLoads(new Loader($model, ['Robots', 'Robots.Parts']))
+        );
+        $this->assertSame(['Robots' => $constraint], $eagerLoads(new Loader($model, ['Robots' => $constraint])));
+
+        // Each array argument adds its relations; none is silently ignored.
+        $this->assertSame(
+            ['Robots' => null, 'Parts' => $constraint],
+            $eagerLoads(new Loader($model, ['Robots'], ['Parts' => $constraint]))
+        );
+    }
+
+    public function testFindWithTreatsOnlyTheLastOfSeveralArgumentsAsFinderParameters(): void
+    {
+        $arguments = [['Robots'], ['Parts'], ['limit' => 10]];
+        $this->assertSame(['limit' => 10], EagerLoadInvalidForwardDouble::getParametersFromArguments($arguments));
+        $this->assertSame([['Robots'], ['Parts']], $arguments);
+
+        // With one argument it is the relation list; there are no parameters.
+        $arguments = [['Robots']];
+        $this->assertNull(EagerLoadInvalidForwardDouble::getParametersFromArguments($arguments));
+        $this->assertSame([['Robots']], $arguments);
+    }
+
     public function testLoaderBuildsNestedTreeAndAppliesOnlyTerminalConstraints(): void
     {
         $this->newEagerLoadModelsManager();

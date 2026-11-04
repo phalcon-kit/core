@@ -338,11 +338,16 @@ final class Loader
     }
     
     /**
-     * Parses the arguments that will be resolved to Relation instances
+     * Parse the relation paths to eager-load from the loader arguments.
      *
-     * @param array $arguments
-     * @return array
-     * @throws InvalidArgumentException
+     * Each argument is a relation path string (`'Robots.Parts'`) or an array
+     * of them. An array may list paths as values, or map a path to a callable
+     * that constrains that relation's query builder. Every argument adds its
+     * relations; a later entry for the same path replaces the earlier one.
+     *
+     * @param array<array-key, mixed> $arguments Relation paths or arrays of them.
+     * @return array<string, callable|null> Relation path => constraint.
+     * @throws InvalidArgumentException When no argument is given.
      */
     private static function parseArguments(array $arguments): array
     {
@@ -351,20 +356,20 @@ final class Loader
         }
         
         $relations = [];
-        if (count($arguments) === 1 && isset($arguments[0]) && is_array($arguments[0])) {
-            foreach ($arguments[0] as $relationAlias => $queryConstraints) {
+        foreach ($arguments as $argument) {
+            if (is_string($argument)) {
+                $relations[$argument] = null;
+                continue;
+            }
+            if (!is_array($argument)) {
+                continue;
+            }
+            foreach ($argument as $relationAlias => $queryConstraints) {
                 if (is_string($relationAlias)) {
                     $relations[$relationAlias] = is_callable($queryConstraints) ? $queryConstraints : null;
                 }
                 elseif (is_string($queryConstraints)) {
                     $relations[$queryConstraints] = null;
-                }
-            }
-        }
-        else {
-            foreach ($arguments as $relationAlias) {
-                if (is_string($relationAlias)) {
-                    $relations[$relationAlias] = null;
                 }
             }
         }

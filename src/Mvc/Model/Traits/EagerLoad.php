@@ -57,6 +57,16 @@ trait EagerLoad
     abstract public static function findFirst(mixed $parameters = null): mixed;
     
     /**
+     * Find records and eager-load their relations in a few queries.
+     *
+     * The first arguments list the relations to load: relation paths such as
+     * `'Robots'` or `'Robots.Parts'`, or a path mapped to a callable that
+     * constrains that relation's query builder. With two or more arguments,
+     * the last one is always the native `find()` parameters, so pass
+     * `findWith(['Robots', 'Parts'])` or `findWith(['Robots'], ['Parts'], $parameters)`,
+     * never `findWith(['Robots'], ['Parts'])` (where `['Parts']` would be the
+     * parameters). Custom `columns` gain `*` so relation keys stay available.
+     *
      * Example:
      *
      * ```php
@@ -74,7 +84,9 @@ trait EagerLoad
      * }
      * ```
      *
-     * @param array ...$arguments
+     * @param array ...$arguments Relation lists, then optional find parameters.
+     * @return array The found records with the relations loaded;
+     *     an empty array when nothing matches.
      */
     public static function findWith(array ...$arguments): array
     {
@@ -89,10 +101,13 @@ trait EagerLoad
     }
     
     /**
-     * Same as EagerLoad::findWith() for a single record
+     * Find the first record and eager-load its relations.
      *
-     * @param array ...$arguments
-     * @return ?ModelInterface
+     * Takes the same arguments as `findWith()`; the last of two or more is the
+     * native `findFirst()` parameters.
+     *
+     * @param array ...$arguments Relation lists, then optional find parameters.
+     * @return ?ModelInterface The record with the relations loaded, or null.
      */
     public static function findFirstWith(array ...$arguments): ?ModelInterface
     {
@@ -210,6 +225,12 @@ trait EagerLoad
     }
     
     /**
+     * Eager-load relations onto this already-loaded record.
+     *
+     * Every argument is a relation list (paths, or paths mapped to constraint
+     * callables); unlike `findWith()`, no argument is treated as find
+     * parameters.
+     *
      * Example:
      *
      * ```php
@@ -225,8 +246,9 @@ trait EagerLoad
      * }
      * ```
      *
-     * @param array ...$arguments
-     * @return ?ModelInterface
+     * @param array ...$arguments Relation lists.
+     * @return ?ModelInterface This record with the relations loaded.
+     * @throws LogicException When the trait host is not a Phalcon model.
      */
     public function load(array ...$arguments): ?ModelInterface
     {

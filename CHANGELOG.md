@@ -17,6 +17,13 @@ release notes.
 
 ## 4.1.4 - Unreleased
 
+### Fixed
+
+- Eager-load the relations from every array argument of `findWith()`,
+  `findFirstWith()`, `load()`, and the `Loader` helpers. With more than one
+  relation array (for example `findWith(['Robots'], ['Parts'], $parameters)`)
+  none of them was loaded.
+
 ### Documentation
 
 - Document many-to-many writes: submitted IDs link existing records without
@@ -24,6 +31,8 @@ release notes.
   key to link without editing), and a replacement list removes links but never
   the targets. Document that a nested save commits or rolls back the parent
   and its related records together. Database tests cover each case.
+- Document the `findWith()` argument rule: the last of two or more arguments
+  is the find parameters.
 
 ## 4.1.3 - 2026-11-04
 
