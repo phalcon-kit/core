@@ -24,14 +24,6 @@ class ErrorTask extends Task
     use ErrorActions;
     
     /**
-     * Set the status code for the response. Immediately throw a CliException.
-     *
-     * @param int $code The status code to set. Defaults to 500 if not provided.
-     * @param string|null $message The optional message to associate with the status code.
-     *
-     * @throws CliException If an error occurs while setting the status code.
-     */
-    /**
      * Never parse the error task's usage.
      *
      * The task is reached by dispatcher forwards (not found, forbidden,
@@ -45,6 +37,17 @@ class ErrorTask extends Task
         return false;
     }
 
+    /**
+     * Set the status code for the response. Immediately throw a CliException.
+     *
+     * The console prints only the exception message (`Error: <code> - <message>`)
+     * to stderr and exits with status 1.
+     *
+     * @param int $code The status code to set. Defaults to 500 if not provided.
+     * @param string|null $message The optional message to associate with the status code.
+     *
+     * @throws CliException Always, carrying the status code and message.
+     */
     #[\Override]
     public function setStatusCode(int $code = 500, ?string $message = null): ResponseInterface
     {

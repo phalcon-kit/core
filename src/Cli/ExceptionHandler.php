@@ -13,11 +13,16 @@ declare(strict_types=1);
 
 namespace PhalconKit\Cli;
 
+use PhalconKit\Exception\CliException;
+
 /**
  * Minimal CLI exception/message writer.
  *
  * The handler is intentionally small: it writes a string, Exception, or any
- * Throwable to a stream and appends one trailing newline. It is useful during
+ * Throwable to a stream and appends one trailing newline. A `CliException` is
+ * an expected, user-facing command failure (an unknown or denied task, an
+ * unknown output format), so only its message is written; any other Throwable
+ * is written in full, with its file, line, and stack trace. It is useful during
  * early CLI bootstrap where a full logger service may not be available yet.
  */
 class ExceptionHandler
@@ -41,7 +46,11 @@ class ExceptionHandler
     {
         fwrite(
             $this->outputStream,
-            (is_string($this->e) ? $this->e : (string) $this->e) . PHP_EOL
+            match (true) {
+                is_string($this->e) => $this->e,
+                $this->e instanceof CliException => $this->e->getMessage(),
+                default => (string) $this->e,
+            } . PHP_EOL
         );
     }
 }

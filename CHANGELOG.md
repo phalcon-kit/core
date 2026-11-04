@@ -15,6 +15,15 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.1.2 - Unreleased
+
+### Changed
+
+- Print only the message of a `CliException` (such as `Error: 404 - Not Found`
+  for an unknown or denied task, or an unknown output format) on stderr,
+  without the file, line, and stack trace. Other exceptions still print in
+  full.
+
 ## 4.1.1 - 2026-11-04
 
 ### Changed

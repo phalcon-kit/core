@@ -60,6 +60,18 @@ class ExceptionHandlerTest extends AbstractUnit
         fclose($memoryStream);
     }
 
+    public function testExceptionHandlerWritesOnlyTheMessageOfCliExceptions(): void
+    {
+        $memoryStream = fopen('php://memory', 'r+');
+
+        new ExceptionHandler(new \PhalconKit\Exception\CliException('Error: 404 - Not Found'), $memoryStream)->write();
+
+        rewind($memoryStream);
+        $this->assertSame('Error: 404 - Not Found' . PHP_EOL, stream_get_contents($memoryStream));
+
+        fclose($memoryStream);
+    }
+
     public function testExceptionHandlerWritesThrowables(): void
     {
         $memoryStream = fopen('php://memory', 'r+');
@@ -67,7 +79,9 @@ class ExceptionHandlerTest extends AbstractUnit
         new ExceptionHandler(new \RuntimeException('Runtime message'), $memoryStream)->write();
 
         rewind($memoryStream);
-        $this->assertStringContainsString('Runtime message', stream_get_contents($memoryStream));
+        $output = (string) stream_get_contents($memoryStream);
+        $this->assertStringContainsString('RuntimeException: Runtime message', $output);
+        $this->assertStringContainsString('Stack trace:', $output);
 
         fclose($memoryStream);
     }

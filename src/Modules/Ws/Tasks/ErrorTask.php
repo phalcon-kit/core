@@ -24,7 +24,7 @@ class ErrorTask extends Task
     use ErrorActions;
     
     /**
-     * Set the status code for the response. Immediately throw a CliException.
+     * Set the status code for the response. Immediately throw a WsException.
      *
      * @param int $code The status code to set. Defaults to 500 if not provided.
      * @param string|null $message The optional message to associate with the status code.
