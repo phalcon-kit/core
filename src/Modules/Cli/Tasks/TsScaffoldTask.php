@@ -25,7 +25,7 @@ class TsScaffoldTask extends Task
 {
     public string $cliDoc = <<<DOC
 Usage:
-  phalcon-kit cli ts-scaffold <action> [<params>...] [--force] [--table=<table>] [--directory=<directory>]
+  phalcon-kit cli ts-scaffold <action> [<params>...] [--force] [--table=<table>] [--directory=<directory>] [--namespace=<namespace>]
 
 Actions:
   run                           Generate TypeScript models, interfaces, and services
@@ -33,9 +33,10 @@ Actions:
   get-definitions <name>        Return the TypeScript definitions for one model
 
 Options:
-  --force                       Overwrite existing files
-  --directory=<directory>       Directory path to generate new files
-  --table=<table>               Comma seperated list of table to generate
+  --force                       Overwrite existing files, including models and services
+  --directory=<directory>       SDK directory to generate into (Default: "./sdk/")
+  --table=<table>               Comma separated list of tables to generate
+  --namespace=<namespace>       Root namespace of the PHP models to read relations from (Default: "PhalconKit")
 
 
 DOC;
@@ -53,8 +54,8 @@ DOC;
         $definitions['table'] = $this->getTableName($name);
         $definitions['slug'] = Slug::generate(Helper::uncamelize($name));
         
-        // backend model
-        $definitions['backend'] = 'PhalconKit\\Models\\' . $definitions['table'];
+        // backend model, read for its relationships
+        $definitions['backend'] = $this->getModelsNamespace() . '\\' . $definitions['table'];
         
         // model
         $definitions['model']['name'] = $definitions['table'] . 'Model';
@@ -111,6 +112,10 @@ DOC;
     public function runAction(): array
     {
         $ret = [];
+        $directory = $this->dispatcher->getParameter('directory');
+        if (is_string($directory) && $directory !== '') {
+            $this->path = rtrim($directory, '/') . '/';
+        }
         
         $exports = [
             'models' => [],
@@ -492,6 +497,21 @@ EOT;
                 )
             )
         );
+    }
+    
+    /**
+     * Namespace of the PHP models whose relationships the generated TypeScript mirrors.
+     *
+     * Reads `--namespace` (the application's root namespace, such as `App`)
+     * and appends `\\Models`; defaults to Core's `PhalconKit\\Models`. A table
+     * without a model class in that namespace is generated without relations.
+     */
+    public function getModelsNamespace(): string
+    {
+        $namespace = $this->dispatcher->getParameter('namespace');
+        $namespace = is_string($namespace) && trim($namespace, '\\ ') !== '' ? trim($namespace, '\\ ') : 'PhalconKit';
+
+        return $namespace . '\\Models';
     }
     
     public function getModelInstance(string $modelClassName): Model

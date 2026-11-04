@@ -215,7 +215,7 @@ Class: `PhalconKit\Modules\Cli\Tasks\TsScaffoldTask`
 
 ```text
 Usage:
-  phalcon-kit cli ts-scaffold <action> [<params>...] [--force] [--table=<table>] [--directory=<directory>]
+  phalcon-kit cli ts-scaffold <action> [<params>...] [--force] [--table=<table>] [--directory=<directory>] [--namespace=<namespace>]
 
 Actions:
   run                           Generate TypeScript models, interfaces, and services
@@ -223,9 +223,10 @@ Actions:
   get-definitions <name>        Return the TypeScript definitions for one model
 
 Options:
-  --force                       Overwrite existing files
-  --directory=<directory>       Directory path to generate new files
-  --table=<table>               Comma seperated list of table to generate
+  --force                       Overwrite existing files, including models and services
+  --directory=<directory>       SDK directory to generate into (Default: "./sdk/")
+  --table=<table>               Comma separated list of tables to generate
+  --namespace=<namespace>       Root namespace of the PHP models to read relations from (Default: "PhalconKit")
 ```
 
 ## `user`

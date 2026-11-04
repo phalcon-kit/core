@@ -115,6 +115,49 @@ class TsScaffoldTaskTest extends AbstractUnit
         }
     }
 
+    public function testRunWritesIntoTheRequestedDirectory(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $columns = [$this->createColumn('id', Column::TYPE_INTEGER)];
+        $this->di?->set('db', new class ($columns) {
+            public function __construct(private readonly array $columns)
+            {
+            }
+
+            public function listTables(): array
+            {
+                return ['project_notes'];
+            }
+
+            public function describeColumns(string $table): array
+            {
+                return $this->columns;
+            }
+        });
+
+        try {
+            $task = $this->createTsScaffoldTask(['directory' => $directory, 'namespace' => 'App']);
+            $task->runAction();
+
+            $this->assertFileExists($directory . '/models/ProjectNotesModel.ts');
+            $this->assertFileExists($directory . '/models/abstracts/ProjectNotesModelAbstract.ts');
+            $this->assertFileExists($directory . '/models/abstracts/interfaces/ProjectNotesModelInterface.ts');
+            $this->assertFileExists($directory . '/services/ProjectNotesService.ts');
+            $this->assertFileExists($directory . '/services/index.ts');
+            $this->assertFileDoesNotExist('./sdk/models/ProjectNotesModel.ts');
+        } finally {
+            $this->removeDirectory($directory);
+        }
+    }
+
+    public function testModelsNamespaceDefaultsToCoreAndAcceptsTheApplicationNamespace(): void
+    {
+        $this->assertSame('PhalconKit\\Models', $this->createTsScaffoldTask(['namespace' => null])->getModelsNamespace());
+        $task = $this->createTsScaffoldTask(['namespace' => '\\App\\']);
+        $this->assertSame('App\\Models', $task->getModelsNamespace());
+        $this->assertSame('App\\Models\\ProjectNotes', $task->getDefinitionsAction('project_notes')['backend']);
+    }
+
     public function testSaveFileRespectsForceForTypescriptOutput(): void
     {
         $directory = $this->createTemporaryDirectory();
@@ -141,6 +184,8 @@ class TsScaffoldTaskTest extends AbstractUnit
             'force' => false,
             'table' => '',
         ], $params));
+        // getShared() caches the first dispatcher; drop it so each task reads its own parameters.
+        $this->di?->remove('dispatcher');
         $this->di?->set('dispatcher', $dispatcher);
 
         $task = new TsScaffoldTask();

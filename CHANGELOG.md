@@ -25,8 +25,15 @@ release notes.
   enums without overwriting the app-owned model contracts; `--no-interfaces`
   skips both kinds of interface.
 
+- Add `ts-scaffold --namespace=<namespace>` so TypeScript generation reads
+  relationships from the application's models (`App` reads `App\Models`);
+  without it, only Core's `PhalconKit\Models` were found and application
+  tables were generated without relations.
+
 ### Fixed
 
+- Write `ts-scaffold` output into `--directory` (default `./sdk/`); the
+  option was documented but ignored.
 - List the scaffold task's real actions (`run`, `get-definitions <name>`) in
   its usage text instead of nonexistent `models`/`abstracts`/`controllers`/
   `enums` actions.
