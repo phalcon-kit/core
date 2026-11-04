@@ -15,6 +15,27 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.2.0 - Unreleased
+
+### Added
+
+- Add `scaffold run --no-model-interfaces` to skip only the concrete model
+  interfaces (`Models/Interfaces/*Interface.php`). Combined with `--force` and
+  `--no-models`, regeneration rewrites the abstracts, abstract interfaces, and
+  enums without overwriting the app-owned model contracts; `--no-interfaces`
+  skips both kinds of interface.
+
+### Fixed
+
+- List the scaffold task's real actions (`run`, `get-definitions <name>`) in
+  its usage text instead of nonexistent `models`/`abstracts`/`controllers`/
+  `enums` actions.
+
+### Documentation
+
+- Document which scaffold outputs are generated (always rewritten by
+  `--force`) and which are app-owned (created once).
+
 ## 4.1.4 - 2026-11-04
 
 ### Fixed

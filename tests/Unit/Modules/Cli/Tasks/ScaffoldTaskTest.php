@@ -237,6 +237,45 @@ PHP,
         }
     }
 
+    public function testForcedRegenerationCanKeepAppOwnedModelInterfaces(): void
+    {
+        $directory = $this->createTemporaryDirectory();
+        $flags = [
+            'directory' => $directory,
+            'force' => true,
+            'noEnums' => true,
+            'noModels' => true,
+            'noTests' => true,
+        ];
+
+        try {
+            $this->createScaffoldTaskWithDatabase($flags)->runAction();
+            $modelInterface = $directory . '/src/Models/Interfaces/LegacyUserAccountsInterface.php';
+            $abstractInterface = $directory . '/src/Models/Abstracts/Interfaces/LegacyUserAccountsAbstractInterface.php';
+            $this->assertFileExists($modelInterface);
+            $this->assertFileExists($abstractInterface);
+
+            // The application adds a method to its model contract and the
+            // generated abstract interface goes stale.
+            file_put_contents($modelInterface, "<?php\n// app-owned contract\n");
+            file_put_contents($abstractInterface, "<?php\n// stale\n");
+
+            // --force alone overwrites the app-owned interface.
+            $this->createScaffoldTaskWithDatabase($flags)->runAction();
+            $this->assertStringNotContainsString('app-owned contract', (string) file_get_contents($modelInterface));
+
+            file_put_contents($modelInterface, "<?php\n// app-owned contract\n");
+            file_put_contents($abstractInterface, "<?php\n// stale\n");
+
+            // --no-model-interfaces keeps it and still refreshes the abstract interface.
+            $this->createScaffoldTaskWithDatabase($flags + ['noModelInterfaces' => true])->runAction();
+            $this->assertStringContainsString('app-owned contract', (string) file_get_contents($modelInterface));
+            $this->assertStringContainsString('interface LegacyUserAccountsAbstractInterface', (string) file_get_contents($abstractInterface));
+        } finally {
+            $this->removeDirectory($directory);
+        }
+    }
+
     public function testNoEnumsSkipsEnumGeneration(): void
     {
         $directory = $this->createTemporaryDirectory();
@@ -538,6 +577,8 @@ PHP,
             'addRawValueType' => false,
             'protectedProperties' => false,
         ], $params));
+        // getShared() caches the first dispatcher; drop it so each task reads its own parameters.
+        $this->di?->remove('dispatcher');
         $this->di?->set('dispatcher', $dispatcher);
 
         $task = new ScaffoldTask();

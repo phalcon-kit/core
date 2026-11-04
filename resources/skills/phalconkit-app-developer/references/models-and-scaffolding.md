@@ -166,9 +166,9 @@ Scaffold mode rules:
 
 - Use the missing-files command when adding tables and preserving existing app
   customizations.
-- Use `--force --no-models` after schema changes when generated abstracts,
-  interfaces, enums, and tests need refresh but concrete models contain custom
-  code.
+- Use `--force --no-models --no-model-interfaces` after schema changes when
+  generated abstracts, abstract interfaces, and enums need refresh but concrete
+  models and their interfaces contain custom code.
 - Use full `--force` only when the app intentionally wants scaffold output to
   overwrite concrete model files.
 - Keep `--models-extend=\\App\\Models\\AbstractModel` so generated concrete
@@ -199,7 +199,8 @@ It then writes the model layer under the selected `--src-dir` and namespace:
 - `Models/Abstracts/Interfaces/*AbstractInterface.php` with generated
   getters, setters, and relationship docblocks.
 - `Models/*.php` concrete model shells when not disabled with `--no-models`.
-- `Models/Interfaces/*Interface.php` app-facing model interfaces.
+- `Models/Interfaces/*Interface.php` app-facing model interfaces when not
+  disabled with `--no-model-interfaces` or `--no-interfaces`.
 - `Models/Enums/*<Column>.php` backed enum classes for DB enum columns.
 - Model tests that check concrete/abstract/interface types, getter/setter
   defaults, and column maps.

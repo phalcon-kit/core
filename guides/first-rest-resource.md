@@ -52,7 +52,8 @@ After changing the table, refresh generated files with:
 ./scripts/regenerate-models.sh --table=project
 ```
 
-The regeneration wrapper uses `--no-models` to preserve concrete model code.
+The regeneration wrapper uses `--no-models --no-model-interfaces` to preserve
+concrete models and their interfaces.
 Run `generate-models` first when adding a new table. See
 [Scaffolding](database-scaffolding.md) for relationships and boolean columns.
 

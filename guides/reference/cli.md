@@ -154,17 +154,15 @@ Usage:
                               [--models-dir=<models-dir>] [--enums-dir=<enums-dir>] [--tests-dir=<tests-dir>]
                               [--models-extend=<models-extend>] [--interfaces-extend=<interface-extend>]
                               [--controllers-extend=<controllers-extend>] [--tests-extend=<tests-extend>]
-                              [--no-controllers] [--no-interfaces] [--no-abstracts] [--no-models] [--no-enums] [--no-tests]
+                              [--no-controllers] [--no-interfaces] [--no-model-interfaces] [--no-abstracts] [--no-models] [--no-enums] [--no-tests]
                               [--no-strict-types] [--no-license] [--no-comments] [--no-get-set-methods]
                               [--no-validations] [--no-relationships] [--no-column-map] [--no-set-source]
                               [--no-typings] [--granular-typings] [--add-raw-value-type] [--protected-properties]
                               [--boolean-columns=<table.column,...>]
 
 Actions:
-  models
-  abstracts
-  controllers
-  enums
+  run                    Generate the outputs the --no-* options leave enabled for the selected tables
+  get-definitions <name> Return the class and file names generated for one table
 
 Options:
   --boolean-columns=<table.column,...>        Explicit integer-backed boolean columns (no width/name inference)
@@ -190,6 +188,7 @@ Options:
 
   --no-controllers                            Do not generate controllers
   --no-interfaces                             Do not generate interfaces
+  --no-model-interfaces                       Do not generate concrete model interfaces (keep app-owned ones)
   --no-abstracts                              Do not generate abstracts
   --no-models                                 Do not generate models
   --no-enums                                  Do not generate enums

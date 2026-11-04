@@ -73,7 +73,9 @@ Regenerate generated layers without overwriting concrete models:
 ```
 
 The App generation wrapper rejects `--force`; the regeneration wrapper supplies
-`--force --no-models` so concrete model business logic is preserved. Both wrappers
+`--force --no-models --no-model-interfaces` so concrete models and their
+app-facing interfaces are preserved while the abstracts, abstract interfaces,
+and enums are rewritten. Both wrappers
 have PowerShell `.ps1` equivalents and accept `--table=project,task` for a focused
 pass. Run generation before regeneration when adding new tables.
 
@@ -103,9 +105,14 @@ Typical generated ownership:
   column map, relationships, and validations.
 - `Models/Abstracts/Interfaces/*AbstractInterface.php`: generated interface for
   generated methods.
-- `Models/Interfaces/*Interface.php`: app-facing model contract.
+- `Models/Interfaces/*Interface.php`: app-owned model contract, created once;
+  add your concrete model's public methods here.
 - `Models/Enums/`: generated enum classes.
-- `Models/*.php`: app-owned concrete behavior.
+- `Models/*.php`: app-owned concrete behavior, created once.
+
+Generated files are rewritten by every forced regeneration, so never edit
+them. App-owned files are only created when missing; `--force` overwrites them
+unless `--no-models` and `--no-model-interfaces` are set.
 
 ## 4. Use Generated Relationships
 
@@ -149,7 +156,7 @@ aliases for `TINYINT(1)`, so changing the SQL spelling does not remove the need
 for explicit flag selections. No column-type migration is required.
 
 ```shell
-phalcon-kit cli scaffold run --table=project --no-models --force \
+phalcon-kit cli scaffold run --table=project --no-models --no-model-interfaces --force \
   --boolean-columns=project.enabled,project.quality_control,project.ai_use_allowed
 ```
 

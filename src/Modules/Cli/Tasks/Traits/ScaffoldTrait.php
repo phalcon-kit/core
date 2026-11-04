@@ -147,10 +147,23 @@ PHP;
         return $this->dispatcher->getParameter('noControllers');
     }
     
-    /** Skip model interface generation when --no-interfaces is set. */
+    /** Skip abstract and concrete model interface generation when --no-interfaces is set. */
     public function isNoInterfaces(): bool
     {
         return $this->dispatcher->getParameter('noInterfaces');
+    }
+    
+    /**
+     * Skip only the concrete model interfaces when --no-model-interfaces is set.
+     *
+     * Concrete model interfaces (`Models/Interfaces/*Interface.php`) are
+     * app-facing contracts that applications may extend, like concrete models.
+     * Use this with `--force` to regenerate abstract interfaces without
+     * overwriting them.
+     */
+    public function isNoModelInterfaces(): bool
+    {
+        return (bool) $this->dispatcher->getParameter('noModelInterfaces');
     }
     
     /** Skip abstract model generation when --no-abstracts is set. */
