@@ -199,6 +199,44 @@ class ConfigTest extends AbstractUnit
         }
     }
 
+    public function testEachProviderHasItsOwnOverrideVariable(): void
+    {
+        $source = (string) file_get_contents(dirname(__DIR__, 3) . '/src/Bootstrap/Config.php');
+        preg_match_all("/ServiceProvider::class => Env::get\\('([A-Z0-9_]+)'/", $source, $matches);
+
+        $this->assertNotEmpty($matches[1]);
+        $this->assertSame(
+            [],
+            array_keys(array_filter(array_count_values($matches[1]), static fn (int $count): bool => $count > 1)),
+            'Two providers read the same PROVIDER_* variable, so one cannot be replaced without the other.'
+        );
+
+        $previous = [Env::get('PROVIDER_DEBUG'), Env::get('PROVIDER_OAUTH_2_CLIENT')];
+        try {
+            Env::set('PROVIDER_DEBUG', 'App\\Provider\\Debug');
+            Env::set('PROVIDER_OAUTH_2_CLIENT', 'App\\Provider\\Oauth2Client');
+
+            $providers = new Config()->pathToArray('providers') ?? [];
+
+            $this->assertSame('App\\Provider\\Debug', $providers[\PhalconKit\Provider\Debug\ServiceProvider::class]);
+            $this->assertSame(\PhalconKit\Provider\Console\ServiceProvider::class, $providers[\PhalconKit\Provider\Console\ServiceProvider::class]);
+            $this->assertSame('App\\Provider\\Oauth2Client', $providers[\PhalconKit\Provider\Oauth2Client\ServiceProvider::class]);
+            $this->assertSame(\PhalconKit\Provider\Oauth2Facebook\ServiceProvider::class, $providers[\PhalconKit\Provider\Oauth2Facebook\ServiceProvider::class]);
+        } finally {
+            Env::set('PROVIDER_DEBUG', $previous[0]);
+            Env::set('PROVIDER_OAUTH_2_CLIENT', $previous[1]);
+        }
+    }
+
+    public function testModuleDirectoryDefaultsNameTheirOwnDirectory(): void
+    {
+        $dir = new Config()->pathToArray('module.dir') ?? [];
+
+        $this->assertSame('Private/migrations/', $dir['migrations']);
+        $this->assertSame('Private/cache/', $dir['cache']);
+        $this->assertSame('Private/logs/', $dir['logs']);
+    }
+
     public function testIdentityStatelessConfigUsesEnvironmentFlag(): void
     {
         $previous = Env::get('IDENTITY_STATELESS');

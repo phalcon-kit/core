@@ -15,6 +15,23 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
+## 4.1.3 - Unreleased
+
+### Fixed
+
+- Give the debug and OAuth client providers their own override variables,
+  `PROVIDER_DEBUG` and `PROVIDER_OAUTH_2_CLIENT`. They read `PROVIDER_CONSOLE`
+  and `PROVIDER_OAUTH_2_FACEBOOK`, so replacing the console or Facebook
+  provider also replaced the debug or OAuth client provider. An application
+  that set `PROVIDER_CONSOLE` or `PROVIDER_OAUTH_2_FACEBOOK` to replace the
+  debug or OAuth client provider must now set the new variable.
+- Read `VENDOR_PATH` (default `ROOT_PATH . 'vendor/'`) for the `VENDOR_PATH`
+  constant, instead of `ROOT_PATH` with a relative `vendor/` default, when the
+  bootstrap has not defined it. The App skeleton defines it in `bootstrap.php`.
+- Default `module.dir.cache` to `Private/cache/` (read from `MODULE_DIR_CACHE`)
+  and `module.dir.logs` to `Private/logs/`; both defaulted to
+  `Private/migrations/`. Core does not read these paths.
+
 ## 4.1.2 - 2026-11-04
 
 ### Changed

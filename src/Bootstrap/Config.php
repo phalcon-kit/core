@@ -84,7 +84,7 @@ class Config extends \PhalconKit\Config\Config
     public function defineConst(): void
     {
         defined('ROOT_PATH') || define('ROOT_PATH', Env::get('ROOT_PATH', (getcwd() ?: '.') . '/'));
-        defined('VENDOR_PATH') || define('VENDOR_PATH', Env::get('ROOT_PATH', 'vendor/'));
+        defined('VENDOR_PATH') || define('VENDOR_PATH', Env::get('VENDOR_PATH', ROOT_PATH . 'vendor/'));
         defined('CORE_PATH') || define('CORE_PATH', Env::get('CORE_PATH', mb_substr(__DIR__, 0, mb_strlen(basename(__DIR__)) * -1)));
         defined('APP_PATH') || define('APP_PATH', Env::get('APP_PATH'));
         defined('APP_ENV') || define('APP_ENV', Env::get('APP_ENV'));
@@ -477,7 +477,7 @@ class Config extends \PhalconKit\Config\Config
                 Provider\Application\ServiceProvider::class => Env::get('PROVIDER_APPLICATION', Provider\Application\ServiceProvider::class),
                 Provider\Console\ServiceProvider::class => Env::get('PROVIDER_CONSOLE', Provider\Console\ServiceProvider::class),
                 Provider\WebSocket\ServiceProvider::class => Env::get('PROVIDER_WEB_SOCKET', Provider\WebSocket\ServiceProvider::class),
-                Provider\Debug\ServiceProvider::class => Env::get('PROVIDER_CONSOLE', Provider\Debug\ServiceProvider::class),
+                Provider\Debug\ServiceProvider::class => Env::get('PROVIDER_DEBUG', Provider\Debug\ServiceProvider::class),
                 Provider\Env\ServiceProvider::class => Env::get('PROVIDER_ENVIRONMENT', Provider\Env\ServiceProvider::class),
                 Provider\Router\ServiceProvider::class => Env::get('PROVIDER_ROUTER', Provider\Router\ServiceProvider::class),
                 Provider\Dispatcher\ServiceProvider::class => Env::get('PROVIDER_DISPATCHER', Provider\Dispatcher\ServiceProvider::class),
@@ -526,7 +526,7 @@ class Config extends \PhalconKit\Config\Config
                 
                 // Identity & Auth
                 Provider\Identity\ServiceProvider::class => Env::get('PROVIDER_IDENTITY', Provider\Identity\ServiceProvider::class),
-                Provider\Oauth2Client\ServiceProvider::class => Env::get('PROVIDER_OAUTH_2_FACEBOOK', Provider\Oauth2Client\ServiceProvider::class),
+                Provider\Oauth2Client\ServiceProvider::class => Env::get('PROVIDER_OAUTH_2_CLIENT', Provider\Oauth2Client\ServiceProvider::class),
                 Provider\Oauth2Facebook\ServiceProvider::class => Env::get('PROVIDER_OAUTH_2_FACEBOOK', Provider\Oauth2Facebook\ServiceProvider::class),
                 Provider\Oauth2Google\ServiceProvider::class => Env::get('PROVIDER_OAUTH_2_GOOGLE', Provider\Oauth2Google\ServiceProvider::class),
                 
@@ -964,8 +964,8 @@ class Config extends \PhalconKit\Config\Config
                     
                     // private
                     'migrations' => Env::get('MODULE_DIR_MIGRATION', 'Private/migrations/'),
-                    'cache' => Env::get('MODULE_DIR_MIGRATION', 'Private/migrations/'),
-                    'logs' => Env::get('MODULE_DIR_LOGS', 'Private/migrations/'),
+                    'cache' => Env::get('MODULE_DIR_CACHE', 'Private/cache/'),
+                    'logs' => Env::get('MODULE_DIR_LOGS', 'Private/logs/'),
                     'backups' => Env::get('MODULE_DIR_BACKUPS', 'Private/backups/'),
                     'files' => Env::get('MODULE_DIR_FILES', 'Private/files/'),
                     'trash' => Env::get('MODULE_DIR_TRASH', 'Private/trash/'),
