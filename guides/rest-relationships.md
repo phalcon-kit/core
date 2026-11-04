@@ -319,7 +319,9 @@ Saving a parent with related records runs in one database transaction: the
 parent, its children, and its links commit together. When a related record
 fails to save, for example a child that fails validation, the save returns the
 validation messages and rolls back the parent change and any children already
-saved in that request.
+saved in that request. When the save throws instead, for example on a database
+error, the transaction is rolled back before the exception reaches your code;
+a transaction your code opened before saving stays open for you to roll back.
 
 The transaction covers one parent graph. Records in a REST batch are saved one
 by one, so a failure in one record does not undo the others; see

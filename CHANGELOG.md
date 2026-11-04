@@ -19,6 +19,12 @@ release notes.
 
 ### Fixed
 
+- Roll back the transaction a model save opened when the save throws instead
+  of returning false, for example a database error while saving a
+  many-to-many target. The exception still reaches the caller, but the
+  connection is no longer left inside an uncommitted transaction, where later
+  writes in the same request or worker were silently lost. A transaction the
+  caller opened before saving stays open.
 - Eager-load the relations from every array argument of `findWith()`,
   `findFirstWith()`, `load()`, and the `Loader` helpers. With more than one
   relation array (for example `findWith(['Robots'], ['Parts'], $parameters)`)
@@ -33,6 +39,8 @@ release notes.
   and its related records together. Database tests cover each case.
 - Document the `findWith()` argument rule: the last of two or more arguments
   is the find parameters.
+- Correct the post-save helper docblocks: direct related saves report
+  exceptions as messages, through saves let them propagate after the rollback.
 
 ## 4.1.3 - 2026-11-04
 

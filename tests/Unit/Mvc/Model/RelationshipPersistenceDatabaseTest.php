@@ -37,8 +37,8 @@ final class RelationshipPersistenceDatabaseTest extends DatabaseTestCase
         $this->connection->execute('CREATE DATABASE `' . $this->database . '`');
         $this->connection->execute('USE `' . $this->database . '`');
         $this->connection->execute('CREATE TABLE graph_projects (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL) ENGINE=InnoDB');
-        $this->connection->execute('CREATE TABLE graph_tasks (id INT AUTO_INCREMENT PRIMARY KEY, projectId INT NOT NULL, label VARCHAR(255) NOT NULL) ENGINE=InnoDB');
-        $this->connection->execute('CREATE TABLE graph_tags (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL) ENGINE=InnoDB');
+        $this->connection->execute('CREATE TABLE graph_tasks (id INT AUTO_INCREMENT PRIMARY KEY, projectId INT NOT NULL, label VARCHAR(20) NOT NULL) ENGINE=InnoDB');
+        $this->connection->execute('CREATE TABLE graph_tags (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(20) NOT NULL) ENGINE=InnoDB');
         $this->connection->execute('CREATE TABLE graph_project_tags (id INT AUTO_INCREMENT PRIMARY KEY, projectId INT NOT NULL, tagId INT NOT NULL, deleted TINYINT NOT NULL DEFAULT 0, UNIQUE KEY project_tag (projectId, tagId)) ENGINE=InnoDB');
         $this->connection->execute("INSERT INTO graph_projects VALUES (1, 'Garden')");
         $this->connection->execute("INSERT INTO graph_tags VALUES (1, 'outdoor'), (2, 'weekly'), (3, 'urgent')");
@@ -147,6 +147,55 @@ final class RelationshipPersistenceDatabaseTest extends DatabaseTestCase
         self::assertTrue($project->save(), implode('; ', array_map('strval', $project->getMessages())));
         self::assertSame([1, 2], $this->linkedTagIds());
         self::assertSame('weekly', RelationshipGraphTag::findFirst(2)->name);
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>}>
+     */
+    public static function databaseErrorPayloads(): iterable
+    {
+        yield 'has-many child' => [['tasks' => [['label' => 'Water plants'], ['label' => str_repeat('x', 40)]]]];
+        yield 'many-to-many target' => [['tags' => [2, ['name' => str_repeat('x', 40)]]]];
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('databaseErrorPayloads')]
+    public function testDatabaseErrorInANestedSaveRollsBackAndClosesTheTransaction(array $payload): void
+    {
+        $project = $this->project();
+        $project->assign(['name' => 'Renamed garden'] + $payload);
+
+        $saved = null;
+        $error = null;
+        try {
+            $saved = $project->save();
+        } catch (\Throwable $exception) {
+            $error = $exception;
+        }
+
+        self::assertFalse($this->connection->isUnderTransaction(), 'The nested save left a transaction open' . ($error ? ' after ' . $error::class . ': ' . $error->getMessage() : '') . '.');
+        self::assertNotTrue($saved);
+        self::assertSame('Garden', $this->project()->name);
+        self::assertSame(0, RelationshipGraphTask::count());
+        self::assertSame([1], $this->linkedTagIds());
+    }
+
+    public function testDatabaseErrorKeepsTheCallersOwnTransactionOpen(): void
+    {
+        $this->connection->begin();
+        $project = $this->project();
+        $project->assign(['tags' => [['name' => str_repeat('x', 40)]]]);
+
+        try {
+            $project->save();
+            self::fail('Expected the database to reject the oversized tag name.');
+        } catch (\PDOException) {
+        }
+
+        self::assertSame(1, $this->connection->getTransactionLevel());
+        $this->connection->rollback();
     }
 
     public function testFailedNestedChildRollsBackTheParentAndEarlierChildren(): void

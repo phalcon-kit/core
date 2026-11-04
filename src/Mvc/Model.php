@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhalconKit\Mvc;
 
 use AllowDynamicProperties;
+use Phalcon\Contracts\Db\Adapter\Adapter as AdapterContract;
 use Phalcon\Events\Manager as EventsManager;
 use Phalcon\Support\Collection\CollectionInterface;
 
@@ -159,20 +160,59 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
      * This is a Phalcon persistence hook. Pass the existing visited collection on
      * delegation so native cycle detection and transaction handling stay intact.
      *
+     * A save with related records runs in a transaction that Phalcon opens
+     * before and commits after the related saves. When the save throws instead
+     * of returning false (for example a database error while saving a related
+     * record), the transactions it opened are rolled back before the exception
+     * is rethrown, so the connection is not left inside an uncommitted
+     * transaction. A transaction the caller opened before saving stays open.
+     *
      * @param CollectionInterface $visited Models visited in the current save traversal.
      * @return bool Whether native persistence succeeded.
-     * @throws \Phalcon\Mvc\Model\Exception When native persistence rejects the operation by exception.
+     * @throws \Throwable The original exception, after rolling back the
+     *     transactions this save opened.
      */
     #[\Override]
     public function doSave(CollectionInterface $visited): bool
     {
         $this->normalizeNullableNullStrings();
-        $saved = parent::doSave($visited);
+        $connection = $this->getWriteConnection();
+        $level = method_exists($connection, 'getTransactionLevel') ? (int) $connection->getTransactionLevel() : null;
+        try {
+            $saved = parent::doSave($visited);
+        } catch (\Throwable $exception) {
+            if ($level !== null) {
+                $this->rollbackToTransactionLevel($connection, $level);
+            }
+            throw $exception;
+        }
         if ($saved) {
             $this->normalizeNullableNullStrings();
         }
 
         return $saved;
+    }
+
+    /**
+     * Roll back the transactions opened above `$level` on a write connection.
+     *
+     * Each non-nested rollback closes one level; the last one rolls back the
+     * real transaction. Rollback errors are ignored so the original exception
+     * from the failed save is the one the caller sees.
+     */
+    private function rollbackToTransactionLevel(AdapterContract $connection, int $level): void
+    {
+        assert(method_exists($connection, 'getTransactionLevel'));
+        while (($current = (int) $connection->getTransactionLevel()) > $level) {
+            try {
+                $connection->rollback(false);
+            } catch (\Throwable) {
+                return;
+            }
+            if ((int) $connection->getTransactionLevel() >= $current) {
+                return;
+            }
+        }
     }
 
     /**
