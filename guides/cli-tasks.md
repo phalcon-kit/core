@@ -78,6 +78,14 @@ consumes them, so the task usage string only declares task options. Options
 placed after the action are parsed by the task usage string; an option it does
 not declare prints the task usage and exits with status 1.
 
+`./bin/phalcon-kit cli report help`, `./bin/phalcon-kit cli help report`, and
+`./bin/phalcon-kit cli report` (when the task keeps the default `mainAction()`)
+print the task usage and exit with status 0, so the usage string does not need
+to declare a `help` command. Grant `help` to the `cli` role for each task whose
+usage should be readable. A command the `cli` role may not run reports an
+`Error: <code>` message on stderr and exits with status 1, for example
+`Error: 404 - Not Found` for a task that is missing or granted to no role.
+
 The task formatter serializes returned arrays, booleans, and model messages.
 An uncaught exception prints the error to stderr and exits with status 1, as
 does an unknown `--format`. A returned payload exits with status 0 even when it

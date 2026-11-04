@@ -24,11 +24,20 @@ release notes.
 
 ### Fixed
 
+- Print the task usage and exit with status 0 for `cli <task> help`,
+  `cli help <task>`, and a bare `cli <task>` that keeps the default
+  `mainAction()`, instead of failing usage parsing with status 1. `HelpTask`
+  now forwards every task in its usage, and lists `ts-scaffold` instead of the
+  nonexistent `test` task. Add `Task::shouldParseUsage()`.
+- Report a denied or unknown CLI task as an `Error: <code>` message on stderr
+  (for example `Error: 404 - Not Found`) instead of printing the generic usage:
+  `ErrorTask` no longer parses the forwarded command against its own usage.
 - Fall back to a local `HelperFactory` in the `Helper` facade when the default
   DI has no `helper` service, as documented, instead of throwing.
 
 ### Documentation
 
+- Document CLI help commands and the denied/unknown task errors.
 - Update the App 4 migration guide for Core `^4.1`, the `bin/phalcon-kit`
   exit-status line, and a failing-command check.
 

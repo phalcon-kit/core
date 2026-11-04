@@ -31,6 +31,20 @@ class ErrorTask extends Task
      *
      * @throws CliException If an error occurs while setting the status code.
      */
+    /**
+     * Never parse the error task's usage.
+     *
+     * The task is reached by dispatcher forwards (not found, forbidden,
+     * unauthorized), which keep the original command's arguments. Parsing them
+     * with this task's usage would print a generic usage text and exit instead
+     * of reporting the actual error.
+     */
+    #[\Override]
+    protected function shouldParseUsage(): bool
+    {
+        return false;
+    }
+
     #[\Override]
     public function setStatusCode(int $code = 500, ?string $message = null): ResponseInterface
     {

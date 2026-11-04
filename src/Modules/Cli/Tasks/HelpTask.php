@@ -25,7 +25,7 @@ Usage:
   phalcon-kit cli help database
   phalcon-kit cli help data-life-cycle
   phalcon-kit cli help scaffold
-  phalcon-kit cli help test
+  phalcon-kit cli help ts-scaffold
   phalcon-kit cli help user
 
 DOC;
@@ -67,5 +67,30 @@ DOC;
     public function cacheAction(): void
     {
         $this->dispatcher->forward(['task' => 'cache', 'action' => 'help']);
+    }
+
+    public function databaseAction(): void
+    {
+        $this->dispatcher->forward(['task' => 'database', 'action' => 'help']);
+    }
+
+    public function dataLifeCycleAction(): void
+    {
+        $this->dispatcher->forward(['task' => 'data-life-cycle', 'action' => 'help']);
+    }
+
+    public function scaffoldAction(): void
+    {
+        $this->dispatcher->forward(['task' => 'scaffold', 'action' => 'help']);
+    }
+
+    public function tsScaffoldAction(): void
+    {
+        $this->dispatcher->forward(['task' => 'ts-scaffold', 'action' => 'help']);
+    }
+
+    public function userAction(): void
+    {
+        $this->dispatcher->forward(['task' => 'user', 'action' => 'help']);
     }
 }

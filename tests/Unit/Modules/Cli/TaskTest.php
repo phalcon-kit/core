@@ -101,4 +101,52 @@ class TaskTest extends AbstractUnit
             $this->assertSame($value, $parameters[$key], $key);
         }
     }
+
+    public function testHelpInheritedMainAndErrorTaskSkipUsageParsing(): void
+    {
+        $this->di->setShared('dispatcher', new \PhalconKit\Cli\Dispatcher());
+        $strictDoc = "Usage:\n  phalcon-kit cli cache clear\n";
+        $help = new class extends Task {
+        };
+        $help->setDI($this->di);
+        $help->cliDoc = $strictDoc;
+        $help->dispatcher->setModuleName('cli');
+        $help->dispatcher->setTaskName('cache');
+        $help->dispatcher->setActionName('help');
+        $help->dispatcher->setParameters(['--force', 'format' => 'json']);
+
+        // Docopt would print the usage and exit if it parsed `cache help`.
+        $help->beforeExecuteRoute();
+        $this->assertSame(['--force', 'format' => 'json'], $help->dispatcher->getParameters());
+
+        $help->dispatcher->setActionName('main');
+        $help->beforeExecuteRoute();
+        $this->assertSame(['--force', 'format' => 'json'], $help->dispatcher->getParameters(), 'The inherited main action only prints the usage.');
+
+        $main = new class extends Task {
+            #[\Override]
+            public function mainAction(): ?array
+            {
+                return [];
+            }
+        };
+        $main->setDI($this->di);
+        $main->cliDoc = "Usage:\n  phalcon-kit cli report main [--force]\n";
+        $main->dispatcher->setTaskName('report');
+        $main->dispatcher->setActionName('main');
+        $main->dispatcher->setParameters(['--force']);
+        $main->beforeExecuteRoute();
+        $this->assertTrue($main->dispatcher->getParameter('force'), 'An overridden main action is parsed.');
+
+        $error = new \PhalconKit\Modules\Cli\Tasks\ErrorTask();
+        $error->setDI($this->di);
+        $error->cliDoc = $strictDoc;
+        $error->dispatcher->setModuleName('');
+        $error->dispatcher->setTaskName('error');
+        $error->dispatcher->setActionName('notFound');
+        $error->dispatcher->setParameters(['format' => 'json']);
+
+        $error->beforeExecuteRoute();
+        $this->assertSame(['format' => 'json'], $error->dispatcher->getParameters());
+    }
 }
