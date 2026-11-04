@@ -185,7 +185,7 @@ jobs:
           custom-cache-suffix: phalcon-kit-composer
 
       - name: PHPStan
-        run: PHPSTAN_DEBUG=0 composer phpstan -- --no-progress --error-format=github
+        run: PHPSTAN_DEBUG=0 PHPSTAN_MEMORY_LIMIT=2G composer phpstan -- --no-progress --error-format=github
   
   # PHP PSALM / SECURITY
   php-security:

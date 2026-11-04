@@ -17,6 +17,11 @@ release notes.
 
 ## 4.1.1 - Unreleased
 
+### Changed
+
+- Run PHPStan with a 2G memory limit in CI; the `highest` dependency job
+  intermittently crashed at 1G.
+
 ### Documentation
 
 - Update the App 4 migration guide for Core `^4.1`, the `bin/phalcon-kit`
