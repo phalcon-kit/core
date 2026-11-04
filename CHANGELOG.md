@@ -15,12 +15,14 @@ history, the old changelog, and committed file changes. Older Zemit-era entries
 are summarized where the commit history is too granular to be useful as
 release notes.
 
-## 4.1.1 - Unreleased
+## 4.1.1 - 2026-11-04
 
 ### Changed
 
 - Run PHPStan with a 2G memory limit in CI; the `highest` dependency job
   intermittently crashed at 1G.
+- Update the pinned setup-php (2.40.0), CodeQL SARIF upload (4.39.1), OpenSSF
+  Scorecard (2.5.0), and zizmor (0.8.0) CI actions.
 
 ### Fixed
 
