@@ -134,7 +134,7 @@ class Bootstrap
 Phalcon Kit CLI
 
 Usage:
-  phalcon-kit <module> <task> [<action>] [--help | --quiet | --verbose] [--debug] [--format=<format>] [<params>...]
+  phalcon-kit [--help | --quiet | --verbose] [--debug] [--format=<format>] <module> <task> [<action>] [<params>...]
   phalcon-kit (-h | --help)
   phalcon-kit (-v | --version)
   phalcon-kit (-i | --info)

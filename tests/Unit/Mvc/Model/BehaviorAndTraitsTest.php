@@ -1105,6 +1105,27 @@ class BehaviorAndTraitsTest extends AbstractUnit
         $model->initializeBlameable();
     }
 
+    public function testBlameableUserRelationshipPassesRelationParams(): void
+    {
+        $model = new class extends ModelBehaviorDouble {
+            /** @var array<int, mixed> */
+            public array $belongsToArgs = [];
+
+            protected function belongsTo($fields, string $referenceModel, $referencedFields, array $options = []): \Phalcon\Mvc\Model\Relation
+            {
+                $this->belongsToArgs = [$fields, $referenceModel, $referencedFields, $options];
+                return new \Phalcon\Mvc\Model\Relation(\Phalcon\Mvc\Model\Relation::BELONGS_TO, $referenceModel, $fields, $referencedFields, $options);
+            }
+        };
+
+        $model->addUserRelationship('userId', 'Owner', ['conditions' => 'deleted = 0'], 'id', 'belongsTo', User::class);
+
+        $this->assertSame(
+            ['alias' => 'Owner', 'params' => ['conditions' => 'deleted = 0']],
+            $model->belongsToArgs[3]
+        );
+    }
+
     public function testBlameableUserRelationshipRejectsInvalidModelsService(): void
     {
         $this->di->setShared('models', new \stdClass());

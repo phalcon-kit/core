@@ -133,7 +133,7 @@ trait Blameable
                 $class = $models->getUserClass();
             }
             
-            return $this->$type($field, $class, $ref, ['alias' => $alias, 'params ' => $params]);
+            return $this->$type($field, $class, $ref, ['alias' => $alias, 'params' => $params]);
         }
         
         return null;

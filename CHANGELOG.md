@@ -55,6 +55,11 @@ release notes.
   `--` plus every later token is still passed through.
 - Reset Blameable's parent-audit link between requests so a worker never links
   a new audit row to a parent audit from an earlier request.
+- Pass relationship `params` from `addUserRelationship()`; a trailing space in
+  the option key made Phalcon ignore them.
+- Show global CLI options before `<module>` in the bootstrap usage, where they
+  are parsed, and correct the documented default limit (10) and maximum limit
+  (100) in the `Limit` query trait.
 
 ## 4.0.4 - 2026-11-03
 

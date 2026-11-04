@@ -141,7 +141,7 @@ trait Limit
      * Returns the default limit.
      *
      * If the limit is set, then it returns that value,
-     * else it returns a default value of 100.
+     * else it returns a default value of 10.
      *
      * @return int|null The default limit.
      */
@@ -154,7 +154,7 @@ trait Limit
      * Returns the default maximum limit.
      *
      * If the maximum limit is set, then it returns that value,
-     * else it returns a default value of 1000.
+     * else it returns a default value of 100.
      *
      * @return int|null The default maximum limit.
      */
